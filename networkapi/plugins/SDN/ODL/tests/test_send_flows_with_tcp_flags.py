@@ -45,6 +45,12 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
         tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
         assert tcp_flag == 16
 
+        # Nitrogen
+        flows = AclFlowBuilder(acl, environment=0, version='NITROGEN')
+        flow = flows.build().next()
+        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
+        assert tcp_flag == 16
+
 
     def test_flow_with_RST_flag(self):
         """ Try to send a flow with RST flag """
@@ -80,6 +86,12 @@ class TestSendFlowsWithTCPFlags(NetworkApiTestCase):
 
         # Boron
         flows = AclFlowBuilder(acl, environment=0, version='BORON')
+        flow = flows.build().next()
+        tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
+        assert tcp_flag == 4
+
+        # Nitrogen
+        flows = AclFlowBuilder(acl, environment=0, version='NITROGEN')
         flow = flows.build().next()
         tcp_flag = flow['flow'][0]['match']['tcp-flags-match']['tcp-flags']
         assert tcp_flag == 4

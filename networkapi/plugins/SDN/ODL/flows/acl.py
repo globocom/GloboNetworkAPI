@@ -346,7 +346,7 @@ class AclFlowBuilder(object):
                 self.flows["flow"][0]["match"]["tcp-flag-match"] = {
                     "tcp-flag": tcp_flags,
                 }
-            elif self.version in ["BORON", "CARBON"]:
+            elif self.version in ["BORON", "CARBON", "NITROGEN"]:
                 self.flows["flow"][0]["match"]["tcp-flags-match"] = {
                     "tcp-flags": tcp_flags,
                 }
