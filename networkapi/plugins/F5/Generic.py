@@ -29,7 +29,7 @@ class Generic(BasePlugin):
             if obj.ipv4 else obj.ipv6.ip_formated
 
         name_vip = 'VIP%s_%s_%s' % (obj.id, address, port)
-        name_vip = str.replace(str(name_vip), ":", ".")
+        name_vip = str.replace(str(name_vip), ':', '.')
 
         return name_vip
 
@@ -566,16 +566,12 @@ class Generic(BasePlugin):
         mon = monitor.Monitor(self._lb)
 
         try:
-            self._lb._channel.System.Session.start_transaction()
             monitor_associations = pl.get_monitor_association(
                 names=pls['pools_names'])
-            pl.remove_monitor_association(names=pls['pools_names'])
         except Exception, e:
             log.error(e)
-            self._lb._channel.System.Session.rollback_transaction()
             raise base_exceptions.CommandErrorException(e)
         else:
-            self._lb._channel.System.Session.submit_transaction()
 
             try:
                 self._lb._channel.System.Session.start_transaction()
@@ -583,8 +579,6 @@ class Generic(BasePlugin):
             except Exception, e:
                 log.error(e)
                 self._lb._channel.System.Session.rollback_transaction()
-                pl.set_monitor_association(
-                    monitor_associations=monitor_associations)
                 raise base_exceptions.CommandErrorException(e)
             else:
                 self._lb._channel.System.Session.submit_transaction()
