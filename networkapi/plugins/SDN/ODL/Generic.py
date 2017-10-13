@@ -116,8 +116,8 @@ class ODLPlugin(BaseSdnPlugin):
 
     def flush_flows(self):
         nodes_ids = self._get_nodes_ids()
-        if len(nodes_ids) < 1:
-            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+        # if len(nodes_ids) < 1:
+        #     raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         for node_id in nodes_ids:
             try:
@@ -164,8 +164,8 @@ class ODLPlugin(BaseSdnPlugin):
 
         if nodes_ids==[]:
             nodes_ids = self._get_nodes_ids()
-            if len(nodes_ids) < 1:
-                raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+            # if len(nodes_ids) < 1:
+            #     raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         return_flows = []
         for node_id in nodes_ids:
@@ -184,8 +184,8 @@ class ODLPlugin(BaseSdnPlugin):
         """ Returns All flows for table 0 of all switches of a environment """
 
         nodes_ids = self._get_nodes_ids()
-        if len(nodes_ids) < 1:
-            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+        # if len(nodes_ids) < 1:
+        #     raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         flows_list = {}
         for node_id in nodes_ids:
