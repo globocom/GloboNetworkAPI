@@ -357,7 +357,6 @@ class Ipv6V4Serializer(DynamicFieldsModelSerializer):
         return queryset
 
 
-
 class IPv4VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
 
     ip = serializers.SerializerMethodField('get_ip')
@@ -368,6 +367,7 @@ class IPv4VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
         model = get_model('ip', 'IpEquipamento')
 
         fields = (
+            'id',
             'ip',
             'virtual_interface'
         )
@@ -447,6 +447,7 @@ class IPv6VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
         model = get_model('ip', 'Ipv6Equipament')
 
         fields = (
+            'id',
             'ip',
             'virtual_interface'
         )
@@ -514,8 +515,9 @@ class IPv6VirtualInterfaceV4Serializer(DynamicFieldsModelSerializer):
                 }
             }
 
+
 class EquipmentV4VirtualInterfaceV4Serializer(
-    DynamicFieldsModelSerializer):
+        DynamicFieldsModelSerializer):
 
     equipment = serializers.SerializerMethodField('get_equipment')
     virtual_interface = serializers. \
@@ -595,8 +597,9 @@ class EquipmentV4VirtualInterfaceV4Serializer(
                 }
             }
 
+
 class EquipmentV6VirtualInterfaceV4Serializer(
-    DynamicFieldsModelSerializer):
+        DynamicFieldsModelSerializer):
 
     equipment = serializers.SerializerMethodField('get_equipment')
     virtual_interface = serializers. \
@@ -675,6 +678,7 @@ class EquipmentV6VirtualInterfaceV4Serializer(
                     'obj': 'virtual_interface'
                 }
             }
+
 
 class IPv4EquipmentV4Serializer(DynamicFieldsModelSerializer):
 
