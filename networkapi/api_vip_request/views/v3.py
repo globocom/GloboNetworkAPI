@@ -24,7 +24,6 @@ from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 from networkapi.util.json_validate import verify_ports_vip
-# from networkapi.api_vip_request.serializers.v3 import VipRequestV3Serializer
 
 
 log = logging.getLogger(__name__)

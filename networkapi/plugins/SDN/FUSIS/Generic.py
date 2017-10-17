@@ -14,16 +14,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 """
-from networkapi.plugins.SDN.base import BaseSdnPlugin
-import requests
 import json
+
+import requests
+
+from networkapi.plugins.SDN.base import BaseSdnPlugin
+from networkapi.plugins.SDN.FUSIS import util
+
 
 class Generic(BaseSdnPlugin):
 
     # VIPS
+    @util.logger
     def create_vip(self, vips):
-
         for vip in vips['vips']:
+            vip = vip['vip_request']
             service = {
                 'address': vip['ipv4']['ip_formated'],
                 'persistent': int(vip['options']['timeout']['nome_opcao_txt']),
@@ -31,71 +36,155 @@ class Generic(BaseSdnPlugin):
             }
 
             for port in vip['ports']:
-                service['name'] =  '{}_{}'.format(vip['id'], port['port'])
+                service['name'] = port['identifier']
                 service['port'] = port['port']
-                service['protocol'] = vip['options']['l4_protocol']\
-                                        ['nome_opcao_txt'].lower()
+                service['protocol'] = port['options'][
+                    'l4_protocol']['nome_opcao_txt'].lower()
 
                 for pool in port['pools']:
-
                     service['scheduler'] = \
                         self._get_scheduler(pool['server_pool']['lb_method'])
+
                     self._create_service(service)
 
+                    for member in pool['server_pool']['pools_members']:
+                        name = '{}_{}'.format(member['ip'], member['port'])
+                        destination = {
+                            'name': name,
+                            'port': member['port'],
+                            'address': member['ip'],
+                            'weight': member['weight']
+                        }
+                        self._create_destination(service['name'], destination)
 
     def delete_vip(self, vips):
-
+        pools_id = []
         for vip in vips['vips']:
-
-            pass
-
+            vip = vip['vip_request']
+            for port in vip['ports']:
+                for pool in port['pools']:
+                    pools_id.append(pool['server_pool']['id'])
+                    # Check if need
+                    # for member in pool['server_pool']['pools_members']:
+                    #     name = '{}_{}'.format(member['ip'], member['port'])
+                    #     self._delete_destination(port['identifier'], name)
+                self._delete_service(port['identifier'])
+        return pools_id
 
     def update_vip(self, vips):
 
-        pass
+        pools_del = []
+        pools_ins = []
+        for vip in vips['vips']:
+            vip = vip['vip_request']
+            service = {
+                'address': vip['ipv4']['ip_formated'],
+                'persistent': int(vip['options']['timeout']['nome_opcao_txt']),
+                'mode': 'nat'
+            }
 
+            for port in vip['ports']:
+                if port.get('insert'):
+                    service['name'] = port['identifier']
+                    service['port'] = port['port']
+                    service['protocol'] = port['options'][
+                        'l4_protocol']['nome_opcao_txt'].lower()
+
+                    for pool in port['pools']:
+                        service['scheduler'] = \
+                            self._get_scheduler(
+                                pool['server_pool']['lb_method'])
+
+                        self._create_service(service)
+
+                        for member in pool['server_pool']['pools_members']:
+                            name = '{}_{}'.format(member['ip'], member['port'])
+                            destination = {
+                                'name': name,
+                                'port': member['port'],
+                                'address': member['ip'],
+                                'weight': member['weight']
+                            }
+                            self._create_destination(
+                                service['name'], destination)
+                elif port.get('delete'):
+                    for pool in port['pools']:
+                        if pool['server_pool']['id'] not in pools_del:
+                            pools_del.append(pool['server_pool']['id'])
+                    self._delete_service(port['identifier'])
+                else:
+                    for pool in port['pools']:
+                        if pool['server_pool']['id'] not in pools_ins:
+                            pools_ins.append(pool['server_pool']['id'])
+                        if pool.get('delete'):
+                            for member in pool['server_pool']['pools_members']:
+                                name = '{}_{}'.format(
+                                    member['ip'], member['port'])
+                                self._delete_destination(
+                                    port['identifier'], name)
+                        elif pool.get('insert'):
+                            for member in pool['server_pool']['pools_members']:
+                                name = '{}_{}'.format(
+                                    member['ip'], member['port'])
+                                destination = {
+                                    'name': name,
+                                    'port': member['port'],
+                                    'address': member['ip'],
+                                    'weight': member['weight']
+                                }
+                                self._create_destination(
+                                    service['name'], destination)
+
+        pools_del = list(set(pools_del) - set(pools_ins))
+        return pools_ins, pools_del
+
+    @util.logger
+    def get_name_eqpt(self, obj, port):
+        name_vip = 'VIP_%s_%s' % (obj.id, port)
+
+        return name_vip
 
     # POOL
     def create_pool(self, pools):
-
-        for vip in pools['vips']:
-
-            name_service = vip['name']
-
-            for port in vip['ports']:
-
-                for pool in port['pools']:
-
-
-        for pool in pools['server_pools']:
-
-            for member in pool['server_pool_members']:
-                destination = {
-                    'name': member['identifier'],
-                    'port': member['port_real'],
-                    'host': member['ip']['ip_formated'],
-                    'weight': member['weight']
-                }
-                name_service = ''
-                self._create_destination(destination, name_service)
+        raise Exception(
+            'Pool can not be deploy in Fusis. Try deploy a VIP first.')
 
     def delete_pool(self, pools):
-
-        for pool in pools['server_pools']:
-            pass
+        raise Exception(
+            'Pool can not be deploy in Fusis. Try undeploy a VIP first.')
 
     def update_pool(self, pools):
 
-        pass
+        for pool in pools['pools']:
+            for vip in pool['vips']:
+                for port in vip['ports']:
+                    for pl in port['pools']:
+                        if pl['server_pool']['id'] == pool['id']:
+                            for member in pool['pools_members']:
+                                name = '{}_{}'.format(
+                                    member['ip'], member['port'])
+
+                                if member.get('remove'):
+                                    self._delete_destination(
+                                        port['identifier'], name)
+                                elif member.get('new'):
+                                    destination = {
+                                        'name': name,
+                                        'port': member['port'],
+                                        'address': member['ip'],
+                                        'weight': member['weight']
+                                    }
+                                    self._create_destination(
+                                        port['identifier'], destination)
 
     def _get_scheduler(self, scheduler):
 
         if scheduler == 'least-conn':
             return 'lc'
         elif scheduler == 'weighted':
-            return 'wrr' # check
+            return 'wrr'
         elif scheduler == 'uri hash':
-            return 'dh' # check
+            return 'dh'
         elif scheduler == 'round-robin':
             return 'rr'
 
@@ -113,11 +202,11 @@ class Generic(BaseSdnPlugin):
 
     def _create_service(self, service_dict):
 
-        url = 'services/'
+        url = 'services'
 
         self._request(url, 'POST', service_dict)
 
-    def _create_destination(self, destination_dict, name_service):
+    def _create_destination(self, name_service, destination_dict):
 
         url = 'services/{}/destinations'.format(name_service)
 
@@ -135,9 +224,10 @@ class Generic(BaseSdnPlugin):
                                                    name_destination)
         self._request(url, 'DELETE')
 
+    @util.logger
     def _request(self, url, method, payload=None):
 
-        uri = 'http://192.168.244.244:8000/'
+        uri = 'http://10.224.142.239:8000/'
 
         method = method.lower()
 
@@ -145,9 +235,10 @@ class Generic(BaseSdnPlugin):
 
         request = request_type_func(
             uri + url,
-            json = payload
+            json=payload
         )
         request.raise_for_status()
 
-        return json.loads(request.text)
-
+        if request.text:
+            return json.loads(request.text)
+        return {}
