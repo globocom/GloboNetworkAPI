@@ -166,32 +166,37 @@ def get_controller_by_envid(env_id):
         'equipamentoambiente__is_controller': env_id
     }
 
-    return Equipamento.objects.filter(Q(**q_filter_environment)).uniqueResult()
+    return Equipamento.objects.filter(Q(**q_filter_environment))
 
 
 def list_flows_by_envid(env_id, flow_id=0):
-    eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt, env_id=env_id)
+    eqpts = get_controller_by_envid(env_id)
+    flows_list={}
 
-    try:
-        if flow_id > 0:
-            return plugin.get_flow(flow_id=flow_id)
-        else:
-            return plugin.get_flows()
+    for eqpt in eqpts:
+        plugin = PluginFactory.factory(eqpt, env_id=env_id)
+        try:
+            if flow_id > 0:
+                flows_list.update(plugin.get_flow(flow_id=flow_id))
+            else:
+                flows_list.update(plugin.get_flows())
 
-    except Exception as e:
-        log.error(e)
-        raise NetworkAPIException('Failed to list flow(s)'
-                                  'plugin. %s' % e)
+        except Exception as e:
+            log.error(e)
+            raise NetworkAPIException('Failed to list flow(s)'
+                                      'plugin. %s' % e)
+
+    return flows_list
 
 
 def insert_flow(env_id, data, user_id):
-    eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt, env_id=env_id)
-
+    eqpts = get_controller_by_envid(env_id)
+    plugins=[]
+    for eqpt in eqpts:
+        plugins.append(PluginFactory.factory(eqpt, env_id=env_id))
     try:
         return async_add_flow.apply_async(
-            args=[plugin, user_id, data], queue='napi.odl_flow'
+            args=[plugins, user_id, data], queue='napi.odl_flow'
         )
     except Exception as e:
         log.error(e)
@@ -200,39 +205,41 @@ def insert_flow(env_id, data, user_id):
 
 
 def delete_flow(env_id, flow_id):
-    eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt, env_id=env_id)
+    eqpts = get_controller_by_envid(env_id)
 
-    try:
-        return plugin.del_flow(flow_id=flow_id)
-    except Exception as e:
-        log.error(e)
-        raise NetworkAPIException('Failed to delete flow '
-                                  'plugin. %s' % e)
+    for eqpt in eqpts:
+        plugin = PluginFactory.factory(eqpt, env_id=env_id)
+        try:
+            plugin.del_flow(flow_id=flow_id)
+        except Exception as e:
+            log.error(e)
+            raise NetworkAPIException('Failed to delete flow '
+                                      'plugin. %s' % e)
 
 
 def flush_flows(env_id):
     """ Flushes flow from a environment without restore it """
-    eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt, env_id=env_id)
+    eqpts = get_controller_by_envid(env_id)
+    for eqpt in eqpts:
+        plugin = PluginFactory.factory(eqpt, env_id=env_id)
+        try:
+            plugin.flush_flows()
+        except Exception as e:
+            log.error(e)
+            raise NetworkAPIException('Failed to flush Controller '
+                                      'plugin. %s' % e)
 
-    try:
-        return plugin.flush_flows()
-    except Exception as e:
-        log.error(e)
-        raise NetworkAPIException('Failed to flush Controller '
-                                  'plugin. %s' % e)
 
-
-def flush_environment(env_id, data, user_id):
+def update_flows(env_id, data, user_id):
     """ Call equipment plugin to asynchronously flush the environment """
-
-    eqpt = get_controller_by_envid(env_id)
-    plugin = PluginFactory.factory(eqpt, env_id=env_id)
+    eqpts = get_controller_by_envid(env_id)
+    plugins = []
+    for eqpt in eqpts:
+        plugins.append(PluginFactory.factory(eqpt, env_id=env_id))
 
     try:
         return async_flush_environment.apply_async(
-            args=[plugin, user_id, data], queue='napi.odl_flow'
+            args=[plugins, user_id, data], queue='napi.odl_flow'
         )
     except Exception as e:
         log.error(e)

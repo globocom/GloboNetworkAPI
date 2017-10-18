@@ -42,7 +42,7 @@ class ODLPlugin(BaseSdnPlugin):
     Plugin base para interação com controlador ODL
     """
 
-    versions = ["BERYLLIUM", "BORON", "CARBON"]
+    versions = ["BERYLLIUM", "BORON", "CARBON", "NITROGEN"]
 
     def __init__(self, **kwargs):
 
@@ -65,7 +65,7 @@ class ODLPlugin(BaseSdnPlugin):
     def add_flow(self, data=None, flow_id=0, flow_type=FlowTypes.ACL, nodes_ids=[]):
 
         if flow_type == FlowTypes.ACL:
-            builder = AclFlowBuilder(data, self.environment)
+            builder = AclFlowBuilder(data, self.environment, version=self.version)
 
             flows_set = builder.build()
         try:
@@ -92,7 +92,7 @@ class ODLPlugin(BaseSdnPlugin):
             log.info("Starting update all flows for node %s"%node)
 
             if flow_type == FlowTypes.ACL:
-                builder = AclFlowBuilder(data, self.environment)
+                builder = AclFlowBuilder(data, self.environment, version=self.version)
                 new_flows_set = builder.build()
 
             #Makes a diff
@@ -116,8 +116,8 @@ class ODLPlugin(BaseSdnPlugin):
 
     def flush_flows(self):
         nodes_ids = self._get_nodes_ids()
-        if len(nodes_ids) < 1:
-            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+        # if len(nodes_ids) < 1:
+        #     raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         for node_id in nodes_ids:
             try:
@@ -164,8 +164,8 @@ class ODLPlugin(BaseSdnPlugin):
 
         if nodes_ids==[]:
             nodes_ids = self._get_nodes_ids()
-            if len(nodes_ids) < 1:
-                raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+            # if len(nodes_ids) < 1:
+            #     raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         return_flows = []
         for node_id in nodes_ids:
@@ -184,8 +184,8 @@ class ODLPlugin(BaseSdnPlugin):
         """ Returns All flows for table 0 of all switches of a environment """
 
         nodes_ids = self._get_nodes_ids()
-        if len(nodes_ids) < 1:
-            raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
+        # if len(nodes_ids) < 1:
+        #     raise exceptions.ControllerInventoryIsEmpty(msg="No nodes found")
 
         flows_list = {}
         for node_id in nodes_ids:

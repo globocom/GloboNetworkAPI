@@ -207,7 +207,7 @@ class EnvFlowView(CustomAPIView):
         if flow_id:
             task = facade.insert_flow(environment_id, request.DATA, user.id)
         else:
-            task = facade.flush_environment(environment_id, request.DATA, user.id)
+            task = facade.update_flows(environment_id, request.DATA, user.id)
 
         response = {
             'id': flow_id or environment_id,

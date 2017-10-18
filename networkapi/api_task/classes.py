@@ -12,7 +12,10 @@ class BaseTask(celery_app.Task):
 
         task = celery_app.AsyncResult(task_id)
         if status == 'FAILURE':
-            result = task.result.exc_message
+            if hasattr(task.result, "exc_message"):
+                result = task.result.exc_message
+            else:
+                result = task.result.message
         else:
             result = task.result
 

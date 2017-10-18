@@ -40,6 +40,8 @@ services:
           context: .
           dockerfile: scripts/docker/Dockerfile
         command: sh scripts/docker/docker-start-celery.sh
+        env_file:
+            - scripts/docker/netapi.env
         volumes:
           - .:/netapi
         networks:
