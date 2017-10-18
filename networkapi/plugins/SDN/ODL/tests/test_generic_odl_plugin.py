@@ -32,9 +32,9 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     def setUp(self):
         # Must chose the equipment with the right version running on docker
         # Beryllium
-        #self.equipment = Equipamento.objects.filter(id=10).uniqueResult()
+        self.equipment = Equipamento.objects.filter(id=10).uniqueResult()
         # Nitrogen
-        self.equipment = Equipamento.objects.filter(id=11).uniqueResult()
+        #self.equipment = Equipamento.objects.filter(id=11).uniqueResult()
 
         self.equipment_access = EquipamentoAcesso.objects.filter(id=1).uniqueResult()
         self.utils.set_controller_endpoint(self.equipment_access)
