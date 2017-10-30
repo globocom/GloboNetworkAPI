@@ -231,24 +231,6 @@ class IPv6GetTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
         self.compare_values(0, response.data['total'])
 
-    def test_try_get_ipv6_with_equipments_and_virtual_interfaces(self):
-        """V4 Test to GET ipv6 with associated equipments and virtual
-           interfaces.
-        """
-
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/' \
-                    'ipv6_with_eqpts_and_virtual_interfaces.json'
-
-        # Does get request
-        response = self.client.get(
-            '/api/v4/ipv6/6/?include=equipments',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
-
-        self.compare_status(200, response.status_code)
-
-        self.compare_json(name_file, response.data)
-
     def test_get_ipv6_by_kind_details(self):
         """V4 Test of success to get IPv6 with kind details."""
 

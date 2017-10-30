@@ -2,8 +2,7 @@
   {
     "fields": {
       "ip": 1,
-      "equipamento": 3,
-      "virtual_interface": 1
+      "equipamento": 3
     },
     "model": "ip.ipv6equipament",
     "pk": 1
@@ -19,8 +18,7 @@
   {
     "fields": {
       "ip": 1,
-      "equipamento": 6,
-      "virtual_interface": 1
+      "equipamento": 6
     },
     "model": "ip.ipv6equipament",
     "pk": 3

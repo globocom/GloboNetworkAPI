@@ -138,34 +138,3 @@ class IPv6PostTestCase(NetworkApiTestCase):
             'Ip fc00:0000:0000:0005:0000:0000:0000:0005 not available for '
             'network 5.',
             response.data['detail'])
-
-    def test_try_create_ip_associating_to_equipment_and_virtual_interface(self):
-        """V4 Tests if NAPI can allocate two IPv6 Addresses manually and
-           associate it to equipments and for the first equipment associate it
-           also to Virtual Interface in a Network with available addresses.
-        """
-
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/post/' \
-                    'ipv6_with_two_equipments_and_virtual_interface.json'
-        response = self.client.post(
-            '/api/v4/ipv6/',
-            data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(201, response.status_code)
-
-        url = prepare_url('/api/v4/ipv6/%s/' % response.data[0]['id'],
-                          include=['equipments'])
-        response = self.client.get(
-            url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/' \
-                    'ipv6_created_with_eqpts_and_virtual_interface.json'
-
-        del response.data['ips'][0]['id']
-        self.compare_json(name_file, response.data)

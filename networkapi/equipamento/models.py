@@ -22,7 +22,7 @@ from django.db.models import get_model
 
 from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteNotFoundError
-from networkapi.api_as.v4.exceptions import AsNotFoundError
+from networkapi.api_asn.v4.exceptions import AsnNotFoundError
 from networkapi.api_equipment.exceptions import EquipmentInvalidValueException
 from networkapi.grupo.models import EGrupo
 from networkapi.grupo.models import EGrupoNotFoundError
@@ -504,19 +504,19 @@ class Equipamento(BaseModel):
 
     environments = property(_get_environments)
 
-    def _get_ipv4_equipment_virtual_interface(self):
+    def _get_ipv4_equipment(self):
 
         return self.ipequipamento_set.all()
 
-    ipv4_equipment_virtual_interface = \
-        property(_get_ipv4_equipment_virtual_interface)
+    ipv4_equipment = \
+        property(_get_ipv4_equipment)
 
-    def _get_ipv6_equipment_virtual_interface(self):
+    def _get_ipv6_equipment(self):
 
         return self.ipv6equipament_set.all()
 
-    ipv6_equipment_virtual_interface = \
-        property(_get_ipv6_equipment_virtual_interface)
+    ipv6_equipment = \
+        property(_get_ipv6_equipment)
 
     def _get_ipv4(self):
         ips = self.ipequipamento_set.all()
@@ -532,21 +532,21 @@ class Equipamento(BaseModel):
 
     ipv6 = property(_get_ipv6)
 
-    def _get_id_as(self):
-        as_bgp = self.asequipment_set.all()
-        if as_bgp:
-            return as_bgp[0].id_as
+    def _get_asn(self):
+        asn_bgp = self.asnequipment_set.all()
+        if asn_bgp:
+            return asn_bgp[0].asn
         return None
 
-    id_as = property(_get_id_as)
+    asn = property(_get_asn)
 
-    def _get_id_as_id(self):
-        as_bgp = self.asequipment_set.all()
-        if as_bgp:
-            return as_bgp[0].id_as.id
+    def _get_asn_id(self):
+        asn_bgp = self.asnequipment_set.all()
+        if asn_bgp:
+            return asn_bgp[0].asn.id
         return None
 
-    id_as_id = property(_get_id_as_id)
+    asn_id = property(_get_asn_id)
 
     @classmethod
     def get_next_name_by_prefix(cls, prefix):
@@ -1017,7 +1017,7 @@ class Equipamento(BaseModel):
         for equipment_group in self.equipamentogrupo_set.all():
             equipment_group.delete()
 
-        for as_equipment in self.asequipment_set.all():
+        for as_equipment in self.asnequipment_set.all():
             as_equipment.delete()
 
         self.delete()
@@ -1060,28 +1060,26 @@ class Equipamento(BaseModel):
 
             # ipv4s
             ipeqpt_model = get_model('ip', 'IpEquipamento')
-            for ipv4 in equipment.get('ipsv4', []):
-                ipeqpt_model().create_v4({
+            for ipv4 in equipment.get('ipv4', []):
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
-                    'ip': ipv4['ipv4']['id'],
-                    'interface': ipv4.get('virtual_interface', {}).get('id')
+                    'ip': ipv4
                 })
 
             # ipv6s
             ipeqpt_model = get_model('ip', 'Ipv6Equipament')
-            for ipv6 in equipment.get('ipsv6', []):
-                ipeqpt_model().create_v4({
+            for ipv6 in equipment.get('ipv6', []):
+                ipeqpt_model().create_v3({
                     'equipment': self.id,
-                    'ip': ipv6['ipv6']['id'],
-                    'interface': ipv6.get('virtual_interface', {}).get('id')
+                    'ip': ipv6
                 })
 
             # as
-            aseqpt_model = get_model('api_as', 'AsEquipment')
-            if equipment.get('id_as'):
-                aseqpt_model().create_v4({
+            asneqpt_model = get_model('api_asn', 'AsEquipment')
+            if equipment.get('asn'):
+                asneqpt_model().create_v4({
                     'equipment': self.id,
-                    'id_as': equipment.get('id_as')
+                    'asn': equipment.get('asn')
                 })
 
         except EquipmentInvalidValueException, e:
@@ -1090,7 +1088,7 @@ class Equipamento(BaseModel):
             raise EquipmentInvalidValueException(e.message)
         except EGrupoNotFoundError, e:
             raise EquipmentInvalidValueException(e.message)
-        except AsNotFoundError, e:
+        except AsnNotFoundError, e:
             raise EquipmentInvalidValueException(e.detail)
         except Exception, e:
             raise EquipamentoError(None, e)
@@ -1167,70 +1165,55 @@ class Equipamento(BaseModel):
                 env_db.filter(ambiente__in=env_db_ids_old).delete()
 
             # ipv4s
-            # TODO Update relationship where virtual interface is null
-            if equipment.get('ipsv4'):
+            if equipment.get('ipv4'):
                 ipeqpt_model = get_model('ip', 'IpEquipamento')
                 ips_db = ipeqpt_model.list_by_equip(self.id)
                 ips_db_ids = ips_db.values_list('ip', flat=True)
-                ipv4_ids = equipment.get('ipsv4')
+                ipv4_ids = equipment.get('ipv4')
 
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
-                    ipv4_id = ipv4['ipv4']['id']
-                    id_interface = ipv4.get('virtual_interface', {}).get('id')
-                    if ipv4_id not in ips_db_ids:
-                        ipeqpt_model().create_v4({
+                    if ipv4 not in ips_db_ids:
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
-                            'ip': ipv4['ipv4']['id'],
-                            'interface': id_interface
+                            'ip': ipv4
                         })
-                    else:
-                        ipeqpt_model.get_by_ip_equipment(ipv4_id, self.id).\
-                            update_v4(id_interface)
 
                 # delete relashionship with ipv4 not sended
-                ipv4_ids = [ipv4['ipv4']['id'] for ipv4 in ipv4_ids]
                 ips_db_ids_old = list(set(ips_db_ids) - set(ipv4_ids))
                 ips_db.filter(ip__in=ips_db_ids_old).delete()
 
             # ipv6s
-            if equipment.get('ipsv6'):
+            if equipment.get('ipv6'):
                 ipeqpt_model = get_model('ip', 'Ipv6Equipament')
                 ipv6s_db = ipeqpt_model.list_by_equip(self.id)
                 ipv6s_db_ids = ipv6s_db.values_list('ip', flat=True)
-                ipv6_ids = equipment.get('ipsv6')
+                ipv6_ids = equipment.get('ipv6')
 
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
-                    ipv6_id = ipv6['ipv6']['id']
-                    id_interface = ipv6.get('virtual_interface', {}).get('id')
-                    if ipv6_id not in ipv6s_db_ids:
-                        ipeqpt_model().create_v4({
+                    if ipv6 not in ipv6s_db_ids:
+                        ipeqpt_model().create_v3({
                             'equipment': self.id,
-                            'ip': ipv6['ipv6']['id'],
-                            'interface': id_interface
+                            'ip': ipv6
                         })
-                    else:
-                        ipeqpt_model.get_by_ip_equipment(ipv6_id, self.id).\
-                            update_v4(id_interface)
 
                 # delete relashionship with ipv6 not sended
-                ipv6_ids = [ipv6['ipv6']['id'] for ipv6 in ipv6_ids]
                 ipv6s_db_ids_old = list(set(ipv6s_db_ids) - set(ipv6_ids))
                 ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
 
-            # as
-            if equipment.get('id_as'):
-                aseqpt_model = get_model('api_as', 'AsEquipment')
+            # asn
+            if equipment.get('asn'):
+                asneqpt_model = get_model('api_asn', 'AsEquipment')
 
                 # delete old AsEquipment association
-                for aseqpt in self.asequipment_set.all():
-                    aseqpt.delete()
+                for asneqpt in self.asnequipment_set.all():
+                    asneqpt.delete()
 
                 # create new AsEquipment association
-                aseqpt_model().create_v4({
+                asneqpt_model().create_v4({
                     'equipment': self.id,
-                    'id_as': equipment.get('id_as')
+                    'asn': equipment.get('asn')
                 })
 
         except EquipmentInvalidValueException, e:
@@ -1239,7 +1222,7 @@ class Equipamento(BaseModel):
             raise EquipmentInvalidValueException(e.message)
         except EGrupoNotFoundError, e:
             raise EquipmentInvalidValueException(e.message)
-        except AsNotFoundError, e:
+        except AsnNotFoundError, e:
             raise EquipmentInvalidValueException(e.detail)
         except Exception, e:
             raise EquipamentoError(None, e)

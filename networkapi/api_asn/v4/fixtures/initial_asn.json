@@ -1,0 +1,34 @@
+[
+  {
+    "fields": {
+      "name": "AS-1",
+      "description": "AS-1"
+    },
+    "model": "api_asn.asn",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "AS-2",
+      "description": "AS-2"
+    },
+    "model": "api_asn.asn",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "name": "AS-3",
+      "description": "AS-3"
+    },
+    "model": "api_asn.asn",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "name": "AS-4",
+      "description": "AS-4"
+    },
+    "model": "api_asn.asn",
+    "pk": 4
+  }
+]

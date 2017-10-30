@@ -16,102 +16,65 @@ class BgpType:
     list_type = (ibgp, ebgp)
 
 
-class Neighbor(BaseModel):
+class NeighborV4(BaseModel):
 
     id = models.AutoField(
         primary_key=True,
         db_column='id'
     )
 
-    remote_as = models.CharField(
-        blank=False,
-        max_length=45,
-        db_column='remote_as'
-    )
+    # local_asn = models.ForeignKey(
+    #     'api_asnn.Asn',
+    #     db_column='id_local_asn'
+    # )
+    #
+    # remote_asn = models.ForeignKey(
+    #     'api_asnn.Asn',
+    #     db_column='id_remote_asn'
+    # )
+    #
+    # local_ip = models.ForeignKey(
+    #     'ip.Ip',
+    #     db_column='id_local_ip'
+    # )
+    #
+    # remote_ip = models.ForeignKey(
+    #     'ip.Ip',
+    #     db_column='id_remote_ip'
+    # )
+    #
+    # peer_group = models.ForeignKey(
+    #     'api_peer_group.PeerGroup',
+    #     db_column='id_peer_group'
+    # )
+    #
+    # virtual_interface = models.CharField(
+    #     blank=False,
+    #     max_length=45,
+    #     db_column='virtual_interface'
+    # )
 
-    remote_ip = models.CharField(
-        blank=False,
-        max_length=45,
-        db_column='remote_ip'
-    )
-
-    password = models.CharField(
-        blank=True,
-        max_length=45,
-        db_column='password'
-    )
-
-    maximum_hops = models.CharField(
-        blank=False,
-        max_length=45,
-        db_column='maximum_hops'
-    )
-
-    timer_keepalive = models.CharField(
-        blank=False,
-        max_length=45,
-        db_column='timer_keepalive'
-    )
-
-    timer_timeout = models.CharField(
-        blank=False,
-        max_length=45,
-        db_column='timer_timeout'
-    )
-
-    description = models.CharField(
-        blank=False,
-        max_length=45,
-        db_column='description'
-    )
-
-    soft_reconfiguration = models.BooleanField(
-        db_column='soft_reconfiguration')
-
-    community = models.BooleanField(
-        db_column='community')
-
-    remove_private_as = models.BooleanField(
-        db_column='remove_private_as')
-
-    next_hop_self = models.BooleanField(
-        db_column='next_hop_self')
-
-    kind = models.CharField(
-        db_column='kind',
-        max_length=2,
-        blank=False,
-        choices=BgpType.list_type
-    )
-
-    created = models.BooleanField(db_column='created')
-
-    virtual_interface = models.ForeignKey(
-        'api_virtual_interface.VirtualInterface',
-        db_column='id_virtual_interface'
-    )
-
-    log = logging.getLogger('Neighbor')
+    log = logging.getLogger('NeighborV4')
 
     class Meta(BaseModel.Meta):
-        db_table = u'neighbor'
+        db_table = u'neighbor_v4'
         managed = True
 
     @classmethod
     def get_by_pk(cls, id):
-        """Get Neighbor by id.
+        """Get NeighborV4 by id.
 
-        :return: Neighbor.
+        :return: NeighborV4.
 
-        :raise NeighborNotFoundError: Neighbor not registered.
-        :raise NeighborError: Failed to search for the As.
+        :raise NeighborV4NotFoundError: NeighborV4 not registered.
+        :raise NeighborV4Error: Failed to search for the NeighborV4.
         :raise OperationalError: Lock wait timeout exceeded
         """
         try:
-            return Neighbor.objects.get(id=id)
+            return NeighborV4.objects.get(id=id)
         except ObjectDoesNotExist, e:
-            cls.log.error(u'Neighbor not found. pk {}'.format(id))
-            raise exceptions.NeighborNotFoundError(id)
+            cls.log.error(u'NeighborV4 not found. pk {}'.format(id))
+            raise exceptions.NeighborV4NotFoundError(id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
@@ -121,61 +84,97 @@ class Neighbor(BaseModel):
             raise exceptions.NeighborError(
                 e, u'Failure to search the Neighbor.')
 
-    def create_v4(self, neighbor_map):
+    def create_v4(self):
         """Create Neighbor."""
+        pass
 
-        vi_model = get_model('api_virtual_interface', 'VirtualInterface')
-
-        self.remote_as = neighbor_map.get('remote_as')
-        self.remote_ip = neighbor_map.get('remote_ip')
-        self.password =  neighbor_map.get('password')
-        self.maximum_hops =  neighbor_map.get('maximum_hops')
-        self.timer_keepalive = neighbor_map.get('timer_keepalive')
-        self.timer_timeout = neighbor_map.get('timer_timeout')
-        self.description = neighbor_map.get('description')
-        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
-        self.community = neighbor_map.get('community')
-        self.remove_private_as = neighbor_map.get('remove_private_as')
-        self.next_hop_self = neighbor_map.get('next_hop_self')
-        self.kind = neighbor_map.get('kind')
-        # self.created =  neighbor_map.get('created')
-        self.virtual_interface = vi_model.get_by_pk(
-            neighbor_map.get('virtual_interface')
-        )
-
-        self.save()
-
-    def update_v4(self, neighbor_map):
+    def update_v4(self):
         """Update Neighbor."""
-
-        vi_model = get_model('api_virtual_interface', 'VirtualInterface')
-
-        self.remote_as = neighbor_map.get('remote_as')
-        self.remote_ip = neighbor_map.get('remote_ip')
-        self.password = neighbor_map.get('password')
-        self.maximum_hops = neighbor_map.get('maximum_hops')
-        self.timer_keepalive = neighbor_map.get('timer_keepalive')
-        self.timer_timeout = neighbor_map.get('timer_timeout')
-        self.description = neighbor_map.get('description')
-        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
-        self.community = neighbor_map.get('community')
-        self.remove_private_as = neighbor_map.get('remove_private_as')
-        self.next_hop_self = neighbor_map.get('next_hop_self')
-        self.kind = neighbor_map.get('kind')
-        # self.created =  neighbor_map.get('created')
-        self.virtual_interface = vi_model.get_by_pk(
-            neighbor_map.get('virtual_interface')
-        )
-
-        self.save()
+        pass
 
     def delete_v4(self):
         """Delete Neighbor.
         """
+        pass
+
+
+class NeighborV6(BaseModel):
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id'
+    )
+
+    # local_asn = models.ForeignKey(
+    #     'api_asnn.Asn',
+    #     db_column='id_local_asn'
+    # )
+    #
+    # remote_asn = models.ForeignKey(
+    #     'api_asnn.Asn',
+    #     db_column='id_remote_asn'
+    # )
+    #
+    # local_ip = models.ForeignKey(
+    #     'ip.Ipv6',
+    #     db_column='id_local_ip'
+    # )
+    #
+    # remote_ip = models.ForeignKey(
+    #     'ip.Ipv6',
+    #     db_column='id_remote_ip'
+    # )
+    #
+    # peer_group = models.ForeignKey(
+    #     'api_peer_group.PeerGroup',
+    #     db_column='id_peer_group'
+    # )
+    #
+    # virtual_interface = models.CharField(
+    #     blank=False,
+    #     max_length=45,
+    #     db_column='virtual_interface'
+    # )
+
+    log = logging.getLogger('NeighborV6')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'neighbor_v6'
+        managed = True
+
+    @classmethod
+    def get_by_pk(cls, id):
+        """Get NeighborV6 by id.
+
+        :return: NeighborV6.
+
+        :raise NeighborV6NotFoundError: NeighborV6 not registered.
+        :raise NeighborV6Error: Failed to search for the NeighborV6.
+        :raise OperationalError: Lock wait timeout exceeded
+        """
         try:
-
-            super(Neighbor, self).delete()
-
+            return NeighborV6.objects.get(id=id)
+        except ObjectDoesNotExist, e:
+            cls.log.error(u'NeighborV6 not found. pk {}'.format(id))
+            raise exceptions.NeighborV6NotFoundError(id)
+        except OperationalError, e:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError(
+                e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
-            self.log.error(e)
-            raise exceptions.NeighborErrorV4(e)
+            cls.log.error(u'Failure to search the Neighbor.')
+            raise exceptions.NeighborError(
+                e, u'Failure to search the Neighbor.')
+
+    def create_v4(self):
+        """Create Neighbor."""
+        pass
+
+    def update_v4(self):
+        """Update Neighbor."""
+        pass
+
+    def delete_v4(self):
+        """Delete Neighbor.
+        """
+        pass

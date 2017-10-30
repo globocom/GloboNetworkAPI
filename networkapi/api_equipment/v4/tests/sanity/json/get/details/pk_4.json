@@ -5,7 +5,7 @@
     "maintenance": false,
     "equipment_type": 1,
     "model": 1,
-    "id_as": {
+    "asn": {
       "id": 1,
       "name": "AS-1",
       "description": "AS-1"

@@ -7,17 +7,7 @@
       "oct1": 10,
       "oct2": 0,
       "oct3": 9,
-      "oct4": 1,
-      "equipments": [
-        {
-          "equipment": 1,
-          "virtual_interface": 1
-        },
-        {
-          "equipment": 3,
-          "virtual_interface": null
-        }
-      ]
+      "oct4": 1
     }
   ]
 }

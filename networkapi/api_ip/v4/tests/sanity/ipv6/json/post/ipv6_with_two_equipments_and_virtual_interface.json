@@ -9,22 +9,7 @@
       "block6": "0000",
       "block7": "0000",
       "block8": "0099",
-      "networkipv6": 5,
-      "equipments": [
-        {
-          "equipment": {
-            "id": 1
-          },
-          "virtual_interface": {
-            "id": 1
-          }
-        },
-        {
-          "equipment": {
-            "id": 3
-          }
-        }
-      ]
+      "networkipv6": 5
     }
   ]
 }

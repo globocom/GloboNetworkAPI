@@ -1,21 +1,6 @@
 {
   "ips": [
     {
-      "equipments": [
-        {
-          "equipment": {
-            "id": 1
-          },
-          "virtual_interface": {
-            "id": 1
-          }
-        },
-        {
-          "equipment": {
-            "id": 3
-          }
-        }
-      ],
       "id": 2
     }
   ]

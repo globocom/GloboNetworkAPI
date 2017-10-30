@@ -54,8 +54,6 @@ class IPv6PutTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        del response.data['ips'][0]['equipments'][0]['virtual_interface']
-
         eqpt_id = response.data['ips'][0]['equipments'][0]['equipment']
         response.data['ips'][0]['equipments'][0]['equipment'] = \
             {'id': eqpt_id}
@@ -113,8 +111,6 @@ class IPv6PutTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        del response.data['ips'][0]['equipments'][0]['virtual_interface']
-
         eqpt_id = response.data['ips'][0]['equipments'][0]['equipment']
         response.data['ips'][0]['equipments'][0]['equipment'] = \
             {'id': eqpt_id}
@@ -171,33 +167,3 @@ class IPv6PutTestCase(NetworkApiTestCase):
 
         self.compare_values('fc00:0000:0000:0004:0000:0000:0000:0001',
                             response.data['ips'][0]['ip_formated'])
-
-    def test_try_update_ip_change_associations_to_eqpts_and_virt_interfaces(self):
-        """V4 Tests if NAPI can update IPv6 changing existing associations
-           to Equipments and Virtual Interfaces.
-        """
-
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/put/' \
-                    'ipv6_put_2_net_5_two_eqpts_and_virt_interface.json'
-
-        response = self.client.put(
-            '/api/v4/ipv6/2/',
-            data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        # API will return success but network will not be changed
-        self.compare_status(200, response.status_code)
-
-        # Does get request
-        url = prepare_url('/api/v4/ipv6/2/', include=['equipments'])
-        response = self.client.get(
-            url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/' \
-                    'ipv6_updated_with_eqpts_and_virtual_interface.json'
-        self.compare_json(name_file, response.data)

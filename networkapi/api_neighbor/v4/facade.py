@@ -7,21 +7,18 @@ from networkapi.plugins.factory import PluginFactory
 from networkapi.infrastructure.ipaddr import IPAddress
 
 from networkapi.api_vrf.models import Vrf
-from networkapi.api_as.models import As
-from networkapi.api_virtual_interface.models import VirtualInterface
-from networkapi.api_virtual_interface.v4.serializers import \
-    VirtualInterfaceV4Serializer
-from networkapi.api_neighbor.models import Neighbor
+from networkapi.api_asn.models import Asn
+from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.v4 import exceptions
 from networkapi.api_neighbor.v4.exceptions import NeighborErrorV4
-from networkapi.api_neighbor.v4.exceptions import NeighborNotFoundError
+from networkapi.api_neighbor.v4.exceptions import NeighborV4NotFoundError
 from networkapi.api_neighbor.v4.exceptions import NeighborError
 from networkapi.api_neighbor.v4.exceptions import NeighborAlreadyCreated
 from networkapi.api_neighbor.v4.exceptions import NeighborNotCreated
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
-from networkapi.api_as.v4.serializers import AsV4Serializer
+from networkapi.api_asn.v4.serializers import AsnV4Serializer
 from networkapi.api_vrf.serializers import VrfV3Serializer
 
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
@@ -128,19 +125,6 @@ def delete_neighbor(neighbor_ids):
         except Exception, e:
             raise NetworkAPIException(str(e))
 
-
-def get_equipment(id_, remote_ip):
-
-    version_ip = IPAddress(remote_ip).version
-
-    if version_ip == 4:
-        return Equipamento.objects.get(
-            ipequipamento__virtual_interface__neighbor=id_)
-    else:
-        return Equipamento.objects.get(
-            ipv6equipament__virtual_interface__neighbor=id_)
-
-
 @commit_on_success
 def deploy_neighbors(neighbors):
 
@@ -153,30 +137,14 @@ def deploy_neighbors(neighbors):
 
         remote_ip = neighbor['remote_ip']
         try:
-
-            equipment = get_equipment(id_, remote_ip)
-
-            plugin = PluginFactory.factory(equipment)
-
-            asn = As.objects.get(asequipment__equipment=equipment.id)
-            vrf = Vrf.objects.get(virtualinterface__id=
-                                     neighbor['virtual_interface'])
-            virtual_interface = VirtualInterface.get_by_pk(
-                neighbor['virtual_interface'])
-
-            asn = AsV4Serializer(asn).data
-            vrf = VrfV3Serializer(vrf).data
-            virtual_interface = VirtualInterfaceV4Serializer(
-                virtual_interface).data
-
-            plugin.bgp(neighbor, virtual_interface, asn, vrf).deploy_neighbor()
+            pass
 
         except Exception as e:
             raise NetworkAPIException(e.message)
 
         deployed_ids.append(id_)
 
-    neighbors_obj = Neighbor.objects.filter(id__in=deployed_ids)
+    neighbors_obj = NeighborV4.objects.filter(id__in=deployed_ids)
     neighbors_obj.update(created=True)
 
 
@@ -192,29 +160,12 @@ def undeploy_neighbors(neighbors):
 
         remote_ip = neighbor['remote_ip']
         try:
-
-            equipment = get_equipment(id_, remote_ip)
-
-            plugin = PluginFactory.factory(equipment)
-
-            asn = As.objects.get(asequipment__equipment=equipment.id)
-            vrf = Vrf.objects.get(virtualinterface__id=
-                                     neighbor['virtual_interface'])
-            virtual_interface = VirtualInterface.get_by_pk(
-                neighbor['virtual_interface'])
-
-            asn = AsV4Serializer(asn).data
-            vrf = VrfV3Serializer(vrf).data
-            virtual_interface = VirtualInterfaceV4Serializer(
-                virtual_interface).data
-
-            plugin.bgp(neighbor, virtual_interface, asn, vrf).\
-                undeploy_neighbor()
+            pass
 
         except Exception as e:
             raise NetworkAPIException(e.message)
 
         undeployed_ids.append(id_)
 
-    neighbors_obj = Neighbor.objects.filter(id__in=undeployed_ids)
+    neighbors_obj = NeighborV4.objects.filter(id__in=undeployed_ids)
     neighbors_obj.update(created=False)

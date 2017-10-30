@@ -103,16 +103,7 @@
                 "name": "Group of VM"
               }
             ],
-            "id_as": null
-          },
-          "virtual_interface": {
-            "id": 1,
-            "name": "VIRTUAL-INTERFACE-1",
-            "vrf": {
-              "id": 1,
-              "internal_name": "default",
-              "vrf": "default"
-            }
+            "asn": null
           }
         },
         {
@@ -155,9 +146,8 @@
               }
             ],
             "groups": [],
-            "id_as": null
-          },
-          "virtual_interface": null
+            "asn": null
+          }
         }
       ]
     }
