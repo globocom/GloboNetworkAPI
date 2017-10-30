@@ -1,0 +1,52 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+DROP TABLE IF EXISTS `neighbor`;
+DROP TABLE IF EXISTS `virtual_interface`;
+
+"""
+
+SQL_DOWN = u"""
+
+CREATE TABLE IF NOT EXISTS `virtual_interface` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `name` VARCHAR(45) NULL COMMENT '',
+  PRIMARY KEY (`id`));
+
+CREATE TABLE IF NOT EXISTS `neighbor` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `remote_as` VARCHAR(45) NULL COMMENT '',
+  `remote_ip` VARCHAR(45) NULL COMMENT '',
+  `id_virtual_interface` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `password` VARCHAR(45) NULL COMMENT '',
+  `maximum_hops` VARCHAR(45) NULL COMMENT '',
+  `timer_keepalive` VARCHAR(45) NULL DEFAULT '30' COMMENT '',
+  `timer_timeout` VARCHAR(45) NULL DEFAULT '180' COMMENT '',
+  `description` VARCHAR(45) NULL COMMENT '',
+  `soft_reconfiguration` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '',
+  `community` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '',
+  `remove_private_as` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '',
+  `next_hop_self` TINYINT(1) NOT NULL COMMENT '',
+  `kind` ENUM('E', 'I') NOT NULL DEFAULT 'I' COMMENT '',
+  `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_neighbor_id_virtual_interface_idx` (`id_virtual_interface` ASC),
+  CONSTRAINT `fk_neighbor_id_virtual_interface`
+    FOREIGN KEY (`id_virtual_interface`)
+    REFERENCES `virtual_interface` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+ALTER TABLE `virtual_interface`
+ADD COLUMN `id_vrf` INT(10) UNSIGNED NOT NULL,
+ADD INDEX `fk_virtual_interface_id_vrf_idx` (`id_vrf` ASC);
+
+ALTER TABLE `virtual_interface`
+ADD CONSTRAINT `fk_virtual_interface_id_vrf`
+  FOREIGN KEY (`id_vrf`)
+  REFERENCES `vrf` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+
+"""

@@ -1,0 +1,42 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `ips_dos_equipamentos`
+DROP FOREIGN KEY  `fk_ips_dos_equipamentos_virtual_interface1`;
+
+ALTER TABLE `ips_dos_equipamentos`
+DROP COLUMN  `id_virtual_interface`;
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+DROP FOREIGN KEY  `fk_ipsv6_dos_equipamentos_virtual_interface1`;
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+DROP COLUMN  `id_virtual_interface`;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `ips_dos_equipamentos`
+ADD COLUMN `id_virtual_interface` INT UNSIGNED NULL AFTER `id_equip`,
+ADD INDEX `fk_ips_dos_equipamentos_virtual_interface1_idx` (`id_virtual_interface` ASC);
+
+ALTER TABLE `ips_dos_equipamentos`
+ADD CONSTRAINT `fk_ips_dos_equipamentos_virtual_interface1`
+  FOREIGN KEY (`id_virtual_interface`)
+  REFERENCES `virtual_interface` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+ADD COLUMN `id_virtual_interface` INT UNSIGNED NULL AFTER `id_equip`,
+ADD INDEX `fk_ipsv6_dos_equipamentos_virtual_interface1_idx` (`id_virtual_interface` ASC);
+
+ALTER TABLE `ipsv6_dos_equipamentos`
+ADD CONSTRAINT `fk_ipsv6_dos_equipamentos_virtual_interface1`
+  FOREIGN KEY (`id_virtual_interface`)
+  REFERENCES `virtual_interface` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+"""

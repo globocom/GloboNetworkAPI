@@ -1,0 +1,173 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+CREATE TABLE `route_map` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `name` VARCHAR(45) NOT NULL COMMENT '',
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `peer_group` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `name` VARCHAR(45) NOT NULL COMMENT '',
+  `id_route_map_in` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_route_map_out` INT(10) UNSIGNED NOT NULL COMMENT '',
+  INDEX `fk_peer_group_id_route_map_in_idx` (`id_route_map_in` ASC),
+  CONSTRAINT `fk_peer_group_id_route_map_in`
+    FOREIGN KEY (`id_route_map_in`)
+    REFERENCES `route_map` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_peer_group_id_route_map_out_idx` (`id_route_map_out` ASC),
+  CONSTRAINT `fk_peer_group_id_route_map_out`
+    FOREIGN KEY (`id_route_map_out`)
+    REFERENCES `route_map` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `list_config_bgp` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `name` VARCHAR(100) NOT NULL COMMENT '',
+  `type` ENUM('P', 'A', 'C') NOT NULL DEFAULT 'P' COMMENT '',
+  `config` LONGTEXT NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `route_map_entry` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `action` ENUM('P', 'D') NOT NULL DEFAULT 'D' COMMENT '',
+  `action-reconfig` LONGTEXT NULL COMMENT '',
+  `order` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_list_config_bgp` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_route_map` INT(10) UNSIGNED NOT NULL COMMENT '',
+  INDEX `fk_route_map_entry_id_list_config_bgp_idx` (`id_list_config_bgp` ASC),
+  CONSTRAINT `fk_route_map_entry_id_list_config_bgp`
+    FOREIGN KEY (`id_list_config_bgp`)
+    REFERENCES `list_config_bgp` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_route_map_entry_id_route_map_idx` (`id_route_map` ASC),
+  CONSTRAINT `fk_route_map_entry_id_route_map`
+    FOREIGN KEY (`id_route_map`)
+    REFERENCES `route_map` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `neighbor_v4` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_local_asn` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_remote_asn` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_local_ip` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_remote_ip` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_peer_group` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `virtual_interface` VARCHAR(45) NULL COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_neighbor_v4_id_local_asn_idx` (`id_local_asn` ASC),
+  CONSTRAINT `fk_neighbor_v4_id_local_asn`
+    FOREIGN KEY (`id_local_asn`)
+    REFERENCES `asn` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v4_id_remote_asn_idx` (`id_remote_asn` ASC),
+  CONSTRAINT `fk_neighbor_v4_id_remote_asn`
+    FOREIGN KEY (`id_remote_asn`)
+    REFERENCES `asn` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v4_id_local_ip_idx` (`id_local_ip` ASC),
+  CONSTRAINT `fk_neighbor_v4_id_local_ip`
+    FOREIGN KEY (`id_local_ip`)
+    REFERENCES `ips` (`id_ip`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v4_id_remote_ip_idx` (`id_remote_ip` ASC),
+  CONSTRAINT `fk_neighbor_v4_id_remote_ip`
+    FOREIGN KEY (`id_remote_ip`)
+    REFERENCES `ips` (`id_ip`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v4_id_peer_group_idx` (`id_peer_group` ASC),
+  CONSTRAINT `fk_neighbor_v4_id_peer_group`
+    FOREIGN KEY (`id_peer_group`)
+    REFERENCES `peer_group` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+);
+
+CREATE TABLE `neighbor_v6` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_local_asn` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_remote_asn` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_local_ip` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_remote_ip` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_peer_group` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `virtual_interface` VARCHAR(45) NULL COMMENT '',
+  PRIMARY KEY (`id`),
+  INDEX `fk_neighbor_v6_id_local_asn_idx` (`id_local_asn` ASC),
+  CONSTRAINT `fk_neighbor_v6_id_local_asn`
+    FOREIGN KEY (`id_local_asn`)
+    REFERENCES `asn` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v6_id_remote_asn_idx` (`id_remote_asn` ASC),
+  CONSTRAINT `fk_neighbor_v6_id_remote_asn`
+    FOREIGN KEY (`id_remote_asn`)
+    REFERENCES `asn` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v6_id_local_ip_idx` (`id_local_ip` ASC),
+  CONSTRAINT `fk_neighbor_v6_id_local_ip`
+    FOREIGN KEY (`id_local_ip`)
+    REFERENCES `ipsv6` (`id_ipv6`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v6_id_remote_ip_idx` (`id_remote_ip` ASC),
+  CONSTRAINT `fk_neighbor_v6_id_remote_ip`
+    FOREIGN KEY (`id_remote_ip`)
+    REFERENCES `ipsv6` (`id_ipv6`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_neighbor_v6_id_peer_group_idx` (`id_peer_group` ASC),
+  CONSTRAINT `fk_neighbor_v6_id_peer_group`
+    FOREIGN KEY (`id_peer_group`)
+    REFERENCES `peer_group` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+);
+
+CREATE TABLE `environment_peer_group` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
+  `id_environment` INT(10) UNSIGNED NOT NULL COMMENT '',
+  `id_peer_group` INT(10) UNSIGNED NOT NULL COMMENT '',
+  INDEX `fk_environment_peer_group_id_environment_idx` (`id_environment` ASC),
+  CONSTRAINT `fk_environment_peer_group_id_environment`
+    FOREIGN KEY (`id_environment`)
+    REFERENCES `ambiente` (`id_ambiente`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  INDEX `fk_environment_peer_group_id_peer_group_idx` (`id_peer_group` ASC),
+  CONSTRAINT `fk_environment_peer_group_id_peer_group`
+    FOREIGN KEY (`id_peer_group`)
+    REFERENCES `peer_group` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  PRIMARY KEY (`id`)
+);
+
+"""
+
+SQL_DOWN = u"""
+
+DROP TABLE `environment_peer_group`;
+DROP TABLE `neighbor_v6`;
+DROP TABLE `neighbor_v4`;
+DROP TABLE `route_map_entry`;
+DROP TABLE `list_config_bgp`;
+DROP TABLE `peer_group`;
+DROP TABLE `route_map`;
+
+"""
