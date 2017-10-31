@@ -152,6 +152,9 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['equipments'][0]['id']
 
+        for ip in data['equipments'][0]['ipsv4']:
+            del ip['id']
+
         name_file = self.json_path % 'get/basic/equip_with_ipsv4_1;2.json'
         self.compare_json(name_file, data)
 
@@ -181,6 +184,9 @@ class EquipmentPostSuccessTestCase(NetworkApiTestCase):
 
         data = response.data
         del data['equipments'][0]['id']
+
+        for ip in data['equipments'][0]['ipsv6']:
+            del ip['id']
 
         name_file = self.json_path % 'get/basic/equip_with_ipsv6_1;2.json'
         self.compare_json(name_file, data)
@@ -308,5 +314,5 @@ class EquipmentPostErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
         self.compare_values(
-            u'AS 1000 do not exist.',
+            u'ASN 1000 do not exist.',
             response.data['detail'])

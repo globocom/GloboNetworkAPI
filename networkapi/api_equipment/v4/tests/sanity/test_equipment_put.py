@@ -229,6 +229,10 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
+        for equipment in data['equipments']:
+            for ip in equipment['ipsv4']:
+                del ip['id']
+
         name_file = self.json_path % 'get/basic/equip_with_ipsv4_2;3.json'
 
         self.compare_json(name_file, data)
@@ -255,6 +259,10 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         data = response.data
 
         self.compare_status(200, response.status_code)
+
+        for equipment in data['equipments']:
+            for ip in equipment['ipsv6']:
+                del ip['id']
 
         name_file = self.json_path % 'get/basic/equip_with_ipsv6_2;3.json'
 
@@ -387,7 +395,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
         self.compare_values(
-            u'AS 1000 do not exist.',
+            u'ASN 1000 do not exist.',
             response.data['detail'])
 
 

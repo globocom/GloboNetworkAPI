@@ -11,6 +11,7 @@
       "asn": null,
       "ipsv4": [
         {
+          "id": 1,
           "ip": {
             "description": "IP",
             "id": 1,
@@ -60,6 +61,7 @@
           }
         },
         {
+          "id": 2,
           "ip": {
             "description": "IP",
             "id": 2,
@@ -111,6 +113,7 @@
       ],
       "ipsv6": [
         {
+          "id": 1,
           "ip": {
             "block1": "fc00",
             "block2": "0000",
@@ -171,6 +174,7 @@
           }
         },
         {
+          "id": 2,
           "ip": {
             "block1": "fc00",
             "block2": "0000",

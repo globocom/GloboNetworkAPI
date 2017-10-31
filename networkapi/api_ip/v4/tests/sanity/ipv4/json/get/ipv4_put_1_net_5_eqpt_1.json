@@ -1,0 +1,12 @@
+{
+  "ips": [
+    {
+      "id": 1,
+      "equipments": [
+        {
+          "equipment": 1
+        }
+      ]
+    }
+  ]
+}

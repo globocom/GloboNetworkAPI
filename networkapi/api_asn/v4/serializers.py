@@ -14,8 +14,8 @@ class AsnV4Serializer(DynamicFieldsModelSerializer):
         return self.extends_serializer(obj, 'equipments')
 
     class Meta:
-        As_ = get_model('api_asn', 'As')
-        model = As_
+        Asn = get_model('api_asn', 'Asn')
+        model = Asn
 
         fields = (
             'id',
@@ -41,7 +41,7 @@ class AsnV4Serializer(DynamicFieldsModelSerializer):
             self.mapping = {
 
                 'equipments': {
-                    'serializer': AsEquipmentV4Serializer,
+                    'serializer': AsnEquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
@@ -51,7 +51,7 @@ class AsnV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments'
                 },
                 'equipments__basic': {
-                    'serializer': AsEquipmentV4Serializer,
+                    'serializer': AsnEquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
@@ -61,7 +61,7 @@ class AsnV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'equipments'
                 },
                 'equipments__details': {
-                    'serializer': AsEquipmentV4Serializer,
+                    'serializer': AsnEquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
@@ -73,14 +73,14 @@ class AsnV4Serializer(DynamicFieldsModelSerializer):
             }
 
 
-class AsEquipmentV4Serializer(DynamicFieldsModelSerializer):
+class AsnEquipmentV4Serializer(DynamicFieldsModelSerializer):
 
     asn = serializers.SerializerMethodField('get_asn')
     equipment = serializers.SerializerMethodField('get_equipment')
 
     class Meta:
-        AsEquipment = get_model('api_asn', 'AsEquipment')
-        model = AsEquipment
+        AsnEquipment = get_model('api_asn', 'AsnEquipment')
+        model = AsnEquipment
 
         fields = (
             'id',
@@ -97,7 +97,7 @@ class AsEquipmentV4Serializer(DynamicFieldsModelSerializer):
     def get_serializers(self):
 
         # serializers
-        as_slz = get_app('api_asn', module_label='v4.serializers')
+        asn_slz = get_app('api_asn', module_label='v4.serializers')
         eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
 
         if not self.mapping:
@@ -106,7 +106,7 @@ class AsEquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'asn_id'
                 },
                 'asn__details': {
-                    'serializer': as_slz.AsV4Serializer,
+                    'serializer': asn_slz.AsnV4Serializer,
                     'kwargs': {
                     },
                     'obj': 'asn'

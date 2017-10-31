@@ -38,13 +38,13 @@
           "id": {
             "type": "integer"
           },
-          "ipv4": {
+          "ipsv4": {
             "items": {
               "type": "integer"
             },
             "type": "array"
           },
-          "ipv6": {
+          "ipsv6": {
             "items": {
               "type": "integer"
             },

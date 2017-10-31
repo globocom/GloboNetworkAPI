@@ -5,7 +5,15 @@
       "equipment_type": 1,
       "maintenance": false,
       "model": 1,
-      "name": "EQUIPMENT-TEST-V3"
+      "name": "EQUIPMENT-TEST-V3",
+      "ipsv6": [
+        {
+          "ip": 2
+        },
+        {
+          "ip": 3
+        }
+      ]
     }
   ]
 }

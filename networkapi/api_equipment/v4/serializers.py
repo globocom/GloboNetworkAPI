@@ -105,6 +105,9 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                         IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
+                        'prohibited': (
+                            'equipment',
+                        )
                     },
                     'obj': 'ipv4_equipment'
                 },
@@ -113,7 +116,10 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                         IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'equipment__basic',
+                        )
                     },
                     'obj': 'ipv4_equipment',
                 },
@@ -122,7 +128,10 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                         IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'equipment__details',
+                        )
                     },
                     'obj': 'ipv4_equipment',
                 },
@@ -131,6 +140,9 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                         IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
+                        'prohibited': (
+                            'equipment',
+                        )
                     },
                     'obj': 'ipv6_equipment'
                 },
@@ -139,7 +151,10 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                         IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'equipment__basic',
+                        ),
                     },
                     'obj': 'ipv6_equipment',
                 },
@@ -148,7 +163,10 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                         IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'equipment__details',
+                        ),
                     },
                     'obj': 'ipv6_equipment',
                 },

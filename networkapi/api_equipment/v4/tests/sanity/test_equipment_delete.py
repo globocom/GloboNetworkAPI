@@ -87,7 +87,7 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'AS 4 do not exist.',
+            u'ASN 4 do not exist.',
             response.data['detail']
         )
 

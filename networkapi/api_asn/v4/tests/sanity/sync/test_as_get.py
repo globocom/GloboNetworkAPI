@@ -101,7 +101,7 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'asequipment__equipment__in': [1,2,3,4],
+                'asnequipment__equipment__in': [1,2,3,4],
             }]
         }
 
@@ -156,7 +156,7 @@ class AsGetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'AS 1000 do not exist.',
+            u'ASN 1000 do not exist.',
             response.data['detail']
         )
 
@@ -172,7 +172,7 @@ class AsGetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'AS 1000 do not exist.',
+            u'ASN 1000 do not exist.',
             response.data['detail']
         )
 
@@ -188,7 +188,7 @@ class AsGetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'AS 1000 do not exist.',
+            u'ASN 1000 do not exist.',
             response.data['detail']
         )
 

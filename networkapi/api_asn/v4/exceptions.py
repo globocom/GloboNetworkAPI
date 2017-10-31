@@ -7,7 +7,7 @@ class AsnNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'AS %s do not exist.' % (msg)
+        self.detail = u'ASN %s do not exist.' % (msg)
 
 
 class AsnError(APIException):
@@ -48,7 +48,7 @@ class AsnEquipmentNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'AS %s do not exist.' % (msg)
+        self.detail = u'ASN %s do not exist.' % (msg)
 
 
 class AsnEquipmentError(APIException):

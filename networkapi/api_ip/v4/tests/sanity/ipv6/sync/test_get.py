@@ -9,7 +9,7 @@ from networkapi.util.geral import prepare_url
 log = logging.getLogger(__name__)
 
 
-class IPv6GetTestCase(NetworkApiTestCase):
+class IPv6GetTestCaseV4(NetworkApiTestCase):
     maxDiff = None
 
     fixtures = [
@@ -21,13 +21,12 @@ class IPv6GetTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_ip/v4/fixtures/initial_base.json',
-        'networkapi/api_ip/v4/fixtures/initial_base_v6.json',
+        'networkapi/api_ip/fixtures/initial_base.json',
+        'networkapi/api_ip/fixtures/initial_base_v6.json',
     ]
 
     def setUp(self):
         self.client = Client()
-        self.authorization = self.get_http_authorization('test')
 
     def tearDown(self):
         pass
@@ -35,13 +34,13 @@ class IPv6GetTestCase(NetworkApiTestCase):
     def test_try_get_existent_ipv6_by_id(self):
         """V4 Tests if NAPI can return an existing IPv6 by id."""
 
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/ipv6_1_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv6/json/get/ipv6_1_net_5.json'
 
         # Does get request
         response = self.client.get(
             '/api/v4/ipv6/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
@@ -55,7 +54,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1000/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -67,13 +66,13 @@ class IPv6GetTestCase(NetworkApiTestCase):
     def test_try_get_two_existent_ipv6_by_id(self):
         """V4 Tests if NAPI can return two existent IPv6's by ids."""
 
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/ipv6_1_2_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv6/json/get/ipv6_1_2_net_5.json'
 
         # Does get request
         response = self.client.get(
             '/api/v4/ipv6/1;2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
@@ -87,7 +86,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1000;1001/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -104,7 +103,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1;1001/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
         self.compare_values(
@@ -140,7 +139,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             url,
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
@@ -187,7 +186,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             url,
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
@@ -226,22 +225,7 @@ class IPv6GetTestCase(NetworkApiTestCase):
         response = self.client.get(
             url,
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
         self.compare_values(0, response.data['total'])
-
-    def test_get_ipv6_by_kind_details(self):
-        """V4 Test of success to get IPv6 with kind details."""
-
-        name_file = 'api_ip/v4/tests/sanity/ipv6/json/get/' \
-                    'details/pk_6.json'
-
-        response = self.client.get(
-            '/api/v4/ipv6/6/?kind=details',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(200, response.status_code)
-
-        self.compare_json(name_file, response.data)

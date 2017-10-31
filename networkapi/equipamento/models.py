@@ -996,11 +996,11 @@ class Equipamento(BaseModel):
 
         # ipv4
         for ip_equipment in self.ipequipamento_set.all():
-            ip_equipment.delete_v4()
+            ip_equipment.delete_v3()
 
         # ipv6
         for ip_v6_equipment in self.ipv6equipament_set.all():
-            ip_v6_equipment.delete_v4()
+            ip_v6_equipment.delete_v3()
 
         for equipment_access in self.equipamentoacesso_set.all():
             equipment_access.delete()
@@ -1060,7 +1060,7 @@ class Equipamento(BaseModel):
 
             # ipv4s
             ipeqpt_model = get_model('ip', 'IpEquipamento')
-            for ipv4 in equipment.get('ipv4', []):
+            for ipv4 in equipment.get('ipsv4', []):
                 ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv4
@@ -1068,14 +1068,14 @@ class Equipamento(BaseModel):
 
             # ipv6s
             ipeqpt_model = get_model('ip', 'Ipv6Equipament')
-            for ipv6 in equipment.get('ipv6', []):
+            for ipv6 in equipment.get('ipsv6', []):
                 ipeqpt_model().create_v3({
                     'equipment': self.id,
                     'ip': ipv6
                 })
 
             # as
-            asneqpt_model = get_model('api_asn', 'AsEquipment')
+            asneqpt_model = get_model('api_asn', 'AsnEquipment')
             if equipment.get('asn'):
                 asneqpt_model().create_v4({
                     'equipment': self.id,
@@ -1165,11 +1165,11 @@ class Equipamento(BaseModel):
                 env_db.filter(ambiente__in=env_db_ids_old).delete()
 
             # ipv4s
-            if equipment.get('ipv4'):
+            if equipment.get('ipsv4'):
                 ipeqpt_model = get_model('ip', 'IpEquipamento')
                 ips_db = ipeqpt_model.list_by_equip(self.id)
                 ips_db_ids = ips_db.values_list('ip', flat=True)
-                ipv4_ids = equipment.get('ipv4')
+                ipv4_ids = equipment.get('ipsv4')
 
                 for ipv4 in ipv4_ids:
                     # insert new relashionship with ipv4
@@ -1184,11 +1184,11 @@ class Equipamento(BaseModel):
                 ips_db.filter(ip__in=ips_db_ids_old).delete()
 
             # ipv6s
-            if equipment.get('ipv6'):
+            if equipment.get('ipsv6'):
                 ipeqpt_model = get_model('ip', 'Ipv6Equipament')
                 ipv6s_db = ipeqpt_model.list_by_equip(self.id)
                 ipv6s_db_ids = ipv6s_db.values_list('ip', flat=True)
-                ipv6_ids = equipment.get('ipv6')
+                ipv6_ids = equipment.get('ipsv6')
 
                 for ipv6 in ipv6_ids:
                     # insert new relashionship with ipv6
@@ -1204,13 +1204,13 @@ class Equipamento(BaseModel):
 
             # asn
             if equipment.get('asn'):
-                asneqpt_model = get_model('api_asn', 'AsEquipment')
+                asneqpt_model = get_model('api_asn', 'AsnEquipment')
 
-                # delete old AsEquipment association
+                # delete old AsnEquipment association
                 for asneqpt in self.asnequipment_set.all():
                     asneqpt.delete()
 
-                # create new AsEquipment association
+                # create new AsnEquipment association
                 asneqpt_model().create_v4({
                     'equipment': self.id,
                     'asn': equipment.get('asn')

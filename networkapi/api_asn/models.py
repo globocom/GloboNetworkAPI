@@ -147,7 +147,7 @@ class AsnEquipment(BaseModel):
         try:
             return AsnEquipment.objects.get(id=id)
         except ObjectDoesNotExist, e:
-            cls.log.error(u'AsEquipment not found. pk {}'.format(id))
+            cls.log.error(u'AsnEquipment not found. pk {}'.format(id))
             raise exceptions.AsnEquipmentNotFoundError(id)
         except OperationalError, e:
             cls.log.error(u'Lock wait timeout exceeded.')

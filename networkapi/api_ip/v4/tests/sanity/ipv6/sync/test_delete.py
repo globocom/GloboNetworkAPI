@@ -8,7 +8,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-class IPv6DeleteTestCase(NetworkApiTestCase):
+class IPv6DeleteTestCaseV4(NetworkApiTestCase):
 
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
@@ -22,15 +22,14 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_ip/v4/fixtures/initial_base.json',
-        'networkapi/api_ip/v4/fixtures/initial_base_v6.json',
-        'networkapi/api_ip/v4/fixtures/initial_pool.json',
-        'networkapi/api_ip/v4/fixtures/initial_vip_request_v6.json',
+        'networkapi/api_ip/fixtures/initial_base.json',
+        'networkapi/api_ip/fixtures/initial_base_v6.json',
+        'networkapi/api_ip/fixtures/initial_pool.json',
+        'networkapi/api_ip/fixtures/initial_vip_request_v6.json',
     ]
 
     def setUp(self):
         self.client = Client()
-        self.authorization = self.get_http_authorization('test')
 
     def tearDown(self):
         pass
@@ -40,7 +39,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/1/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(200, response.status_code)
@@ -49,7 +48,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -65,7 +64,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/1000/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(404, response.status_code)
@@ -82,7 +81,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/1000;1001/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(404, response.status_code)
@@ -99,7 +98,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/1;1001/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(404, response.status_code)
@@ -113,7 +112,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
@@ -124,14 +123,14 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/2/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
             '/api/v4/ipv6/2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -147,7 +146,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/1;2/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(200, response.status_code)
@@ -156,7 +155,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/1;2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -172,7 +171,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/4/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(200, response.status_code)
@@ -181,7 +180,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv6/4/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -194,7 +193,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v3/vip-request/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -210,7 +209,7 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv6/5/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(400, response.status_code)
@@ -224,6 +223,6 @@ class IPv6DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v3/vip-request/2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
