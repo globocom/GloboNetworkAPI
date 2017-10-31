@@ -6,5 +6,5 @@ from django.conf.urls import url
 
 urlpatterns = patterns(
     '',
-    url(r'^v4/', include('networkapi.api_neighbor.v4.urls')),
+    url(r'^v4/', include('networkapi.api_route_map.v4.urls')),
 )

@@ -341,6 +341,10 @@ PROJECT_APPS = (
     'networkapi.api_vip_request',
     'networkapi.api_vlan',
     'networkapi.api_vrf',
+    'networkapi.api_peer_group',
+    'networkapi.api_route_map',
+    'networkapi.api_list_config_bgp',
+    'networkapi.api_neighbor',
     'networkapi.blockrules',
     'networkapi.config',
     'networkapi.equipamento',
@@ -555,13 +559,53 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_ip/v4/specs/ipv6_put.json'
     ),
-    'neighbor_post_v4': os.path.join(
+    'neighbor_v4_post_v4': os.path.join(
         PROJECT_ROOT_PATH,
-        'api_neighbor/v4/specs/neighbor_post.json'
+        'api_neighbor/v4/specs/neighbor_v4_post.json'
     ),
-    'neighbor_put_v4': os.path.join(
+    'neighbor_v4_put_v4': os.path.join(
         PROJECT_ROOT_PATH,
-        'api_neighbor/v4/specs/neighbor_put.json'
+        'api_neighbor/v4/specs/neighbor_v4_put.json'
+    ),
+    'neighbor_v6_post_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_neighbor/v4/specs/neighbor_v6_post.json'
+    ),
+    'neighbor_v6_put_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_neighbor/v4/specs/neighbor_v6_put.json'
+    ),
+    'list_config_bgp_post_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_list_config_bgp/v4/specs/list_config_bgp_post.json'
+    ),
+    'list_config_bgp_put_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_list_config_bgp/v4/specs/list_config_bgp_put.json'
+    ),
+    'route_map_post_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_route_map/v4/specs/route_map_post.json'
+    ),
+    'route_map_put_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_route_map/v4/specs/route_map_put.json'
+    ),
+    'route_map_entry_post_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_route_map/v4/specs/route_map_entry_post.json'
+    ),
+    'route_map_entry_put_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_route_map/v4/specs/route_map_entry_put.json'
+    ),
+    'peer_group_post_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_peer_group/v4/specs/peer_group_post.json'
+    ),
+    'peer_group_put_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_peer_group/v4/specs/peer_group_put.json'
     )
 }
 
