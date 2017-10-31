@@ -38,7 +38,7 @@ CREATE TABLE `list_config_bgp` (
 CREATE TABLE `route_map_entry` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '',
   `action` ENUM('P', 'D') NOT NULL DEFAULT 'D' COMMENT '',
-  `action-reconfig` LONGTEXT NULL COMMENT '',
+  `action_reconfig` LONGTEXT NULL COMMENT '',
   `order` INT(10) UNSIGNED NOT NULL COMMENT '',
   `id_list_config_bgp` INT(10) UNSIGNED NOT NULL COMMENT '',
   `id_route_map` INT(10) UNSIGNED NOT NULL COMMENT '',
