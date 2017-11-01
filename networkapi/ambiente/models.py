@@ -881,12 +881,24 @@ class Ambiente(BaseModel):
         null=True,
         db_column = 'id_dcroom'
     )
+
     log = logging.getLogger('Ambiente')
 
     class Meta(BaseModel.Meta):
         db_table = u'ambiente'
         managed = True
         unique_together = ('grupo_l3', 'ambiente_logico', 'divisao_dc')
+
+    def _get_peer_groups(self):
+        return self.environmentpeergroup_set.all()
+
+    peer_groups = property(_get_peer_groups)
+
+    def _get_peer_groups_id(self):
+        return self.environmentpeergroup_set.all().values_list('id',
+                                                               flat=True)
+
+    peer_groups_id = property(_get_peer_groups_id)
 
     def __str__(self):
         return self.name

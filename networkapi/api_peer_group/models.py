@@ -32,6 +32,17 @@ class PeerGroup(BaseModel):
         db_column='id_route_map_out'
     )
 
+    def _get_environments(self):
+        return self.environmentpeergroup_set.all()
+
+    environments = property(_get_environments)
+
+    def _get_environments_id(self):
+        return self.environmentpeergroup_set.all().values_list('id',
+                                                               flat=True)
+
+    environments_id = property(_get_environments_id)
+
     log = logging.getLogger('PeerGroup')
 
     class Meta(BaseModel.Meta):
