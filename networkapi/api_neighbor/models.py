@@ -23,36 +23,36 @@ class NeighborV4(BaseModel):
         db_column='id'
     )
 
-    # local_asn = models.ForeignKey(
-    #     'api_asnn.Asn',
-    #     db_column='id_local_asn'
-    # )
-    #
-    # remote_asn = models.ForeignKey(
-    #     'api_asnn.Asn',
-    #     db_column='id_remote_asn'
-    # )
-    #
-    # local_ip = models.ForeignKey(
-    #     'ip.Ip',
-    #     db_column='id_local_ip'
-    # )
-    #
-    # remote_ip = models.ForeignKey(
-    #     'ip.Ip',
-    #     db_column='id_remote_ip'
-    # )
-    #
-    # peer_group = models.ForeignKey(
-    #     'api_peer_group.PeerGroup',
-    #     db_column='id_peer_group'
-    # )
-    #
-    # virtual_interface = models.CharField(
-    #     blank=False,
-    #     max_length=45,
-    #     db_column='virtual_interface'
-    # )
+    local_asn = models.ForeignKey(
+        'api_asn.Asn',
+        db_column='id_local_asn'
+    )
+
+    remote_asn = models.ForeignKey(
+        'api_asn.Asn',
+        db_column='id_remote_asn'
+    )
+
+    local_ip = models.ForeignKey(
+        'ip.Ip',
+        db_column='id_local_ip'
+    )
+
+    remote_ip = models.ForeignKey(
+        'ip.Ip',
+        db_column='id_remote_ip'
+    )
+
+    peer_group = models.ForeignKey(
+        'api_peer_group.PeerGroup',
+        db_column='id_peer_group'
+    )
+
+    virtual_interface = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='virtual_interface'
+    )
 
     log = logging.getLogger('NeighborV4')
 
@@ -80,20 +80,20 @@ class NeighborV4(BaseModel):
             raise OperationalError(
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
-            cls.log.error(u'Failure to search the Neighbor.')
-            raise exceptions.NeighborError(
-                e, u'Failure to search the Neighbor.')
+            cls.log.error(u'Failure to search the NeighborV4.')
+            raise exceptions.NeighborV4Error(
+                e, u'Failure to search the NeighborV4.')
 
     def create_v4(self):
-        """Create Neighbor."""
+        """Create NeighborV4."""
         pass
 
     def update_v4(self):
-        """Update Neighbor."""
+        """Update NeighborV4."""
         pass
 
     def delete_v4(self):
-        """Delete Neighbor.
+        """Delete NeighborV4.
         """
         pass
 
@@ -105,36 +105,36 @@ class NeighborV6(BaseModel):
         db_column='id'
     )
 
-    # local_asn = models.ForeignKey(
-    #     'api_asnn.Asn',
-    #     db_column='id_local_asn'
-    # )
-    #
-    # remote_asn = models.ForeignKey(
-    #     'api_asnn.Asn',
-    #     db_column='id_remote_asn'
-    # )
-    #
-    # local_ip = models.ForeignKey(
-    #     'ip.Ipv6',
-    #     db_column='id_local_ip'
-    # )
-    #
-    # remote_ip = models.ForeignKey(
-    #     'ip.Ipv6',
-    #     db_column='id_remote_ip'
-    # )
-    #
-    # peer_group = models.ForeignKey(
-    #     'api_peer_group.PeerGroup',
-    #     db_column='id_peer_group'
-    # )
-    #
-    # virtual_interface = models.CharField(
-    #     blank=False,
-    #     max_length=45,
-    #     db_column='virtual_interface'
-    # )
+    local_asn = models.ForeignKey(
+        'api_asn.Asn',
+        db_column='id_local_asn'
+    )
+
+    remote_asn = models.ForeignKey(
+        'api_asn.Asn',
+        db_column='id_remote_asn'
+    )
+
+    local_ip = models.ForeignKey(
+        'ip.Ipv6',
+        db_column='id_local_ip'
+    )
+
+    remote_ip = models.ForeignKey(
+        'ip.Ipv6',
+        db_column='id_remote_ip'
+    )
+
+    peer_group = models.ForeignKey(
+        'api_peer_group.PeerGroup',
+        db_column='id_peer_group'
+    )
+
+    virtual_interface = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='virtual_interface'
+    )
 
     log = logging.getLogger('NeighborV6')
 
@@ -162,19 +162,19 @@ class NeighborV6(BaseModel):
             raise OperationalError(
                 e, u'Lock wait timeout exceeded; try restarting transaction')
         except Exception, e:
-            cls.log.error(u'Failure to search the Neighbor.')
-            raise exceptions.NeighborError(
-                e, u'Failure to search the Neighbor.')
+            cls.log.error(u'Failure to search the NeighborV6.')
+            raise exceptions.NeighborV6Error(
+                e, u'Failure to search the NeighborV6.')
 
     def create_v4(self):
-        """Create Neighbor."""
+        """Create NeighborV6."""
         pass
 
     def update_v4(self):
-        """Update Neighbor."""
+        """Update NeighborV6."""
         pass
 
     def delete_v4(self):
-        """Delete Neighbor.
+        """Delete NeighborV6.
         """
         pass
