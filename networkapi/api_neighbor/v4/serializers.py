@@ -64,12 +64,14 @@ class NeighborV4V4Serializer(DynamicFieldsModelSerializer):
                 'local_asn__basic': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'local_asn'
                 },
                 'local_asn__details': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'local_asn'
                 },
@@ -79,12 +81,14 @@ class NeighborV4V4Serializer(DynamicFieldsModelSerializer):
                 'remote_asn__basic': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'remote_asn'
                 },
                 'remote_asn__details': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'remote_asn'
                 },
@@ -94,12 +98,14 @@ class NeighborV4V4Serializer(DynamicFieldsModelSerializer):
                 'local_ip__basic': {
                     'serializer': ip_slzs.IPv4V4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'local_ip'
                 },
                 'local_ip__details': {
                     'serializer': ip_slzs.IPv4V4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'local_ip'
                 },
@@ -109,12 +115,14 @@ class NeighborV4V4Serializer(DynamicFieldsModelSerializer):
                 'remote_ip__basic': {
                     'serializer': ip_slzs.IPv4V4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'remote_ip'
                 },
                 'remote_ip__details': {
                     'serializer': ip_slzs.IPv4V4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'remote_ip'
                 },
@@ -124,12 +132,14 @@ class NeighborV4V4Serializer(DynamicFieldsModelSerializer):
                 'peer_group__basic': {
                     'serializer': prg_slzs.PeerGroupV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'peer_group'
                 },
                 'peer_group__details': {
                     'serializer': prg_slzs.PeerGroupV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'peer_group'
                 },
@@ -192,12 +202,14 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
                 'local_asn__basic': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'local_asn'
                 },
                 'local_asn__details': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'local_asn'
                 },
@@ -207,12 +219,14 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
                 'remote_asn__basic': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'remote_asn'
                 },
                 'remote_asn__details': {
                     'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'remote_asn'
                 },
@@ -222,12 +236,14 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
                 'local_ip__basic': {
                     'serializer': ip_slzs.IPv6V4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'local_ip'
                 },
                 'local_ip__details': {
                     'serializer': ip_slzs.IPv6V4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'local_ip'
                 },
@@ -237,12 +253,14 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
                 'remote_ip__basic': {
                     'serializer': ip_slzs.IPv6V4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'remote_ip'
                 },
                 'remote_ip__details': {
                     'serializer': ip_slzs.IPv6V4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'remote_ip'
                 },
@@ -252,12 +270,14 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
                 'peer_group__basic': {
                     'serializer': prg_slzs.PeerGroupV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'peer_group'
                 },
                 'peer_group__details': {
                     'serializer': prg_slzs.PeerGroupV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'peer_group'
                 },

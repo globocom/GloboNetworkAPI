@@ -15,6 +15,11 @@ SET @id_virtual_interface_management_perm := (SELECT `id_permission` FROM `permi
 SET @id_neighbor_create_script_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'neighbor_create_script');
 SET @id_neighbor_remove_script_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'neighbor_remove_script');
 
+SET @id_list_config_bgp_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'list_config_bgp_management');
+SET @id_peer_group_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'peer_group_management');
+SET @id_route_map_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'route_map_management');
+
+
 INSERT INTO
    `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max)
 VALUES
@@ -1576,6 +1581,30 @@ VALUES
 ,
    (
       44, 1, 1, 2, @id_neighbor_remove_script_perm
+   )
+,
+   (
+      45, 1, 1, 1, @id_list_config_bgp_management_perm
+   )
+,
+   (
+      46, 1, 1, 2, @id_list_config_bgp_management_perm
+   )
+,
+   (
+      47, 1, 1, 1, @id_peer_group_management_perm
+   )
+,
+   (
+      48, 1, 1, 2, @id_peer_group_management_perm
+   )
+,
+   (
+      49, 1, 1, 1, @id_route_map_management_perm
+   )
+,
+   (
+      50, 1, 1, 2, @id_route_map_management_perm
    )
 ;
 

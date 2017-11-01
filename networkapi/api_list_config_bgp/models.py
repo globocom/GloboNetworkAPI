@@ -46,6 +46,17 @@ class ListConfigBGP(BaseModel):
         db_table = u'list_config_bgp'
         managed = True
 
+    def _get_route_map_entries(self):
+        return self.routemapentry_set.all()
+
+    route_map_entries = property(_get_route_map_entries)
+
+    def _get_route_map_entries_id(self):
+        return self.routemapentry_set.all().values_list('id',
+                                                        flat=True)
+
+    route_map_entries_id = property(_get_route_map_entries_id)
+
     @classmethod
     def get_by_pk(cls, id):
         """Get ListConfigBGP by id.

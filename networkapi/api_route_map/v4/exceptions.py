@@ -17,6 +17,11 @@ class RouteMapError(APIException):
         self.detail = msg
 
 
+class RouteMapDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = u'RouteMap does not exists.'
+
+
 class RouteMapEntryNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
@@ -31,7 +36,7 @@ class RouteMapEntryError(APIException):
         self.detail = msg
 
 
-class RouteMapDoesNotExistException(APIException):
+class RouteMapEntryDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = u'RouteMap does not exists.'
+    default_detail = u'RouteMapEntry does not exists.'
 

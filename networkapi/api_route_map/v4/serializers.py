@@ -72,12 +72,14 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
                 'list_config_bgp__basic': {
                     'serializer': lcb_slzs.ListConfigBGPV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'list_config_bgp'
                 },
                 'list_config_bgp__details': {
                     'serializer': lcb_slzs.ListConfigBGPV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'list_config_bgp'
                 },
@@ -87,12 +89,14 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
                 'route_map__basic': {
                     'serializer': RouteMapV4Serializer,
                     'kwargs': {
+                        'kind': 'basic'
                     },
                     'obj': 'route_map'
                 },
                 'route_map__details': {
                     'serializer': RouteMapV4Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'route_map'
                 }
