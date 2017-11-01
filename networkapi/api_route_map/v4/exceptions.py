@@ -30,3 +30,8 @@ class RouteMapEntryError(APIException):
     def __init__(self, msg):
         self.detail = msg
 
+
+class RouteMapDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = u'RouteMap does not exists.'
+

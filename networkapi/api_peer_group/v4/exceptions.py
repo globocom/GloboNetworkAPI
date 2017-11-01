@@ -29,4 +29,8 @@ class EnvironmentPeerGroupError(APIException):
 
     def __init__(self, msg):
         self.detail = msg
-
+        
+        
+class PeerGroupDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = u'PeerGroup does not exists.'

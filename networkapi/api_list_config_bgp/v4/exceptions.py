@@ -15,3 +15,8 @@ class ListConfigBGPError(APIException):
 
     def __init__(self, msg):
         self.detail = msg
+        
+
+class ListConfigBGPDoesNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = u'ListConfigBGP does not exists.'

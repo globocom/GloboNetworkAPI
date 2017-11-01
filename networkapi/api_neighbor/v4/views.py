@@ -2,9 +2,7 @@
 # Create your views here.
 from networkapi.api_rest.exceptions import ValidationAPIException
 from django.db.transaction import commit_on_success
-
-from networkapi.api_neighbor.v4.exceptions import NeighborAlreadyCreated
-from networkapi.api_neighbor.v4.exceptions import NeighborNotCreated
+from networkapi.api_neighbor.v4 import exceptions
 from networkapi.util.geral import destroy_lock
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.distributedlock import LOCK_NEIGHBOR
@@ -17,7 +15,6 @@ from networkapi.api_neighbor.v4 import serializers
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
-from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
@@ -38,7 +35,7 @@ class NeighborV4DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """Returns a list of Neighbor V4's by ids ou dict."""
+        """Returns a list of NeighborV4's by ids ou dict."""
 
         if not kwargs.get('obj_ids'):
             obj_model = facade.get_neighbor_v4_by_search(self.search)
@@ -76,7 +73,7 @@ class NeighborV4DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """Create new Neighbor V4."""
+        """Create new NeighborV4."""
 
         objects = request.DATA
         json_validate(SPECS.get('neighbor_v4_post_v4')).validate(objects)
@@ -93,7 +90,7 @@ class NeighborV4DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """Update Neighbor V4."""
+        """Update NeighborV4."""
 
         objects = request.DATA
         json_validate(SPECS.get('neighbor_v4_put_v4')).validate(objects)
@@ -112,7 +109,7 @@ class NeighborV4DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """Delete Neighbor V4."""
+        """Delete NeighborV4."""
 
         obj_ids = kwargs['obj_ids'].split(';')
         facade.delete_neighbor_v4(obj_ids)
@@ -127,7 +124,7 @@ class NeighborV6DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """Returns a list of Neighbor V6's by ids ou dict."""
+        """Returns a list of NeighborV6's by ids ou dict."""
 
         if not kwargs.get('obj_ids'):
             obj_model = facade.get_neighbor_v6_by_search(self.search)
@@ -165,7 +162,7 @@ class NeighborV6DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """Create new Neighbor V6."""
+        """Create new NeighborV6."""
 
         objects = request.DATA
         json_validate(SPECS.get('neighbor_v6_post_v4')).validate(objects)
@@ -182,7 +179,7 @@ class NeighborV6DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """Update Neighbor V6."""
+        """Update NeighborV6."""
 
         objects = request.DATA
         json_validate(SPECS.get('neighbor_v6_put_v4')).validate(objects)
@@ -201,7 +198,7 @@ class NeighborV6DBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """Delete Neighbor V6."""
+        """Delete NeighborV6."""
 
         obj_ids = kwargs['obj_ids'].split(';')
         facade.delete_neighbor_v6(obj_ids)
@@ -216,7 +213,7 @@ class NeighborV4DeployView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
     def post(self, request, *args, **kwargs):
         """
-        Creates list of neighbor in equipments
+        Creates list of NeighborV4 in equipments
         :url /api/v4/neighborv4/deploy/<neighbor_ids>/
         :param neighbor_ids=<neighbor_ids>
         """
@@ -228,8 +225,8 @@ class NeighborV4DeployView(CustomAPIView):
 
         locks_list = create_lock(serializer.data, LOCK_NEIGHBOR)
         try:
-            response = facade.deploy_neighbors(serializer.data)
-        except NeighborAlreadyCreated as e:
+            response = facade.deploy_neighbors_v4(serializer.data)
+        except exceptions.NeighborV4AlreadyCreated as e:
             raise ValidationAPIException(str(e))
         except Exception, exception:
             log.error(exception)
@@ -244,7 +241,7 @@ class NeighborV4DeployView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
     def delete(self, request, *args, **kwargs):
         """
-        Deletes list of neighbor in equipments
+        Deletes list of NeighborV4 in equipments
         :url /api/v4/neighborv4/deploy/<neighbor_ids>/
         :param neighbor_ids=<neighbor_ids>
         """
@@ -257,8 +254,8 @@ class NeighborV4DeployView(CustomAPIView):
         locks_list = create_lock(serializer.data, LOCK_NEIGHBOR)
 
         try:
-            response = facade.undeploy_neighbors(serializer.data)
-        except NeighborNotCreated as e:
+            response = facade.undeploy_neighbors_v4(serializer.data)
+        except exceptions.NeighborV4NotCreated as e:
             raise ValidationAPIException(str(e))
         except Exception, exception:
             log.error(exception)
@@ -276,7 +273,7 @@ class NeighborV6DeployView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
     def post(self, request, *args, **kwargs):
         """
-        Creates list of neighbor in equipments
+        Creates list of NeighborV6 in equipments
         :url /api/v4/neighborv6/deploy/<neighbor_ids>/
         :param neighbor_ids=<neighbor_ids>
         """
@@ -289,8 +286,8 @@ class NeighborV6DeployView(CustomAPIView):
         locks_list = create_lock(serializer.data, LOCK_NEIGHBOR)
 
         try:
-            response = facade.deploy_neighbors(serializer.data)
-        except NeighborAlreadyCreated as e:
+            response = facade.deploy_neighbors_v6(serializer.data)
+        except exceptions.NeighborV6AlreadyCreated as e:
             raise ValidationAPIException(str(e))
         except Exception, exception:
             log.error(exception)
@@ -305,7 +302,7 @@ class NeighborV6DeployView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
     def delete(self, request, *args, **kwargs):
         """
-        Deletes list of neighbor in equipments
+        Deletes list of NeighborV6 in equipments
         :url /api/v4/neighborv6/deploy/<neighbor_ids>/
         :param neighbor_ids=<neighbor_ids>
         """
@@ -318,8 +315,8 @@ class NeighborV6DeployView(CustomAPIView):
         locks_list = create_lock(serializer.data, LOCK_NEIGHBOR)
 
         try:
-            response = facade.undeploy_neighbors(serializer.data)
-        except NeighborNotCreated as e:
+            response = facade.undeploy_neighbors_v6(serializer.data)
+        except exceptions.NeighborV6NotCreated as e:
             raise ValidationAPIException(str(e))
         except Exception, exception:
             log.error(exception)

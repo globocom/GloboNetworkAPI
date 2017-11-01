@@ -50,6 +50,9 @@ class AdminPermission(object):
     NETWORK_FORCE = 'network_force'
     AS_MANAGEMENT = 'as_management'
     NEIGHBOR_MANAGEMENT = 'neighbor_management'
+    LIST_CONFIG_BGP_MANAGEMENT = 'list_config_bgp_management'
+    ROUTE_MAP_MANAGEMENT = 'route_map_management'
+    PEER_GROUP_MANAGEMENT = 'peer_group_management'
 
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'

@@ -1,171 +1,236 @@
 # -*- coding: utf-8 -*-
 import logging
-
 from django.core.exceptions import FieldError
 from django.db.transaction import commit_on_success
-from networkapi.plugins.factory import PluginFactory
-from networkapi.infrastructure.ipaddr import IPAddress
-
-from networkapi.api_vrf.models import Vrf
-from networkapi.api_asn.models import Asn
 from networkapi.api_neighbor.models import NeighborV4
+from networkapi.api_neighbor.models import NeighborV6
 from networkapi.api_neighbor.v4 import exceptions
-from networkapi.api_neighbor.v4.exceptions import NeighborErrorV4
+from networkapi.api_neighbor.v4.exceptions import NeighborV4Error
 from networkapi.api_neighbor.v4.exceptions import NeighborV4NotFoundError
-from networkapi.api_neighbor.v4.exceptions import NeighborError
-from networkapi.api_neighbor.v4.exceptions import NeighborAlreadyCreated
-from networkapi.api_neighbor.v4.exceptions import NeighborNotCreated
+from networkapi.api_neighbor.v4.exceptions import NeighborV6Error
+from networkapi.api_neighbor.v4.exceptions import NeighborV6NotFoundError
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
-from networkapi.api_asn.v4.serializers import AsnV4Serializer
-from networkapi.api_vrf.serializers import VrfV3Serializer
-
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
-from networkapi.equipamento.models import Equipamento
 
 log = logging.getLogger(__name__)
 
-def get_neighbor_by_search(search=dict()):
-    """Return a list of Neighbor's by dict."""
+def get_neighbor_v4_by_search(search=dict()):
+    """Return a list of NeighborV4's by dict."""
 
     try:
-        neighbors = Neighbor.objects.filter()
-        neighbor_map = build_query_to_datatable_v3(neighbors, search)
+        objects = NeighborV4.objects.filter()
+        object_map = build_query_to_datatable_v3(objects, search)
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
         raise NetworkAPIException(str(e))
     else:
-        return neighbor_map
+        return object_map
 
 
-def get_neighbor_by_id(neighbor_id):
-    """Return an Neighbor by id.
+def get_neighbor_v4_by_id(obj_id):
+    """Return an NeighborV4 by id.
 
     Args:
-        neighbor_id: Id of Neighbor
+        obj_id: Id of NeighborV4
     """
 
     try:
-        neighbor = Neighbor.get_by_pk(id=neighbor_id)
-    except NeighborNotFoundError, e:
-        raise exceptions.NeighborDoesNotExistException(str(e))
+        obj = NeighborV4.get_by_pk(id=obj_id)
+    except NeighborV4NotFoundError, e:
+        raise exceptions.NeighborV4DoesNotExistException(str(e))
 
-    return neighbor
+    return obj
 
 
-def get_neighbor_by_ids(neighbor_ids):
-    """Return Neighbor list by ids.
+def get_neighbor_v4_by_ids(obj_ids):
+    """Return NeighborV4 list by ids.
 
     Args:
-        neighbor_ids: List of Ids of Neighbors.
+        obj_ids: List of Ids of NeighborV4's.
     """
 
     ids = list()
-    for neighbor_id in neighbor_ids:
+    for obj_id in obj_ids:
         try:
-            neighbor = get_neighbor_by_id(neighbor_id).id
-            ids.append(neighbor)
-        except exceptions.NeighborDoesNotExistException, e:
+            obj = get_neighbor_v4_by_id(obj_id).id
+            ids.append(obj)
+        except exceptions.NeighborV4DoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
 
-    neighbors = Neighbor.objects.filter(id__in=ids)
-
-    return neighbors
+    return NeighborV4.objects.filter(id__in=ids)
 
 
-def update_neighbor(neighbor):
-    """Update Neighbor."""
+def update_neighbor_v4(obj):
+    """Update NeighborV4."""
 
     try:
-        neighbor_obj = get_neighbor_by_id(neighbor.get('id'))
-        neighbor_obj.update_v4(neighbor)
-    except NeighborErrorV4, e:
+        obj_to_update = get_neighbor_v4_by_id(obj.get('id'))
+        obj_to_update.update_v4(obj)
+    except NeighborV4Error, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
-    except exceptions.NeighborDoesNotExistException, e:
+    except exceptions.NeighborV4DoesNotExistException, e:
         raise ObjectDoesNotExistException(str(e))
     except Exception, e:
         raise NetworkAPIException(str(e))
 
-    return neighbor_obj
+    return obj_to_update
 
 
-def create_neighbor(neighbor):
-    """Create Neighbor."""
+def create_neighbor_v4(obj):
+    """Create NeighborV4."""
 
     try:
-        neighbor_obj = Neighbor()
-        neighbor_obj.create_v4(neighbor)
-    except NeighborErrorV4, e:
+        obj_to_create = NeighborV4()
+        obj_to_create.create_v4(obj)
+    except NeighborV4Error, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
     except Exception, e:
         raise NetworkAPIException(str(e))
 
-    return neighbor_obj
+    return obj_to_create
 
 
-def delete_neighbor(neighbor_ids):
-    """Delete Neighbor."""
+def delete_neighbor_v4(obj_ids):
+    """Delete NeighborV4."""
 
-    for neighbor_id in neighbor_ids:
+    for obj_id in obj_ids:
         try:
-            neighbor_obj = get_neighbor_by_id(neighbor_id)
-            neighbor_obj.delete_v4()
-        except exceptions.NeighborDoesNotExistException, e:
+            obj_to_delete = get_neighbor_v4_by_id(obj_id)
+            obj_to_delete.delete_v4()
+        except exceptions.NeighborV4DoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
-        except NeighborError, e:
+        except NeighborV4Error, e:
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
 
-@commit_on_success
-def deploy_neighbors(neighbors):
 
-    deployed_ids = list()
-    for neighbor in neighbors:
-        id_ = neighbor['id']
+def get_neighbor_v6_by_search(search=dict()):
+    """Return a list of NeighborV6's by dict."""
 
-        if neighbor['created'] is True:
-            raise NeighborAlreadyCreated(id_)
+    try:
+        objects = NeighborV6.objects.filter()
+        object_map = build_query_to_datatable_v3(objects, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return object_map
 
-        remote_ip = neighbor['remote_ip']
+
+def get_neighbor_v6_by_id(obj_id):
+    """Return an NeighborV6 by id.
+
+    Args:
+        obj_id: Id of NeighborV6
+    """
+
+    try:
+        obj = NeighborV6.get_by_pk(id=obj_id)
+    except NeighborV6NotFoundError, e:
+        raise exceptions.NeighborV6DoesNotExistException(str(e))
+
+    return obj
+
+
+def get_neighbor_v6_by_ids(obj_ids):
+    """Return NeighborV6 list by ids.
+
+    Args:
+        obj_ids: List of Ids of NeighborV6's.
+    """
+
+    ids = list()
+    for obj_id in obj_ids:
         try:
-            pass
+            obj = get_neighbor_v6_by_id(obj_id).id
+            ids.append(obj)
+        except exceptions.NeighborV6DoesNotExistException, e:
+            raise ObjectDoesNotExistException(str(e))
+        except Exception, e:
+            raise NetworkAPIException(str(e))
 
-        except Exception as e:
-            raise NetworkAPIException(e.message)
+    return NeighborV6.objects.filter(id__in=ids)
 
-        deployed_ids.append(id_)
 
-    neighbors_obj = NeighborV4.objects.filter(id__in=deployed_ids)
-    neighbors_obj.update(created=True)
+def update_neighbor_v6(obj):
+    """Update NeighborV6."""
+
+    try:
+        obj_to_update = get_neighbor_v6_by_id(obj.get('id'))
+        obj_to_update.update_v4(obj)
+    except NeighborV6Error, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except exceptions.NeighborV6DoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return obj_to_update
+
+
+def create_neighbor_v6(obj):
+    """Create NeighborV6."""
+
+    try:
+        obj_to_create = NeighborV6()
+        obj_to_create.create_v4(obj)
+    except NeighborV6Error, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return obj_to_create
+
+
+def delete_neighbor_v6(obj_ids):
+    """Delete NeighborV6."""
+
+    for obj_id in obj_ids:
+        try:
+            obj_to_delete = get_neighbor_v6_by_id(obj_id)
+            obj_to_delete.delete_v4()
+        except exceptions.NeighborV6DoesNotExistException, e:
+            raise ObjectDoesNotExistException(str(e))
+        except NeighborV6Error, e:
+            raise NetworkAPIException(str(e))
+        except Exception, e:
+            raise NetworkAPIException(str(e))
 
 
 @commit_on_success
-def undeploy_neighbors(neighbors):
+def deploy_neighbors_v4(neighbors):
 
-    undeployed_ids = list()
-    for neighbor in neighbors:
-        id_ = neighbor['id']
+    pass
 
-        if neighbor['created'] is False:
-            raise NeighborNotCreated(id_)
 
-        remote_ip = neighbor['remote_ip']
-        try:
-            pass
+@commit_on_success
+def undeploy_neighbors_v4(neighbors):
 
-        except Exception as e:
-            raise NetworkAPIException(e.message)
+    pass
 
-        undeployed_ids.append(id_)
 
-    neighbors_obj = NeighborV4.objects.filter(id__in=undeployed_ids)
-    neighbors_obj.update(created=False)
+@commit_on_success
+def deploy_neighbors_v6(neighbors):
+
+    pass
+
+
+@commit_on_success
+def undeploy_neighbors_v6(neighbors):
+
+    pass
