@@ -72,17 +72,16 @@ class NeighborV4(BaseModel):
         """
         try:
             return NeighborV4.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'NeighborV4 not found. pk {}'.format(id))
             raise exceptions.NeighborV4NotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the NeighborV4.')
             raise exceptions.NeighborV4Error(
-                e, u'Failure to search the NeighborV4.')
+                u'Failure to search the NeighborV4.')
 
     def create_v4(self):
         """Create NeighborV4."""
@@ -154,17 +153,16 @@ class NeighborV6(BaseModel):
         """
         try:
             return NeighborV6.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'NeighborV6 not found. pk {}'.format(id))
             raise exceptions.NeighborV6NotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the NeighborV6.')
             raise exceptions.NeighborV6Error(
-                e, u'Failure to search the NeighborV6.')
+                u'Failure to search the NeighborV6.')
 
     def create_v4(self):
         """Create NeighborV6."""

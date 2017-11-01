@@ -58,17 +58,16 @@ class ListConfigBGP(BaseModel):
         """
         try:
             return ListConfigBGP.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'ListConfigBGP not found. pk {}'.format(id))
             raise exceptions.ListConfigBGPNotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the ListConfigBGP.')
             raise exceptions.ListConfigBGPError(
-                e, u'Failure to search the ListConfigBGP.')
+                u'Failure to search the ListConfigBGP.')
 
     def create_v4(self):
         """Create ListConfigBGP."""

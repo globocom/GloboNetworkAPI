@@ -45,17 +45,15 @@ class RouteMap(BaseModel):
         """
         try:
             return RouteMap.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'RouteMap not found. pk {}'.format(id))
             raise exceptions.RouteMapNotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the RouteMap.')
-            raise exceptions.RouteMapError(
-                e, u'Failure to search the RouteMap.')
+            raise exceptions.RouteMapError(u'Failure to search the RouteMap.')
 
     def create_v4(self):
         """Create RouteMap."""
@@ -122,17 +120,16 @@ class RouteMapEntry(BaseModel):
         """
         try:
             return RouteMapEntry.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'RouteMapEntry not found. pk {}'.format(id))
             raise exceptions.RouteMapEntryNotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the RouteMapEntry.')
             raise exceptions.RouteMapEntryError(
-                e, u'Failure to search the RouteMapEntry.')
+                u'Failure to search the RouteMapEntry.')
 
     def create_v4(self):
         """Create RouteMapEntry."""

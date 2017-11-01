@@ -50,17 +50,16 @@ class PeerGroup(BaseModel):
         """
         try:
             return PeerGroup.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'PeerGroup not found. pk {}'.format(id))
             raise exceptions.PeerGroupNotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the PeerGroup.')
             raise exceptions.PeerGroupError(
-                e, u'Failure to search the PeerGroup.')
+                u'Failure to search the PeerGroup.')
 
     def create_v4(self):
         """Create PeerGroup."""
@@ -116,17 +115,16 @@ class EnvironmentPeerGroup(BaseModel):
         """
         try:
             return EnvironmentPeerGroup.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'EnvironmentPeerGroup not found. pk {}'.format(id))
             raise exceptions.EnvironmentPeerGroupNotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the EnvironmentPeerGroup.')
             raise exceptions.EnvironmentPeerGroupError(
-                e, u'Failure to search the EnvironmentPeerGroup.')
+                u'Failure to search the EnvironmentPeerGroup.')
 
     def create_v4(self):
         """Create EnvironmentPeerGroup."""
