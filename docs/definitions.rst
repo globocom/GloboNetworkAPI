@@ -7,7 +7,7 @@ Definitions
 .. access_ref:
 
 Access
---------
+------
 
 Access is used to configure the protocol and username/password used for accessing :ref:`equipment_ref`. Plugins can use these informations in order to get credencials for listing and configuring :ref:`equipment_ref`.
 
