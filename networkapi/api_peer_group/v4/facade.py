@@ -108,4 +108,3 @@ def delete_peer_group(obj_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
-        
