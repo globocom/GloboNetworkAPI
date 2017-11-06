@@ -4,10 +4,10 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from networkapi.util.geral import get_model
 
 from networkapi.api_peer_group.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
+
 
 class PeerGroup(BaseModel):
 
@@ -24,12 +24,14 @@ class PeerGroup(BaseModel):
 
     route_map_in = models.ForeignKey(
         'api_route_map.RouteMap',
-        db_column='id_route_map_in'
+        db_column='id_route_map_in',
+        related_name='peergroup_route_map_in'
     )
 
     route_map_out = models.ForeignKey(
         'api_route_map.RouteMap',
-        db_column='id_route_map_out'
+        db_column='id_route_map_out',
+        related_name='peergroup_route_map_out'
     )
 
     def _get_environments(self):
@@ -149,4 +151,3 @@ class EnvironmentPeerGroup(BaseModel):
         """Delete EnvironmentPeerGroup.
         """
         pass
-

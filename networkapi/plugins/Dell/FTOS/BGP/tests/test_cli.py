@@ -1,11 +1,29 @@
-from networkapi.plugins.Dell.FTOS.BGP.Cli import Generic
-from networkapi.plugins.factory import PluginFactory
-from mock import Mock
-from mock import MagicMock
-from random import randint
+# -*- coding: utf-8 -*-
+"""
+   Copyright 2017 Globo.com
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+"""
 import os
+from random import randint
 
 from django.test import TestCase
+from mock import MagicMock
+from mock import Mock
+
+from networkapi.plugins.Dell.FTOS.BGP.Cli import Generic
+from networkapi.plugins.factory import PluginFactory
+
 
 class CliPluginTestCaseSuccess(TestCase):
 
@@ -101,47 +119,47 @@ class CliPluginTestCaseSuccess(TestCase):
 
     def test_get_deploy_template_name_for_ipv4_neighbor(self):
 
-        self._helper_to_check_templates_name('deploy', self.ipv4_neighbor,
-                                             'neighbor_v4_add')
+        self._helper_to_check_templates_name(
+            'deploy', self.ipv4_neighbor, 'neighbor_v4_add')
 
     def test_get_deploy_template_name_for_ipv6_neighbor(self):
 
-        self._helper_to_check_templates_name('deploy', self.ipv6_neighbor,
-                                             'neighbor_v6_add')
+        self._helper_to_check_templates_name(
+            'deploy', self.ipv6_neighbor, 'neighbor_v6_add')
 
     def test_get_undeploy_template_name_for_ipv4_neighbor(self):
 
-        self._helper_to_check_templates_name('undeploy', self.ipv4_neighbor,
-                                             'neighbor_v4_remove')
+        self._helper_to_check_templates_name(
+            'undeploy', self.ipv4_neighbor, 'neighbor_v4_remove')
 
     def test_get_undeploy_template_name_for_ipv6_neighbor(self):
 
-        self._helper_to_check_templates_name('undeploy', self.ipv6_neighbor,
-                                             'neighbor_v6_remove')
+        self._helper_to_check_templates_name(
+            'undeploy', self.ipv6_neighbor, 'neighbor_v6_remove')
 
     def test_generate_config_for_neighbor_v4_add(self):
 
-        self._generate_config_helper('deploy', self.ipv4_neighbor,
-                                     self.virtual_interface, self.asn, self.vrf,
-                                     'template_neighbor_v4_add_dell')
+        self._generate_config_helper(
+            'deploy', self.ipv4_neighbor, self.virtual_interface,
+            self.asn, self.vrf, 'template_neighbor_v4_add_dell')
 
     def test_generate_config_for_neighbor_v6_add(self):
 
-        self._generate_config_helper('deploy', self.ipv6_neighbor,
-                                     self.virtual_interface, self.asn, self.vrf,
-                                     'template_neighbor_v6_add_dell')
+        self._generate_config_helper(
+            'deploy', self.ipv6_neighbor, self.virtual_interface,
+            self.asn, self.vrf, 'template_neighbor_v6_add_dell')
 
     def test_generate_config_for_neighbor_v4_remove(self):
 
-        self._generate_config_helper('undeploy', self.ipv4_neighbor,
-                                     self.virtual_interface, self.asn, self.vrf,
-                                     'template_neighbor_v4_remove_dell')
+        self._generate_config_helper(
+            'undeploy', self.ipv4_neighbor, self.virtual_interface,
+            self.asn, self.vrf, 'template_neighbor_v4_remove_dell')
 
     def test_generate_config_for_neighbor_v6_remove(self):
 
-        self._generate_config_helper('undeploy', self.ipv6_neighbor,
-                                     self.virtual_interface, self.asn, self.vrf,
-                                     'template_neighbor_v6_remove_dell')
+        self._generate_config_helper(
+            'undeploy', self.ipv6_neighbor, self.virtual_interface,
+            self.asn, self.vrf, 'template_neighbor_v6_remove_dell')
 
     def _mock_equipment(self):
 
@@ -149,7 +167,7 @@ class CliPluginTestCaseSuccess(TestCase):
         marca = MagicMock(nome='DELL')
         equipment.modelo = MagicMock(nome='FTOS', marca=marca)
         equipment.maintenance = False
-        equipment.id = randint(0,100000)
+        equipment.id = randint(0, 100000)
 
         return equipment
 

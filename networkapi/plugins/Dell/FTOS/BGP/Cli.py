@@ -21,8 +21,6 @@ from time import sleep
 from django.template import Context
 from django.template import Template
 
-from .... import exceptions as plugin_exc
-from ....base import BasePlugin
 from networkapi.api_deploy import exceptions
 from networkapi.api_equipment.exceptions import \
     AllEquipmentsAreInMaintenanceException
@@ -30,6 +28,8 @@ from networkapi.equipamento import models as eqpt_models
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
 from networkapi.infrastructure.ipaddr import IPAddress
+from networkapi.plugins import exceptions as plugin_exc
+from networkapi.plugins.base import BasePlugin
 from networkapi.settings import BGP_CONFIG_FILES_PATH
 from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
 from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
@@ -44,6 +44,10 @@ class Generic(BasePlugin):
     TEMPLATE_NEIGHBOR_V4_REMOVE = 'neighbor_v4_remove'
     TEMPLATE_NEIGHBOR_V6_ADD = 'neighbor_v6_add'
     TEMPLATE_NEIGHBOR_V6_REMOVE = 'neighbor_v6_remove'
+    TEMPLATE_PREFIX_LIST_ADD = 'prefix_list_add'
+    TEMPLATE_PREFIX_LIST_REMOVE = 'prefix_list_remove'
+    TEMPLATE_ROUTE_MAP_ADD = 'route_map_add'
+    TEMPLATE_ROUTE_MAP_REMOVE = 'route_map_remove'
 
     MAX_TRIES = 10
     RETRY_WAIT_TIME = 5
@@ -68,22 +72,39 @@ class Generic(BasePlugin):
         self.asn = asn
         self.vrf = vrf
 
-    def _operate_equipment(self, _get_template_name):
+    def deploy_neighbor(self):
+        """Deploy neighbor"""
+
+        self._operate_equipment(self._get_template_deploy_name())
+
+    def undeploy_neighbor(self):
+        """Undeploy neighbor"""
+
+        self._operate_equipment(self._get_template_undeploy_name())
+
+    def deploy_prefix_list(self):
+        """Deploy prefix list"""
+        self._operate_equipment(self.TEMPLATE_PREFIX_LIST_ADD)
+
+    def undeploy_prefix_list(self):
+        """Undeploy prefix list"""
+        self._operate_equipment(self.TEMPLATE_PREFIX_LIST_REMOVE)
+
+    def deploy_route_map(self):
+        """Deploy route map"""
+        self._operate_equipment(self.TEMPLATE_ROUTE_MAP_ADD)
+
+    def undeploy_route_map(self):
+        """Undeploy route map"""
+        self._operate_equipment(self.TEMPLATE_ROUTE_MAP_REMOVE)
+
+    def _operate_equipment(self, template_name):
 
         self.connect()
         self._ensure_privilege_level()
-        template_name = _get_template_name()
         file_to_deploy = self._generate_config_file(template_name)
         self._deploy_config_in_equipment(file_to_deploy)
         self.close()
-
-    def deploy_neighbor(self):
-
-        self._operate_equipment(self._get_template_deploy_name)
-
-    def undeploy_neighbor(self):
-
-        self._operate_equipment(self._get_template_undeploy_name)
 
     def _get_template_deploy_name(self):
 
@@ -113,8 +134,8 @@ class Generic(BasePlugin):
         config_to_be_saved = ''
         request_id = getattr(local, 'request_id', NO_REQUEST_ID)
 
-        filename_out = 'network_equip%s_config_%s' % (self.equipment.id,
-                                                      request_id)
+        filename_out = 'network_equip{}_config_{}'.format(
+            self.equipment.id, request_id)
 
         filename_to_save = BGP_CONFIG_FILES_PATH + filename_out
         rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out

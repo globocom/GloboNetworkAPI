@@ -4,7 +4,6 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from networkapi.util.geral import get_model
 
 from networkapi.api_neighbor.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
@@ -25,22 +24,30 @@ class NeighborV4(BaseModel):
 
     local_asn = models.ForeignKey(
         'api_asn.Asn',
-        db_column='id_local_asn'
+        db_column='id_local_asn',
+        related_name='neighborv4_local_asn'
+
     )
 
     remote_asn = models.ForeignKey(
         'api_asn.Asn',
-        db_column='id_remote_asn'
+        db_column='id_remote_asn',
+        related_name='neighborv4_remote_asn'
+
     )
 
     local_ip = models.ForeignKey(
         'ip.Ip',
-        db_column='id_local_ip'
+        db_column='id_local_ip',
+        related_name='neighborv4_local_ip'
+
     )
 
     remote_ip = models.ForeignKey(
         'ip.Ip',
-        db_column='id_remote_ip'
+        db_column='id_remote_ip',
+        related_name='neighborv4_remote_ip'
+
     )
 
     peer_group = models.ForeignKey(
@@ -106,22 +113,26 @@ class NeighborV6(BaseModel):
 
     local_asn = models.ForeignKey(
         'api_asn.Asn',
-        db_column='id_local_asn'
+        db_column='id_local_asn',
+        related_name='neighborv6_local_asn'
     )
 
     remote_asn = models.ForeignKey(
         'api_asn.Asn',
-        db_column='id_remote_asn'
+        db_column='id_remote_asn',
+        related_name='neighborv6_remote_asn'
     )
 
     local_ip = models.ForeignKey(
         'ip.Ipv6',
-        db_column='id_local_ip'
+        db_column='id_local_ip',
+        related_name='neighborv6_local_ip'
     )
 
     remote_ip = models.ForeignKey(
         'ip.Ipv6',
-        db_column='id_remote_ip'
+        db_column='id_remote_ip',
+        related_name='neighborv6_remote_ip'
     )
 
     peer_group = models.ForeignKey(
