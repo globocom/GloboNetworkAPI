@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "peer_groups": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "route_map_in": {
+            "type": "integer"
+          },
+          "route_map_out": {
+            "type": "integer"
+          },
+          "environments": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "route_map_in",
+          "route_map_out"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "peer_groups"
+  ],
+  "title": "Peer Group Post",
+  "type": "object"
+}

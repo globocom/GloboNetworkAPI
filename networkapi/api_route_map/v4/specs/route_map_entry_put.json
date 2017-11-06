@@ -1,29 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "properties": {
-    "neighbors": {
+    "route_map_entries": {
       "items": {
         "properties": {
           "id": {
             "type": "integer"
           },
-          "local_asn": {
-            "type": "integer"
+          "action": {
+            "type": "string",
+            "enum": ["P", "D"]
           },
-          "remote_asn": {
-            "type": "integer"
-          },
-          "local_ip": {
-            "type": "integer"
-          },
-          "remote_ip": {
-            "type": "integer"
-          },
-          "peer_group": {
-            "type": "integer"
-          },
-          "virtual_interface": {
+          "action_reconfig": {
             "type": "string"
+          },
+          "order": {
+            "type": "integer"
+          },
+          "list_config_bgp": {
+            "type": "integer"
+          },
+          "route_map": {
+            "type": "integer"
           }
         },
         "required": [
@@ -35,8 +33,8 @@
     }
   },
   "required": [
-    "neighbors"
+    "route_map_entries"
   ],
-  "title": "Neighbor Put",
+  "title": "Route Map Entry Put",
   "type": "object"
 }

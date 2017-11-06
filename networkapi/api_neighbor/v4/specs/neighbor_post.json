@@ -1,22 +1,42 @@
 {
-  "title": "Neighbor Post",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "properties": {
+    "neighbors": {
+      "items": {
+        "properties": {
+          "local_asn": {
+            "type": "integer"
+          },
+          "remote_asn": {
+            "type": "integer"
+          },
+          "local_ip": {
+            "type": "integer"
+          },
+          "remote_ip": {
+            "type": "integer"
+          },
+          "peer_group": {
+            "type": "integer"
+          },
+          "virtual_interface": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "local_asn",
+          "remote_asn",
+          "local_ip",
+          "remote_ip"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
   "required": [
     "neighbors"
   ],
-  "properties": {
-    "networks": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-
-        },
-        "required": [
-
-        ]
-      }
-    }
-  }
+  "title": "Neighbor Post",
+  "type": "object"
 }
