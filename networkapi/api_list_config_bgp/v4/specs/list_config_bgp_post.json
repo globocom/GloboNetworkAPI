@@ -4,15 +4,19 @@
     "lists_config_bgp": {
       "items": {
         "properties": {
+          "config": {
+            "enum": [
+              "P",
+              "A",
+              "C"
+            ],
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
           "type": {
             "type": "string"
-          },
-          "config": {
-            "type": "string",
-            "enum": ["P", "A", "C"]
           }
         },
         "required": [
@@ -28,6 +32,6 @@
   "required": [
     "lists_config_bgp"
   ],
-  "title": "List Config BGP Post",
+  "title": "ListConfigBGP Post",
   "type": "object"
 }

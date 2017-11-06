@@ -40,3 +40,20 @@ class RouteMapEntryDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = u'RouteMapEntry does not exists.'
 
+
+class RouteMapAssociatedToRouteMapEntryException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, route_map):
+        self.detail = u'RouteMap id = {} is associated ' \
+                      u'with RouteMapEntries = {}'. \
+            format(route_map.id, route_map.route_map_entries_id)
+
+
+class RouteMapAssociatedToPeerGroupException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, route_map):
+        self.detail = u'RouteMap id = {} is associated ' \
+                      u'with PeerGroups = {}'. \
+            format(route_map.id, route_map.peer_groups_id)

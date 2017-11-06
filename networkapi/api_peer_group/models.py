@@ -7,6 +7,7 @@ from django.db import models
 
 from networkapi.api_peer_group.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
+from networkapi.util.geral import get_model
 
 
 class PeerGroup(BaseModel):
@@ -74,30 +75,75 @@ class PeerGroup(BaseModel):
             raise exceptions.PeerGroupError(
                 u'Failure to search the PeerGroup.')
 
-    def create_v4(self):
+    def create_v4(self, peer_group):
         """Create PeerGroup."""
-        pass
 
-    def update_v4(self):
+        self.name = peer_group.get('name')
+
+        routemap_model = get_model('api_route_map', 'RouteMap')
+
+        self.route_map_in = routemap_model.get_by_pk(
+            peer_group.get('route_map_in'))
+        self.route_map_out = routemap_model.get_by_pk(
+            peer_group.get('route_map_out'))
+
+        self.save()
+
+        environment_peergroup_model = get_model('api_peer_group',
+                                                'EnvironmentPeerGroup')
+        for id_environment in peer_group.get('environments'):
+            environment_peergroup_model().create_v4({
+                'peer_group': self.id,
+                'environment': id_environment
+            })
+
+    def update_v4(self, peer_group):
         """Update PeerGroup."""
-        pass
+
+        self.name = peer_group.get('name')
+
+        routemap_model = get_model('api_route_map', 'RouteMap')
+
+        self.route_map_in = routemap_model.get_by_pk(
+            peer_group.get('route_map_in'))
+        self.route_map_out = routemap_model.get_by_pk(
+            peer_group.get('route_map_out'))
+
+        self.save()
+
+        environment_ids = peer_group.get('environments')
+
+        # Get current associates
+        current = self.environmentpeergroup_set \
+            .filter(environment__in=environment_ids) \
+            .values_list('environment', flat=True)
+
+        # Creates new associate
+        for id_environment in environment_ids:
+            if id_environment not in current:
+                EnvironmentPeerGroup().create_v4({
+                    'peer_group': self.id,
+                    'environment': id_environment
+                })
+
+        # Removes old associates
+        for environment_peer_group in self.environmentpeergroup_set\
+                .exclude(environment__in=environment_ids):
+            environment_peer_group.delete_v4()
 
     def delete_v4(self):
-        """Delete PeerGroup.
-        """
-        pass
+        """Delete PeerGroup."""
+
+        for environment_peergroup in self.environmentpeergroup_set.all():
+            environment_peergroup.delete_v4()
+
+        super(PeerGroup, self).delete()
 
 
 class EnvironmentPeerGroup(BaseModel):
     id = models.AutoField(
         primary_key=True,
         db_column='id'
-    )
-
-    name = models.CharField(
-        blank=False,
-        max_length=45,
-        db_column='name'
     )
 
     environment = models.ForeignKey(
@@ -139,15 +185,19 @@ class EnvironmentPeerGroup(BaseModel):
             raise exceptions.EnvironmentPeerGroupError(
                 u'Failure to search the EnvironmentPeerGroup.')
 
-    def create_v4(self):
+    def create_v4(self, environment_peergroup):
         """Create EnvironmentPeerGroup."""
-        pass
 
-    def update_v4(self):
-        """Update EnvironmentPeerGroup."""
-        pass
+        environment_model = get_model('ambiente', 'Ambiente')
+
+        self.environment = environment_model.get_by_pk(
+            environment_peergroup.get('environment'))
+        self.peer_group = PeerGroup.get_by_pk(
+            environment_peergroup.get('peer_group'))
+
+        self.save()
 
     def delete_v4(self):
-        """Delete EnvironmentPeerGroup.
-        """
-        pass
+        """Delete EnvironmentPeerGroup."""
+
+        super(EnvironmentPeerGroup, self).delete()

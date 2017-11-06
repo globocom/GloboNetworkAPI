@@ -1,9 +1,15 @@
+# -*- coding: utf-8 -*-
+import logging
+
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from networkapi.api_route_map.v4 import facade
 from networkapi.api_route_map.v4 import serializers
+from networkapi.api_route_map.v4.permissions import Read
+from networkapi.api_route_map.v4.permissions import Write
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
@@ -12,11 +18,9 @@ from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
-from networkapi.api_route_map.v4.permissions import Read
-from networkapi.api_route_map.v4.permissions import Write
-import logging
 
 log = logging.getLogger(__name__)
+
 
 class RouteMapDBView(CustomAPIView):
 
@@ -25,7 +29,7 @@ class RouteMapDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """Returns a list of Route Map's by ids ou dict."""
+        """Returns a list of RouteMaps by ids ou dict."""
 
         if not kwargs.get('obj_ids'):
             obj_model = facade.get_route_map_by_search(self.search)
@@ -63,7 +67,7 @@ class RouteMapDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """Create new Route Map."""
+        """Create new RouteMap."""
 
         objects = request.DATA
         json_validate(SPECS.get('route_map_post_v4')).validate(objects)
@@ -80,7 +84,7 @@ class RouteMapDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """Update Route Map."""
+        """Update RouteMap."""
 
         objects = request.DATA
         json_validate(SPECS.get('route_map_put_v4')).validate(objects)
@@ -99,7 +103,7 @@ class RouteMapDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """Delete Route Map."""
+        """Delete RouteMap."""
 
         obj_ids = kwargs['obj_ids'].split(';')
         facade.delete_route_map(obj_ids)
@@ -114,7 +118,7 @@ class RouteMapEntryDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """Returns a list of Route Map Entry's by ids ou dict."""
+        """Returns a list of RouteMapEntries by ids ou dict."""
 
         if not kwargs.get('obj_ids'):
             obj_model = facade.get_route_map_entry_by_search(self.search)
@@ -152,7 +156,7 @@ class RouteMapEntryDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """Create new Route Map Entry."""
+        """Create new RouteMapEntry."""
 
         objects = request.DATA
         json_validate(SPECS.get('route_map_entry_post_v4')).validate(objects)
@@ -169,7 +173,7 @@ class RouteMapEntryDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
-        """Update Route Map Entry."""
+        """Update RouteMapEntry."""
 
         objects = request.DATA
         json_validate(SPECS.get('route_map_entry_put_v4')).validate(objects)
@@ -188,7 +192,7 @@ class RouteMapEntryDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """Delete Route Map Entry."""
+        """Delete RouteMapEntry."""
 
         obj_ids = kwargs['obj_ids'].split(';')
         facade.delete_route_map_entry(obj_ids)

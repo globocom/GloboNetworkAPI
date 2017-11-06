@@ -4,6 +4,12 @@
     "peer_groups": {
       "items": {
         "properties": {
+          "environments": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
           "name": {
             "type": "string"
           },
@@ -12,12 +18,6 @@
           },
           "route_map_out": {
             "type": "integer"
-          },
-          "environments": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array"
           }
         },
         "required": [
@@ -33,6 +33,6 @@
   "required": [
     "peer_groups"
   ],
-  "title": "Peer Group Post",
+  "title": "PeerGroup Post",
   "type": "object"
 }

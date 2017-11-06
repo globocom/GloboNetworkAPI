@@ -4,15 +4,21 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from networkapi.util.geral import get_model
 
 from networkapi.api_route_map.v4 import exceptions
+from networkapi.api_route_map.v4.exceptions import \
+    RouteMapAssociatedToPeerGroupException
+from networkapi.api_route_map.v4.exceptions import \
+    RouteMapAssociatedToRouteMapEntryException
 from networkapi.models.BaseModel import BaseModel
+from networkapi.util.geral import get_model
+
 
 class RouteMapEntryAction:
     p = ('P', 'P')
     d = ('D', 'D')
     list_type = (p, d)
+
 
 class RouteMap(BaseModel):
 
@@ -32,6 +38,20 @@ class RouteMap(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'route_map'
         managed = True
+
+    def _get_route_map_entries_id(self):
+        return self.routemapentry_set.all().values_list('id',
+                                                        flat=True)
+
+    route_map_entries_id = property(_get_route_map_entries_id)
+
+    def _get_peer_groups_id(self):
+        return list(set().union(
+            self.peergroup_route_map_in.all().values_list('id', flat=True),
+            self.peergroup_route_map_out.all().values_list('id', flat=True),
+        ))
+
+    peer_groups_id = property(_get_peer_groups_id)
 
     @classmethod
     def get_by_pk(cls, id):
@@ -55,18 +75,31 @@ class RouteMap(BaseModel):
             cls.log.error(u'Failure to search the RouteMap.')
             raise exceptions.RouteMapError(u'Failure to search the RouteMap.')
 
-    def create_v4(self):
+    def create_v4(self, route_map):
         """Create RouteMap."""
-        pass
 
-    def update_v4(self):
+        self.name = route_map.get('name')
+
+        self.save()
+
+    def update_v4(self, route_map):
         """Update RouteMap."""
-        pass
+
+        self.name = route_map.get('name')
+
+        self.save()
 
     def delete_v4(self):
-        """Delete RouteMap.
-        """
-        pass
+        """Delete RouteMap."""
+
+        if self.routemapentry_set.count() > 0:
+            raise RouteMapAssociatedToRouteMapEntryException(self)
+
+        if self.peergroup_route_map_in.count() > 0 or \
+           self.peergroup_route_map_out.count() > 0:
+            raise RouteMapAssociatedToPeerGroupException(self)
+
+        super(RouteMap, self).delete()
 
 
 class RouteMapEntry(BaseModel):
@@ -131,15 +164,37 @@ class RouteMapEntry(BaseModel):
             raise exceptions.RouteMapEntryError(
                 u'Failure to search the RouteMapEntry.')
 
-    def create_v4(self):
+    def create_v4(self, route_map_entry):
         """Create RouteMapEntry."""
-        pass
 
-    def update_v4(self):
+        listconfigbgp_model = get_model('api_list_config_bgp', 'ListConfigBGP')
+
+        self.action = route_map_entry.get('action')
+        self.action_reconfig = route_map_entry.get('action_reconfig')
+        self.order = route_map_entry.get('order')
+
+        self.list_config_bgp = listconfigbgp_model.get_by_pk(
+            route_map_entry.get('list_config_bgp'))
+        self.route_map = RouteMap.get_by_pk(route_map_entry.get('route_map'))
+
+        self.save()
+
+    def update_v4(self, route_map_entry):
         """Update RouteMapEntry."""
-        pass
+
+        listconfigbgp_model = get_model('api_list_config_bgp', 'ListConfigBGP')
+
+        self.action = route_map_entry.get('action')
+        self.action_reconfig = route_map_entry.get('action_reconfig')
+        self.order = route_map_entry.get('order')
+
+        self.list_config_bgp = listconfigbgp_model.get_by_pk(
+            route_map_entry.get('list_config_bgp'))
+        self.route_map = RouteMap.get_by_pk(route_map_entry.get('route_map'))
+
+        self.save()
 
     def delete_v4(self):
-        """Delete RouteMapEntry.
-        """
-        pass
+        """Delete RouteMapEntry."""
+
+        super(RouteMapEntry, self).delete()

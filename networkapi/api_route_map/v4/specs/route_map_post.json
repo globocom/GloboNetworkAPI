@@ -19,6 +19,6 @@
   "required": [
     "route_maps"
   ],
-  "title": "Route Map Post",
+  "title": "RouteMap Post",
   "type": "object"
 }
