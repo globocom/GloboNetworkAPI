@@ -561,19 +561,19 @@ SPECS = {
     ),
     'neighbor_v4_post_v4': os.path.join(
         PROJECT_ROOT_PATH,
-        'api_neighbor/v4/specs/neighbor_v4_post.json'
+        'api_neighbor/v4/specs/neighbor_post.json'
     ),
     'neighbor_v4_put_v4': os.path.join(
         PROJECT_ROOT_PATH,
-        'api_neighbor/v4/specs/neighbor_v4_put.json'
+        'api_neighbor/v4/specs/neighbor_put.json'
     ),
     'neighbor_v6_post_v4': os.path.join(
         PROJECT_ROOT_PATH,
-        'api_neighbor/v4/specs/neighbor_v6_post.json'
+        'api_neighbor/v4/specs/neighbor_post.json'
     ),
     'neighbor_v6_put_v4': os.path.join(
         PROJECT_ROOT_PATH,
-        'api_neighbor/v4/specs/neighbor_v6_put.json'
+        'api_neighbor/v4/specs/neighbor_put.json'
     ),
     'list_config_bgp_post_v4': os.path.join(
         PROJECT_ROOT_PATH,

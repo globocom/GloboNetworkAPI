@@ -1,29 +1,26 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "properties": {
-    "neighbors": {
+    "peer_groups": {
       "items": {
         "properties": {
           "id": {
             "type": "integer"
           },
-          "local_asn": {
-            "type": "integer"
-          },
-          "remote_asn": {
-            "type": "integer"
-          },
-          "local_ip": {
-            "type": "integer"
-          },
-          "remote_ip": {
-            "type": "integer"
-          },
-          "peer_group": {
-            "type": "integer"
-          },
-          "virtual_interface": {
+          "name": {
             "type": "string"
+          },
+          "route_map_in": {
+            "type": "integer"
+          },
+          "route_map_out": {
+            "type": "integer"
+          },
+          "environments": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -35,8 +32,8 @@
     }
   },
   "required": [
-    "neighbors"
+    "peer_groups"
   ],
-  "title": "Neighbor Put",
+  "title": "Peer Group Put",
   "type": "object"
 }
