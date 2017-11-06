@@ -9,7 +9,6 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 log = logging.getLogger(__name__)
 
-
 class IpConfigV3Serializer(DynamicFieldsModelSerializer):
 
     id = serializers.RelatedField(source='ip_config.id')
@@ -208,6 +207,10 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'name',
                     'eager_loading': self.setup_eager_loading_name
                 },
+                'configs': {
+                    'obj': 'configs',
+                    'eager_loading': self.setup_eager_loading_configs
+                },
                 'grupo_l3': {
                     'obj': 'grupo_l3_id'
                 },
@@ -304,7 +307,9 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         'fields': (
                             'id',
                             'name',
+                            'vrf',
                             'children',
+                            'configs',
                         )
                     },
                     'obj': 'children'
@@ -377,6 +382,14 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         log.info('Using setup_eager_loading_father')
         queryset = queryset.select_related(
             'dcroom'
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_configs(queryset):
+        log.info('Using setup_eager_loading_configs')
+        queryset = queryset.select_related(
+            'configs'
         )
         return queryset
 
