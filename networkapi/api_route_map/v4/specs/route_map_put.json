@@ -22,6 +22,6 @@
   "required": [
     "route_maps"
   ],
-  "title": "Route Map Put",
+  "title": "RouteMap Put",
   "type": "object"
 }

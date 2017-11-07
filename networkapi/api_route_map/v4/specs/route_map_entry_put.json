@@ -4,20 +4,23 @@
     "route_map_entries": {
       "items": {
         "properties": {
-          "id": {
-            "type": "integer"
-          },
           "action": {
-            "type": "string",
-            "enum": ["P", "D"]
+            "enum": [
+              "P",
+              "D"
+            ],
+            "type": "string"
           },
           "action_reconfig": {
             "type": "string"
           },
-          "order": {
+          "id": {
             "type": "integer"
           },
           "list_config_bgp": {
+            "type": "integer"
+          },
+          "order": {
             "type": "integer"
           },
           "route_map": {
@@ -35,6 +38,6 @@
   "required": [
     "route_map_entries"
   ],
-  "title": "Route Map Entry Put",
+  "title": "RouteMapEntry Put",
   "type": "object"
 }

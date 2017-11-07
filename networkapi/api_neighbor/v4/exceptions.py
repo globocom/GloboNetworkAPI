@@ -71,3 +71,39 @@ class NeighborV6NotCreated(APIException):
 class NeighborV6DoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = u'NeighborV6 does not exists.'
+
+
+class LocalIpAndRemoteIpAreInDifferentVrfsException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, neighbor):
+        self.detail = u'LocalIp id = {} and RemoteIp id = {} are in ' \
+                      u'different Vrfs.'.\
+            format(neighbor.local_ip, neighbor.remote_ip)
+
+
+class LocalIpAndLocalAsnBelongToDifferentEquipmentsException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, neighbor):
+        self.detail = u'LocalIp id = {} and LocalAsn id = {} belongs to ' \
+                      u'different Equipments.'.\
+            format(neighbor.local_ip, neighbor.local_asn)
+
+
+class RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, neighbor):
+        self.detail = u'RemoteIp id = {} and RemoteAsn id = {} belongs to ' \
+                      u'different Equipments.'.\
+            format(neighbor.remote_ip, neighbor.remote_asn)
+
+
+class LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, neighbor):
+        self.detail = u'LocalIp id = {} and PeerGroup id = {} belongs to ' \
+                      u'different Environments.'. \
+            format(neighbor.local_ip, neighbor.peer_group)

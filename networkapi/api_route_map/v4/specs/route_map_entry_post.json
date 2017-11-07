@@ -5,16 +5,19 @@
       "items": {
         "properties": {
           "action": {
-            "type": "string",
-            "enum": ["P", "D"]
+            "enum": [
+              "P",
+              "D"
+            ],
+            "type": "string"
           },
           "action_reconfig": {
             "type": "string"
           },
-          "order": {
+          "list_config_bgp": {
             "type": "integer"
           },
-          "list_config_bgp": {
+          "order": {
             "type": "integer"
           },
           "route_map": {
@@ -36,6 +39,6 @@
   "required": [
     "route_map_entries"
   ],
-  "title": "Route Map Entry Post",
+  "title": "RouteMapEntry Post",
   "type": "object"
 }

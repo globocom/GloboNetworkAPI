@@ -4,16 +4,20 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from networkapi.util.geral import get_model
 
 from networkapi.api_list_config_bgp.v4 import exceptions
+from networkapi.api_list_config_bgp.v4.exceptions import \
+    ListConfigBGPAssociatedToRouteMapEntryException
 from networkapi.models.BaseModel import BaseModel
+from networkapi.util.geral import get_model
+
 
 class ListConfigBGPType:
     p = ('P', 'P')
     a = ('A', 'A')
     c = ('C', 'C')
     list_type = (p, a, c)
+
 
 class ListConfigBGP(BaseModel):
 
@@ -80,15 +84,28 @@ class ListConfigBGP(BaseModel):
             raise exceptions.ListConfigBGPError(
                 u'Failure to search the ListConfigBGP.')
 
-    def create_v4(self):
+    def create_v4(self, list_config_bgp):
         """Create ListConfigBGP."""
-        pass
 
-    def update_v4(self):
+        self.name = list_config_bgp.get('name')
+        self.type = list_config_bgp.get('type')
+        self.config = list_config_bgp.get('config')
+
+        self.save()
+
+    def update_v4(self, list_config_bgp):
         """Update ListConfigBGP."""
-        pass
+
+        self.name = list_config_bgp.get('name')
+        self.type = list_config_bgp.get('type')
+        self.config = list_config_bgp.get('config')
+
+        self.save()
 
     def delete_v4(self):
-        """Delete ListConfigBGP.
-        """
-        pass
+        """Delete ListConfigBGP."""
+
+        if self.routemapentry_set.count() > 0:
+            raise ListConfigBGPAssociatedToRouteMapEntryException(self)
+
+        super(ListConfigBGP, self).delete()

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from django.core.exceptions import FieldError
+
 from networkapi.api_peer_group.models import PeerGroup
 from networkapi.api_peer_group.v4 import exceptions
 from networkapi.api_peer_group.v4.exceptions import PeerGroupError
@@ -11,6 +13,7 @@ from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
 log = logging.getLogger(__name__)
+
 
 def get_peer_group_by_search(search=dict()):
     """Return a list of PeerGroup's by dict."""
@@ -61,12 +64,12 @@ def get_peer_group_by_ids(obj_ids):
     return PeerGroup.objects.filter(id__in=ids)
 
 
-def update_peer_group(obj):
+def update_peer_group(obj, user):
     """Update PeerGroup."""
 
     try:
         obj_to_update = get_peer_group_by_id(obj.get('id'))
-        obj_to_update.update_v4(obj)
+        obj_to_update.update_v4(obj, user)
     except PeerGroupError, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
@@ -79,12 +82,12 @@ def update_peer_group(obj):
     return obj_to_update
 
 
-def create_peer_group(obj):
+def create_peer_group(obj, user):
     """Create PeerGroup."""
 
     try:
         obj_to_create = PeerGroup()
-        obj_to_create.create_v4(obj)
+        obj_to_create.create_v4(obj, user)
     except PeerGroupError, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
