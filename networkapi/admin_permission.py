@@ -78,6 +78,7 @@ class AdminPermission(object):
     OBJ_TYPE_VLAN = 'Vlan'
     OBJ_TYPE_POOL = 'ServerPool'
     OBJ_TYPE_VIP = 'VipRequest'
+    OBJ_TYPE_PEER_GROUP = 'PeerGroup'
 
     NEIGHBOR_CREATE_SCRIPT = 'neighbor_create_script'
     NEIGHBOR_REMOVE_SCRIPT = 'neighbor_remove_script'

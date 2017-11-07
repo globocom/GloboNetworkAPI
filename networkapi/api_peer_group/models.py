@@ -5,6 +5,7 @@ from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
+from networkapi.admin_permission import AdminPermission
 from networkapi.api_peer_group.v4 import exceptions
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
@@ -75,7 +76,7 @@ class PeerGroup(BaseModel):
             raise exceptions.PeerGroupError(
                 u'Failure to search the PeerGroup.')
 
-    def create_v4(self, peer_group):
+    def create_v4(self, peer_group, user):
         """Create PeerGroup."""
 
         self.name = peer_group.get('name')
@@ -89,6 +90,7 @@ class PeerGroup(BaseModel):
 
         self.save()
 
+        # Save relationships with environments
         environment_peergroup_model = get_model('api_peer_group',
                                                 'EnvironmentPeerGroup')
         for id_environment in peer_group.get('environments'):
@@ -97,7 +99,12 @@ class PeerGroup(BaseModel):
                 'environment': id_environment
             })
 
-    def update_v4(self, peer_group):
+        # Permissions
+        object_group_perm_model = get_model('api_ogp', 'ObjectGroupPermission')
+        object_group_perm_model().create_perms(
+            peer_group, self.id, AdminPermission.OBJ_TYPE_PEER_GROUP, user)
+
+    def update_v4(self, peer_group, user):
         """Update PeerGroup."""
 
         self.name = peer_group.get('name')
@@ -131,6 +138,12 @@ class PeerGroup(BaseModel):
                 .exclude(environment__in=environment_ids):
             environment_peer_group.delete_v4()
 
+        # Permissions
+        object_group_perm_model = get_model('api_ogp',
+                                            'ObjectGroupPermission')
+        object_group_perm_model().update_perms(
+            peer_group, self.id, AdminPermission.OBJ_TYPE_PEER_GROUP, user)
+
     def delete_v4(self):
         """Delete PeerGroup."""
 
@@ -138,6 +151,14 @@ class PeerGroup(BaseModel):
             environment_peergroup.delete_v4()
 
         super(PeerGroup, self).delete()
+
+        # Deletes Permissions
+        object_group_perm_model = get_model('api_ogp',
+                                            'ObjectGroupPermission')
+        object_group_perm_model.objects.filter(
+            object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP,
+            object_value=self.id
+        ).delete()
 
 
 class EnvironmentPeerGroup(BaseModel):

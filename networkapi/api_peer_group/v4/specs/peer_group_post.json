@@ -10,6 +10,42 @@
             },
             "type": "array"
           },
+          "groups_permissions": {
+            "items": {
+              "properties": {
+                "change_config": {
+                  "type": "boolean"
+                },
+                "delete": {
+                  "type": "boolean"
+                },
+                "read": {
+                  "type": "boolean"
+                },
+                "user_group": {
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "write": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "user_group",
+                "read",
+                "write",
+                "delete",
+                "change_config"
+              ],
+              "type": "object"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "name": {
             "type": "string"
           },
@@ -18,6 +54,42 @@
           },
           "route_map_out": {
             "type": "integer"
+          },
+          "users_permissions": {
+            "items": {
+              "properties": {
+                "change_config": {
+                  "type": "boolean"
+                },
+                "delete": {
+                  "type": "boolean"
+                },
+                "read": {
+                  "type": "boolean"
+                },
+                "user": {
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "write": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "user",
+                "read",
+                "write",
+                "delete",
+                "change_config"
+              ],
+              "type": "object"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           }
         },
         "required": [
