@@ -307,10 +307,23 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         'fields': (
                             'id',
                             'name',
+                            'children',
+                        )
+                    },
+                    'obj': 'children'
+                },
+                'children__basic': {
+                    'serializer': EnvironmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'id',
+                            'name',
                             'vrf',
                             'children',
                             'configs',
-                        )
+                        ),
+                        'kind': 'basic'
                     },
                     'obj': 'children'
                 },
@@ -324,7 +337,6 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         'prohibited': (
                             'father_environment__details',
                         )
-
                     },
                     'obj': 'children'
                 },
