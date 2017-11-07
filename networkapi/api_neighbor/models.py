@@ -6,6 +6,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from networkapi.api_neighbor.v4 import exceptions
+from networkapi.api_neighbor.v4.exceptions import \
+    LocalIpAndLocalAsnBelongToDifferentEquipmentsException
+from networkapi.api_neighbor.v4.exceptions import \
+    LocalIpAndRemoteIpAreInDifferentVrfsException
+from networkapi.api_neighbor.v4.exceptions import \
+    RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -105,6 +111,29 @@ class NeighborV4(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
+        if self.local_ip.networkipv4.vlan.ambiente.default_vrf != \
+           self.remote_ip.networkipv4.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
+
+        equipments_of_local_ip = self.local_ip.ipequipamento_set.all().\
+            values_list('equipamento', flat=True)
+
+        equipment_of_local_asn = self.local_asn.asnequipment_set.all().\
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_local_asn not in equipments_of_local_ip:
+            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
+
+        equipments_of_remote_ip = self.remote_ip.ipequipamento_set.all(). \
+            values_list('equipamento', flat=True)
+
+        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_remote_asn not in equipments_of_remote_ip:
+            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
+                self)
+
         self.save()
 
     def update_v4(self, neighbor):
@@ -120,6 +149,29 @@ class NeighborV4(BaseModel):
         self.remote_ip = ipv4_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
+
+        if self.local_ip.networkipv4.vlan.ambiente.default_vrf != \
+           self.remote_ip.networkipv4.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
+
+        equipments_of_local_ip = self.local_ip.ipequipamento_set.all().\
+            values_list('equipamento', flat=True)
+
+        equipment_of_local_asn = self.local_asn.asnequipment_set.all().\
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_local_asn not in equipments_of_local_ip:
+            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
+
+        equipments_of_remote_ip = self.remote_ip.ipequipamento_set.all(). \
+            values_list('equipamento', flat=True)
+
+        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_remote_asn not in equipments_of_remote_ip:
+            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
+                self)
 
         self.save()
 
@@ -214,6 +266,29 @@ class NeighborV6(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
+        if self.local_ip.networkipv6.vlan.ambiente.default_vrf != \
+           self.remote_ip.networkipv6.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
+
+        equipments_of_local_ip = self.local_ip.ipv6equipament_set.all().\
+            values_list('equipamento', flat=True)
+
+        equipment_of_local_asn = self.local_asn.asnequipment_set.all().\
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_local_asn not in equipments_of_local_ip:
+            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
+
+        equipments_of_remote_ip = self.remote_ip.ipv6equipament_set.all(). \
+            values_list('equipamento', flat=True)
+
+        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_remote_asn not in equipments_of_remote_ip:
+            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
+                self)
+
         self.save()
 
     def update_v4(self, neighbor):
@@ -229,6 +304,29 @@ class NeighborV6(BaseModel):
         self.remote_ip = ipv6_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
+
+        if self.local_ip.networkipv6.vlan.ambiente.default_vrf != \
+           self.remote_ip.networkipv6.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
+
+        equipments_of_local_ip = self.local_ip.ipv6equipament_set.all(). \
+            values_list('equipamento', flat=True)
+
+        equipment_of_local_asn = self.local_asn.asnequipment_set.all(). \
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_local_asn not in equipments_of_local_ip:
+            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
+
+        equipments_of_remote_ip = self.remote_ip.ipv6equipament_set.all(). \
+            values_list('equipamento', flat=True)
+
+        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_remote_asn not in equipments_of_remote_ip:
+            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
+                self)
 
         self.save()
 

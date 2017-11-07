@@ -51,17 +51,15 @@ class Asn(BaseModel):
         """
         try:
             return Asn.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'ASN not found. pk {}'.format(id))
             raise exceptions.AsnNotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the ASN.')
-            raise exceptions.AsnError(
-                e, u'Failure to search the ASN.')
+            raise exceptions.AsnError(u'Failure to search the ASN.')
 
     def create_v4(self, as_map):
         """Create ASN."""
@@ -146,17 +144,15 @@ class AsnEquipment(BaseModel):
         """
         try:
             return AsnEquipment.objects.get(id=id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             cls.log.error(u'AsnEquipment not found. pk {}'.format(id))
             raise exceptions.AsnEquipmentNotFoundError(id)
-        except OperationalError, e:
+        except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
-            raise OperationalError(
-                e, u'Lock wait timeout exceeded; try restarting transaction')
-        except Exception, e:
+            raise OperationalError()
+        except Exception:
             cls.log.error(u'Failure to search the AS.')
-            raise exceptions.AsnEquipmentError(
-                e, u'Failure to search the AS.')
+            raise exceptions.AsnEquipmentError(u'Failure to search the AS.')
 
     def create_v4(self, as_equipment):
         """Create AsnEquipment relationship."""
@@ -173,4 +169,3 @@ class AsnEquipment(BaseModel):
         """Delete AsnEquipment relationship."""
 
         super(AsnEquipment, self).delete()
-
