@@ -20,6 +20,7 @@ from random import randint
 from django.test import TestCase
 from mock import MagicMock
 from mock import Mock
+from mock import patch
 
 from networkapi.plugins.Dell.FTOS.BGP.Cli import Generic
 from networkapi.plugins.factory import PluginFactory
@@ -67,11 +68,101 @@ class CliPluginTestCaseSuccess(TestCase):
         self.fake_template_v6_path = 'networkapi/plugins/Dell/FTOS/BGP/' \
                                      'tests/configs/config_v6_dell'
 
+    def test_undeploy_route_map(self):
+        undeploy_route_map_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic().undeploy_route_map()
+
+        undeploy_route_map_mock.assert_called_once_with('route_map_remove')
+
+    def test_deploy_route_map(self):
+        undeploy_route_map_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic().deploy_route_map()
+
+        undeploy_route_map_mock.assert_called_once_with('route_map_add')
+
+    def test_deploy_neighbor_v4(self):
+        deploy_neighbor_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic(neighbor={'remote_ip': '1.1.1.1'}).deploy_neighbor()
+
+        deploy_neighbor_mock.assert_called_once_with('neighbor_v4_add')
+
+    def test_undeploy_neighbor_v4(self):
+        undeploy_neighbor_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic(neighbor={'remote_ip': '1.1.1.1'}).undeploy_neighbor()
+
+        undeploy_neighbor_mock.assert_called_once_with('neighbor_v4_remove')
+
+    def test_deploy_neighbor_v6(self):
+        deploy_neighbor_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic(neighbor={'remote_ip': '1:1:1:1:1:1:1:1'}).deploy_neighbor()
+
+        deploy_neighbor_mock.assert_called_once_with('neighbor_v6_add')
+
+    def test_undeploy_neighbor_v6(self):
+        undeploy_neighbor_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic(neighbor={'remote_ip': '1:1:1:1:1:1:1:1'}).undeploy_neighbor()
+
+        undeploy_neighbor_mock.assert_called_once_with('neighbor_v6_remove')
+
+    def test_deploy_prefix_list(self):
+        deploy_prefix_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic().deploy_prefix_list()
+
+        deploy_prefix_mock.assert_called_once_with('prefix_list_add')
+
+    def test_undeploy_prefix_list(self):
+        undeploy_prefix_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.Generic._operate_equipment'
+        ).start()
+
+        Generic().undeploy_prefix_list()
+
+        undeploy_prefix_mock.assert_called_once_with('prefix_list_remove')
+
     def test_factory_bgp(self):
         equipment = self._mock_equipment()
         plugin = PluginFactory.factory(equipment)
 
         self.assertEqual(hasattr(plugin, 'bgp'), True)
+
+    def test_factory_bgp_undeploy_route_map(self):
+        equipment = self._mock_equipment()
+        plugin = PluginFactory.factory(equipment)
+
+        neighbor = {}
+
+        self.assertEqual(
+            hasattr(plugin.bgp(neighbor), 'undeploy_route_map'), True)
+
+    def test_factory_bgp_deploy_route_map(self):
+        equipment = self._mock_equipment()
+        plugin = PluginFactory.factory(equipment)
+
+        neighbor = {}
+
+        self.assertEqual(
+            hasattr(plugin.bgp(neighbor), 'deploy_route_map'), True)
 
     def test_factory_bgp_deploy_neighbor(self):
         equipment = self._mock_equipment()
@@ -79,8 +170,8 @@ class CliPluginTestCaseSuccess(TestCase):
 
         neighbor = {}
 
-        self.assertEqual(hasattr(plugin.bgp(neighbor), 'deploy_neighbor'),
-                         True)
+        self.assertEqual(
+            hasattr(plugin.bgp(neighbor), 'deploy_neighbor'), True)
 
     def test_factory_bgp_undeploy_neighbor(self):
         equipment = self._mock_equipment()
@@ -88,8 +179,26 @@ class CliPluginTestCaseSuccess(TestCase):
 
         neighbor = {}
 
-        self.assertEqual(hasattr(plugin.bgp(neighbor), 'undeploy_neighbor'),
-                         True)
+        self.assertEqual(
+            hasattr(plugin.bgp(neighbor), 'undeploy_neighbor'), True)
+
+    def test_factory_bgp_deploy_prefix_list(self):
+        equipment = self._mock_equipment()
+        plugin = PluginFactory.factory(equipment)
+
+        neighbor = {}
+
+        self.assertEqual(
+            hasattr(plugin.bgp(neighbor), 'deploy_prefix_list'), True)
+
+    def test_factory_bgp_undeploy_prefix_list(self):
+        equipment = self._mock_equipment()
+        plugin = PluginFactory.factory(equipment)
+
+        neighbor = {}
+
+        self.assertEqual(
+            hasattr(plugin.bgp(neighbor), 'undeploy_prefix_list'), True)
 
     def test_generate_template_dict_for_ipv4_neighbor(self):
 
@@ -117,50 +226,67 @@ class CliPluginTestCaseSuccess(TestCase):
 
         self.assertDictEqual(expected_dict, returned_dict)
 
-    def test_get_deploy_template_name_for_ipv4_neighbor(self):
+    def test_wait_string(self):
 
-        self._helper_to_check_templates_name(
-            'deploy', self.ipv4_neighbor, 'neighbor_v4_add')
+        plugin = Generic()
 
-    def test_get_deploy_template_name_for_ipv6_neighbor(self):
+        plugin.channel = Mock()
+        plugin.channel.recv.side_effect = ['test', 'ok']
 
-        self._helper_to_check_templates_name(
-            'deploy', self.ipv6_neighbor, 'neighbor_v6_add')
+        string = plugin._wait_string('ok')
 
-    def test_get_undeploy_template_name_for_ipv4_neighbor(self):
+        self.assertEqual(plugin.channel.recv.call_count, 2)
+        self.assertEqual(string, 'ok')
 
-        self._helper_to_check_templates_name(
-            'undeploy', self.ipv4_neighbor, 'neighbor_v4_remove')
+    def test_wait_string_sleep(self):
+        sleep_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.sleep').start()
 
-    def test_get_undeploy_template_name_for_ipv6_neighbor(self):
+        plugin = Generic()
 
-        self._helper_to_check_templates_name(
-            'undeploy', self.ipv6_neighbor, 'neighbor_v6_remove')
+        plugin.channel = Mock()
+        plugin.channel.recv.side_effect = ['ok']
+        plugin.channel.recv_ready.side_effect = [False, True]
 
-    def test_generate_config_for_neighbor_v4_add(self):
+        plugin._wait_string('ok')
 
-        self._generate_config_helper(
-            'deploy', self.ipv4_neighbor, self.virtual_interface,
-            self.asn, self.vrf, 'template_neighbor_v4_add_dell')
+        sleep_mock.assert_called_once_with(1)
+        self.assertEqual(sleep_mock.call_count, 1)
 
-    def test_generate_config_for_neighbor_v6_add(self):
+    def test_wait_string_2_sleep(self):
 
-        self._generate_config_helper(
-            'deploy', self.ipv6_neighbor, self.virtual_interface,
-            self.asn, self.vrf, 'template_neighbor_v6_add_dell')
+        sleep_mock = patch(
+            'networkapi.plugins.Dell.FTOS.BGP.Cli.sleep').start()
 
-    def test_generate_config_for_neighbor_v4_remove(self):
+        plugin = Generic()
 
-        self._generate_config_helper(
-            'undeploy', self.ipv4_neighbor, self.virtual_interface,
-            self.asn, self.vrf, 'template_neighbor_v4_remove_dell')
+        plugin.channel = Mock()
+        plugin.channel.recv.side_effect = ['ok']
+        plugin.channel.recv_ready.side_effect = [False, False, True]
 
-    def test_generate_config_for_neighbor_v6_remove(self):
+        plugin._wait_string('ok')
 
-        self._generate_config_helper(
-            'undeploy', self.ipv6_neighbor, self.virtual_interface,
-            self.asn, self.vrf, 'template_neighbor_v6_remove_dell')
+        sleep_mock.assert_called_with(1)
+        self.assertEqual(sleep_mock.call_count, 2)
 
+    def test_copy_script_file_to_config(self):
+
+        plugin = Generic()
+        plugin.tftpserver = '1.1.1.1'
+
+        plugin.channel = Mock()
+        plugin.channel.recv.side_effect = ['bytes successfully copied']
+
+        plugin._copy_script_file_to_config(
+            filename='filename', use_vrf='VRFBE', destination='running-config')
+
+        # sleep
+        plugin.channel.send.assert_called_once_with(
+            'copy tftp://1.1.1.1/filename running-config VRFBE\n\n\n')
+
+    #########
+    # MOCKS #
+    #########
     def _mock_equipment(self):
 
         equipment = Mock()
@@ -170,75 +296,3 @@ class CliPluginTestCaseSuccess(TestCase):
         equipment.id = randint(0, 100000)
 
         return equipment
-
-    def _mock_roteiro(self, roteiro):
-
-        roteiro_str = MagicMock(roteiro=roteiro)
-        roteiro_mock = MagicMock(roteiro=roteiro_str)
-
-        return Mock(return_value=roteiro_mock)
-
-    def _mock_plugin(self, plugin, roteiro):
-
-        plugin.connect = MagicMock()
-        plugin._ensure_privilege_level = MagicMock()
-        plugin.close = MagicMock()
-        plugin._copy_script_file_to_config = MagicMock()
-        plugin._get_equipment_template = self._mock_roteiro(roteiro)
-
-        return plugin
-
-    def _helper_to_check_templates_name(self, type_operation, neighbor,
-                                        expected_template_name):
-
-        plugin = Generic(equipment=self._mock_equipment(),
-                         virtual_interface=self.virtual_interface,
-                         neighbor=neighbor, asn=self.asn,
-                         vrf=self.vrf)
-
-        if type_operation == 'deploy':
-            returned_template_name = plugin._get_template_deploy_name()
-        elif type_operation == 'undeploy':
-            returned_template_name = plugin._get_template_undeploy_name()
-
-        self.assertEquals(expected_template_name,
-                          returned_template_name)
-
-    def _generate_config_helper(self, type_operation, neighbor,
-                                virtual_interface, asn, vrf, roteiro):
-
-        plugin = Generic(equipment=self._mock_equipment(),
-                         virtual_interface=virtual_interface,
-                         neighbor=neighbor, asn=asn, vrf=vrf)
-        plugin = self._mock_plugin(plugin, roteiro)
-
-        if type_operation == 'deploy':
-            template_name = plugin._get_template_deploy_name()
-        elif type_operation == 'undeploy':
-            template_name = plugin._get_template_undeploy_name()
-
-        path_file_to_deploy = plugin._generate_config_file(template_name)
-
-        if 'v4' in roteiro:
-            fake_dell = self._get_file_content(self.fake_template_v4_path,
-                                               False)
-        elif 'v6' in roteiro:
-            fake_dell = self._get_file_content(self.fake_template_v6_path,
-                                               False)
-
-        file_to_deploy = self._get_file_content(path_file_to_deploy, True)
-
-        self.assertEquals(fake_dell, file_to_deploy)
-
-    def _get_file_content(self, path, delete_after):
-
-        with open(path, 'r') as f:
-            content = f.read()
-
-        try:
-            if delete_after:
-                os.remove(path)
-        except OSError:
-            pass
-
-        return content
