@@ -147,11 +147,6 @@ class PeerGroup(BaseModel):
     def delete_v4(self):
         """Delete PeerGroup."""
 
-        for environment_peergroup in self.environmentpeergroup_set.all():
-            environment_peergroup.delete_v4()
-
-        super(PeerGroup, self).delete()
-
         # Deletes Permissions
         object_group_perm_model = get_model('api_ogp',
                                             'ObjectGroupPermission')
@@ -159,6 +154,11 @@ class PeerGroup(BaseModel):
             object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP,
             object_value=self.id
         ).delete()
+
+        for environment_peergroup in self.environmentpeergroup_set.all():
+            environment_peergroup.delete_v4()
+
+        super(PeerGroup, self).delete()
 
 
 class EnvironmentPeerGroup(BaseModel):

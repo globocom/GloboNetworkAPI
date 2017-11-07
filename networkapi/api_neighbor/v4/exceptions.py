@@ -78,7 +78,7 @@ class LocalIpAndRemoteIpAreInDifferentVrfsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'LocalIp id = {} and RemoteIp id = {} are in ' \
-                      u'different Vrfs'.\
+                      u'different Vrfs.'.\
             format(neighbor.local_ip, neighbor.remote_ip)
 
 
@@ -87,7 +87,7 @@ class LocalIpAndLocalAsnBelongToDifferentEquipmentsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'LocalIp id = {} and LocalAsn id = {} belongs to ' \
-                      u'different Equipments'.\
+                      u'different Equipments.'.\
             format(neighbor.local_ip, neighbor.local_asn)
 
 
@@ -96,5 +96,14 @@ class RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'RemoteIp id = {} and RemoteAsn id = {} belongs to ' \
-                      u'different Equipments'.\
+                      u'different Equipments.'.\
             format(neighbor.remote_ip, neighbor.remote_asn)
+
+
+class LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, neighbor):
+        self.detail = u'LocalIp id = {} and PeerGroup id = {} belongs to ' \
+                      u'different Environments.'. \
+            format(neighbor.local_ip, neighbor.peer_group)

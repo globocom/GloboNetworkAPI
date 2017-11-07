@@ -10,16 +10,16 @@
           "local_asn": {
             "type": "integer"
           },
-          "remote_asn": {
-            "type": "integer"
-          },
           "local_ip": {
             "type": "integer"
           },
-          "remote_ip": {
+          "peer_group": {
             "type": "integer"
           },
-          "peer_group": {
+          "remote_asn": {
+            "type": "integer"
+          },
+          "remote_ip": {
             "type": "integer"
           },
           "virtual_interface": {
@@ -27,7 +27,11 @@
           }
         },
         "required": [
-          "id"
+          "id",
+          "local_asn",
+          "remote_asn",
+          "local_ip",
+          "remote_ip"
         ],
         "type": "object"
       },

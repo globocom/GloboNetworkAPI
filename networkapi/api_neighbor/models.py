@@ -9,6 +9,8 @@ from networkapi.api_neighbor.v4 import exceptions
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndLocalAsnBelongToDifferentEquipmentsException
 from networkapi.api_neighbor.v4.exceptions import \
+    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException
+from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndRemoteIpAreInDifferentVrfsException
 from networkapi.api_neighbor.v4.exceptions import \
     RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException
@@ -134,6 +136,18 @@ class NeighborV4(BaseModel):
             raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
                 self)
 
+        if self.peer_group:
+            environments_of_peer_group = self.peer_group.\
+                environmentpeergroup_set.all().\
+                values_list('environment', flat=True)
+            environment_of_local_ip = self.local_ip.networkipv4.vlan.\
+                ambiente.id
+
+            if environment_of_local_ip not in environments_of_peer_group:
+                raise \
+                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
+                        self)
+
         self.save()
 
     def update_v4(self, neighbor):
@@ -172,6 +186,18 @@ class NeighborV4(BaseModel):
         if equipment_of_remote_asn not in equipments_of_remote_ip:
             raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
                 self)
+
+        if self.peer_group:
+            environments_of_peer_group = self.peer_group. \
+                environmentpeergroup_set.all(). \
+                values_list('environment', flat=True)
+            environment_of_local_ip = self.local_ip.networkipv4.vlan. \
+                ambiente.id
+
+            if environment_of_local_ip not in environments_of_peer_group:
+                raise \
+                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
+                        self)
 
         self.save()
 
@@ -289,6 +315,18 @@ class NeighborV6(BaseModel):
             raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
                 self)
 
+        if self.peer_group:
+            environments_of_peer_group = self.peer_group. \
+                environmentpeergroup_set.all(). \
+                values_list('environment', flat=True)
+            environment_of_local_ip = self.local_ip.networkipv6.vlan. \
+                ambiente.id
+
+            if environment_of_local_ip not in environments_of_peer_group:
+                raise \
+                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
+                        self)
+
         self.save()
 
     def update_v4(self, neighbor):
@@ -327,6 +365,18 @@ class NeighborV6(BaseModel):
         if equipment_of_remote_asn not in equipments_of_remote_ip:
             raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
                 self)
+
+        if self.peer_group:
+            environments_of_peer_group = self.peer_group. \
+                environmentpeergroup_set.all(). \
+                values_list('environment', flat=True)
+            environment_of_local_ip = self.local_ip.networkipv6.vlan. \
+                ambiente.id
+
+            if environment_of_local_ip not in environments_of_peer_group:
+                raise \
+                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
+                        self)
 
         self.save()
 
