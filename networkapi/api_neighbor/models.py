@@ -113,40 +113,7 @@ class NeighborV4(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        if self.local_ip.networkipv4.vlan.ambiente.default_vrf != \
-           self.remote_ip.networkipv4.vlan.ambiente.default_vrf:
-            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
-
-        equipments_of_local_ip = self.local_ip.ipequipamento_set.all().\
-            values_list('equipamento', flat=True)
-
-        equipment_of_local_asn = self.local_asn.asnequipment_set.all().\
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_local_asn not in equipments_of_local_ip:
-            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
-
-        equipments_of_remote_ip = self.remote_ip.ipequipamento_set.all(). \
-            values_list('equipamento', flat=True)
-
-        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_remote_asn not in equipments_of_remote_ip:
-            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
-                self)
-
-        if self.peer_group:
-            environments_of_peer_group = self.peer_group.\
-                environmentpeergroup_set.all().\
-                values_list('environment', flat=True)
-            environment_of_local_ip = self.local_ip.networkipv4.vlan.\
-                ambiente.id
-
-            if environment_of_local_ip not in environments_of_peer_group:
-                raise \
-                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
-                        self)
+        validate_if_neighbor_can_be_save(self, 'v4')
 
         self.save()
 
@@ -164,40 +131,7 @@ class NeighborV4(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        if self.local_ip.networkipv4.vlan.ambiente.default_vrf != \
-           self.remote_ip.networkipv4.vlan.ambiente.default_vrf:
-            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
-
-        equipments_of_local_ip = self.local_ip.ipequipamento_set.all().\
-            values_list('equipamento', flat=True)
-
-        equipment_of_local_asn = self.local_asn.asnequipment_set.all().\
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_local_asn not in equipments_of_local_ip:
-            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
-
-        equipments_of_remote_ip = self.remote_ip.ipequipamento_set.all(). \
-            values_list('equipamento', flat=True)
-
-        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_remote_asn not in equipments_of_remote_ip:
-            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
-                self)
-
-        if self.peer_group:
-            environments_of_peer_group = self.peer_group. \
-                environmentpeergroup_set.all(). \
-                values_list('environment', flat=True)
-            environment_of_local_ip = self.local_ip.networkipv4.vlan. \
-                ambiente.id
-
-            if environment_of_local_ip not in environments_of_peer_group:
-                raise \
-                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
-                        self)
+        validate_if_neighbor_can_be_save(self, 'v4')
 
         self.save()
 
@@ -292,40 +226,7 @@ class NeighborV6(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        if self.local_ip.networkipv6.vlan.ambiente.default_vrf != \
-           self.remote_ip.networkipv6.vlan.ambiente.default_vrf:
-            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
-
-        equipments_of_local_ip = self.local_ip.ipv6equipament_set.all().\
-            values_list('equipamento', flat=True)
-
-        equipment_of_local_asn = self.local_asn.asnequipment_set.all().\
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_local_asn not in equipments_of_local_ip:
-            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
-
-        equipments_of_remote_ip = self.remote_ip.ipv6equipament_set.all(). \
-            values_list('equipamento', flat=True)
-
-        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_remote_asn not in equipments_of_remote_ip:
-            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
-                self)
-
-        if self.peer_group:
-            environments_of_peer_group = self.peer_group. \
-                environmentpeergroup_set.all(). \
-                values_list('environment', flat=True)
-            environment_of_local_ip = self.local_ip.networkipv6.vlan. \
-                ambiente.id
-
-            if environment_of_local_ip not in environments_of_peer_group:
-                raise \
-                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
-                        self)
+        validate_if_neighbor_can_be_save(self, 'v6')
 
         self.save()
 
@@ -343,40 +244,7 @@ class NeighborV6(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        if self.local_ip.networkipv6.vlan.ambiente.default_vrf != \
-           self.remote_ip.networkipv6.vlan.ambiente.default_vrf:
-            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
-
-        equipments_of_local_ip = self.local_ip.ipv6equipament_set.all(). \
-            values_list('equipamento', flat=True)
-
-        equipment_of_local_asn = self.local_asn.asnequipment_set.all(). \
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_local_asn not in equipments_of_local_ip:
-            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(self)
-
-        equipments_of_remote_ip = self.remote_ip.ipv6equipament_set.all(). \
-            values_list('equipamento', flat=True)
-
-        equipment_of_remote_asn = self.remote_asn.asnequipment_set.all(). \
-            values_list('equipment', flat=True)[0]
-
-        if equipment_of_remote_asn not in equipments_of_remote_ip:
-            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
-                self)
-
-        if self.peer_group:
-            environments_of_peer_group = self.peer_group. \
-                environmentpeergroup_set.all(). \
-                values_list('environment', flat=True)
-            environment_of_local_ip = self.local_ip.networkipv6.vlan. \
-                ambiente.id
-
-            if environment_of_local_ip not in environments_of_peer_group:
-                raise \
-                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
-                        self)
+        validate_if_neighbor_can_be_save(self, 'v6')
 
         self.save()
 
@@ -384,3 +252,82 @@ class NeighborV6(BaseModel):
         """Delete NeighborV6."""
 
         super(NeighborV6, self).delete()
+
+
+def validate_if_neighbor_can_be_save(neighbor, type):
+
+    if type == 'v4':
+
+        if neighbor.local_ip.networkipv4.vlan.ambiente.default_vrf != \
+           neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
+
+        equipments_of_local_ip = neighbor.local_ip.ipequipamento_set.all().\
+            values_list('equipamento', flat=True)
+
+        equipment_of_local_asn = neighbor.local_asn.asnequipment_set.all().\
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_local_asn not in equipments_of_local_ip:
+            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(
+                neighbor)
+
+        equipments_of_remote_ip = neighbor.remote_ip.ipequipamento_set.all().\
+            values_list('equipamento', flat=True)
+
+        equipment_of_remote_asn = neighbor.remote_asn.asnequipment_set.all().\
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_remote_asn not in equipments_of_remote_ip:
+            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
+                neighbor)
+
+        if neighbor.peer_group:
+            environments_of_peer_group = neighbor.peer_group.\
+                environmentpeergroup_set.all().\
+                values_list('environment', flat=True)
+            environment_of_local_ip = neighbor.local_ip.networkipv4.vlan.\
+                ambiente.id
+
+            if environment_of_local_ip not in environments_of_peer_group:
+                raise \
+                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
+                        neighbor)
+
+    elif type == 'v6':
+
+        if neighbor.local_ip.networkipv6.vlan.ambiente.default_vrf != \
+                neighbor.remote_ip.networkipv6.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
+
+        equipments_of_local_ip = neighbor.local_ip.ipv6equipament_set.all().\
+            values_list('equipamento', flat=True)
+
+        equipment_of_local_asn = neighbor.local_asn.asnequipment_set.all().\
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_local_asn not in equipments_of_local_ip:
+            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(
+                neighbor)
+
+        equipments_of_remote_ip = neighbor.remote_ip.ipv6equipament_set.all().\
+            values_list('equipamento', flat=True)
+
+        equipment_of_remote_asn = neighbor.remote_asn.asnequipment_set.all().\
+            values_list('equipment', flat=True)[0]
+
+        if equipment_of_remote_asn not in equipments_of_remote_ip:
+            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
+                neighbor)
+
+        if neighbor.peer_group:
+            environments_of_peer_group = neighbor.peer_group.\
+                environmentpeergroup_set.all().\
+                values_list('environment', flat=True)
+            environment_of_local_ip = neighbor.local_ip.networkipv6.vlan.\
+                ambiente.id
+
+            if environment_of_local_ip not in environments_of_peer_group:
+                raise \
+                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
+                        neighbor)
