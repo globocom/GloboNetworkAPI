@@ -1,0 +1,14 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE  `environment_peer_group` ADD UNIQUE KEY `unique_id_environment_id_peer_group` (`id_environment`,`id_peer_group`);
+ALTER TABLE  `peer_group` ADD UNIQUE KEY `unique_id_route_map_in_id_route_map_out` (`id_route_map_in`,`id_route_map_out`);
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE  `environment_peer_group` DROP INDEX `unique_id_environment_id_peer_group`;
+ALTER TABLE  `peer_group` DROP INDEX `unique_id_route_map_in_id_route_map_out`;
+
+"""
