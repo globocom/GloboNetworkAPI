@@ -8,8 +8,8 @@ from django.db import models
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_peer_group.v4 import exceptions
 from networkapi.api_peer_group.v4.exceptions import \
-    EnvironmentPeerGroupDuplicatedError
-from networkapi.api_peer_group.v4.exceptions import PeerGroupDuplicatedError
+    EnvironmentPeerGroupDuplicatedException
+from networkapi.api_peer_group.v4.exceptions import PeerGroupDuplicatedException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -96,7 +96,7 @@ class PeerGroup(BaseModel):
         obj = PeerGroup.objects.filter(route_map_in=route_map_in_id,
                                        route_map_out=route_map_out_id)
         if obj:
-            raise PeerGroupDuplicatedError(self)
+            raise PeerGroupDuplicatedException(self)
 
         self.save()
 
@@ -131,7 +131,7 @@ class PeerGroup(BaseModel):
         obj = PeerGroup.objects.filter(route_map_in=route_map_in_id,
                                        route_map_out=route_map_out_id)
         if obj:
-            raise PeerGroupDuplicatedError(self)
+            raise PeerGroupDuplicatedException(self)
 
         self.save()
 
@@ -237,7 +237,7 @@ class EnvironmentPeerGroup(BaseModel):
         obj = EnvironmentPeerGroup.objects.filter(environment=environment_id,
                                                   peer_group=peer_group_id)
         if obj:
-            raise EnvironmentPeerGroupDuplicatedError(self)
+            raise EnvironmentPeerGroupDuplicatedException(self)
 
         self.environment = environment_model.get_by_pk(environment_id)
         self.peer_group = PeerGroup.get_by_pk(peer_group_id)

@@ -36,7 +36,7 @@ class PeerGroupDoesNotExistException(APIException):
     default_detail = u'PeerGroup does not exists.'
 
 
-class EnvironmentPeerGroupDuplicatedError(APIException):
+class EnvironmentPeerGroupDuplicatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, env_peer_group):
@@ -45,7 +45,7 @@ class EnvironmentPeerGroupDuplicatedError(APIException):
             format(env_peer_group.environment, env_peer_group.peer_group)
 
 
-class PeerGroupDuplicatedError(APIException):
+class PeerGroupDuplicatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, peer_group):

@@ -107,3 +107,14 @@ class LocalIpAndPeerGroupAtDifferentEnvironmentsException(APIException):
         self.detail = u'LocalIp id = {} and PeerGroup id = {} belongs to ' \
                       u'different Environments.'. \
             format(neighbor.local_ip, neighbor.peer_group)
+
+
+class NeighborDuplicatedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, neighbor):
+        self.detail = u'It already exists Neighbor with LocalAsn id = {}, ' \
+                      u'LocalIp id = {}, RemoteAsn id = {} and ' \
+                      u'RemoteIp id = {}'.\
+            format(neighbor.local_asn, neighbor.local_ip,
+                   neighbor.remote_asn, neighbor.remote_ip)
