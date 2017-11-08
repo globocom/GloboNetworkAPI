@@ -7,6 +7,9 @@ from django.db import models
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_peer_group.v4 import exceptions
+from networkapi.api_peer_group.v4.exceptions import \
+    EnvironmentPeerGroupDuplicatedError
+from networkapi.api_peer_group.v4.exceptions import PeerGroupDuplicatedError
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -83,10 +86,17 @@ class PeerGroup(BaseModel):
 
         routemap_model = get_model('api_route_map', 'RouteMap')
 
-        self.route_map_in = routemap_model.get_by_pk(
-            peer_group.get('route_map_in'))
-        self.route_map_out = routemap_model.get_by_pk(
-            peer_group.get('route_map_out'))
+        route_map_in_id = peer_group.get('route_map_in')
+        route_map_out_id = peer_group.get('route_map_out')
+
+        self.route_map_in = routemap_model.get_by_pk(route_map_in_id)
+        self.route_map_out = routemap_model.get_by_pk(route_map_out_id)
+
+        # check if peer group already exists
+        obj = PeerGroup.objects.filter(route_map_in=route_map_in_id,
+                                       route_map_out=route_map_out_id)
+        if obj:
+            raise PeerGroupDuplicatedError(self)
 
         self.save()
 
@@ -111,10 +121,19 @@ class PeerGroup(BaseModel):
 
         routemap_model = get_model('api_route_map', 'RouteMap')
 
-        self.route_map_in = routemap_model.get_by_pk(
-            peer_group.get('route_map_in'))
-        self.route_map_out = routemap_model.get_by_pk(
-            peer_group.get('route_map_out'))
+        route_map_in_id = peer_group.get('route_map_in')
+        route_map_out_id = peer_group.get('route_map_out')
+
+        self.route_map_in = routemap_model.get_by_pk(route_map_in_id)
+        self.route_map_out = routemap_model.get_by_pk(route_map_out_id)
+
+        # check if peer group already exists
+        obj = PeerGroup.objects.filter(route_map_in=route_map_in_id,
+                                       route_map_out=route_map_out_id)
+        if obj:
+            raise PeerGroupDuplicatedError(self)
+
+        self.save()
 
         self.save()
 
@@ -211,10 +230,17 @@ class EnvironmentPeerGroup(BaseModel):
 
         environment_model = get_model('ambiente', 'Ambiente')
 
-        self.environment = environment_model.get_by_pk(
-            environment_peergroup.get('environment'))
-        self.peer_group = PeerGroup.get_by_pk(
-            environment_peergroup.get('peer_group'))
+        environment_id = environment_peergroup.get('environment')
+        peer_group_id = environment_peergroup.get('peer_group')
+
+        # check if already exists relationship
+        obj = EnvironmentPeerGroup.objects.filter(environment=environment_id,
+                                                  peer_group=peer_group_id)
+        if obj:
+            raise EnvironmentPeerGroupDuplicatedError(self)
+
+        self.environment = environment_model.get_by_pk(environment_id)
+        self.peer_group = PeerGroup.get_by_pk(peer_group_id)
 
         self.save()
 

@@ -29,8 +29,26 @@ class EnvironmentPeerGroupError(APIException):
 
     def __init__(self, msg):
         self.detail = msg
-        
-        
+
+
 class PeerGroupDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = u'PeerGroup does not exists.'
+
+
+class EnvironmentPeerGroupDuplicatedError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, env_peer_group):
+        self.detail = u'Environment id = {} is already associated ' \
+                      u'with Peer Group id = {}'. \
+            format(env_peer_group.environment, env_peer_group.peer_group)
+
+
+class PeerGroupDuplicatedError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, peer_group):
+        self.detail = u'Already exists PeerGroup with RouteMapIn id = {} ' \
+                      u'and RouteMapOut id = {}'.\
+            format(peer_group.route_map_in, peer_group.route_map_out)

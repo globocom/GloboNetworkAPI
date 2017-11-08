@@ -7,13 +7,13 @@ from django.db import models
 
 from networkapi.api_neighbor.v4 import exceptions
 from networkapi.api_neighbor.v4.exceptions import \
-    LocalIpAndLocalAsnBelongToDifferentEquipmentsException
+    LocalIpAndLocalAsnAtDifferentEquipmentsException
 from networkapi.api_neighbor.v4.exceptions import \
-    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException
+    LocalIpAndPeerGroupAtDifferentEnvironmentsException
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndRemoteIpAreInDifferentVrfsException
 from networkapi.api_neighbor.v4.exceptions import \
-    RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException
+    RemoteIpAndRemoteAsnAtDifferentEquipmentsException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -262,25 +262,23 @@ def validate_if_neighbor_can_be_save(neighbor, type):
            neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf:
             raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
 
-        equipments_of_local_ip = neighbor.local_ip.ipequipamento_set.all().\
-            values_list('equipamento', flat=True)
+        eqpts_of_local_ip = set(neighbor.local_ip.ipequipamento_set.all().
+                                values_list('equipamento', flat=True))
 
-        equipment_of_local_asn = neighbor.local_asn.asnequipment_set.all().\
-            values_list('equipment', flat=True)[0]
+        eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
+                                 values_list('equipment', flat=True))
 
-        if equipment_of_local_asn not in equipments_of_local_ip:
-            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(
-                neighbor)
+        if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
+            raise LocalIpAndLocalAsnAtDifferentEquipmentsException(neighbor)
 
-        equipments_of_remote_ip = neighbor.remote_ip.ipequipamento_set.all().\
-            values_list('equipamento', flat=True)
+        eqpts_of_remote_ip = set(neighbor.remote_ip.ipequipamento_set.all().
+                                 values_list('equipamento', flat=True))
 
-        equipment_of_remote_asn = neighbor.remote_asn.asnequipment_set.all().\
-            values_list('equipment', flat=True)[0]
+        eqpts_of_remote_asn = set(neighbor.remote_asn.asnequipment_set.all().
+                                  values_list('equipment', flat=True))
 
-        if equipment_of_remote_asn not in equipments_of_remote_ip:
-            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
-                neighbor)
+        if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
+            raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(neighbor)
 
         if neighbor.peer_group:
             environments_of_peer_group = neighbor.peer_group.\
@@ -290,35 +288,32 @@ def validate_if_neighbor_can_be_save(neighbor, type):
                 ambiente.id
 
             if environment_of_local_ip not in environments_of_peer_group:
-                raise \
-                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
-                        neighbor)
+                raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(
+                    neighbor)
 
     elif type == 'v6':
 
         if neighbor.local_ip.networkipv6.vlan.ambiente.default_vrf != \
-                neighbor.remote_ip.networkipv6.vlan.ambiente.default_vrf:
+           neighbor.remote_ip.networkipv6.vlan.ambiente.default_vrf:
             raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
 
-        equipments_of_local_ip = neighbor.local_ip.ipv6equipament_set.all().\
-            values_list('equipamento', flat=True)
+        eqpts_of_local_ip = set(neighbor.local_ip.ipv6equipament_set.all().
+                                values_list('equipamento', flat=True))
 
-        equipment_of_local_asn = neighbor.local_asn.asnequipment_set.all().\
-            values_list('equipment', flat=True)[0]
+        eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
+                                 values_list('equipment', flat=True))
 
-        if equipment_of_local_asn not in equipments_of_local_ip:
-            raise LocalIpAndLocalAsnBelongToDifferentEquipmentsException(
-                neighbor)
+        if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
+            raise LocalIpAndLocalAsnAtDifferentEquipmentsException(neighbor)
 
-        equipments_of_remote_ip = neighbor.remote_ip.ipv6equipament_set.all().\
-            values_list('equipamento', flat=True)
+        eqpts_of_remote_ip = set(neighbor.remote_ip.ipv6equipament_set.all().
+                                 values_list('equipamento', flat=True))
 
-        equipment_of_remote_asn = neighbor.remote_asn.asnequipment_set.all().\
-            values_list('equipment', flat=True)[0]
+        eqpts_of_remote_asn = set(neighbor.remote_asn.asnequipment_set.all().
+                                  values_list('equipment', flat=True))
 
-        if equipment_of_remote_asn not in equipments_of_remote_ip:
-            raise RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(
-                neighbor)
+        if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
+            raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(neighbor)
 
         if neighbor.peer_group:
             environments_of_peer_group = neighbor.peer_group.\
@@ -328,6 +323,5 @@ def validate_if_neighbor_can_be_save(neighbor, type):
                 ambiente.id
 
             if environment_of_local_ip not in environments_of_peer_group:
-                raise \
-                    LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(
-                        neighbor)
+                raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(
+                    neighbor)

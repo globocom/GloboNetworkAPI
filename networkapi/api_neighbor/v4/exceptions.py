@@ -82,7 +82,7 @@ class LocalIpAndRemoteIpAreInDifferentVrfsException(APIException):
             format(neighbor.local_ip, neighbor.remote_ip)
 
 
-class LocalIpAndLocalAsnBelongToDifferentEquipmentsException(APIException):
+class LocalIpAndLocalAsnAtDifferentEquipmentsException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, neighbor):
@@ -91,7 +91,7 @@ class LocalIpAndLocalAsnBelongToDifferentEquipmentsException(APIException):
             format(neighbor.local_ip, neighbor.local_asn)
 
 
-class RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(APIException):
+class RemoteIpAndRemoteAsnAtDifferentEquipmentsException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, neighbor):
@@ -100,7 +100,7 @@ class RemoteIpAndRemoteAsnBelongToDifferentEquipmentsException(APIException):
             format(neighbor.remote_ip, neighbor.remote_asn)
 
 
-class LocalIpAndPeerGroupBelongToDifferentEnvironmentsException(APIException):
+class LocalIpAndPeerGroupAtDifferentEnvironmentsException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, neighbor):

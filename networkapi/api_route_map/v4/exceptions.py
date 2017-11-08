@@ -46,7 +46,7 @@ class RouteMapAssociatedToRouteMapEntryException(APIException):
 
     def __init__(self, route_map):
         self.detail = u'RouteMap id = {} is associated ' \
-                      u'with RouteMapEntries = {}'. \
+                      u'with RouteMapEntries ids = {}'. \
             format(route_map.id, route_map.route_map_entries_id)
 
 
@@ -55,5 +55,5 @@ class RouteMapAssociatedToPeerGroupException(APIException):
 
     def __init__(self, route_map):
         self.detail = u'RouteMap id = {} is associated ' \
-                      u'with PeerGroups = {}'. \
+                      u'with PeerGroups ids = {}'. \
             format(route_map.id, route_map.peer_groups_id)
