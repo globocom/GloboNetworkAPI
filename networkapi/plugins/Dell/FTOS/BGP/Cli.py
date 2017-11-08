@@ -21,7 +21,7 @@ from time import sleep
 from django.template import Context
 from django.template import Template
 
-from networkapi.api_deploy import exceptions
+from networkapi.api_deploy import exceptions as deploy_exc
 from networkapi.api_equipment.exceptions import \
     AllEquipmentsAreInMaintenanceException
 from networkapi.equipamento import models as eqpt_models
@@ -75,12 +75,22 @@ class Generic(BasePlugin):
     def deploy_neighbor(self):
         """Deploy neighbor"""
 
-        self._operate_equipment(self._get_template_deploy_name())
+        ip_version = IPAddress(self.neighbor.get('remote_ip')).version
+
+        template_type = self.TEMPLATE_NEIGHBOR_V4_ADD if ip_version == 4 else \
+            self.TEMPLATE_NEIGHBOR_V6_ADD
+
+        self._operate_equipment(template_type)
 
     def undeploy_neighbor(self):
         """Undeploy neighbor"""
 
-        self._operate_equipment(self._get_template_undeploy_name())
+        ip_version = IPAddress(self.neighbor.get('remote_ip')).version
+
+        template_type = self.TEMPLATE_NEIGHBOR_V4_REMOVE \
+            if ip_version == 4 else self.TEMPLATE_NEIGHBOR_V6_REMOVE
+
+        self._operate_equipment(template_type)
 
     def deploy_prefix_list(self):
         """Deploy prefix list"""
@@ -98,75 +108,54 @@ class Generic(BasePlugin):
         """Undeploy route map"""
         self._operate_equipment(self.TEMPLATE_ROUTE_MAP_REMOVE)
 
-    def _operate_equipment(self, template_name):
+    def _operate_equipment(self, template_type):
 
         self.connect()
         self._ensure_privilege_level()
-        file_to_deploy = self._generate_config_file(template_name)
+        file_to_deploy = self._generate_config_file(template_type)
         self._deploy_config_in_equipment(file_to_deploy)
         self.close()
 
-    def _get_template_deploy_name(self):
-
-        ip_version = IPAddress(self.neighbor.get('remote_ip')).version
-
-        if ip_version == 4:
-            return self.TEMPLATE_NEIGHBOR_V4_ADD
-        return self.TEMPLATE_NEIGHBOR_V6_ADD
-
-    def _get_template_undeploy_name(self):
-
-        ip_version = IPAddress(self.neighbor.get('remote_ip')).version
-
-        if ip_version == 4:
-            return self.TEMPLATE_NEIGHBOR_V4_REMOVE
-        return self.TEMPLATE_NEIGHBOR_V6_REMOVE
-
+    ############
+    # TEMPLATE #
+    ############
     def _generate_config_file(self, template_type):
         """Load a template and write a file with the rended output.
-
-        Args: 2-dimension dictionary with equipments information for template
-              rendering equipment to render template to template type to load.
 
         Returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
         """
 
-        config_to_be_saved = ''
         request_id = getattr(local, 'request_id', NO_REQUEST_ID)
 
         filename_out = 'network_equip{}_config_{}'.format(
             self.equipment.id, request_id)
 
-        filename_to_save = BGP_CONFIG_FILES_PATH + filename_out
+        filename = BGP_CONFIG_FILES_PATH + filename_out
         rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out
+
+        config = self._get_template_config(template_type)
+
+        self._save_config(filename, config)
+
+        return rel_file_to_deploy
+
+    def _get_template_config(self, template_type):
+        """Load template file and render values in VARs"""
 
         try:
             template_file = self._load_template_file(template_type)
             key_dict = self._generate_template_dict()
-            config_to_be_saved += template_file.render(Context(key_dict))
-        except KeyError, exception:
-            log.error('Erro: %s ' % exception)
-            raise exceptions.InvalidKeyException(exception)
+            config_to_be_saved = template_file.render(Context(key_dict))
 
-        # Save new file
-        try:
-            file_handle = open(filename_to_save, 'w')
-            file_handle.write(config_to_be_saved)
-            file_handle.close()
-        except IOError, e:
-            log.error('Error writing to config file: %s' % filename_to_save)
-            raise e
+        except KeyError as err:
+            log.error('Error: %s', err)
+            raise deploy_exc.InvalidKeyException(err)
 
-        return rel_file_to_deploy
+        except Exception as err:
+            log.error('Error: %s ' % err)
+            raise plugin_exc.BGPTemplateException(err)
 
-    def _get_equipment_template(self, template_type):
-
-        try:
-            return eqpt_models.EquipamentoRoteiro.search(
-                None, self.equipment.id, template_type).uniqueResult()
-        except:
-            log.error('Template type %s not found.' % template_type)
-            raise plugin_exc.BGPTemplateException()
+        return config_to_be_saved
 
     def _load_template_file(self, template_type):
         """Load template file with specific type related to equipment.
@@ -178,65 +167,86 @@ class Generic(BasePlugin):
 
         equipment_template = self._get_equipment_template(template_type)
 
-        filename_in = BGP_CONFIG_TEMPLATE_PATH + \
-            '/' + equipment_template.roteiro.roteiro
+        filename = BGP_CONFIG_TEMPLATE_PATH + '/' + equipment_template.roteiro.roteiro
 
-        # Read contents from file
+        template_file = self._read_config(filename)
+
+        return template_file
+
+    def _get_equipment_template(self, template_type):
+        """Return a script by equipment and template_type"""
+
         try:
-            file_handle = open(filename_in, 'r')
-            template_file = Template(file_handle.read())
+            return eqpt_models.EquipamentoRoteiro.search(
+                None, self.equipment.id, template_type).uniqueResult()
+        except:
+            log.error('Template type %s not found.' % template_type)
+            raise plugin_exc.BGPTemplateException()
+
+    def _generate_template_dict(self):
+        """Make a dictionary to use in template"""
+
+        key_dict = {
+            'AS_NUMBER': self.asn.get('name'),
+            'VRF_NAME': self.vrf.get('vrf'),
+            'REMOTE_IP': self.neighbor.get('remote_ip'),
+            'REMOTE_AS': self.neighbor.get('remote_as'),
+            'PASSWORD': self.neighbor.get('password'),
+            'TIMER_KEEPALIVE': self.neighbor.get('timer_keepalive'),
+            'TIMER_TIMEOUT': self.neighbor.get('timer_timeout'),
+            'DESCRIPTION': self.neighbor.get('description'),
+            'SOFT_RECONFIGURATION': self.neighbor.get('soft_reconfiguration'),
+            'NEXT_HOP_SELF': self.neighbor.get('next_hop_self'),
+            'REMOVE_PRIVATE_AS': self.neighbor.get('remove_private_as'),
+            'COMMUNITY': self.neighbor.get('community')
+        }
+
+        return key_dict
+
+    def _read_config(self, filename):
+        """Return content from template_file"""
+
+        try:
+            file_handle = open(filename, 'r')
+            template_content = Template(file_handle.read())
             file_handle.close()
         except IOError, e:
-            log.error('Error opening template file for read: %s' % filename_in)
+            log.error('Error opening template file for read: %s' % filename)
             raise Exception(e)
         except Exception, e:
             log.error('Syntax error when parsing template: %s ' % e)
             raise Exception(e)
-            # TemplateSyntaxError
 
-        return template_file
+        return template_content
 
+    def _save_config(self, filename, config):
+        """Write config in template file"""
+
+        try:
+            file_handle = open(filename, 'w')
+            file_handle.write(config)
+            file_handle.close()
+        except IOError, e:
+            log.error('Error writing to config file: %s' % filename)
+            raise e
+
+    ##########
+    # DEPLOY #
+    ##########
     def _deploy_config_in_equipment(self, rel_filename):
 
-        # validate filename
         path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
         if not path.startswith(TFTPBOOT_FILES_PATH):
-            raise exceptions.InvalidFilenameException(rel_filename)
+            raise deploy_exc.InvalidFilenameException(rel_filename)
 
-        # if type(self.equipment) is not Equipamento:
-        #     log.error('Invalid data for equipment')
-        #     raise api_exceptions.NetworkAPIException()
+        return self._apply_config(rel_filename)
+
+    def _apply_config(self, filename):
 
         if self.equipment.maintenance:
             raise AllEquipmentsAreInMaintenanceException()
 
-        return self._applyconfig(rel_filename)
-
-    def _applyconfig(self, filename):
-
-        if self.equipment.maintenance is True:
-            return 'Equipment is in maintenance mode. No action taken.'
-
-        self._copy_script_file_to_config(filename)
-
-    def _generate_template_dict(self):
-
-        key_dict = {}
-        key_dict['AS_NUMBER'] = self.asn.get('name')
-        key_dict['VRF_NAME'] = self.vrf.get('vrf')
-        key_dict['REMOTE_IP'] = self.neighbor.get('remote_ip')
-        key_dict['REMOTE_AS'] = self.neighbor.get('remote_as')
-        key_dict['PASSWORD'] = self.neighbor.get('password')
-        key_dict['TIMER_KEEPALIVE'] = self.neighbor.get('timer_keepalive')
-        key_dict['TIMER_TIMEOUT'] = self.neighbor.get('timer_timeout')
-        key_dict['DESCRIPTION'] = self.neighbor.get('description')
-        key_dict['SOFT_RECONFIGURATION'] = \
-            self.neighbor.get('soft_reconfiguration')
-        key_dict['NEXT_HOP_SELF'] = self.neighbor.get('next_hop_self')
-        key_dict['REMOVE_PRIVATE_AS'] = self.neighbor.get('remove_private_as')
-        key_dict['COMMUNITY'] = self.neighbor.get('community')
-
-        return key_dict
+        self._copy_script_file_to_config(filename, self.vrf)
 
     def _copy_script_file_to_config(self, filename, use_vrf=None,
                                     destination='running-config'):
@@ -244,10 +254,11 @@ class Generic(BasePlugin):
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
         """
+
         if use_vrf is None:
             use_vrf = self.management_vrf
 
-        command = 'copy tftp://%s/%s %s %s\n\n' % (
+        command = 'copy tftp://{}/{} {} {}\n\n'.format(
             self.tftpserver, filename, destination, use_vrf)
 
         file_copied = 0
@@ -267,7 +278,7 @@ class Generic(BasePlugin):
 
         # not capable of configuring after max retries
         if retries is self.MAX_TRIES:
-            raise exceptions.CurrentlyBusyErrorException()
+            raise plugin_exc.CurrentlyBusyErrorException()
 
         return recv
 
@@ -292,6 +303,7 @@ class Generic(BasePlugin):
 
     def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
                      wait_str_failed_regex=None):
+        """As equipment goes returning a string, makes a regex and verifies if string wished was returned."""
 
         if wait_str_invalid_regex is None:
             wait_str_invalid_regex = self.INVALID_REGEX
@@ -301,7 +313,9 @@ class Generic(BasePlugin):
 
         string_ok = 0
         recv_string = ''
+
         while not string_ok:
+
             while not self.channel.recv_ready():
                 sleep(self.WAIT_FOR_CLI_RETURN)
 
@@ -309,25 +323,32 @@ class Generic(BasePlugin):
             file_name_string = self.removeDisallowedChars(recv_string)
 
             for output_line in recv_string.splitlines():
+
                 if re.search(self.CURRENTLY_BUSY_WAIT, output_line):
                     log.warning('Need to wait - Switch busy: %s' % output_line)
-                    raise exceptions.CurrentlyBusyErrorException()
+                    raise plugin_exc.CurrentlyBusyErrorException()
+
                 elif re.search(self.WARNING_REGEX, output_line):
                     log.warning('Equipment warning: %s' % output_line)
+
                 elif re.search(wait_str_invalid_regex, output_line):
                     log.error('Equipment raised INVALID error: %s' %
                               output_line)
-                    raise exceptions.CommandErrorException(file_name_string)
+                    raise deploy_exc.InvalidCommandException(file_name_string)
+
                 elif re.search(wait_str_failed_regex, output_line):
                     log.error('Equipment raised FAILED error: %s' %
                               output_line)
-                    raise exceptions.InvalidCommandException(file_name_string)
+                    raise deploy_exc.CommandErrorException(file_name_string)
+
                 elif re.search(wait_str_ok_regex, output_line):
+
                     log.debug('Equipment output: %s' % output_line)
+
                     # test bug switch copying 0 bytes
                     if output_line == '0 bytes successfully copied':
                         log.debug('Switch copied 0 bytes, need to try again.')
-                        raise exceptions.CurrentlyBusyErrorException()
+                        raise plugin_exc.CurrentlyBusyErrorException()
                     string_ok = 1
 
         return recv_string
