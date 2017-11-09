@@ -21,22 +21,18 @@ import operator
 import re
 from django.core.exceptions import ObjectDoesNotExist
 from netaddr import IPNetwork
-from requests.exceptions import RequestException
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-from networkapi.admin_permission import AdminPermission
-from networkapi.auth import has_perm
 from networkapi.ambiente import models as models_env
 from networkapi.api_environment import facade as facade_env
-from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.vlan import models as models_vlan
 from networkapi.api_vlan.facade import v3 as facade_vlan_v3
-from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro
-from networkapi.interface.models import Interface, InterfaceNotFoundError
-from networkapi.ip.models import IpEquipamento, Ip
-from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError, RackError, RackNumberNotFoundError
-from networkapi.rest import RestResource, UserNotAuthorizedError
+from networkapi.equipamento.models import Equipamento, EquipamentoRoteiro, EquipamentoAmbiente, \
+    EquipamentoAmbienteDuplicatedError
+from networkapi.interface.models import Interface
+from networkapi.ip.models import IpEquipamento
+from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError
 from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
 from networkapi.system import exceptions as var_exceptions
@@ -385,7 +381,7 @@ def gerar_arquivo_config(ids):
 
     return True
 
-def _create_spnlfenv(rack):
+def _create_spnlfenv(user, rack):
     log.debug("_create_spnlfenv")
 
     envfathers = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
@@ -460,7 +456,18 @@ def _create_spnlfenv(rack):
                 environment_spn_lf = facade_env.create_environment(obj)
                 environment_spn_lf_list.append(environment_spn_lf)
             except:
-                log.debug("Environment object: %s" % str(obj))
+                log.debug("Environment object: %s" % str(environment_spn_lf))
+
+            for switch in [rack.id_sw1, rack.id_sw2]:
+                try:
+                    equipamento_ambiente = EquipamentoAmbiente()
+                    equipamento_ambiente.ambiente = environment_spn_lf
+                    equipamento_ambiente.equipamento = switch
+                    equipamento_ambiente.is_router = True
+                    equipamento_ambiente.create(user)
+                except EquipamentoAmbienteDuplicatedError:
+                    pass
+
     return environment_spn_lf_list
 
 def _create_spnlfvlans(rack, user):
@@ -603,8 +610,19 @@ def _create_prod_envs(rack, user):
             'configs': config_subnet,
             'fabric_id': rack.dcroom.id
         }
-        environment.append(facade_env.create_environment(obj))
-        log.debug("Environment object: %s" % str(environment))
+        obj_env = facade_env.create_environment(obj)
+        environment.append(obj_env)
+        log.debug("Environment object: %s" % str(obj_env))
+
+        for switch in [rack.id_sw1, rack.id_sw2]:
+            try:
+                equipamento_ambiente = EquipamentoAmbiente()
+                equipamento_ambiente.ambiente = obj_env
+                equipamento_ambiente.equipamento = switch
+                equipamento_ambiente.is_router = True
+                equipamento_ambiente.create(user)
+            except EquipamentoAmbienteDuplicatedError:
+                pass
 
     return environment
 
@@ -710,6 +728,16 @@ def _create_prod_vlans(rack, user):
         environment = facade_env.create_environment(obj)
         log.debug("Environment object: %s" % str(environment))
 
+        for switch in [rack.id_sw1, rack.id_sw2]:
+            try:
+                equipamento_ambiente = EquipamentoAmbiente()
+                equipamento_ambiente.ambiente = environment
+                equipamento_ambiente.equipamento = switch
+                equipamento_ambiente.is_router = True
+                equipamento_ambiente.create(user)
+            except EquipamentoAmbienteDuplicatedError:
+                pass
+
     return environment
 
 def _create_lflf_vlans(rack, user):
@@ -720,7 +748,6 @@ def _create_lflf_vlans(rack, user):
                                                 grupo_l3__nome=str(rack.dcroom.name),
                                                 ambiente_logico__nome="LEAF-LEAF")
     log.debug(str(env_lf))
-    rack_number = int(rack.numero)
 
     tipo_rede = "Ponto a ponto"
     try:
@@ -804,7 +831,7 @@ def rack_environments_vlans(rack_id, user):
         raise Exception("Os ambientes e Vlans já foram alocados.")
 
     # spine x leaf
-    _create_spnlfenv(rack)
+    _create_spnlfenv(user, rack)
     _create_spnlfvlans(rack, user)
 
     # leaf x leaf
