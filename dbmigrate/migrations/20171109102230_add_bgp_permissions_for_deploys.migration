@@ -1,0 +1,22 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+INSERT INTO `permissions` (function) VALUES ('neighbor_deploy_script');
+INSERT INTO `permissions` (function) VALUES ('neighbor_undeploy_script');
+INSERT INTO `permissions` (function) VALUES ('list_config_bgp_deploy_script');
+INSERT INTO `permissions` (function) VALUES ('list_config_bgp_undeploy_script');
+INSERT INTO `permissions` (function) VALUES ('route_map_deploy_script');
+INSERT INTO `permissions` (function) VALUES ('route_map_undeploy_script');
+
+"""
+
+SQL_DOWN = u"""
+
+DELETE FROM `permissions` where function='neighbor_deploy_script';
+DELETE FROM `permissions` where function='neighbor_undeploy_script';
+DELETE FROM `permissions` where function='list_config_bgp_deploy_script';
+DELETE FROM `permissions` where function='list_config_bgp_undeploy_script';
+DELETE FROM `permissions` where function='route_map_deploy_script';
+DELETE FROM `permissions` where function='route_map_undeploy_script';
+
+"""
