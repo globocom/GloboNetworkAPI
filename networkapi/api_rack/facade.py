@@ -644,15 +644,19 @@ def _create_prod_vlans(rack, user):
 
     log.debug("debug")
     for fab in fabricconfig.get("Ambiente"):
-        log.debug("debug for fab")
+        log.debug(str(fab))
         if int(fab.get("id"))==int(env.father_environment.id):
             fabenv = fab.get("details")
+            log.debug("details: "+str(fabenv))
+            log.debug("details: "+str(type(fabenv)))
     if not fabenv:
         log.debug("Sem configuracoes para os ambientes filhos - BE, BEFE, BEBO, BECA do ambiente id=%s" %str())
         return 0
 
+    fabenv.sort(key=operator.itemgetter('min_num_vlan_1'))
     log.debug(str(fabenv))
-    for amb in fabenv:
+
+    for idx, amb in enumerate(fabenv):
         try:
             id_div = models_env.DivisaoDc().get_by_name(amb.get("name")).id
         except:
@@ -667,8 +671,16 @@ def _create_prod_vlans(rack, user):
             for net_dict in amb.get("config"):
                 if net_dict.get("type")==net.ip_config.type:
                     cidr = IPNetwork(net.ip_config.subnet)
+                    prefixo_inicial = 18 if net.ip_config.type=="v4" else 57
                     prefixo = net_dict.get("mask")
-                    bloco = list(cidr.subnet(int(prefixo)))[-2]
+                    if not idx:
+                        bloco = list(cidr.subnet(int(prefixo)))[0]
+                        log.debug(str(bloco))
+                    else:
+                        bloco1 = list(cidr.subnet(prefixo_inicial))[1]
+                        log.debug(str(bloco1))
+                        bloco = list(bloco1.subnet(int(prefixo)))[idx-1]
+                        log.debug(str(bloco))
                     network = {
                         'subnet': str(bloco),
                         'type': str(net.ip_config.type),
