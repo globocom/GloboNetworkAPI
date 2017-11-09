@@ -215,7 +215,6 @@ class NeighborV4DeployView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
-    @permission_obj_apiview([deploy_obj_permission])
     def post(self, request, *args, **kwargs):
         """
         Creates list of NeighborV4 in equipments
@@ -244,7 +243,6 @@ class NeighborV4DeployView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
-    @permission_obj_apiview([deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of NeighborV4 in equipments

@@ -57,3 +57,19 @@ class RouteMapAssociatedToPeerGroupException(APIException):
         self.detail = u'RouteMap id = {} is associated ' \
                       u'with PeerGroups ids = {}'. \
             format(route_map.id, route_map.peer_groups_id)
+
+
+class RouteMapAlreadyCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, route_map):
+        self.detail = u'RouteMap {} is already deployed at equipment'.\
+            format(route_map.id)
+
+
+class RouteMapNotCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, route_map):
+        self.detail = u'RouteMap {} is not deployed at equipment'. \
+            format(route_map.id)

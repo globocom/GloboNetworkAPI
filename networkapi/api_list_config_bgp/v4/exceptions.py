@@ -29,3 +29,19 @@ class ListConfigBGPAssociatedToRouteMapEntryException(APIException):
         self.detail = u'ListConfigBGP id = {} is associated ' \
                       u'with RouteMapEntries = {}'.\
             format(list_config_bgp.id, list_config_bgp.route_map_entries_id)
+
+
+class ListConfigBGPAlreadyCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, list_config_bgp):
+        self.detail = u'ListConfigBGP {} is already deployed at equipment'. \
+            format(list_config_bgp.id)
+
+
+class ListConfigBGPNotCreated(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, list_config_bgp):
+        self.detail = u'ListConfigBGP {} is not deployed at equipment'. \
+            format(list_config_bgp.id)

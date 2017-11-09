@@ -116,10 +116,10 @@ def delete_list_config_bgp(obj_ids):
 
 
 @commit_on_success
-def create_real_list_config_bgp(lists_config_bgp, user):
+def deploy_lists_config_bgp(lists_config_bgp):
     pass
 
 
 @commit_on_success
-def delete_real_list_config_bgp(lists_config_bgp, user):
+def undeploy_lists_config_bgp(lists_config_bgp):
     pass

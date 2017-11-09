@@ -216,10 +216,10 @@ def delete_route_map_entry(obj_ids):
 
 
 @commit_on_success
-def create_real_route_map(route_maps, user):
+def deploy_route_maps(route_maps):
     pass
 
 
 @commit_on_success
-def delete_real_route_map(route_maps, user):
+def undeploy_route_maps(route_maps):
     pass
