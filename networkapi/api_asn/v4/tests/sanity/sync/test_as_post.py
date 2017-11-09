@@ -4,7 +4,6 @@ import json
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
-from networkapi.util.geral import prepare_url
 
 json_path = 'api_asn/v4/tests/sanity/sync/json/%s'
 
@@ -92,4 +91,3 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
         response.data['asns'][1]['id'] = 2
 
         self.compare_json(name_file_get, response.data['asns'])
-

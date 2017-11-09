@@ -53,6 +53,12 @@ class AdminPermission(object):
     LIST_CONFIG_BGP_MANAGEMENT = 'list_config_bgp_management'
     ROUTE_MAP_MANAGEMENT = 'route_map_management'
     PEER_GROUP_MANAGEMENT = 'peer_group_management'
+    NEIGHBOR_DEPLOY_SCRIPT = 'neighbor_deploy_script'
+    NEIGHBOR_UNDEPLOY_SCRIPT = 'neighbor_undeploy_script'
+    LIST_CONFIG_BGP_DEPLOY_SCRIPT = 'list_config_bgp_deploy_script'
+    LIST_CONFIG_BGP_UNDEPLOY_SCRIPT = 'list_config_bgp_undeploy_script'
+    ROUTE_MAP_DEPLOY_SCRIPT = 'route_map_deploy_script'
+    ROUTE_MAP_UNDEPLOY_SCRIPT = 'route_map_undeploy_script'
 
     EQUIP_READ_OPERATION = 'READ'
     EQUIP_WRITE_OPERATION = 'WRITE'
@@ -79,6 +85,3 @@ class AdminPermission(object):
     OBJ_TYPE_POOL = 'ServerPool'
     OBJ_TYPE_VIP = 'VipRequest'
     OBJ_TYPE_PEER_GROUP = 'PeerGroup'
-
-    NEIGHBOR_CREATE_SCRIPT = 'neighbor_create_script'
-    NEIGHBOR_REMOVE_SCRIPT = 'neighbor_remove_script'

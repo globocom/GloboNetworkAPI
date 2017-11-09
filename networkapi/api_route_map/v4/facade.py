@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from django.core.exceptions import FieldError
-from networkapi.api_route_map.models import RouteMap
-from networkapi.api_route_map.models import RouteMapEntry
-from networkapi.api_route_map.v4 import exceptions
-from networkapi.api_route_map.v4.exceptions import RouteMapError
-from networkapi.api_route_map.v4.exceptions import RouteMapNotFoundError
-from networkapi.api_route_map.v4.exceptions import RouteMapEntryError
-from networkapi.api_route_map.v4.exceptions import RouteMapEntryNotFoundError
+from django.db.transaction import commit_on_success
+
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.api_route_map.models import RouteMap
+from networkapi.api_route_map.models import RouteMapEntry
+from networkapi.api_route_map.v4 import exceptions
+from networkapi.api_route_map.v4.exceptions import RouteMapEntryError
+from networkapi.api_route_map.v4.exceptions import RouteMapEntryNotFoundError
+from networkapi.api_route_map.v4.exceptions import RouteMapError
+from networkapi.api_route_map.v4.exceptions import RouteMapNotFoundError
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
 log = logging.getLogger(__name__)
+
 
 def get_route_map_by_search(search=dict()):
     """Return a list of RouteMap's by dict."""
@@ -111,7 +115,7 @@ def delete_route_map(obj_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
-        
+
 
 def get_route_map_entry_by_search(search=dict()):
     """Return a list of RouteMapEntry's by dict."""
@@ -210,3 +214,12 @@ def delete_route_map_entry(obj_ids):
         except Exception, e:
             raise NetworkAPIException(str(e))
 
+
+@commit_on_success
+def create_real_route_map(route_maps, user):
+    pass
+
+
+@commit_on_success
+def delete_real_route_map(route_maps, user):
+    pass

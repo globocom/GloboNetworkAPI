@@ -33,6 +33,11 @@ class RouteMap(BaseModel):
         db_column='name'
     )
 
+    created = models.BooleanField(
+        default=False,
+        db_column='created'
+    )
+
     log = logging.getLogger('RouteMap')
 
     class Meta(BaseModel.Meta):

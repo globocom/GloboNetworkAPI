@@ -9,7 +9,8 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.api_peer_group.v4 import exceptions
 from networkapi.api_peer_group.v4.exceptions import \
     EnvironmentPeerGroupDuplicatedException
-from networkapi.api_peer_group.v4.exceptions import PeerGroupDuplicatedException
+from networkapi.api_peer_group.v4.exceptions import \
+    PeerGroupDuplicatedException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 

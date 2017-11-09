@@ -71,6 +71,11 @@ class NeighborV4(BaseModel):
         db_column='virtual_interface'
     )
 
+    created = models.BooleanField(
+        default=False,
+        db_column='created'
+    )
+
     log = logging.getLogger('NeighborV4')
 
     class Meta(BaseModel.Meta):
@@ -182,6 +187,11 @@ class NeighborV6(BaseModel):
         blank=False,
         max_length=45,
         db_column='virtual_interface'
+    )
+
+    created = models.BooleanField(
+        default=False,
+        db_column='created'
     )
 
     log = logging.getLogger('NeighborV6')

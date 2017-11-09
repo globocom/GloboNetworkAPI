@@ -6,15 +6,23 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from networkapi.api_list_config_bgp.v4 import exceptions
 from networkapi.api_list_config_bgp.v4 import facade
 from networkapi.api_list_config_bgp.v4 import serializers
+from networkapi.api_list_config_bgp.v4.permissions import DeployCreate
+from networkapi.api_list_config_bgp.v4.permissions import DeployDelete
 from networkapi.api_list_config_bgp.v4.permissions import Read
 from networkapi.api_list_config_bgp.v4.permissions import Write
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.distributedlock import LOCK_LIST_CONFIG_BGP
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.geral import create_lock
+from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
@@ -109,3 +117,64 @@ class ListConfigBGPDBView(CustomAPIView):
         facade.delete_list_config_bgp(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)
+
+
+class ListConfigBGPDeployView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
+    def post(self, request, *args, **kwargs):
+        """
+        Creates list of ListConfigBGP in equipments
+        :url /api/v4/list-config-bgp/deploy/<list_config_bgp_ids>/
+        :param list_config_bgp_ids=<list_config_bgp_ids>
+        """
+
+        object_ids = kwargs['obj_ids'].split(';')
+        objects = facade.get_list_config_bgp_by_ids(object_ids)
+        serializer = serializers.ListConfigBGPV4Serializer(objects,
+                                                           many=True)
+
+        locks_list = create_lock(serializer.data, LOCK_LIST_CONFIG_BGP)
+
+        try:
+            response = facade.deploy_lists_config_bgp(serializer.data)
+        except exceptions.ListConfigBGPAlreadyCreated as e:
+            raise ValidationAPIException(str(e))
+        except Exception, exception:
+            log.error(exception)
+            raise NetworkAPIException(exception)
+        finally:
+            destroy_lock(locks_list)
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
+    def delete(self, request, *args, **kwargs):
+        """
+        Deletes list of ListConfigBGP in equipments
+        :url /api/v4/list-config-bgp/deploy/<list_config_bgp_ids>/
+        :param list_config_bgp_ids=<list_config_bgp_ids>
+        """
+
+        object_ids = kwargs['obj_ids'].split(';')
+        objects = facade.get_list_config_bgp_by_ids(object_ids)
+        serializer = serializers.ListConfigBGPV4Serializer(objects,
+                                                           many=True)
+
+        locks_list = create_lock(serializer.data, LOCK_LIST_CONFIG_BGP)
+
+        try:
+            response = facade.undeploy_lists_config_bgp(serializer.data)
+        except exceptions.ListConfigBGPNotCreated as e:
+            raise ValidationAPIException(str(e))
+        except Exception, exception:
+            log.error(exception)
+            raise NetworkAPIException(exception)
+        finally:
+            destroy_lock(locks_list)
+
+        return Response(response, status=status.HTTP_200_OK)

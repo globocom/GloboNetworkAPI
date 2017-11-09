@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+import json
+
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
-from networkapi.util.geral import prepare_url
-import json
 
 json_path = 'api_asn/v4/tests/sanity/sync/json/%s'
 

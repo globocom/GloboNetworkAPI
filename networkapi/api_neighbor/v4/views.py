@@ -1,32 +1,36 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
-from networkapi.api_rest.exceptions import ValidationAPIException
+import logging
+
 from django.db.transaction import commit_on_success
-from networkapi.api_neighbor.v4 import exceptions
-from networkapi.util.geral import destroy_lock
-from networkapi.api_rest.exceptions import NetworkAPIException
-from networkapi.distributedlock import LOCK_NEIGHBOR
-from networkapi.util.geral import create_lock
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from networkapi.api_neighbor.v4 import exceptions
 from networkapi.api_neighbor.v4 import facade
 from networkapi.api_neighbor.v4 import serializers
+from networkapi.api_neighbor.v4.permissions import DeployCreate
+from networkapi.api_neighbor.v4.permissions import DeployDelete
+from networkapi.api_neighbor.v4.permissions import Read
+from networkapi.api_neighbor.v4.permissions import Write
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.distributedlock import LOCK_NEIGHBOR
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
+from networkapi.util.decorators import permission_obj_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.geral import create_lock
+from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
-from networkapi.api_neighbor.v4.permissions import Read
-from networkapi.api_neighbor.v4.permissions import Write
-from networkapi.api_neighbor.v4.permissions import DeployCreate
-from networkapi.api_neighbor.v4.permissions import DeployDelete
-import logging
 
 log = logging.getLogger(__name__)
+
 
 class NeighborV4DBView(CustomAPIView):
 
@@ -211,6 +215,7 @@ class NeighborV4DeployView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
+    @permission_obj_apiview([deploy_obj_permission])
     def post(self, request, *args, **kwargs):
         """
         Creates list of NeighborV4 in equipments
@@ -239,6 +244,7 @@ class NeighborV4DeployView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
+    @permission_obj_apiview([deploy_obj_permission])
     def delete(self, request, *args, **kwargs):
         """
         Deletes list of NeighborV4 in equipments
@@ -325,4 +331,3 @@ class NeighborV6DeployView(CustomAPIView):
             destroy_lock(locks_list)
 
         return Response(response, status=status.HTTP_200_OK)
-

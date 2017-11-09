@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from django.core.exceptions import FieldError
 from django.db.transaction import commit_on_success
+
 from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.models import NeighborV6
 from networkapi.api_neighbor.v4 import exceptions
@@ -15,6 +17,7 @@ from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
 log = logging.getLogger(__name__)
+
 
 def get_neighbor_v4_by_search(search=dict()):
     """Return a list of NeighborV4's by dict."""

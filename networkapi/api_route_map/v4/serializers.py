@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
+
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
@@ -15,7 +18,8 @@ class RouteMapV4Serializer(DynamicFieldsModelSerializer):
 
         fields = (
             'id',
-            'name'
+            'name',
+            'created'
         )
 
         basic_fields = fields
@@ -62,7 +66,8 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
         return self.extends_serializer(obj, 'route_map')
 
     def get_serializers(self):
-        lcb_slzs = get_app('api_list_config_bgp', module_label='v4.serializers')
+        lcb_slzs = get_app('api_list_config_bgp',
+                           module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -101,4 +106,3 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'route_map'
                 }
             }
-

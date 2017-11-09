@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
-from networkapi.util.serializers import DynamicFieldsModelSerializer
+
 from networkapi.util.geral import get_app
+from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +24,8 @@ class ListConfigBGPV4Serializer(DynamicFieldsModelSerializer):
             'name',
             'type',
             'config',
-            'route_map_entries'
+            'route_map_entries',
+            'created'
         )
 
         basic_fields = fields

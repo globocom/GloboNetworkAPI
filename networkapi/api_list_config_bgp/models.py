@@ -9,7 +9,6 @@ from networkapi.api_list_config_bgp.v4 import exceptions
 from networkapi.api_list_config_bgp.v4.exceptions import \
     ListConfigBGPAssociatedToRouteMapEntryException
 from networkapi.models.BaseModel import BaseModel
-from networkapi.util.geral import get_model
 
 
 class ListConfigBGPType:
@@ -42,6 +41,11 @@ class ListConfigBGP(BaseModel):
     config = models.TextField(
         blank=False,
         db_column='config'
+    )
+
+    created = models.BooleanField(
+        default=False,
+        db_column='created'
     )
 
     log = logging.getLogger('ListConfigBGP')

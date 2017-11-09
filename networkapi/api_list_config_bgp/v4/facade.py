@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from django.core.exceptions import FieldError
+from django.db.transaction import commit_on_success
+
 from networkapi.api_list_config_bgp.models import ListConfigBGP
 from networkapi.api_list_config_bgp.v4 import exceptions
 from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPError
-from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPNotFoundError
+from networkapi.api_list_config_bgp.v4.exceptions import \
+    ListConfigBGPNotFoundError
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 
 log = logging.getLogger(__name__)
+
 
 def get_list_config_bgp_by_search(search=dict()):
     """Return a list of ListConfigBGP's by dict."""
@@ -108,3 +113,13 @@ def delete_list_config_bgp(obj_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
+
+
+@commit_on_success
+def create_real_list_config_bgp(lists_config_bgp, user):
+    pass
+
+
+@commit_on_success
+def delete_real_list_config_bgp(lists_config_bgp, user):
+    pass

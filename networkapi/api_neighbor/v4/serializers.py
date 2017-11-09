@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from django.db.models import get_model
 from rest_framework import serializers
+
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
@@ -27,7 +29,8 @@ class NeighborV4V4Serializer(DynamicFieldsModelSerializer):
             'local_ip',
             'remote_ip',
             'peer_group',
-            'virtual_interface'
+            'virtual_interface',
+            'created'
         )
 
         basic_fields = fields
@@ -165,7 +168,8 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
             'local_ip',
             'remote_ip',
             'peer_group',
-            'virtual_interface'
+            'virtual_interface',
+            'created'
         )
 
         basic_fields = fields

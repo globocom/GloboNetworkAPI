@@ -2,7 +2,6 @@
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase
-from networkapi.util.geral import prepare_url
 
 json_path = 'api_asn/v4/tests/sanity/sync/json/%s'
 
@@ -63,7 +62,7 @@ class AsDeleteSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        for id_ in xrange(3, 4+1):
+        for id_ in xrange(3, 4 + 1):
             response = self.client.get(
                 '/api/v4/as/%s/' % id_,
                 HTTP_AUTHORIZATION=self.authorization
@@ -167,4 +166,3 @@ class AsDeleteErrorTestCase(NetworkApiTestCase):
         name_file = json_path % 'get/basic/pk_3.json'
 
         self.compare_json_lists(name_file, response.data['asns'])
-
