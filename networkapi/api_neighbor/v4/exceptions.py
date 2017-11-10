@@ -118,3 +118,11 @@ class NeighborDuplicatedException(APIException):
                       u'RemoteIp id = {}'.\
             format(neighbor.local_asn, neighbor.local_ip,
                    neighbor.remote_asn, neighbor.remote_ip)
+
+
+class RouteMapsOfAssociatedPeerGroupAreNotDeployedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, route_maps):
+        self.detail = u'Route Maps with ids = {} are not deployed'.\
+            format(route_maps)

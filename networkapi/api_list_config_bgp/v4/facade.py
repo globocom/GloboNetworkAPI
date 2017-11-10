@@ -13,6 +13,7 @@ from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.plugins.factory import PluginFactory
 
 log = logging.getLogger(__name__)
 
@@ -117,9 +118,25 @@ def delete_list_config_bgp(obj_ids):
 
 @commit_on_success
 def deploy_lists_config_bgp(lists_config_bgp):
-    pass
+
+    # TODO Get the correct equipment to manage
+    for list_config_bgp in lists_config_bgp:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().deploy_prefix_list()
+
+    ids = [list_config_bgp.get('id') for list_config_bgp in lists_config_bgp]
+    ListConfigBGP.objects.filter(id__in=ids).update(created=True)
 
 
 @commit_on_success
 def undeploy_lists_config_bgp(lists_config_bgp):
-    pass
+
+    # TODO Get the correct equipment to manage
+    for list_config_bgp in lists_config_bgp:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().undeploy_prefix_list()
+
+    ids = [list_config_bgp.get('id') for list_config_bgp in lists_config_bgp]
+    ListConfigBGP.objects.filter(id__in=ids).update(created=False)

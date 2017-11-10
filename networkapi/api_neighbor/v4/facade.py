@@ -2,6 +2,7 @@
 import logging
 
 from django.core.exceptions import FieldError
+from django.db.models import Q
 from django.db.transaction import commit_on_success
 
 from networkapi.api_neighbor.models import NeighborV4
@@ -11,10 +12,14 @@ from networkapi.api_neighbor.v4.exceptions import NeighborV4Error
 from networkapi.api_neighbor.v4.exceptions import NeighborV4NotFoundError
 from networkapi.api_neighbor.v4.exceptions import NeighborV6Error
 from networkapi.api_neighbor.v4.exceptions import NeighborV6NotFoundError
+from networkapi.api_neighbor.v4.exceptions import \
+    RouteMapsOfAssociatedPeerGroupAreNotDeployedException
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
+from networkapi.api_route_map.models import RouteMap
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.plugins.factory import PluginFactory
 
 log = logging.getLogger(__name__)
 
@@ -218,22 +223,73 @@ def delete_neighbor_v6(obj_ids):
 @commit_on_success
 def deploy_neighbors_v4(neighbors):
 
-    pass
+    ids_peers = [neighbor.get('peer_group').get('id')
+                 for neighbor in neighbors]
+    check_route_maps_are_deployed(ids_peers)
+
+    # TODO Get the correct equipment to manage
+    for neighbor in neighbors:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().deploy_neighbor()
+
+    ids = [neighbor.get('id') for neighbor in neighbors]
+    NeighborV4.objects.filter(id__in=ids).update(created=True)
 
 
 @commit_on_success
 def undeploy_neighbors_v4(neighbors):
 
-    pass
+    # TODO Get the correct equipment to manage
+    for neighbor in neighbors:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().undeploy_neighbor()
+
+    ids = [neighbor.get('id') for neighbor in neighbors]
+    NeighborV4.objects.filter(id__in=ids).update(created=False)
 
 
 @commit_on_success
 def deploy_neighbors_v6(neighbors):
 
-    pass
+    ids_peers = [neighbor.get('peer_group').get('id')
+                 for neighbor in neighbors]
+    check_route_maps_are_deployed(ids_peers)
+
+    # TODO Get the correct equipment to manage
+    for neighbor in neighbors:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().deploy_neighbor()
+
+    ids = [neighbor.get('id') for neighbor in neighbors]
+    NeighborV6.objects.filter(id__in=ids).update(created=True)
 
 
 @commit_on_success
 def undeploy_neighbors_v6(neighbors):
 
-    pass
+    ids_peers = [neighbor.get('peer_group').get('id')
+                 for neighbor in neighbors]
+
+    # TODO Get the correct equipment to manage
+    for neighbor in neighbors:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().undeploy_neighbor()
+
+    ids = [neighbor.get('id') for neighbor in neighbors]
+    NeighborV6.objects.filter(id__in=ids).update(created=False)
+
+
+def check_route_maps_are_deployed(ids_peers):
+
+    route_maps = RouteMap.objects.filter(
+        Q(created=False),
+        Q(peergroup_route_map_in__id__in=ids_peers) |
+        Q(peergroup_route_map_out__id__in=ids_peers)
+    )
+
+    if route_maps:
+        raise RouteMapsOfAssociatedPeerGroupAreNotDeployedException(route_maps)

@@ -73,3 +73,11 @@ class RouteMapNotCreated(APIException):
     def __init__(self, route_map):
         self.detail = u'RouteMap {} is not deployed at equipment'. \
             format(route_map.id)
+
+
+class AssociatedListsConfigBGPAreNotDeployedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, lists_config_bgp):
+        self.detail = u'Lists Config BGP with ids = {} are not deployed'. \
+            format(lists_config_bgp)

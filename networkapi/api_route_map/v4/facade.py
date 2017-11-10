@@ -2,19 +2,23 @@
 import logging
 
 from django.core.exceptions import FieldError
+from django.db.models import Q
 from django.db.transaction import commit_on_success
 
+from networkapi.api_list_config_bgp.models import ListConfigBGP
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.api_route_map.models import RouteMap
 from networkapi.api_route_map.models import RouteMapEntry
 from networkapi.api_route_map.v4 import exceptions
+from networkapi.api_route_map.v4.exceptions import AssociatedListsConfigBGPAreNotDeployedException
 from networkapi.api_route_map.v4.exceptions import RouteMapEntryError
 from networkapi.api_route_map.v4.exceptions import RouteMapEntryNotFoundError
 from networkapi.api_route_map.v4.exceptions import RouteMapError
 from networkapi.api_route_map.v4.exceptions import RouteMapNotFoundError
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.plugins.factory import PluginFactory
 
 log = logging.getLogger(__name__)
 
@@ -217,9 +221,39 @@ def delete_route_map_entry(obj_ids):
 
 @commit_on_success
 def deploy_route_maps(route_maps):
-    pass
+
+    ids = [route_map.get('id') for route_map in route_maps]
+    check_lists_config_bgp_are_deployed(ids)
+
+    # TODO Get the correct equipment to manage
+    for route_map in route_maps:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().deploy_route_map()
+
+    RouteMap.objects.filter(id__in=ids).update(created=True)
 
 
 @commit_on_success
 def undeploy_route_maps(route_maps):
-    pass
+
+    ids = [route_map.get('id') for route_map in route_maps]
+
+    # TODO Get the correct equipment to manage
+    for route_map in route_maps:
+        equipment = None
+        plugin = PluginFactory.factory(equipment)
+        plugin.bgp().undeploy_route_map()
+
+    RouteMap.objects.filter(id__in=ids).update(created=False)
+
+
+def check_lists_config_bgp_are_deployed(ids_route_maps):
+
+    lists_config_bgp = ListConfigBGP.objects.filter(
+        Q(created=False),
+        Q(routemapentry__route_map__id__in=ids_route_maps)
+    )
+
+    if lists_config_bgp:
+        raise AssociatedListsConfigBGPAreNotDeployedException(lists_config_bgp)
