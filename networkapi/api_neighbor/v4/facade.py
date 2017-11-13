@@ -73,12 +73,12 @@ def get_neighbor_v4_by_ids(obj_ids):
     return NeighborV4.objects.filter(id__in=ids)
 
 
-def update_neighbor_v4(obj):
+def update_neighbor_v4(obj, user):
     """Update NeighborV4."""
 
     try:
         obj_to_update = get_neighbor_v4_by_id(obj.get('id'))
-        obj_to_update.update_v4(obj)
+        obj_to_update.update_v4(obj, user)
     except NeighborV4Error, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
@@ -91,12 +91,12 @@ def update_neighbor_v4(obj):
     return obj_to_update
 
 
-def create_neighbor_v4(obj):
+def create_neighbor_v4(obj, user):
     """Create NeighborV4."""
 
     try:
         obj_to_create = NeighborV4()
-        obj_to_create.create_v4(obj)
+        obj_to_create.create_v4(obj, user)
     except NeighborV4Error, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
@@ -171,12 +171,12 @@ def get_neighbor_v6_by_ids(obj_ids):
     return NeighborV6.objects.filter(id__in=ids)
 
 
-def update_neighbor_v6(obj):
+def update_neighbor_v6(obj, user):
     """Update NeighborV6."""
 
     try:
         obj_to_update = get_neighbor_v6_by_id(obj.get('id'))
-        obj_to_update.update_v4(obj)
+        obj_to_update.update_v4(obj, user)
     except NeighborV6Error, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
@@ -189,12 +189,12 @@ def update_neighbor_v6(obj):
     return obj_to_update
 
 
-def create_neighbor_v6(obj):
+def create_neighbor_v6(obj, user):
     """Create NeighborV6."""
 
     try:
         obj_to_create = NeighborV6()
-        obj_to_create.create_v4(obj)
+        obj_to_create.create_v4(obj, user)
     except NeighborV6Error, e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException, e:

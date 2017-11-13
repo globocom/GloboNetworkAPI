@@ -126,3 +126,12 @@ class RouteMapsOfAssociatedPeerGroupAreNotDeployedException(APIException):
     def __init__(self, route_maps):
         self.detail = u'Route Maps with ids = {} are not deployed'.\
             format(route_maps)
+
+
+class DontHavePermissionForPeerGroupException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, neighbor):
+        self.detail = u'Peer Group id = {} does not have permissions to be ' \
+                      u'associated with Neighbor'.\
+            format(neighbor.peer_group)

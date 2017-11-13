@@ -4,10 +4,12 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import Q
 
+from networkapi.admin_permission import AdminPermission
 from networkapi.api_neighbor.v4 import exceptions
-from networkapi.api_neighbor.v4.exceptions import \
-    LocalIpAndLocalAsnAtDifferentEquipmentsException
+from networkapi.api_neighbor.v4.exceptions import DontHavePermissionForPeerGroupException
+from networkapi.api_neighbor.v4.exceptions import LocalIpAndLocalAsnAtDifferentEquipmentsException
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndPeerGroupAtDifferentEnvironmentsException
 from networkapi.api_neighbor.v4.exceptions import \
@@ -105,7 +107,7 @@ class NeighborV4(BaseModel):
             raise exceptions.NeighborV4Error(
                 u'Failure to search the NeighborV4.')
 
-    def create_v4(self, neighbor):
+    def create_v4(self, neighbor, user):
         """Create NeighborV4."""
 
         asn_model = get_model('api_asn', 'Asn')
@@ -119,11 +121,11 @@ class NeighborV4(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v4(self)
+        validate_neighbor_v4(self, user)
 
         self.save()
 
-    def update_v4(self, neighbor):
+    def update_v4(self, neighbor, user):
         """Update NeighborV4."""
 
         asn_model = get_model('api_asn', 'Asn')
@@ -137,7 +139,7 @@ class NeighborV4(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v4(self)
+        validate_neighbor_v4(self, user)
 
         self.save()
 
@@ -223,7 +225,7 @@ class NeighborV6(BaseModel):
             raise exceptions.NeighborV6Error(
                 u'Failure to search the NeighborV6.')
 
-    def create_v4(self, neighbor):
+    def create_v4(self, neighbor, user):
         """Create NeighborV6."""
 
         asn_model = get_model('api_asn', 'Asn')
@@ -237,11 +239,11 @@ class NeighborV6(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v6(self)
+        validate_neighbor_v6(self, user)
 
         self.save()
 
-    def update_v4(self, neighbor):
+    def update_v4(self, neighbor, user):
         """Update NeighborV6."""
 
         asn_model = get_model('api_asn', 'Asn')
@@ -255,7 +257,7 @@ class NeighborV6(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v6(self)
+        validate_neighbor_v6(self, user)
 
         self.save()
 
@@ -265,10 +267,12 @@ class NeighborV6(BaseModel):
         super(NeighborV6, self).delete()
 
 
-def validate_neighbor_v4(neighbor):
+def validate_neighbor_v4(neighbor, user):
+
+    check_permissions_in_peer_group(neighbor, user)
 
     if neighbor.local_ip.networkipv4.vlan.ambiente.default_vrf != \
-            neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf:
+       neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf:
         raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
 
     eqpts_of_local_ip = set(neighbor.local_ip.ipequipamento_set.all().
@@ -299,18 +303,20 @@ def validate_neighbor_v4(neighbor):
         if environment_of_local_ip not in environments_of_peer_group:
             raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
 
-    obj = NeighborV4.objects.filter(local_asn_in=neighbor.local_asn.id,
-                                    remote_asn_in=neighbor.remote_asn.id,
-                                    local_ip_in=neighbor.local_ip.id,
-                                    remote_ip_in=neighbor.remote_ip.id)
+    obj = NeighborV4.objects.filter(local_asn=neighbor.local_asn.id,
+                                    remote_asn=neighbor.remote_asn.id,
+                                    local_ip=neighbor.local_ip.id,
+                                    remote_ip=neighbor.remote_ip.id)
     if obj:
         raise NeighborDuplicatedException(neighbor)
 
 
-def validate_neighbor_v6(neighbor):
+def validate_neighbor_v6(neighbor, user):
+
+    check_permissions_in_peer_group(neighbor, user)
 
     if neighbor.local_ip.networkipv6.vlan.ambiente.default_vrf != \
-            neighbor.remote_ip.networkipv6.vlan.ambiente.default_vrf:
+       neighbor.remote_ip.networkipv6.vlan.ambiente.default_vrf:
         raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
 
     eqpts_of_local_ip = set(neighbor.local_ip.ipv6equipament_set.all().
@@ -341,9 +347,36 @@ def validate_neighbor_v6(neighbor):
         if environment_of_local_ip not in environments_of_peer_group:
             raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
 
-    obj = NeighborV6.objects.filter(local_asn_in=neighbor.local_asn.id,
-                                    remote_asn_in=neighbor.remote_asn.id,
-                                    local_ip_in=neighbor.local_ip.id,
-                                    remote_ip_in=neighbor.remote_ip.id)
+    obj = NeighborV6.objects.filter(local_asn=neighbor.local_asn.id,
+                                    remote_asn=neighbor.remote_asn.id,
+                                    local_ip=neighbor.local_ip.id,
+                                    remote_ip=neighbor.remote_ip.id)
     if obj:
         raise NeighborDuplicatedException(neighbor)
+
+
+def check_permissions_in_peer_group(neighbor, user):
+
+    if neighbor.peer_group:
+        obj_group_perm_general = get_model('api_ogp',
+                                           'ObjectGroupPermissionGeneral')
+        obj_group_perm = get_model('api_ogp',
+                                   'ObjectGroupPermission')
+        # for group in user.grupos:
+
+        # Peer Group General
+        perms_general = obj_group_perm_general.objects.filter(
+            Q(write=True),
+            Q(user_group__id__in=user.grupos),
+            Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
+        )
+        # Peer Group Specific
+        perms_specific = obj_group_perm.objects.filter(
+            Q(write=True),
+            Q(object_value=neighbor.peer_group.id),
+            Q(user_group__id__in=user.grupos),
+            Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
+        )
+
+        if not perms_general and not perms_specific:
+            raise DontHavePermissionForPeerGroupException(neighbor)

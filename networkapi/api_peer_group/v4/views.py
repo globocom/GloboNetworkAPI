@@ -29,6 +29,7 @@ class PeerGroupDBView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Read))
+    @permission_obj_apiview([permissions.read_obj_permission])
     @prepare_search
     def get(self, request, *args, **kwargs):
         """Returns a list of PeerGroups by ids ou dict."""
@@ -104,7 +105,7 @@ class PeerGroupDBView(CustomAPIView):
     @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
-    @permission_obj_apiview([permissions.write_obj_permission])
+    @permission_obj_apiview([permissions.delete_obj_permission])
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """Delete PeerGroup."""

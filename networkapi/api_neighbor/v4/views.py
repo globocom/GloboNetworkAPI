@@ -84,7 +84,7 @@ class NeighborV4DBView(CustomAPIView):
         response = list()
         for obj in objects['neighbors']:
 
-            created_obj = facade.create_neighbor_v4(obj)
+            created_obj = facade.create_neighbor_v4(obj, request.user)
             response.append({'id': created_obj.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -101,7 +101,7 @@ class NeighborV4DBView(CustomAPIView):
         response = list()
         for obj in objects['neighbors']:
 
-            created_obj = facade.update_neighbor_v4(obj)
+            created_obj = facade.update_neighbor_v4(obj, request.user)
             response.append({
                 'id': created_obj.id
             })
@@ -173,7 +173,7 @@ class NeighborV6DBView(CustomAPIView):
         response = list()
         for obj in objects['neighbors']:
 
-            created_obj = facade.create_neighbor_v6(obj)
+            created_obj = facade.create_neighbor_v6(obj, request.user)
             response.append({'id': created_obj.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -190,7 +190,7 @@ class NeighborV6DBView(CustomAPIView):
         response = list()
         for obj in objects['neighbors']:
 
-            created_obj = facade.update_neighbor_v6(obj)
+            created_obj = facade.update_neighbor_v6(obj, request.user)
             response.append({
                 'id': created_obj.id
             })
