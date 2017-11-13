@@ -362,7 +362,6 @@ def check_permissions_in_peer_group(neighbor, user):
                                            'ObjectGroupPermissionGeneral')
         obj_group_perm = get_model('api_ogp',
                                    'ObjectGroupPermission')
-        # for group in user.grupos:
 
         # Peer Group General
         perms_general = obj_group_perm_general.objects.filter(
