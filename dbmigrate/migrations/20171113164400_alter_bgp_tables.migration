@@ -1,0 +1,18 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `list_config_bgp` ADD UNIQUE (`name`);
+ALTER TABLE `route_map` ADD UNIQUE (`name`);
+ALTER TABLE `peer_group` ADD UNIQUE (`name`);
+ALTER TABLE `route_map_entry` ADD UNIQUE KEY `unique_id_list_config_bgp_id_route_map` (`id_list_config_bgp`, `id_route_map`);
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `list_config_bgp` DROP INDEX `name`;
+ALTER TABLE `route_map` DROP INDEX `name`;
+ALTER TABLE `peer_group` DROP INDEX `name`;
+ALTER TABLE `route_map_entry` DROP INDEX `unique_id_list_config_bgp_id_route_map`;
+
+"""
