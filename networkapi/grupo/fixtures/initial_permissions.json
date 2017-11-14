@@ -1,261 +1,324 @@
 [
   {
-    "pk": 1, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "administracao_usuarios"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 1
+  },
   {
-    "pk": 25, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "administracao_vips"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 25
+  },
   {
-    "pk": 2, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "administrativa"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 2
+  },
   {
-    "pk": 3, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "alocar_vlan"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 3
+  },
   {
-    "pk": 4, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "ambiente_vip"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 4
+  },
   {
-    "pk": 28, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "aplicar_acl"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 28
+  },
   {
-    "pk": 26, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "audit_logs"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 26
+  },
   {
-    "pk": 5, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "authenticate"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 5
+  },
   {
-    "pk": 6, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_ambiente"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 6
+  },
   {
-    "pk": 7, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_equipamentos"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 7
+  },
   {
-    "pk": 8, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_grupos_equipamentos"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 8
+  },
   {
-    "pk": 9, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_marca"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 9
+  },
   {
-    "pk": 29, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_pool"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 29
+  },
   {
-    "pk": 10, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_roteiro"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 10
+  },
   {
-    "pk": 11, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_tipo_acesso"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 11
+  },
   {
-    "pk": 12, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_tipo_rede"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 12
+  },
   {
-    "pk": 13, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_vlans"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 13
+  },
   {
-    "pk": 14, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "cadastro_de_vm"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 14
+  },
   {
-    "pk": 15, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "healthcheck_expect"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 15
+  },
   {
-    "pk": 16, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "ips"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 16
+  },
   {
-    "pk": 17, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "opcao_vip"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 17
+  },
   {
-    "pk": 18, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "requisicao_vips"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 18
+  },
   {
-    "pk": 32, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_alterar_pool"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 32
+  },
   {
-    "pk": 19, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_alterar_vip"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 19
+  },
   {
-    "pk": 20, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_alterar_vlan"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 20
+  },
   {
-    "pk": 31, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_criacao_pool"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 31
+  },
   {
-    "pk": 21, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_criacao_vip"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 21
+  },
   {
-    "pk": 22, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_criacao_vlan"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 22
+  },
   {
-    "pk": 30, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_remover_pool"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 30
+  },
   {
-    "pk": 27, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "script_remover_vip"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 27
+  },
   {
-    "pk": 23, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "validar_acl_vlans"
-    }
-  }, 
+    },
+    "model": "grupo.permission",
+    "pk": 23
+  },
   {
-    "pk": 24, 
-    "model": "grupo.permission", 
     "fields": {
       "function": "validar_vip"
-    }
+    },
+    "model": "grupo.permission",
+    "pk": 24
   },
   {
-    "pk": 40,
-    "model": "grupo.permission",
     "fields": {
       "function": "network_force"
-    }
+    },
+    "model": "grupo.permission",
+    "pk": 40
   },
   {
-    "pk": 41,
-    "model": "grupo.permission",
     "fields": {
       "function": "as_management"
-    }
+    },
+    "model": "grupo.permission",
+    "pk": 41
   },
   {
-    "pk": 43,
-    "model": "grupo.permission",
     "fields": {
       "function": "neighbor_management"
-    }
+    },
+    "model": "grupo.permission",
+    "pk": 43
   },
   {
-    "pk": 44,
-    "model": "grupo.permission",
     "fields": {
       "function": "neighbor_create_script"
-    }
+    },
+    "model": "grupo.permission",
+    "pk": 44
   },
   {
-    "pk": 45,
-    "model": "grupo.permission",
     "fields": {
       "function": "neighbor_remove_script"
-    }
+    },
+    "model": "grupo.permission",
+    "pk": 45
+  },
+  {
+    "fields": {
+      "function": "peer_group_management"
+    },
+    "model": "grupo.permission",
+    "pk": 46
+  },
+  {
+    "fields": {
+      "function": "list_config_bgp_management"
+    },
+    "model": "grupo.permission",
+    "pk": 47
+  },
+  {
+    "fields": {
+      "function": "route_map_management"
+    },
+    "model": "grupo.permission",
+    "pk": 48
+  },
+  {
+    "fields": {
+      "function": "neighbor_deploy_script"
+    },
+    "model": "grupo.permission",
+    "pk": 49
+  },
+  {
+    "fields": {
+      "function": "neighbor_undeploy_script"
+    },
+    "model": "grupo.permission",
+    "pk": 50
+  },
+  {
+    "fields": {
+      "function": "list_config_bgp_deploy_script"
+    },
+    "model": "grupo.permission",
+    "pk": 51
+  },
+  {
+    "fields": {
+      "function": "list_config_bgp_undeploy_script"
+    },
+    "model": "grupo.permission",
+    "pk": 52
+  },
+  {
+    "fields": {
+      "function": "route_map_deploy_script"
+    },
+    "model": "grupo.permission",
+    "pk": 53
+  },
+  {
+    "fields": {
+      "function": "route_map_undeploy_script"
+    },
+    "model": "grupo.permission",
+    "pk": 54
   }
 ]
