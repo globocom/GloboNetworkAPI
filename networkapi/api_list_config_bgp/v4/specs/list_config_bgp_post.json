@@ -5,17 +5,17 @@
       "items": {
         "properties": {
           "config": {
-            "enum": [
-              "P",
-              "A",
-              "C"
-            ],
             "type": "string"
           },
           "name": {
             "type": "string"
           },
           "type": {
+            "enum": [
+              "P",
+              "A",
+              "C"
+            ],
             "type": "string"
           }
         },
