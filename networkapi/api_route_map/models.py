@@ -44,6 +44,11 @@ class RouteMap(BaseModel):
         db_table = u'route_map'
         managed = True
 
+    def _get_route_map_entries(self):
+        return self.routemapentry_set.all()
+
+    route_map_entries = property(_get_route_map_entries)
+
     def _get_route_map_entries_id(self):
         return self.routemapentry_set.all().values_list('id',
                                                         flat=True)
@@ -57,6 +62,14 @@ class RouteMap(BaseModel):
         ))
 
     peer_groups_id = property(_get_peer_groups_id)
+
+    def _get_peer_groups(self):
+        return list(set().union(
+            self.peergroup_route_map_in.all(),
+            self.peergroup_route_map_out.all(),
+        ))
+
+    peer_groups = property(_get_peer_groups)
 
     @classmethod
     def get_by_pk(cls, id):

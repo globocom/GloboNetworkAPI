@@ -5,10 +5,10 @@ from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import mount_url
 
 
-class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
+class RouteMapGetSuccessTestCase(NetworkApiTestCase):
 
-    list_config_bgp_uri = '/api/v4/list-config-bgp/'
-    fixtures_path = 'networkapi/api_list_config_bgp/v4/fixtures/{}'
+    route_map_uri = '/api/v4/route-map/'
+    fixtures_path = 'networkapi/api_route_map/v4/fixtures/{}'
 
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
@@ -20,7 +20,7 @@ class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
-        fixtures_path.format('initial_list_config_bgp.json'),
+        fixtures_path.format('initial_route_map.json'),
 
     ]
 
@@ -31,11 +31,11 @@ class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_delete_lists_config_bgp(self):
-        """Test DELETE ListsConfigBGP."""
+    def test_delete_route_maps(self):
+        """Test DELETE RouteMaps."""
 
         delete_ids = [1, 2]
-        uri = mount_url(self.list_config_bgp_uri,
+        uri = mount_url(self.route_map_uri,
                         delete_ids)
 
         response = self.client.delete(
@@ -52,15 +52,15 @@ class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'ListConfigBGP id = 1 do not exist.',
+            u'RouteMap id = 1 do not exist.',
             response.data['detail']
         )
 
 
-class ListConfigBGPGetErrorTestCase(NetworkApiTestCase):
+class RouteMapGetErrorTestCase(NetworkApiTestCase):
 
-    list_config_bgp_uri = '/api/v4/list-config-bgp/'
-    fixtures_path = 'networkapi/api_list_config_bgp/v4/fixtures/{}'
+    route_map_uri = '/api/v4/route-map/'
+    fixtures_path = 'networkapi/api_route_map/v4/fixtures/{}'
 
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
@@ -72,7 +72,7 @@ class ListConfigBGPGetErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
-        fixtures_path.format('initial_list_config_bgp.json'),
+        fixtures_path.format('initial_route_map.json'),
 
     ]
 
@@ -83,11 +83,11 @@ class ListConfigBGPGetErrorTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_delete_inexistent_lists_config_bgp(self):
-        """Test DELETE inexistent ListsConfigBGP."""
+    def test_delete_inexistent_route_maps(self):
+        """Test DELETE inexistent RouteMaps."""
 
         delete_ids = [3, 4]
-        uri = mount_url(self.list_config_bgp_uri,
+        uri = mount_url(self.route_map_uri,
                         delete_ids)
 
         response = self.client.delete(
@@ -98,6 +98,6 @@ class ListConfigBGPGetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'ListConfigBGP id = 3 do not exist.',
+            u'RouteMap id = 3 do not exist.',
             response.data['detail']
         )

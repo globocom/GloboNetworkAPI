@@ -12,6 +12,12 @@ log = logging.getLogger(__name__)
 
 class RouteMapV4Serializer(DynamicFieldsModelSerializer):
 
+    route_map_entries = serializers. \
+        SerializerMethodField('get_route_map_entries')
+
+    peer_groups = serializers. \
+        SerializerMethodField('get_peer_groups')
+
     class Meta:
         RouteMap = get_model('api_route_map', 'RouteMap')
         model = RouteMap
@@ -19,7 +25,9 @@ class RouteMapV4Serializer(DynamicFieldsModelSerializer):
         fields = (
             'id',
             'name',
-            'created'
+            'created',
+            'route_map_entries',
+            'peer_groups'
         )
 
         basic_fields = fields
@@ -27,6 +35,60 @@ class RouteMapV4Serializer(DynamicFieldsModelSerializer):
         default_fields = fields
 
         details_fields = fields
+
+    def get_route_map_entries(self, obj):
+        return self.extends_serializer(obj, 'route_map_entries')
+
+    def get_peer_groups(self, obj):
+        return self.extends_serializer(obj, 'peer_groups')
+
+    def get_serializers(self):
+        routemap_slzs = get_app('api_route_map',
+                                module_label='v4.serializers')
+        peergroup_slzs = get_app('api_peer_group',
+                                 module_label='v4.serializers')
+
+        if not self.mapping:
+            self.mapping = {
+                'route_map_entries': {
+                    'obj': 'route_map_entries_id',
+                },
+                'route_map_entries__basic': {
+                    'serializer': routemap_slzs.RouteMapEntryV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic',
+                        'many': True
+                    },
+                    'obj': 'route_map_entries'
+                },
+                'route_map_entries__details': {
+                    'serializer': routemap_slzs.RouteMapEntryV4Serializer,
+                    'kwargs': {
+                        'kind': 'details',
+                        'many': True
+                    },
+                    'obj': 'route_map_entries'
+                },
+                'peer_groups': {
+                    'obj': 'peer_groups_id',
+                },
+                'peer_groups__basic': {
+                    'serializer': peergroup_slzs.PeerGroupV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic',
+                        'many': True
+                    },
+                    'obj': 'peer_groups'
+                },
+                'peer_groups__details': {
+                    'serializer': peergroup_slzs.PeerGroupV4Serializer,
+                    'kwargs': {
+                        'kind': 'details',
+                        'many': True
+                    },
+                    'obj': 'peer_groups'
+                }
+            }
 
 
 class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):

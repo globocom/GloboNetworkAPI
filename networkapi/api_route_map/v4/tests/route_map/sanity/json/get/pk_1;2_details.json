@@ -1,0 +1,16 @@
+[
+  {
+    "created": false,
+    "id": 1,
+    "name": "test_1",
+    "peer_groups": [],
+    "route_map_entries": []
+  },
+  {
+    "created": false,
+    "id": 2,
+    "name": "test_2",
+    "peer_groups": [],
+    "route_map_entries": []
+  }
+]

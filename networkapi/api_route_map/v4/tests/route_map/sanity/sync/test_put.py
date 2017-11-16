@@ -7,10 +7,10 @@ from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import mount_url
 
 
-class ListConfigBGPPutSuccessTestCase(NetworkApiTestCase):
+class RouteMapPutSuccessTestCase(NetworkApiTestCase):
 
-    list_config_bgp_uri = '/api/v4/list-config-bgp/'
-    fixtures_path = 'networkapi/api_list_config_bgp/v4/fixtures/{}'
+    route_map_uri = '/api/v4/route-map/'
+    fixtures_path = 'networkapi/api_route_map/v4/fixtures/{}'
 
     fixtures = [
         'networkapi/config/fixtures/initial_config.json',
@@ -23,36 +23,36 @@ class ListConfigBGPPutSuccessTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
-        fixtures_path.format('initial_list_config_bgp.json'),
+        fixtures_path.format('initial_route_map.json'),
     ]
 
-    json_path = 'api_list_config_bgp/v4/tests/sanity/json/put/{}'
+    json_path = 'api_route_map/v4/tests/route_map/sanity/json/put/{}'
 
     def setUp(self):
         self.client = Client()
         self.authorization = self.get_http_authorization('test')
         self.content_type = 'application/json'
-        self.fields = ['id', 'name', 'type', 'config', 'created']
+        self.fields = ['id', 'name']
 
     def tearDown(self):
         pass
 
-    def test_put_lists_config_bgp(self):
-        """Test PUT ListsConfigBGP."""
+    def test_put_route_maps(self):
+        """Test PUT RouteMaps."""
 
-        lists_config_bgp_path = self.json_path.\
-            format('two_lists_config_bgp.json')
+        route_maps_path = self.json_path.\
+            format('two_route_maps.json')
 
         response = self.client.put(
-            self.list_config_bgp_uri,
-            data=self.load_json(lists_config_bgp_path),
+            self.route_map_uri,
+            data=self.load_json(route_maps_path),
             content_type=self.content_type,
             HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(200, response.status_code)
 
         get_ids = [data['id'] for data in response.data]
-        uri = mount_url(self.list_config_bgp_uri,
+        uri = mount_url(self.route_map_uri,
                         get_ids,
                         kind=['basic'],
                         fields=self.fields)
@@ -63,14 +63,14 @@ class ListConfigBGPPutSuccessTestCase(NetworkApiTestCase):
         )
 
         self.compare_status(200, response.status_code)
-        self.compare_json(lists_config_bgp_path,
+        self.compare_json(route_maps_path,
                           response.data)
 
 
-class ListConfigBGPPutErrorTestCase(NetworkApiTestCase):
+class RouteMapPutErrorTestCase(NetworkApiTestCase):
 
-    list_config_bgp_uri = '/api/v4/list-config-bgp/'
-    fixtures_path = 'networkapi/api_list_config_bgp/v4/fixtures/{}'
+    route_map_uri = '/api/v4/route-map/'
+    fixtures_path = 'networkapi/api_route_map/v4/fixtures/{}'
 
     fixtures = [
         'networkapi/config/fixtures/initial_config.json',
@@ -83,10 +83,10 @@ class ListConfigBGPPutErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
-        fixtures_path.format('initial_list_config_bgp.json'),
+        fixtures_path.format('initial_route_map.json'),
     ]
 
-    json_path = 'api_list_config_bgp/v4/tests/sanity/json/put/{}'
+    json_path = 'api_route_map/v4/tests/route_map/sanity/json/put/{}'
 
     def setUp(self):
         self.client = Client()
@@ -96,20 +96,20 @@ class ListConfigBGPPutErrorTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_put_inexistent_list_config_bgp(self):
-        """Test PUT inexistent ListConfigBGP."""
+    def test_put_inexistent_route_map(self):
+        """Test PUT inexistent RouteMap."""
 
-        list_config_bgp_path = self.json_path.\
-            format('inexistent_list_config_bgp.json')
+        route_map_path = self.json_path.\
+            format('inexistent_route_map.json')
 
         response = self.client.put(
-            self.list_config_bgp_uri,
-            data=self.load_json(list_config_bgp_path),
+            self.route_map_uri,
+            data=self.load_json(route_map_path),
             content_type=self.content_type,
             HTTP_AUTHORIZATION=self.authorization)
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'ListConfigBGP id = 3 do not exist.',
+            u'RouteMap id = 3 do not exist.',
             response.data['detail']
         )

@@ -10,6 +10,7 @@ from django.test import TestCase
 
 from networkapi.settings import local_files
 from networkapi.test import load_json
+from networkapi.test.utils import load_file_as_string
 
 LOG = logging.getLogger(__name__)
 
@@ -24,6 +25,10 @@ class NetworkApiTestCase(TestCase):
 
     def tearDown(self):
         pass
+
+    def load_json(self, file_path):
+        """Load as a string JSON file."""
+        return load_file_as_string(local_files(file_path))
 
     def load_json_file(self, file_name):
         return load_json(local_files(file_name))
