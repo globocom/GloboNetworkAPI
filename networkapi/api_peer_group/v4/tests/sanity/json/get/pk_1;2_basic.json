@@ -1,0 +1,48 @@
+[
+  {
+    "environments": [
+      {
+        "environment": {
+          "id": 1,
+          "name": "DC-2 - AMBLOG-1 - GL-1"
+        },
+        "id": 1
+      }
+    ],
+    "id": 1,
+    "name": "peer_1",
+    "route_map_in": {
+      "created": false,
+      "id": 1,
+      "name": "route_map_1"
+    },
+    "route_map_out": {
+      "created": false,
+      "id": 2,
+      "name": "route_map_2"
+    }
+  },
+  {
+    "environments": [
+      {
+        "environment": {
+          "id": 2,
+          "name": "DC-1 - AMBLOG-2 - GL-2"
+        },
+        "id": 2
+      }
+    ],
+    "id": 2,
+    "name": "peer_2",
+    "route_map_in": {
+      "created": false,
+      "id": 2,
+      "name": "route_map_2"
+    },
+    "route_map_out": {
+      "created": false,
+      "id": 3,
+      "name": "route_map_3"
+    }
+  }
+]

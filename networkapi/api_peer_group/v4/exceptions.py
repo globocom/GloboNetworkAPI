@@ -7,7 +7,7 @@ class PeerGroupNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'PeerGroup %s do not exist.' % (msg)
+        self.detail = u'PeerGroup id = {} do not exist.'.format(msg)
 
 
 class PeerGroupError(APIException):

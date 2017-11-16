@@ -57,14 +57,20 @@ class PeerGroupV4Serializer(DynamicFieldsModelSerializer):
                 'route_map_in__basic': {
                     'serializer': routemap_slzs.RouteMapV4Serializer,
                     'kwargs': {
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'peer_groups__basic',
+                        )
                     },
                     'obj': 'route_map_in'
                 },
                 'route_map_in__details': {
                     'serializer': routemap_slzs.RouteMapV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'peer_groups__details',
+                        )
                     },
                     'obj': 'route_map_in'
                 },
@@ -74,14 +80,20 @@ class PeerGroupV4Serializer(DynamicFieldsModelSerializer):
                 'route_map_out__basic': {
                     'serializer': routemap_slzs.RouteMapV4Serializer,
                     'kwargs': {
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'peer_groups__basic',
+                        )
                     },
                     'obj': 'route_map_out'
                 },
                 'route_map_out__details': {
                     'serializer': routemap_slzs.RouteMapV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'peer_groups__details',
+                        )
                     },
                     'obj': 'route_map_out'
                 },
@@ -92,7 +104,10 @@ class PeerGroupV4Serializer(DynamicFieldsModelSerializer):
                     'serializer': EnvironmentPeerGroupV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'peer_group__basic',
+                        )
                     },
                     'obj': 'environments'
                 },
@@ -100,7 +115,10 @@ class PeerGroupV4Serializer(DynamicFieldsModelSerializer):
                     'serializer': EnvironmentPeerGroupV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'peer_group__details',
+                        )
                     },
                     'obj': 'environments'
                 }

@@ -46,7 +46,7 @@ class PeerGroup(BaseModel):
     environments = property(_get_environments)
 
     def _get_environments_id(self):
-        return self.environmentpeergroup_set.all().values_list('id',
+        return self.environmentpeergroup_set.all().values_list('environment',
                                                                flat=True)
 
     environments_id = property(_get_environments_id)

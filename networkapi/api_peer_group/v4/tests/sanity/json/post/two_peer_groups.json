@@ -1,0 +1,20 @@
+{
+  "peer_groups": [
+    {
+      "environments": [
+        1
+      ],
+      "name": "peer_1",
+      "route_map_in": 1,
+      "route_map_out": 2
+    },
+    {
+      "environments": [
+        2
+      ],
+      "name": "peer_2",
+      "route_map_in": 2,
+      "route_map_out": 3
+    }
+  ]
+}

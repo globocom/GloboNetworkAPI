@@ -1,0 +1,13 @@
+{
+  "peer_groups": [
+    {
+      "environments": [
+        2
+      ],
+      "id": 3,
+      "name": "peer_3",
+      "route_map_in": 3,
+      "route_map_out": 1
+    }
+  ]
+}

@@ -1,23 +1,30 @@
 [
   {
-  "pk": 1,
-  "model": "api_ogp.objecttype",
-  "fields": {
-    "name": "ServerPool"
-    }
+    "fields": {
+      "name": "ServerPool"
+    },
+    "model": "api_ogp.objecttype",
+    "pk": 1
   },
   {
-  "pk": 2,
-  "model": "api_ogp.objecttype",
-  "fields": {
-    "name": "VipRequest"
-    }
+    "fields": {
+      "name": "VipRequest"
+    },
+    "model": "api_ogp.objecttype",
+    "pk": 2
   },
   {
-  "pk": 3,
-  "model": "api_ogp.objecttype",
-  "fields": {
-    "name": "Vlan"
-    }
+    "fields": {
+      "name": "Vlan"
+    },
+    "model": "api_ogp.objecttype",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "name": "PeerGroup"
+    },
+    "model": "api_ogp.objecttype",
+    "pk": 4
   }
 ]

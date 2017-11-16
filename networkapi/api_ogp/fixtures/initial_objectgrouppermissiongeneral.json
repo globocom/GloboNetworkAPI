@@ -1,74 +1,98 @@
 [
   {
-  "pk": 1,
-  "model": "api_ogp.objectgrouppermissiongeneral",
-  "fields": {
-    "user_group": 1,
-    "object_type": 1,
-    "read": 1,
-    "write": 1,
-    "change_config": 1,
-    "delete": 1
-    }
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 1,
+      "read": 1,
+      "user_group": 1,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 1
   },
   {
-  "pk": 2,
-  "model": "api_ogp.objectgrouppermissiongeneral",
-  "fields": {
-    "user_group": 1,
-    "object_type": 2,
-    "read": 1,
-    "write": 1,
-    "change_config": 1,
-    "delete": 1
-    }
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 2,
+      "read": 1,
+      "user_group": 1,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 2
   },
   {
-  "pk": 3,
-  "model": "api_ogp.objectgrouppermissiongeneral",
-  "fields": {
-    "user_group": 1,
-    "object_type": 3,
-    "read": 1,
-    "write": 1,
-    "change_config": 1,
-    "delete": 1
-    }
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 3,
+      "read": 1,
+      "user_group": 1,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 3
   },
   {
-  "pk": 4,
-  "model": "api_ogp.objectgrouppermissiongeneral",
-  "fields": {
-    "user_group": 3,
-    "object_type": 1,
-    "read": 1,
-    "write": 1,
-    "change_config": 1,
-    "delete": 1
-    }
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 1,
+      "read": 1,
+      "user_group": 3,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 4
   },
   {
-  "pk": 5,
-  "model": "api_ogp.objectgrouppermissiongeneral",
-  "fields": {
-    "user_group": 3,
-    "object_type": 2,
-    "read": 1,
-    "write": 1,
-    "change_config": 1,
-    "delete": 1
-    }
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 2,
+      "read": 1,
+      "user_group": 3,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 5
   },
   {
-  "pk": 6,
-  "model": "api_ogp.objectgrouppermissiongeneral",
-  "fields": {
-    "user_group": 3,
-    "object_type": 3,
-    "read": 1,
-    "write": 1,
-    "change_config": 1,
-    "delete": 1
-    }
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 3,
+      "read": 1,
+      "user_group": 3,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 4,
+      "read": 1,
+      "user_group": 1,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 7
+  },
+  {
+    "fields": {
+      "change_config": 1,
+      "delete": 1,
+      "object_type": 4,
+      "read": 1,
+      "user_group": 3,
+      "write": 1
+    },
+    "model": "api_ogp.objectgrouppermissiongeneral",
+    "pk": 8
   }
 ]
