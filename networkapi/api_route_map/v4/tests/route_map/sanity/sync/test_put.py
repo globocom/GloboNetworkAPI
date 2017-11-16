@@ -10,7 +10,7 @@ from networkapi.util.geral import mount_url
 class RouteMapPutSuccessTestCase(NetworkApiTestCase):
 
     route_map_uri = '/api/v4/route-map/'
-    fixtures_path = 'networkapi/api_route_map/v4/fixtures/{}'
+    fixtures_path = 'networkapi/api_route_map/v4/fixtures/route_map/{}'
 
     fixtures = [
         'networkapi/config/fixtures/initial_config.json',
@@ -70,7 +70,7 @@ class RouteMapPutSuccessTestCase(NetworkApiTestCase):
 class RouteMapPutErrorTestCase(NetworkApiTestCase):
 
     route_map_uri = '/api/v4/route-map/'
-    fixtures_path = 'networkapi/api_route_map/v4/fixtures/{}'
+    fixtures_path = 'networkapi/api_route_map/v4/fixtures/route_map/{}'
 
     fixtures = [
         'networkapi/config/fixtures/initial_config.json',
