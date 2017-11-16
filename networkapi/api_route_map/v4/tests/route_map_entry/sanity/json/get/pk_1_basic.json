@@ -1,10 +1,20 @@
 [
   {
-    "config": "{'conf': 'test_1'}",
-    "created": false,
+    "action": "P",
+    "action_reconfig": "action_reconfig_1",
     "id": 1,
-    "name": "test_1",
-    "route_map_entries": [],
-    "type": "P"
+    "list_config_bgp": {
+      "config": "{'conf': 'test_1'}",
+      "created": false,
+      "id": 1,
+      "name": "test_1",
+      "type": "P"
+    },
+    "order": 5,
+    "route_map": {
+      "created": false,
+      "id": 1,
+      "name": "test_1"
+    }
   }
 ]

@@ -30,7 +30,11 @@ class RouteMapV4Serializer(DynamicFieldsModelSerializer):
             'peer_groups'
         )
 
-        basic_fields = fields
+        basic_fields = (
+            'id',
+            'name',
+            'created'
+        )
 
         default_fields = fields
 
@@ -97,8 +101,7 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
     route_map = serializers.SerializerMethodField('get_route_map')
 
     class Meta:
-        RouteMapEntry = get_model('api_route_map',
-                                  'RouteMapEntry')
+        RouteMapEntry = get_model('api_route_map', 'RouteMapEntry')
         model = RouteMapEntry
 
         fields = (
@@ -110,14 +113,14 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
             'route_map'
         )
 
-        basic_fields = fields
-
-        default_fields = (
+        basic_fields = (
             'id',
             'action',
             'action_reconfig',
             'order'
         )
+
+        default_fields = fields
 
         details_fields = fields
 
@@ -139,14 +142,20 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
                 'list_config_bgp__basic': {
                     'serializer': lcb_slzs.ListConfigBGPV4Serializer,
                     'kwargs': {
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'route_map_entries__basic',
+                        )
                     },
                     'obj': 'list_config_bgp'
                 },
                 'list_config_bgp__details': {
                     'serializer': lcb_slzs.ListConfigBGPV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'route_map_entries__details',
+                        )
                     },
                     'obj': 'list_config_bgp'
                 },
@@ -156,14 +165,20 @@ class RouteMapEntryV4Serializer(DynamicFieldsModelSerializer):
                 'route_map__basic': {
                     'serializer': RouteMapV4Serializer,
                     'kwargs': {
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'route_map_entries__basic',
+                        )
                     },
                     'obj': 'route_map'
                 },
                 'route_map__details': {
                     'serializer': RouteMapV4Serializer,
                     'kwargs': {
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'route_map_entries__details',
+                        )
                     },
                     'obj': 'route_map'
                 }

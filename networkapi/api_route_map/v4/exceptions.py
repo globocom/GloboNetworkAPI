@@ -26,7 +26,7 @@ class RouteMapEntryNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'RouteMapEntry %s do not exist.' % (msg)
+        self.detail = u'RouteMapEntry id = {} do not exist.'.format(msg)
 
 
 class RouteMapEntryError(APIException):

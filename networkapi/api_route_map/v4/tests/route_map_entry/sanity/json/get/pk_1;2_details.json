@@ -1,18 +1,40 @@
 [
   {
-    "config": "{'conf': 'test_1'}",
-    "created": false,
+    "action": "P",
+    "action_reconfig": "action_reconfig_1",
     "id": 1,
-    "name": "test_1",
-    "route_map_entries": [],
-    "type": "P"
+    "list_config_bgp": {
+      "config": "{'conf': 'test_1'}",
+      "created": false,
+      "id": 1,
+      "name": "test_1",
+      "type": "P"
+    },
+    "order": 5,
+    "route_map": {
+      "created": false,
+      "id": 1,
+      "name": "test_1",
+      "peer_groups": []
+    }
   },
   {
-    "config": "{'conf': 'test_2'}",
-    "created": false,
+    "action": "P",
+    "action_reconfig": "action_reconfig_2",
     "id": 2,
-    "name": "test_2",
-    "route_map_entries": [],
-    "type": "A"
+    "list_config_bgp": {
+      "config": "{'conf': 'test_2'}",
+      "created": false,
+      "id": 2,
+      "name": "test_2",
+      "type": "A"
+    },
+    "order": 7,
+    "route_map": {
+      "created": false,
+      "id": 2,
+      "name": "test_2",
+      "peer_groups": []
+    }
   }
 ]

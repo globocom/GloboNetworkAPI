@@ -28,9 +28,15 @@ class ListConfigBGPV4Serializer(DynamicFieldsModelSerializer):
             'created'
         )
 
-        basic_fields = fields
+        basic_fields = (
+            'id',
+            'name',
+            'type',
+            'config',
+            'created'
+        )
 
-        default_fields = fields
+        default_fields = basic_fields
 
         details_fields = fields
 
@@ -50,7 +56,7 @@ class ListConfigBGPV4Serializer(DynamicFieldsModelSerializer):
                     'serializer': routemap_slzs.RouteMapEntryV4Serializer,
                     'kwargs': {
                         'kind': 'basic',
-                        'many': True
+                        'many': True,
                     },
                     'obj': 'route_map_entries'
                 },

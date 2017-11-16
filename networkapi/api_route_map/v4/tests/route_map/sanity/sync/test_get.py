@@ -35,6 +35,25 @@ class RouteMapGetSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
+    def test_get_route_maps_by_ids(self):
+        """Test GET RouteMaps without kind by ids."""
+
+        route_maps_path = self.json_path.format('pk_1;2.json')
+
+        get_ids = [1, 2]
+        uri = mount_url(self.route_map_uri,
+                        get_ids,
+                        fields=self.fields)
+
+        response = self.client.get(
+            uri,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+        self.compare_json_lists(route_maps_path,
+                                response.data['route_maps'])
+
     def test_get_basic_route_maps_by_ids(self):
         """Test GET RouteMaps with kind=basic by ids."""
 

@@ -35,6 +35,25 @@ class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
+    def test_get_lists_config_bgp_by_ids(self):
+        """Test GET ListsConfigBGP without kind by ids."""
+
+        lists_config_bgp_path = self.json_path.format('pk_1;2.json')
+
+        get_ids = [1, 2]
+        uri = mount_url(self.list_config_bgp_uri,
+                        get_ids,
+                        fields=self.fields)
+
+        response = self.client.get(
+            uri,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(200, response.status_code)
+        self.compare_json_lists(lists_config_bgp_path,
+                                response.data['lists_config_bgp'])
+
     def test_get_basic_lists_config_bgp_by_ids(self):
         """Test GET ListsConfigBGP with kind=basic by ids."""
 

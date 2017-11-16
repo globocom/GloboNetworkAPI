@@ -5,7 +5,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import mount_url
 
 
-class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
+class ListConfigBGPDeleteSuccessTestCase(NetworkApiTestCase):
 
     list_config_bgp_uri = '/api/v4/list-config-bgp/'
     fixtures_path = 'networkapi/api_list_config_bgp/v4/fixtures/{}'
@@ -57,7 +57,7 @@ class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
         )
 
 
-class ListConfigBGPGetErrorTestCase(NetworkApiTestCase):
+class ListConfigBGPDeleteErrorTestCase(NetworkApiTestCase):
 
     list_config_bgp_uri = '/api/v4/list-config-bgp/'
     fixtures_path = 'networkapi/api_list_config_bgp/v4/fixtures/{}'

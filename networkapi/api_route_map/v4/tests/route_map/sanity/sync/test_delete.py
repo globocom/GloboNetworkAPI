@@ -5,7 +5,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import mount_url
 
 
-class RouteMapGetSuccessTestCase(NetworkApiTestCase):
+class RouteMapDeleteSuccessTestCase(NetworkApiTestCase):
 
     route_map_uri = '/api/v4/route-map/'
     fixtures_path = 'networkapi/api_route_map/v4/fixtures/route_map/{}'
@@ -57,7 +57,7 @@ class RouteMapGetSuccessTestCase(NetworkApiTestCase):
         )
 
 
-class RouteMapGetErrorTestCase(NetworkApiTestCase):
+class RouteMapDeleteErrorTestCase(NetworkApiTestCase):
 
     route_map_uri = '/api/v4/route-map/'
     fixtures_path = 'networkapi/api_route_map/v4/fixtures/route_map/{}'
