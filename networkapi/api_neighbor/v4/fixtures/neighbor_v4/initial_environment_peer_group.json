@@ -1,0 +1,10 @@
+[
+  {
+    "fields": {
+      "environment": 1,
+      "peer_group": 1
+    },
+    "model": "api_peer_group.EnvironmentPeerGroup",
+    "pk": 1
+  }
+]

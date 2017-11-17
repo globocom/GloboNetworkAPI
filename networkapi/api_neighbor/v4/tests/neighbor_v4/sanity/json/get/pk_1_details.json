@@ -1,0 +1,110 @@
+[
+  {
+    "environments": [
+      {
+        "environment": {
+          "acl_path": null,
+          "ambiente_logico": {
+            "id": 1,
+            "name": "AMBLOG-1"
+          },
+          "dcroom": null,
+          "default_vrf": {
+            "id": 1,
+            "internal_name": "default",
+            "vrf": "default"
+          },
+          "divisao_dc": {
+            "id": 2,
+            "name": "DC-2"
+          },
+          "father_environment": null,
+          "filter": null,
+          "grupo_l3": {
+            "id": 1,
+            "name": "GL-1"
+          },
+          "id": 1,
+          "ipv4_template": null,
+          "ipv6_template": null,
+          "link": "",
+          "max_num_vlan_1": null,
+          "max_num_vlan_2": null,
+          "min_num_vlan_1": null,
+          "min_num_vlan_2": null,
+          "name": "DC-2 - AMBLOG-1 - GL-1",
+          "sdn_controllers": null
+        },
+        "id": 1
+      }
+    ],
+    "id": 1,
+    "name": "peer_1",
+    "route_map_in": {
+      "created": false,
+      "id": 1,
+      "name": "route_map_1",
+      "route_map_entries": []
+    },
+    "route_map_out": {
+      "created": false,
+      "id": 2,
+      "name": "route_map_2",
+      "route_map_entries": []
+    }
+  },
+  {
+    "environments": [
+      {
+        "environment": {
+          "acl_path": null,
+          "ambiente_logico": {
+            "id": 2,
+            "name": "AMBLOG-2"
+          },
+          "dcroom": null,
+          "default_vrf": {
+            "id": 1,
+            "internal_name": "default",
+            "vrf": "default"
+          },
+          "divisao_dc": {
+            "id": 1,
+            "name": "DC-1"
+          },
+          "father_environment": null,
+          "filter": null,
+          "grupo_l3": {
+            "id": 2,
+            "name": "GL-2"
+          },
+          "id": 2,
+          "ipv4_template": null,
+          "ipv6_template": null,
+          "link": "",
+          "max_num_vlan_1": null,
+          "max_num_vlan_2": null,
+          "min_num_vlan_1": null,
+          "min_num_vlan_2": null,
+          "name": "DC-1 - AMBLOG-2 - GL-2",
+          "sdn_controllers": null
+        },
+        "id": 2
+      }
+    ],
+    "id": 2,
+    "name": "peer_2",
+    "route_map_in": {
+      "created": false,
+      "id": 2,
+      "name": "route_map_2",
+      "route_map_entries": []
+    },
+    "route_map_out": {
+      "created": false,
+      "id": 3,
+      "name": "route_map_3",
+      "route_map_entries": []
+    }
+  }
+]

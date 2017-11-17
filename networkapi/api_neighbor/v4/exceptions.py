@@ -7,7 +7,7 @@ class NeighborV4NotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'NeighborV4 %s do not exist.' % (msg)
+        self.detail = u'NeighborV4 id = {} do not exist.'.format(msg)
 
 
 class NeighborV4Error(APIException):
@@ -42,7 +42,7 @@ class NeighborV6NotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'NeighborV6 %s do not exist.' % (msg)
+        self.detail = u'NeighborV6 id = {} do not exist.'.format(msg)
 
 
 class NeighborV6Error(APIException):
