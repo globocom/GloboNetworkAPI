@@ -31,7 +31,8 @@
           "local_asn",
           "remote_asn",
           "local_ip",
-          "remote_ip"
+          "remote_ip",
+          "peer_group"
         ],
         "type": "object"
       },

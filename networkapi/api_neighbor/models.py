@@ -306,7 +306,8 @@ def validate_neighbor_v4(neighbor, user):
     obj = NeighborV4.objects.filter(local_asn=neighbor.local_asn.id,
                                     remote_asn=neighbor.remote_asn.id,
                                     local_ip=neighbor.local_ip.id,
-                                    remote_ip=neighbor.remote_ip.id)
+                                    remote_ip=neighbor.remote_ip.id,
+                                    peer_group=neighbor.peer_group.id)
     if obj:
         raise NeighborDuplicatedException(neighbor)
 
@@ -350,7 +351,8 @@ def validate_neighbor_v6(neighbor, user):
     obj = NeighborV6.objects.filter(local_asn=neighbor.local_asn.id,
                                     remote_asn=neighbor.remote_asn.id,
                                     local_ip=neighbor.local_ip.id,
-                                    remote_ip=neighbor.remote_ip.id)
+                                    remote_ip=neighbor.remote_ip.id,
+                                    peer_group=neighbor.peer_group.id)
     if obj:
         raise NeighborDuplicatedException(neighbor)
 
