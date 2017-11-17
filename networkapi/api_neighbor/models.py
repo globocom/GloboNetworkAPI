@@ -271,37 +271,38 @@ def validate_neighbor_v4(neighbor, user):
 
     check_permissions_in_peer_group(neighbor, user)
 
+    # Check if VRF of LocalIp is the same as the Vrf of RemoteIp
     if neighbor.local_ip.networkipv4.vlan.ambiente.default_vrf != \
        neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf:
         raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
 
+    # Check if LocalIp and LocalAsn shares at least one equipment
     eqpts_of_local_ip = set(neighbor.local_ip.ipequipamento_set.all().
                             values_list('equipamento', flat=True))
-
     eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
                              values_list('equipment', flat=True))
 
     if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
         raise LocalIpAndLocalAsnAtDifferentEquipmentsException(neighbor)
 
+    # Check if RemoteIp and RemoteAsn shares at least one equipment
     eqpts_of_remote_ip = set(neighbor.remote_ip.ipequipamento_set.all().
                              values_list('equipamento', flat=True))
-
     eqpts_of_remote_asn = set(neighbor.remote_asn.asnequipment_set.all().
                               values_list('equipment', flat=True))
 
     if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
         raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(neighbor)
 
-    if neighbor.peer_group:
-        environments_of_peer_group = neighbor.peer_group. \
-            environmentpeergroup_set.all(). \
-            values_list('environment', flat=True)
-        environment_of_local_ip = neighbor.local_ip.networkipv4.vlan. \
-            ambiente.id
+    # Check if PeerGroup Environments have the LocalIp Environment
+    environments_of_peer_group = neighbor.peer_group. \
+        environmentpeergroup_set.all(). \
+        values_list('environment', flat=True)
+    environment_of_local_ip = neighbor.local_ip.networkipv4.vlan. \
+        ambiente.id
 
-        if environment_of_local_ip not in environments_of_peer_group:
-            raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
+    if environment_of_local_ip not in environments_of_peer_group:
+        raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
 
     obj = NeighborV4.objects.filter(local_asn=neighbor.local_asn.id,
                                     remote_asn=neighbor.remote_asn.id,
@@ -316,37 +317,38 @@ def validate_neighbor_v6(neighbor, user):
 
     check_permissions_in_peer_group(neighbor, user)
 
+    # Check if VRF of LocalIp is the same as the Vrf of RemoteIp
     if neighbor.local_ip.networkipv6.vlan.ambiente.default_vrf != \
        neighbor.remote_ip.networkipv6.vlan.ambiente.default_vrf:
         raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
 
+    # Check if LocalIp and LocalAsn shares at least one equipment
     eqpts_of_local_ip = set(neighbor.local_ip.ipv6equipament_set.all().
                             values_list('equipamento', flat=True))
-
     eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
                              values_list('equipment', flat=True))
 
     if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
         raise LocalIpAndLocalAsnAtDifferentEquipmentsException(neighbor)
 
+    # Check if RemoteIp and RemoteAsn shares at least one equipment
     eqpts_of_remote_ip = set(neighbor.remote_ip.ipv6equipament_set.all().
                              values_list('equipamento', flat=True))
-
     eqpts_of_remote_asn = set(neighbor.remote_asn.asnequipment_set.all().
                               values_list('equipment', flat=True))
 
     if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
         raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(neighbor)
 
-    if neighbor.peer_group:
-        environments_of_peer_group = neighbor.peer_group. \
-            environmentpeergroup_set.all(). \
-            values_list('environment', flat=True)
-        environment_of_local_ip = neighbor.local_ip.networkipv6.vlan. \
-            ambiente.id
+    # Check if PeerGroup Environments have the LocalIp Environment
+    environments_of_peer_group = neighbor.peer_group. \
+        environmentpeergroup_set.all(). \
+        values_list('environment', flat=True)
+    environment_of_local_ip = neighbor.local_ip.networkipv6.vlan. \
+        ambiente.id
 
-        if environment_of_local_ip not in environments_of_peer_group:
-            raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
+    if environment_of_local_ip not in environments_of_peer_group:
+        raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
 
     obj = NeighborV6.objects.filter(local_asn=neighbor.local_asn.id,
                                     remote_asn=neighbor.remote_asn.id,
@@ -359,25 +361,24 @@ def validate_neighbor_v6(neighbor, user):
 
 def check_permissions_in_peer_group(neighbor, user):
 
-    if neighbor.peer_group:
-        obj_group_perm_general = get_model('api_ogp',
-                                           'ObjectGroupPermissionGeneral')
-        obj_group_perm = get_model('api_ogp',
-                                   'ObjectGroupPermission')
+    obj_group_perm_general = get_model('api_ogp',
+                                       'ObjectGroupPermissionGeneral')
+    obj_group_perm = get_model('api_ogp',
+                               'ObjectGroupPermission')
 
-        # Peer Group General
-        perms_general = obj_group_perm_general.objects.filter(
-            Q(write=True),
-            Q(user_group__id__in=user.grupos),
-            Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
-        )
-        # Peer Group Specific
-        perms_specific = obj_group_perm.objects.filter(
-            Q(write=True),
-            Q(object_value=neighbor.peer_group.id),
-            Q(user_group__id__in=user.grupos),
-            Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
-        )
+    # Peer Group General
+    perms_general = obj_group_perm_general.objects.filter(
+        Q(write=True),
+        Q(user_group__id__in=user.grupos),
+        Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
+    )
+    # Peer Group Specific
+    perms_specific = obj_group_perm.objects.filter(
+        Q(write=True),
+        Q(object_value=neighbor.peer_group.id),
+        Q(user_group__id__in=user.grupos),
+        Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
+    )
 
-        if not perms_general and not perms_specific:
-            raise DontHavePermissionForPeerGroupException(neighbor)
+    if not perms_general and not perms_specific:
+        raise DontHavePermissionForPeerGroupException(neighbor)
