@@ -1,25 +1,73 @@
 [
   {
-    "environments": [
-      {
-        "environment": {
-          "id": 1,
-          "name": "DC-2 - AMBLOG-1 - GL-1"
-        },
-        "id": 1
-      }
-    ],
+    "created": false,
     "id": 1,
-    "name": "peer_1",
-    "route_map_in": {
-      "created": false,
+    "local_asn": {
+      "description": "ASN 1",
+      "equipments": [
+        {
+          "equipment": {
+            "id": 1,
+            "name": "EQUIPMENT-1"
+          }
+        }
+      ],
       "id": 1,
-      "name": "route_map_1"
+      "name": "1"
     },
-    "route_map_out": {
-      "created": false,
+    "local_ip": {
+      "description": null,
+      "id": 1,
+      "ip_formated": "192.168.2.2",
+      "networkipv4": {
+        "broadcast": "192.168.2.0",
+        "environmentvip": null,
+        "id": 1,
+        "mask_formated": "255.255.255.0",
+        "network_type": 1,
+        "networkv4": "192.168.2.0/24",
+        "vlan": {
+          "id": 1,
+          "name": "VLAN 1 of env 1",
+          "num_vlan": 1
+        }
+      }
+    },
+    "peer_group": {
+      "id": 1,
+      "name": "peer_group_1"
+    },
+    "remote_asn": {
+      "description": "ASN 2",
+      "equipments": [
+        {
+          "equipment": {
+            "id": 2,
+            "name": "EQUIPMENT-2"
+          }
+        }
+      ],
       "id": 2,
-      "name": "route_map_2"
-    }
+      "name": "2"
+    },
+    "remote_ip": {
+      "description": null,
+      "id": 2,
+      "ip_formated": "192.168.3.2",
+      "networkipv4": {
+        "broadcast": "193.168.3.0",
+        "environmentvip": null,
+        "id": 2,
+        "mask_formated": "255.255.255.0",
+        "network_type": 1,
+        "networkv4": "193.168.3.0/24",
+        "vlan": {
+          "id": 2,
+          "name": "VLAN 2 of env 2",
+          "num_vlan": 2
+        }
+      }
+    },
+    "virtual_interface": "test_vi"
   }
 ]

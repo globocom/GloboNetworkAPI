@@ -371,14 +371,14 @@ def check_permissions_in_peer_group(neighbor, user):
     # Peer Group General
     perms_general = obj_group_perm_general.objects.filter(
         Q(write=True),
-        Q(user_group__id__in=user.grupos),
+        Q(user_group__id__in=user.grupos.all()),
         Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
     )
     # Peer Group Specific
     perms_specific = obj_group_perm.objects.filter(
         Q(write=True),
         Q(object_value=neighbor.peer_group.id),
-        Q(user_group__id__in=user.grupos),
+        Q(user_group__id__in=user.grupos.all()),
         Q(object_type__name=AdminPermission.OBJ_TYPE_PEER_GROUP)
     )
 

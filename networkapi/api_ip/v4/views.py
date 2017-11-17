@@ -7,12 +7,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from networkapi.api_ip import facade as facade_v3
-from networkapi.api_ip.v4 import serializers
-from networkapi.api_ip.v4 import tasks
 from networkapi.api_ip.permissions import Read
 from networkapi.api_ip.permissions import Write
 from networkapi.api_ip.permissions import write_objv4_permission
 from networkapi.api_ip.permissions import write_objv6_permission
+from networkapi.api_ip.v4 import serializers
+from networkapi.api_ip.v4 import tasks
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
@@ -46,7 +46,7 @@ class IPv4V4View(CustomAPIView):
             obj_model = None
 
         # serializer ips
-        serializer_ip = serializers.Ipv4V4Serializer(
+        serializer_ip = serializers.IPv4V4Serializer(
             ips,
             many=True,
             fields=self.fields,

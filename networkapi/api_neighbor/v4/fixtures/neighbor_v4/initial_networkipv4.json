@@ -3,7 +3,7 @@
     "fields": {
       "tipo_rede": "some_network_type"
     },
-    "model": "ip.tiporede",
+    "model": "vlan.tiporede",
     "pk": 1
   },
   {

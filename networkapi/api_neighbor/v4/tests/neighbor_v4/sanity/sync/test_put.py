@@ -46,8 +46,7 @@ class NeighborV4PutSuccessTestCase(NetworkApiTestCase):
         self.authorization = self.get_http_authorization('test')
         self.content_type = 'application/json'
         self.fields = ['id', 'local_asn', 'remote_asn', 'local_ip',
-                       'remote_ip', 'peer_group', 'virtual_interface',
-                       'created']
+                       'remote_ip', 'peer_group', 'virtual_interface']
 
     def tearDown(self):
         pass

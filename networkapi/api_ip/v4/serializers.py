@@ -10,7 +10,7 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 log = logging.getLogger(__name__)
 
 
-class Ipv4V4Serializer(DynamicFieldsModelSerializer):
+class IPv4V4Serializer(DynamicFieldsModelSerializer):
 
     ip_formated = serializers.Field(source='ip_formated')
     description = serializers.Field(source='descricao')
@@ -405,7 +405,7 @@ class IPv4EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ip_id'
                 },
                 'ip__basic': {
-                    'serializer': Ipv4V4Serializer,
+                    'serializer': IPv4V4Serializer,
                     'kwargs': {
                         'kind': 'basic',
                         'prohibited': (
@@ -416,7 +416,7 @@ class IPv4EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ip'
                 },
                 'ip__details': {
-                    'serializer': Ipv4V4Serializer,
+                    'serializer': IPv4V4Serializer,
                     'kwargs': {
                         'kind': 'details',
                         'prohibited': (

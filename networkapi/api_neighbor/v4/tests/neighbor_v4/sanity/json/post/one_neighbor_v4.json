@@ -1,20 +1,12 @@
 {
-  "peer_groups": [
+  "neighbors": [
     {
-      "environments": [
-        1
-      ],
-      "name": "peer_1",
-      "route_map_in": 1,
-      "route_map_out": 2
-    },
-    {
-      "environments": [
-        2
-      ],
-      "name": "peer_2",
-      "route_map_in": 2,
-      "route_map_out": 3
+      "local_asn": 1,
+      "local_ip": 1,
+      "peer_group": 1,
+      "remote_asn": 2,
+      "remote_ip": 2,
+      "virtual_interface": "test_vi"
     }
   ]
 }

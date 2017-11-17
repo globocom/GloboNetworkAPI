@@ -20,5 +20,16 @@
     },
     "model": "ip.ip",
     "pk": 2
+  },
+  {
+    "fields": {
+      "networkipv4": 1,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 2,
+      "oct4": 3
+    },
+    "model": "ip.ip",
+    "pk": 3
   }
 ]

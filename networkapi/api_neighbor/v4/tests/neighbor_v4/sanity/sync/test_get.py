@@ -50,9 +50,9 @@ class NeighborV4GetSuccessTestCase(NetworkApiTestCase):
     def test_get_basic_neighbor_v4_by_ids(self):
         """Test GET NeighborV4 with kind=basic by ids."""
 
-        neighbor_v4_path = self.json_path.format('pk_1;2_basic.json')
+        neighbor_v4_path = self.json_path.format('pk_1_basic.json')
 
-        get_ids = [1, 2]
+        get_ids = [1]
         uri = mount_url(self.neighbor_v4_uri,
                         get_ids,
                         kind=['basic'],
@@ -70,9 +70,9 @@ class NeighborV4GetSuccessTestCase(NetworkApiTestCase):
     def test_get_details_neighbor_v4_by_ids(self):
         """Test GET NeighborV4 with kind=details by ids."""
 
-        neighbor_v4_path = self.json_path.format('pk_1;2_details.json')
+        neighbor_v4_path = self.json_path.format('pk_1_details.json')
 
-        get_ids = [1, 2]
+        get_ids = [1]
         uri = mount_url(self.neighbor_v4_uri,
                         get_ids,
                         kind=['details'],
@@ -98,7 +98,7 @@ class NeighborV4GetSuccessTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'route_map_in': 1
+                'virtual_interface__icontains': 'test_vi'
             }]
         }
 

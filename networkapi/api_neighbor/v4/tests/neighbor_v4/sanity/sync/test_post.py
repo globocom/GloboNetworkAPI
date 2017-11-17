@@ -10,7 +10,7 @@ from networkapi.util.geral import mount_url
 class NeighborV4PostSuccessTestCase(NetworkApiTestCase):
 
     neighbor_v4_uri = '/api/v4/neighborv4/'
-    fixtures_path = 'networkapi/api_neighbor/v4/fixtures/{}'
+    fixtures_path = 'networkapi/api_neighbor/v4/fixtures/neighbor_v4/{}'
 
     fixtures = [
         'networkapi/config/fixtures/initial_config.json',
@@ -37,14 +37,14 @@ class NeighborV4PostSuccessTestCase(NetworkApiTestCase):
         fixtures_path.format('initial_environment_peer_group.json'),
     ]
 
-    json_path = 'api_neighbor/v4/tests/sanity/json/post/{}'
+    json_path = 'api_neighbor/v4/tests/neighbor_v4/sanity/json/post/{}'
 
     def setUp(self):
         self.client = Client()
         self.authorization = self.get_http_authorization('test')
         self.content_type = 'application/json'
         self.fields = ['local_asn', 'remote_asn', 'local_ip', 'remote_ip',
-                       'peer_group', 'virtual_interface', 'created']
+                       'peer_group', 'virtual_interface']
 
     def tearDown(self):
         pass
