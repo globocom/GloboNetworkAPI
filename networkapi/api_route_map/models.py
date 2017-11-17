@@ -4,12 +4,15 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import Q
 
 from networkapi.api_route_map.v4 import exceptions
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapAssociatedToPeerGroupException
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapAssociatedToRouteMapEntryException
+from networkapi.api_route_map.v4.exceptions import \
+    RouteMapEntryDuplicatedException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -195,6 +198,8 @@ class RouteMapEntry(BaseModel):
             route_map_entry.get('list_config_bgp'))
         self.route_map = RouteMap.get_by_pk(route_map_entry.get('route_map'))
 
+        self.validate_route_map_entry()
+
         self.save()
 
     def update_v4(self, route_map_entry):
@@ -210,9 +215,22 @@ class RouteMapEntry(BaseModel):
             route_map_entry.get('list_config_bgp'))
         self.route_map = RouteMap.get_by_pk(route_map_entry.get('route_map'))
 
+        self.validate_route_map_entry()
+
         self.save()
 
     def delete_v4(self):
         """Delete RouteMapEntry."""
 
         super(RouteMapEntry, self).delete()
+
+    def validate_route_map_entry(self):
+
+        # check if already exists route map entry
+        route_map_entry = RouteMapEntry.objects.filter(
+            Q(list_config_bgp=self.list_config_bgp.id),
+            Q(route_map=self.route_map.id),
+        )
+
+        if route_map_entry:
+            raise RouteMapEntryDuplicatedException(self)
