@@ -38,6 +38,13 @@ class NeighborV4DoesNotExistException(APIException):
     default_detail = u'NeighborV4 does not exists.'
 
 
+class NeighborV4IsDeployed(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, msg):
+        self.detail = u'NeighborV4 id = {} is deployed'.format(msg)
+
+
 class NeighborV6NotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
@@ -71,6 +78,13 @@ class NeighborV6NotCreated(APIException):
 class NeighborV6DoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = u'NeighborV6 does not exists.'
+
+
+class NeighborV6IsDeployed(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, msg):
+        self.detail = u'NeighborV6 id = {} is deployed'.format(msg)
 
 
 class LocalIpAndRemoteIpAreInDifferentVrfsException(APIException):

@@ -6,8 +6,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from networkapi.api_list_config_bgp.v4 import exceptions
-from networkapi.api_list_config_bgp.v4.exceptions import \
-    ListConfigBGPAssociatedToRouteMapEntryException
+from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPAssociatedToRouteMapEntryException
+from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPIsDeployedException
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -60,8 +60,8 @@ class ListConfigBGP(BaseModel):
     route_map_entries = property(_get_route_map_entries)
 
     def _get_route_map_entries_id(self):
-        return self.routemapentry_set.all().values_list('id',
-                                                        flat=True)
+        return map(int,
+                   self.routemapentry_set.all().values_list('id', flat=True))
 
     route_map_entries_id = property(_get_route_map_entries_id)
 
@@ -100,6 +100,9 @@ class ListConfigBGP(BaseModel):
     def update_v4(self, list_config_bgp):
         """Update ListConfigBGP."""
 
+        if self.created:
+            raise ListConfigBGPIsDeployedException(self)
+
         self.name = list_config_bgp.get('name')
         self.type = list_config_bgp.get('type')
         self.config = list_config_bgp.get('config')
@@ -108,6 +111,9 @@ class ListConfigBGP(BaseModel):
 
     def delete_v4(self):
         """Delete ListConfigBGP."""
+
+        if self.created:
+            raise ListConfigBGPIsDeployedException(self)
 
         if self.routemapentry_set.count() > 0:
             raise ListConfigBGPAssociatedToRouteMapEntryException(self)

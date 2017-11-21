@@ -8,8 +8,7 @@ from django.db.models import Q
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_neighbor.v4 import exceptions
-from networkapi.api_neighbor.v4.exceptions import \
-    DontHavePermissionForPeerGroupException
+from networkapi.api_neighbor.v4.exceptions import DontHavePermissionForPeerGroupException
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndLocalAsnAtDifferentEquipmentsException
 from networkapi.api_neighbor.v4.exceptions import \
@@ -17,6 +16,8 @@ from networkapi.api_neighbor.v4.exceptions import \
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndRemoteIpAreInDifferentVrfsException
 from networkapi.api_neighbor.v4.exceptions import NeighborDuplicatedException
+from networkapi.api_neighbor.v4.exceptions import NeighborV4IsDeployed
+from networkapi.api_neighbor.v4.exceptions import NeighborV6IsDeployed
 from networkapi.api_neighbor.v4.exceptions import \
     RemoteIpAndRemoteAsnAtDifferentEquipmentsException
 from networkapi.models.BaseModel import BaseModel
@@ -134,6 +135,9 @@ class NeighborV4(BaseModel):
         ipv4_model = get_model('ip', 'Ip')
         peergroup_model = get_model('api_peer_group', 'PeerGroup')
 
+        if self.created:
+            raise NeighborV4IsDeployed(self)
+
         self.local_asn = asn_model.get_by_pk(neighbor.get('local_asn'))
         self.remote_asn = asn_model.get_by_pk(neighbor.get('remote_asn'))
         self.local_ip = ipv4_model.get_by_pk(neighbor.get('local_ip'))
@@ -147,6 +151,9 @@ class NeighborV4(BaseModel):
 
     def delete_v4(self):
         """Delete NeighborV4."""
+
+        if self.created:
+            raise NeighborV4IsDeployed(self)
 
         super(NeighborV4, self).delete()
 
@@ -252,6 +259,9 @@ class NeighborV6(BaseModel):
         ipv6_model = get_model('ip', 'Ipv6')
         peergroup_model = get_model('api_peer_group', 'PeerGroup')
 
+        if self.created:
+            raise NeighborV6IsDeployed(self)
+
         self.local_asn = asn_model.get_by_pk(neighbor.get('local_asn'))
         self.remote_asn = asn_model.get_by_pk(neighbor.get('remote_asn'))
         self.local_ip = ipv6_model.get_by_pk(neighbor.get('local_ip'))
@@ -265,6 +275,9 @@ class NeighborV6(BaseModel):
 
     def delete_v4(self):
         """Delete NeighborV6."""
+
+        if self.created:
+            raise NeighborV6IsDeployed(self)
 
         super(NeighborV6, self).delete()
 

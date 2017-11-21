@@ -110,6 +110,8 @@ def delete_list_config_bgp(obj_ids):
             obj_to_delete.delete_v4()
         except exceptions.ListConfigBGPDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
+        except exceptions.ListConfigBGPAssociatedToRouteMapEntryException, e:
+            raise ValidationAPIException(str(e))
         except ListConfigBGPError, e:
             raise NetworkAPIException(str(e))
         except Exception, e:

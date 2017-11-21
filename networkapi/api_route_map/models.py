@@ -7,12 +7,12 @@ from django.db import models
 from django.db.models import Q
 
 from networkapi.api_route_map.v4 import exceptions
-from networkapi.api_route_map.v4.exceptions import \
-    RouteMapAssociatedToPeerGroupException
+from networkapi.api_route_map.v4.exceptions import RouteMapAssociatedToPeerGroupException
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapAssociatedToRouteMapEntryException
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapEntryDuplicatedException
+from networkapi.api_route_map.v4.exceptions import RouteMapIsDeployedException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -108,10 +108,16 @@ class RouteMap(BaseModel):
 
         self.name = route_map.get('name')
 
+        if self.created:
+            raise RouteMapIsDeployedException(self)
+
         self.save()
 
     def delete_v4(self):
         """Delete RouteMap."""
+
+        if self.created:
+            raise RouteMapIsDeployedException(self)
 
         if self.routemapentry_set.count() > 0:
             raise RouteMapAssociatedToRouteMapEntryException(self)
