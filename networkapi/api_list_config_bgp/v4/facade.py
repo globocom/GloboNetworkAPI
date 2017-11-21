@@ -75,6 +75,8 @@ def update_list_config_bgp(obj):
         obj_to_update.update_v4(obj)
     except ListConfigBGPError, e:
         raise ValidationAPIException(str(e))
+    except exceptions.ListConfigBGPIsDeployedException, e:
+        raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
     except exceptions.ListConfigBGPDoesNotExistException, e:
@@ -111,6 +113,8 @@ def delete_list_config_bgp(obj_ids):
         except exceptions.ListConfigBGPDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
         except exceptions.ListConfigBGPAssociatedToRouteMapEntryException, e:
+            raise ValidationAPIException(str(e))
+        except exceptions.ListConfigBGPIsDeployedException, e:
             raise ValidationAPIException(str(e))
         except ListConfigBGPError, e:
             raise NetworkAPIException(str(e))

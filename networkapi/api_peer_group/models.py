@@ -7,10 +7,10 @@ from django.db import models
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_peer_group.v4 import exceptions
-from networkapi.api_peer_group.v4.exceptions import \
-    EnvironmentPeerGroupDuplicatedException
+from networkapi.api_peer_group.v4.exceptions import EnvironmentPeerGroupDuplicatedException
 from networkapi.api_peer_group.v4.exceptions import \
     PeerGroupDuplicatedException
+from networkapi.api_peer_group.v4.exceptions import PeerGroupIsAssociatedWithNeighborsException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -50,6 +50,18 @@ class PeerGroup(BaseModel):
                                                                flat=True)
 
     environments_id = property(_get_environments_id)
+
+    def _get_neighbors_v4_id(self):
+        return map(int,
+                   self.neighborv4_set.all().values_list('id', flat=True))
+
+    neighbors_v4_id = property(_get_neighbors_v4_id)
+
+    def _get_neighbors_v6_id(self):
+        return map(int,
+                   self.neighborv6_set.all().values_list('id', flat=True))
+
+    neighbors_v6_id = property(_get_neighbors_v6_id)
 
     log = logging.getLogger('PeerGroup')
 
@@ -166,6 +178,9 @@ class PeerGroup(BaseModel):
 
     def delete_v4(self):
         """Delete PeerGroup."""
+
+        if self.neighborv4_set.count() > 0 or self.neighborv6_set.count() > 0:
+            raise PeerGroupIsAssociatedWithNeighborsException(self)
 
         # Deletes Permissions
         object_group_perm_model = get_model('api_ogp',

@@ -5,6 +5,8 @@ from django.core.exceptions import FieldError
 
 from networkapi.api_peer_group.models import PeerGroup
 from networkapi.api_peer_group.v4 import exceptions
+from networkapi.api_peer_group.v4.exceptions import EnvironmentPeerGroupDuplicatedException
+from networkapi.api_peer_group.v4.exceptions import PeerGroupDuplicatedException
 from networkapi.api_peer_group.v4.exceptions import PeerGroupError
 from networkapi.api_peer_group.v4.exceptions import PeerGroupNotFoundError
 from networkapi.api_rest.exceptions import NetworkAPIException
@@ -72,6 +74,8 @@ def update_peer_group(obj, user):
         obj_to_update.update_v4(obj, user)
     except PeerGroupError, e:
         raise ValidationAPIException(str(e))
+    except PeerGroupDuplicatedException, e:
+        raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
     except exceptions.PeerGroupDoesNotExistException, e:
@@ -90,6 +94,10 @@ def create_peer_group(obj, user):
         obj_to_create.create_v4(obj, user)
     except PeerGroupError, e:
         raise ValidationAPIException(str(e))
+    except PeerGroupDuplicatedException, e:
+        raise ValidationAPIException(str(e))
+    except EnvironmentPeerGroupDuplicatedException, e:
+        raise ValidationAPIException(str(e))
     except ValidationAPIException, e:
         raise ValidationAPIException(str(e))
     except Exception, e:
@@ -107,6 +115,8 @@ def delete_peer_group(obj_ids):
             obj_to_delete.delete_v4()
         except exceptions.PeerGroupDoesNotExistException, e:
             raise ObjectDoesNotExistException(str(e))
+        except exceptions.PeerGroupIsAssociatedWithNeighborsException, e:
+            raise ValidationAPIException(str(e))
         except PeerGroupError, e:
             raise NetworkAPIException(str(e))
         except Exception, e:

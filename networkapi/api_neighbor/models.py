@@ -8,7 +8,8 @@ from django.db.models import Q
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.api_neighbor.v4 import exceptions
-from networkapi.api_neighbor.v4.exceptions import DontHavePermissionForPeerGroupException
+from networkapi.api_neighbor.v4.exceptions import \
+    DontHavePermissionForPeerGroupException
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndLocalAsnAtDifferentEquipmentsException
 from networkapi.api_neighbor.v4.exceptions import \
