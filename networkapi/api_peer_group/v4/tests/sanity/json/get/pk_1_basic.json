@@ -7,6 +7,13 @@
           "name": "DC-1 - AMBLOG-1 - GL-1"
         },
         "id": 1
+      },
+      {
+        "environment": {
+          "id": 2,
+          "name": "DC-2 - AMBLOG-2 - GL-2"
+        },
+        "id": 2
       }
     ],
     "id": 1,

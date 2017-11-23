@@ -2,9 +2,10 @@
   "peer_groups": [
     {
       "environments": [
-        2
+        1,
+        3
       ],
-      "id": 1000,
+      "id": 1,
       "name": "peer_3",
       "route_map_in": 3,
       "route_map_out": 1

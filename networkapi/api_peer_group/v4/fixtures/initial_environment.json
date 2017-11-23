@@ -60,5 +60,15 @@
     },
     "model": "ambiente.ambiente",
     "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente_logico": 2,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "grupo_l3": 2
+    },
+    "model": "ambiente.ambiente",
+    "pk": 3
   }
 ]

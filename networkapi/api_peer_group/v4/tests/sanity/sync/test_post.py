@@ -87,6 +87,7 @@ class PeerGroupPostErrorTestCase(NetworkApiTestCase):
 
         fixtures_path.format('initial_environment.json'),
         fixtures_path.format('initial_route_map.json'),
+        fixtures_path.format('initial_peer_group.json'),
 
     ]
 
@@ -106,7 +107,7 @@ class PeerGroupPostErrorTestCase(NetworkApiTestCase):
         peer_group_path = self.json_path.\
             format('duplicated_peer_group.json')
 
-        response = self.client.put(
+        response = self.client.post(
             self.peer_group_uri,
             data=self.load_json(peer_group_path),
             content_type=self.content_type,
@@ -114,7 +115,7 @@ class PeerGroupPostErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            u'Already exists PeerGroup with RouteMapIn id = {} '
-            u'and RouteMapOut id = {}',
+            u'Already exists PeerGroup with RouteMapIn id = 1 '
+            u'and RouteMapOut id = 2',
             response.data['detail']
         )

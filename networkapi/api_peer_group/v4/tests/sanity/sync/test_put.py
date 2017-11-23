@@ -45,7 +45,7 @@ class PeerGroupPutSuccessTestCase(NetworkApiTestCase):
         """Test PUT PeerGroups."""
 
         peer_groups_path = self.json_path.\
-            format('two_peer_groups.json')
+            format('one_peer_group.json')
 
         response = self.client.put(
             self.peer_group_uri,
@@ -86,6 +86,10 @@ class PeerGroupPutErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_route_map.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_environment_peer_group.json'),
     ]
 
     json_path = 'api_peer_group/v4/tests/sanity/json/put/{}'
@@ -112,7 +116,7 @@ class PeerGroupPutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'PeerGroup id = 3 do not exist.',
+            u'PeerGroup id = 1000 do not exist.',
             response.data['detail']
         )
 
@@ -130,7 +134,7 @@ class PeerGroupPutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            u'Already exists PeerGroup with RouteMapIn id = {} '
-            u'and RouteMapOut id = {}',
+            u'Already exists PeerGroup with RouteMapIn id = 1 '
+            u'and RouteMapOut id = 2',
             response.data['detail']
         )
