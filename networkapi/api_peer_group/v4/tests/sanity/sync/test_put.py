@@ -23,6 +23,7 @@ class PeerGroupPutSuccessTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_vrf.json'),
         fixtures_path.format('initial_environment.json'),
         fixtures_path.format('initial_route_map.json'),
         fixtures_path.format('initial_peer_group.json'),
@@ -86,6 +87,7 @@ class PeerGroupPutErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_vrf.json'),
         fixtures_path.format('initial_environment.json'),
         fixtures_path.format('initial_route_map.json'),
         fixtures_path.format('initial_peer_group.json'),

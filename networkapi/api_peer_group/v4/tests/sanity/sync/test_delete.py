@@ -75,6 +75,20 @@ class PeerGroupDeleteErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_route_map.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_environment_peer_group.json'),
+
+        fixtures_path.format('initial_asn.json'),
+        fixtures_path.format('initial_ipv4.json'),
+        fixtures_path.format('initial_ipv6.json'),
+        fixtures_path.format('initial_networkipv4.json'),
+        fixtures_path.format('initial_networkipv6.json'),
+        fixtures_path.format('initial_vlan.json'),
+        fixtures_path.format('initial_neighbor_v4.json'),
+        fixtures_path.format('initial_neighbor_v6.json'),
+
     ]
 
     def setUp(self):
@@ -105,7 +119,7 @@ class PeerGroupDeleteErrorTestCase(NetworkApiTestCase):
     def test_delete_peer_group_assoc_with_neighbors(self):
         """Test DELETE PeerGroup associated with neighbors."""
 
-        delete_ids = [3, 4]
+        delete_ids = [1]
         uri = mount_url(self.peer_group_uri,
                         delete_ids)
 
@@ -116,7 +130,7 @@ class PeerGroupDeleteErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            u'PeerGroup id = [2] is associated '
+            u'PeerGroup id = 1 is associated '
             u'with NeighborsV4 id = [1] and NeighborsV6 id = [1]',
             response.data['detail']
         )
