@@ -20,6 +20,7 @@ class PeerGroupGetSuccessTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_vrf.json'),
         fixtures_path.format('initial_environment.json'),
         fixtures_path.format('initial_route_map.json'),
         fixtures_path.format('initial_peer_group.json'),
@@ -37,12 +38,12 @@ class PeerGroupGetSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_get_basic_peer_groups_by_ids(self):
-        """Test GET PeerGroups with kind=basic by ids."""
+    def test_get_basic_peer_group_by_id(self):
+        """Test GET PeerGroup with kind=basic by id."""
 
-        peer_groups_path = self.json_path.format('pk_1;2_basic.json')
+        peer_groups_path = self.json_path.format('pk_1_basic.json')
 
-        get_ids = [1, 2]
+        get_ids = [1]
         uri = mount_url(self.peer_group_uri,
                         get_ids,
                         kind=['basic'],
@@ -57,12 +58,12 @@ class PeerGroupGetSuccessTestCase(NetworkApiTestCase):
         self.compare_json_lists(peer_groups_path,
                                 response.data['peer_groups'])
 
-    def test_get_details_peer_groups_by_ids(self):
-        """Test GET PeerGroups with kind=details by ids."""
+    def test_get_details_peer_group_by_id(self):
+        """Test GET PeerGroup with kind=details by id."""
 
-        peer_groups_path = self.json_path.format('pk_1;2_details.json')
+        peer_groups_path = self.json_path.format('pk_1_details.json')
 
-        get_ids = [1, 2]
+        get_ids = [1]
         uri = mount_url(self.peer_group_uri,
                         get_ids,
                         kind=['details'],
@@ -132,7 +133,7 @@ class PeerGroupGetErrorTestCase(NetworkApiTestCase):
     def test_get_inexistent_peer_group(self):
         """Test GET inexistent PeerGroup by id."""
 
-        get_ids = [3]
+        get_ids = [1000]
         uri = mount_url(self.peer_group_uri,
                         get_ids)
 
@@ -142,8 +143,7 @@ class PeerGroupGetErrorTestCase(NetworkApiTestCase):
         )
 
         self.compare_status(404, response.status_code)
-
         self.compare_values(
-            u'PeerGroup id = 3 do not exist.',
+            u'PeerGroup id = 1000 do not exist.',
             response.data['detail']
         )

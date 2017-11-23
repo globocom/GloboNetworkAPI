@@ -14,21 +14,5 @@
     },
     "model": "api_route_map.RouteMap",
     "pk": 2
-  },
-  {
-    "fields": {
-      "created": false,
-      "name": "route_map_3"
-    },
-    "model": "api_route_map.RouteMap",
-    "pk": 3
-  },
-  {
-    "fields": {
-      "created": false,
-      "name": "route_map_4"
-    },
-    "model": "api_route_map.RouteMap",
-    "pk": 4
   }
 ]

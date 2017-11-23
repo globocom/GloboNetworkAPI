@@ -4,13 +4,13 @@
       {
         "environment": {
           "id": 1,
-          "name": "DC-2 - AMBLOG-1 - GL-1"
+          "name": "DC-1 - AMBLOG-1 - GL-1"
         },
         "id": 1
       }
     ],
     "id": 1,
-    "name": "peer_1",
+    "name": "peer_group_1",
     "route_map_in": {
       "created": false,
       "id": 1,
