@@ -9,7 +9,7 @@
   },
   {
     "fields": {
-      "environment": 2,
+      "environment": 1,
       "peer_group": 2
     },
     "model": "api_peer_group.EnvironmentPeerGroup",

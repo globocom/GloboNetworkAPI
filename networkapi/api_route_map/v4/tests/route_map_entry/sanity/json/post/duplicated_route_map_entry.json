@@ -1,0 +1,11 @@
+{
+  "route_map_entries": [
+    {
+      "action": "D",
+      "action_reconfig": "text-3",
+      "list_config_bgp": 2,
+      "order": 5,
+      "route_map": 2
+    }
+  ]
+}

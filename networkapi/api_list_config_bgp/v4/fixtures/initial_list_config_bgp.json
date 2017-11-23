@@ -28,5 +28,15 @@
     },
     "model": "api_list_config_bgp.ListConfigBGP",
     "pk": 3
+  },
+  {
+    "fields": {
+      "config": "{'conf': 'test_4'}",
+      "created": true,
+      "name": "test_4",
+      "type": "P"
+    },
+    "model": "api_list_config_bgp.ListConfigBGP",
+    "pk": 4
   }
 ]

@@ -1,0 +1,51 @@
+[
+  {
+    "fields": {
+      "tipo_rede": "some_network_type"
+    },
+    "model": "vlan.tiporede",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "active": true,
+      "ambient_vip": null,
+      "block": 24,
+      "broadcast": "192.168.2.0",
+      "cluster_unit": "",
+      "mask_oct1": 255,
+      "mask_oct2": 255,
+      "mask_oct3": 255,
+      "mask_oct4": 0,
+      "network_type": 1,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 2,
+      "oct4": 0,
+      "vlan": 1
+    },
+    "model": "ip.networkipv4",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "active": true,
+      "ambient_vip": null,
+      "block": 24,
+      "broadcast": "193.168.3.0",
+      "cluster_unit": "",
+      "mask_oct1": 255,
+      "mask_oct2": 255,
+      "mask_oct3": 255,
+      "mask_oct4": 0,
+      "network_type": 1,
+      "oct1": 193,
+      "oct2": 168,
+      "oct3": 3,
+      "oct4": 0,
+      "vlan": 2
+    },
+    "model": "ip.networkipv4",
+    "pk": 2
+  }
+]

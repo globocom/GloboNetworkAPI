@@ -85,6 +85,10 @@ class RouteMapEntryPutErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_list_config_bgp.json'),
+        fixtures_path.format('initial_route_map.json'),
+        fixtures_path.format('initial_route_map_entry.json'),
+
     ]
 
     json_path = 'api_route_map/v4/tests/route_map_entry/sanity/json/put/{}'
@@ -112,5 +116,24 @@ class RouteMapEntryPutErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
         self.compare_values(
             u'RouteMapEntry id = 3 do not exist.',
+            response.data['detail']
+        )
+
+    def test_put_duplicated_route_map_entry(self):
+        """Test PUT duplicated RouteMapEntry."""
+
+        route_map_entry_path = self.json_path.\
+            format('duplicated_route_map_entry.json')
+
+        response = self.client.put(
+            self.route_map_entry_uri,
+            data=self.load_json(route_map_entry_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'It already exists RouteMapEntry with ListConfigBGP '
+            u'id = 2 and RouteMap id = 2.',
             response.data['detail']
         )

@@ -1,0 +1,26 @@
+[
+  {
+    "fields": {
+      "equipamento": 1,
+      "ip": 1
+    },
+    "model": "ip.ipv6equipament",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "equipamento": 2,
+      "ip": 2
+    },
+    "model": "ip.ipv6equipament",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "equipamento": 2,
+      "ip": 3
+    },
+    "model": "ip.ipv6equipament",
+    "pk": 3
+  }
+]

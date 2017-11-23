@@ -97,8 +97,26 @@ class PeerGroupDeleteErrorTestCase(NetworkApiTestCase):
         )
 
         self.compare_status(404, response.status_code)
-
         self.compare_values(
             u'PeerGroup id = 3 do not exist.',
+            response.data['detail']
+        )
+
+    def test_delete_peer_group_assoc_with_neighbors(self):
+        """Test DELETE PeerGroup associated with neighbors."""
+
+        delete_ids = [3, 4]
+        uri = mount_url(self.peer_group_uri,
+                        delete_ids)
+
+        response = self.client.delete(
+            uri,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'PeerGroup id = {} is associated '
+            u'with NeighborsV4 id = {} and NeighborsV6 id = {}',
             response.data['detail']
         )

@@ -115,3 +115,22 @@ class PeerGroupPutErrorTestCase(NetworkApiTestCase):
             u'PeerGroup id = 3 do not exist.',
             response.data['detail']
         )
+
+    def test_put_duplicated_peer_group(self):
+        """Test PUT duplicated PeerGroup."""
+
+        peer_group_path = self.json_path.\
+            format('duplicated_peer_group.json')
+
+        response = self.client.put(
+            self.peer_group_uri,
+            data=self.load_json(peer_group_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'Already exists PeerGroup with RouteMapIn id = {} '
+            u'and RouteMapOut id = {}',
+            response.data['detail']
+        )

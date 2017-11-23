@@ -67,3 +67,54 @@ class PeerGroupPostSuccessTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
         self.compare_json(peer_groups_path,
                           response.data)
+
+
+class PeerGroupPostErrorTestCase(NetworkApiTestCase):
+
+    peer_group_uri = '/api/v4/peer-group/'
+    fixtures_path = 'networkapi/api_peer_group/v4/fixtures/{}'
+
+    fixtures = [
+        'networkapi/config/fixtures/initial_config.json',
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_route_map.json'),
+
+    ]
+
+    json_path = 'api_peer_group/v4/tests/sanity/json/post/{}'
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test')
+        self.content_type = 'application/json'
+
+    def tearDown(self):
+        pass
+
+    def test_post_duplicated_peer_group(self):
+        """Test POST duplicated PeerGroup."""
+
+        peer_group_path = self.json_path.\
+            format('duplicated_peer_group.json')
+
+        response = self.client.put(
+            self.peer_group_uri,
+            data=self.load_json(peer_group_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'Already exists PeerGroup with RouteMapIn id = {} '
+            u'and RouteMapOut id = {}',
+            response.data['detail']
+        )

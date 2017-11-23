@@ -1,0 +1,12 @@
+[
+  {
+    "fields": {
+      "config": "{'conf': 'test_1'}",
+      "created": false,
+      "name": "test_1",
+      "type": "P"
+    },
+    "model": "api_list_config_bgp.ListConfigBGP",
+    "pk": 1
+  }
+]

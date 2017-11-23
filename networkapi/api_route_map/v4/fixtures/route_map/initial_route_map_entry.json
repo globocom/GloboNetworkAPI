@@ -1,0 +1,13 @@
+[
+  {
+    "fields": {
+      "action": "P",
+      "action_reconfig": "action_reconfig_1",
+      "list_config_bgp": 1,
+      "order": 5,
+      "route_map": 4
+    },
+    "model": "api_route_map.RouteMapEntry",
+    "pk": 1
+  }
+]

@@ -1,7 +1,7 @@
 [
   {
     "fields": {
-      "name": "peer_1",
+      "name": "peer_group_1",
       "route_map_in": 1,
       "route_map_out": 2
     },
@@ -10,9 +10,9 @@
   },
   {
     "fields": {
-      "name": "peer_2",
-      "route_map_in": 2,
-      "route_map_out": 3
+      "name": "peer_group_2",
+      "route_map_in": 3,
+      "route_map_out": 4
     },
     "model": "api_peer_group.PeerGroup",
     "pk": 2

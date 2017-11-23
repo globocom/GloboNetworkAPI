@@ -86,6 +86,7 @@ class ListConfigBGPDeleteErrorTestCase(NetworkApiTestCase):
         pass
 
     def test_delete_list_config_bgp_assoc_to_route_map_entry(self):
+        """Test DELETE ListConfigBGP associated to RouteMapEntry."""
 
         delete_ids = [3]
         uri = mount_url(self.list_config_bgp_uri,
@@ -101,6 +102,25 @@ class ListConfigBGPDeleteErrorTestCase(NetworkApiTestCase):
         self.compare_values(
             u'ListConfigBGP id = 3 is associated '
             u'with RouteMapEntries = [1, 2]',
+            response.data['detail']
+        )
+
+    def test_delete_deployed_list_config_bgp(self):
+        """Test DELETE deployed ListConfigBGP"""
+
+        delete_ids = [4]
+        uri = mount_url(self.list_config_bgp_uri,
+                        delete_ids)
+
+        response = self.client.delete(
+            uri,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(400, response.status_code)
+
+        self.compare_values(
+            u'ListConfigBGP id = 4 is deployed',
             response.data['detail']
         )
 

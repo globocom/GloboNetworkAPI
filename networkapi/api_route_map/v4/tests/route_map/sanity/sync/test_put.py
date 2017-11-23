@@ -110,6 +110,24 @@ class RouteMapPutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'RouteMap id = 3 do not exist.',
+            u'RouteMap id = 1000 do not exist.',
+            response.data['detail']
+        )
+
+    def test_put_deployed_route_map(self):
+        """Test PUT deployed RouteMap."""
+
+        route_map_path = self.json_path.\
+            format('deployed_route_map.json')
+
+        response = self.client.put(
+            self.route_map_uri,
+            data=self.load_json(route_map_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'RouteMap id = 3 is deployed',
             response.data['detail']
         )

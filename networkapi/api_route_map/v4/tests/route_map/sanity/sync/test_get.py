@@ -150,7 +150,7 @@ class RouteMapGetErrorTestCase(NetworkApiTestCase):
     def test_get_inexistent_route_map(self):
         """Test GET inexistent RouteMap by id."""
 
-        get_ids = [3]
+        get_ids = [1000]
         uri = mount_url(self.route_map_uri,
                         get_ids)
 
@@ -160,8 +160,7 @@ class RouteMapGetErrorTestCase(NetworkApiTestCase):
         )
 
         self.compare_status(404, response.status_code)
-
         self.compare_values(
-            u'RouteMap id = 3 do not exist.',
+            u'RouteMap id = 1000 do not exist.',
             response.data['detail']
         )

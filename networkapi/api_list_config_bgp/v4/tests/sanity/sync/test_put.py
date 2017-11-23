@@ -110,6 +110,24 @@ class ListConfigBGPPutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'ListConfigBGP id = 3 do not exist.',
+            u'ListConfigBGP id = 5 do not exist.',
+            response.data['detail']
+        )
+
+    def test_put_deployed_list_config_bgp(self):
+        """Test PUT deployed ListConfigBGP."""
+
+        list_config_bgp_path = self.json_path.\
+            format('deployed_list_config_bgp.json')
+
+        response = self.client.put(
+            self.list_config_bgp_uri,
+            data=self.load_json(list_config_bgp_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'ListConfigBGP id = 4 is deployed',
             response.data['detail']
         )
