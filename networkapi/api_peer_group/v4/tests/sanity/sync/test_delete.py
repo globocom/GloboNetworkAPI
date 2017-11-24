@@ -79,7 +79,6 @@ class PeerGroupDeleteErrorTestCase(NetworkApiTestCase):
         fixtures_path.format('initial_route_map.json'),
         fixtures_path.format('initial_peer_group.json'),
         fixtures_path.format('initial_environment_peer_group.json'),
-
         fixtures_path.format('initial_asn.json'),
         fixtures_path.format('initial_ipv4.json'),
         fixtures_path.format('initial_ipv6.json'),
