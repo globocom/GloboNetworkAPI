@@ -83,6 +83,13 @@ class NeighborV4DeleteErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_vrf.json'),
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_vlan.json'),
+        fixtures_path.format('initial_networkipv4.json'),
+        fixtures_path.format('initial_ipv4.json'),
+        fixtures_path.format('initial_asn.json'),
+        fixtures_path.format('initial_neighbor_v4.json')
     ]
 
     def setUp(self):
@@ -95,7 +102,7 @@ class NeighborV4DeleteErrorTestCase(NetworkApiTestCase):
     def test_delete_inexistent_neighbors_v4(self):
         """Test DELETE inexistent NeighborsV4."""
 
-        delete_ids = [3, 4]
+        delete_ids = [1000, 1001]
         uri = mount_url(self.neighbor_v4_uri,
                         delete_ids)
 
@@ -105,8 +112,25 @@ class NeighborV4DeleteErrorTestCase(NetworkApiTestCase):
         )
 
         self.compare_status(404, response.status_code)
-
         self.compare_values(
-            u'NeighborV4 id = 3 do not exist.',
+            u'NeighborV4 id = 1000 do not exist.',
+            response.data['detail']
+        )
+
+    def test_delete_deployed_neighbor_v4(self):
+        """Test DELETE deployed NeighborV4."""
+
+        delete_ids = [2]
+        uri = mount_url(self.neighbor_v4_uri,
+                        delete_ids)
+
+        response = self.client.delete(
+            uri,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'NeighborV4 id = 2 is deployed',
             response.data['detail']
         )

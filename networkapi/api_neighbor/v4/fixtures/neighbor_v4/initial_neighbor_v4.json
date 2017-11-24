@@ -1,6 +1,7 @@
 [
   {
     "fields": {
+      "created": false,
       "local_asn": 1,
       "local_ip": 1,
       "peer_group": 1,
@@ -10,5 +11,18 @@
     },
     "model": "api_neighbor.NeighborV4",
     "pk": 1
+  },
+  {
+    "fields": {
+      "created": true,
+      "local_asn": 3,
+      "local_ip": 3,
+      "peer_group": 1,
+      "remote_asn": 4,
+      "remote_ip": 4,
+      "virtual_interface": "test_vi"
+    },
+    "model": "api_neighbor.NeighborV4",
+    "pk": 2
   }
 ]

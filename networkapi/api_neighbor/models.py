@@ -125,7 +125,7 @@ class NeighborV4(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v4(self, user)
+        self.validate_neighbor_v4(user)
 
         self.save()
 
@@ -136,9 +136,6 @@ class NeighborV4(BaseModel):
         ipv4_model = get_model('ip', 'Ip')
         peergroup_model = get_model('api_peer_group', 'PeerGroup')
 
-        if self.created:
-            raise NeighborV4IsDeployed(self)
-
         self.local_asn = asn_model.get_by_pk(neighbor.get('local_asn'))
         self.remote_asn = asn_model.get_by_pk(neighbor.get('remote_asn'))
         self.local_ip = ipv4_model.get_by_pk(neighbor.get('local_ip'))
@@ -146,17 +143,79 @@ class NeighborV4(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v4(self, user)
+        self.validate_neighbor_v4(user)
 
         self.save()
 
     def delete_v4(self):
         """Delete NeighborV4."""
 
+        self.check_if_neighbor_already_deployed()
+
+        super(NeighborV4, self).delete()
+
+    def check_if_neighbor_already_deployed(self):
+
         if self.created:
             raise NeighborV4IsDeployed(self)
 
-        super(NeighborV4, self).delete()
+    def check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf(self):
+
+        if self.local_ip.networkipv4.vlan.ambiente.default_vrf != \
+           self.remote_ip.networkipv4.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
+
+    def check_if_local_ip_and_local_asn_shares_at_least_one_equipment(self):
+
+        eqpts_of_local_ip = set(self.local_ip.ipequipamento_set.all().
+                                values_list('equipamento', flat=True))
+        eqpts_of_local_asn = set(self.local_asn.asnequipment_set.all().
+                                 values_list('equipment', flat=True))
+
+        if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
+            raise LocalIpAndLocalAsnAtDifferentEquipmentsException(self)
+
+    def check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment(self):
+
+        eqpts_of_remote_ip = set(self.remote_ip.ipequipamento_set.all().
+                                 values_list('equipamento', flat=True))
+        eqpts_of_remote_asn = set(self.remote_asn.asnequipment_set.all().
+                                  values_list('equipment', flat=True))
+
+        if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
+            raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(self)
+
+    def check_if_peer_group_environments_has_local_ip_environment(self):
+
+        # Check if PeerGroup Environments have the LocalIp Environment
+        environments_of_peer_group = self.peer_group. \
+            environmentpeergroup_set.all(). \
+            values_list('environment', flat=True)
+        environment_of_local_ip = self.local_ip.networkipv4.vlan. \
+            ambiente.id
+
+        if environment_of_local_ip not in environments_of_peer_group:
+            raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(self)
+
+    def check_if_neighbor_is_not_duplicated(self):
+
+        obj = NeighborV4.objects.filter(local_asn=self.local_asn.id,
+                                        remote_asn=self.remote_asn.id,
+                                        local_ip=self.local_ip.id,
+                                        remote_ip=self.remote_ip.id,
+                                        peer_group=self.peer_group.id)
+        if obj:
+            raise NeighborDuplicatedException(self)
+
+    def validate_neighbor_v4(self, user):
+
+        self.check_if_neighbor_already_deployed()
+        check_permissions_in_peer_group(self, user)
+        self.check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf()
+        self.check_if_local_ip_and_local_asn_shares_at_least_one_equipment()
+        self.check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment()
+        self.check_if_peer_group_environments_has_local_ip_environment()
+        self.check_if_neighbor_is_not_duplicated()
 
 
 class NeighborV6(BaseModel):
@@ -249,7 +308,7 @@ class NeighborV6(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v6(self, user)
+        self.validate_neighbor_v6(user)
 
         self.save()
 
@@ -260,9 +319,6 @@ class NeighborV6(BaseModel):
         ipv6_model = get_model('ip', 'Ipv6')
         peergroup_model = get_model('api_peer_group', 'PeerGroup')
 
-        if self.created:
-            raise NeighborV6IsDeployed(self)
-
         self.local_asn = asn_model.get_by_pk(neighbor.get('local_asn'))
         self.remote_asn = asn_model.get_by_pk(neighbor.get('remote_asn'))
         self.local_ip = ipv6_model.get_by_pk(neighbor.get('local_ip'))
@@ -270,109 +326,79 @@ class NeighborV6(BaseModel):
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
 
-        validate_neighbor_v6(self, user)
+        self.validate_neighbor_v6(user)
 
         self.save()
 
     def delete_v4(self):
         """Delete NeighborV6."""
 
-        if self.created:
-            raise NeighborV6IsDeployed(self)
+        self.check_if_neighbor_already_deployed()
 
         super(NeighborV6, self).delete()
 
+    def check_if_neighbor_already_deployed(self):
 
-def validate_neighbor_v4(neighbor, user):
+        if self.created:
+            raise NeighborV6IsDeployed(self)
 
-    check_permissions_in_peer_group(neighbor, user)
+    def check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf(self):
 
-    # Check if VRF of LocalIp is the same as the Vrf of RemoteIp
-    if neighbor.local_ip.networkipv4.vlan.ambiente.default_vrf != \
-       neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf:
-        raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
+        if self.local_ip.networkipv6.vlan.ambiente.default_vrf != \
+           self.remote_ip.networkipv6.vlan.ambiente.default_vrf:
+            raise LocalIpAndRemoteIpAreInDifferentVrfsException(self)
 
-    # Check if LocalIp and LocalAsn shares at least one equipment
-    eqpts_of_local_ip = set(neighbor.local_ip.ipequipamento_set.all().
-                            values_list('equipamento', flat=True))
-    eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
-                             values_list('equipment', flat=True))
+    def check_if_local_ip_and_local_asn_shares_at_least_one_equipment(self):
 
-    if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
-        raise LocalIpAndLocalAsnAtDifferentEquipmentsException(neighbor)
+        eqpts_of_local_ip = set(self.local_ip.ipv6equipament_set.all().
+                                values_list('equipamento', flat=True))
+        eqpts_of_local_asn = set(self.local_asn.asnequipment_set.all().
+                                 values_list('equipment', flat=True))
 
-    # Check if RemoteIp and RemoteAsn shares at least one equipment
-    eqpts_of_remote_ip = set(neighbor.remote_ip.ipequipamento_set.all().
-                             values_list('equipamento', flat=True))
-    eqpts_of_remote_asn = set(neighbor.remote_asn.asnequipment_set.all().
-                              values_list('equipment', flat=True))
+        if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
+            raise LocalIpAndLocalAsnAtDifferentEquipmentsException(self)
 
-    if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
-        raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(neighbor)
+    def check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment(self):
 
-    # Check if PeerGroup Environments have the LocalIp Environment
-    environments_of_peer_group = neighbor.peer_group. \
-        environmentpeergroup_set.all(). \
-        values_list('environment', flat=True)
-    environment_of_local_ip = neighbor.local_ip.networkipv4.vlan. \
-        ambiente.id
+        eqpts_of_remote_ip = set(self.remote_ip.ipv6equipament_set.all().
+                                 values_list('equipamento', flat=True))
+        eqpts_of_remote_asn = set(self.remote_asn.asnequipment_set.all().
+                                  values_list('equipment', flat=True))
 
-    if environment_of_local_ip not in environments_of_peer_group:
-        raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
+        if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
+            raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(self)
 
-    obj = NeighborV4.objects.filter(local_asn=neighbor.local_asn.id,
-                                    remote_asn=neighbor.remote_asn.id,
-                                    local_ip=neighbor.local_ip.id,
-                                    remote_ip=neighbor.remote_ip.id,
-                                    peer_group=neighbor.peer_group.id)
-    if obj:
-        raise NeighborDuplicatedException(neighbor)
+    def check_if_peer_group_environments_has_local_ip_environment(self):
 
+        # Check if PeerGroup Environments have the LocalIp Environment
+        environments_of_peer_group = self.peer_group. \
+            environmentpeergroup_set.all(). \
+            values_list('environment', flat=True)
+        environment_of_local_ip = self.local_ip.networkipv6.vlan. \
+            ambiente.id
 
-def validate_neighbor_v6(neighbor, user):
+        if environment_of_local_ip not in environments_of_peer_group:
+            raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(self)
 
-    check_permissions_in_peer_group(neighbor, user)
+    def check_if_neighbor_is_not_duplicated(self):
 
-    # Check if VRF of LocalIp is the same as the Vrf of RemoteIp
-    if neighbor.local_ip.networkipv6.vlan.ambiente.default_vrf != \
-       neighbor.remote_ip.networkipv6.vlan.ambiente.default_vrf:
-        raise LocalIpAndRemoteIpAreInDifferentVrfsException(neighbor)
+        obj = NeighborV6.objects.filter(local_asn=self.local_asn.id,
+                                        remote_asn=self.remote_asn.id,
+                                        local_ip=self.local_ip.id,
+                                        remote_ip=self.remote_ip.id,
+                                        peer_group=self.peer_group.id)
+        if obj:
+            raise NeighborDuplicatedException(self)
 
-    # Check if LocalIp and LocalAsn shares at least one equipment
-    eqpts_of_local_ip = set(neighbor.local_ip.ipv6equipament_set.all().
-                            values_list('equipamento', flat=True))
-    eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
-                             values_list('equipment', flat=True))
+    def validate_neighbor_v6(self, user):
 
-    if not set.intersection(eqpts_of_local_ip, eqpts_of_local_asn):
-        raise LocalIpAndLocalAsnAtDifferentEquipmentsException(neighbor)
-
-    # Check if RemoteIp and RemoteAsn shares at least one equipment
-    eqpts_of_remote_ip = set(neighbor.remote_ip.ipv6equipament_set.all().
-                             values_list('equipamento', flat=True))
-    eqpts_of_remote_asn = set(neighbor.remote_asn.asnequipment_set.all().
-                              values_list('equipment', flat=True))
-
-    if not set.intersection(eqpts_of_remote_ip, eqpts_of_remote_asn):
-        raise RemoteIpAndRemoteAsnAtDifferentEquipmentsException(neighbor)
-
-    # Check if PeerGroup Environments have the LocalIp Environment
-    environments_of_peer_group = neighbor.peer_group. \
-        environmentpeergroup_set.all(). \
-        values_list('environment', flat=True)
-    environment_of_local_ip = neighbor.local_ip.networkipv6.vlan. \
-        ambiente.id
-
-    if environment_of_local_ip not in environments_of_peer_group:
-        raise LocalIpAndPeerGroupAtDifferentEnvironmentsException(neighbor)
-
-    obj = NeighborV6.objects.filter(local_asn=neighbor.local_asn.id,
-                                    remote_asn=neighbor.remote_asn.id,
-                                    local_ip=neighbor.local_ip.id,
-                                    remote_ip=neighbor.remote_ip.id,
-                                    peer_group=neighbor.peer_group.id)
-    if obj:
-        raise NeighborDuplicatedException(neighbor)
+        self.check_if_neighbor_already_deployed()
+        check_permissions_in_peer_group(self, user)
+        self.check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf()
+        self.check_if_local_ip_and_local_asn_shares_at_least_one_equipment()
+        self.check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment()
+        self.check_if_peer_group_environments_has_local_ip_environment()
+        self.check_if_neighbor_is_not_duplicated()
 
 
 def check_permissions_in_peer_group(neighbor, user):

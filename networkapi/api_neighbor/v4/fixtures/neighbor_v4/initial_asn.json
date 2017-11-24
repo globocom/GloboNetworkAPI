@@ -14,5 +14,21 @@
     },
     "model": "api_asn.Asn",
     "pk": 2
+  },
+  {
+    "fields": {
+      "description": "ASN 3",
+      "name": "3"
+    },
+    "model": "api_asn.Asn",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "description": "ASN 4",
+      "name": "4"
+    },
+    "model": "api_asn.Asn",
+    "pk": 4
   }
 ]
