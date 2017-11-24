@@ -16,5 +16,14 @@
     },
     "model": "api_peer_group.PeerGroup",
     "pk": 2
+  },
+  {
+    "fields": {
+      "name": "peer_group_3",
+      "route_map_in": 4,
+      "route_map_out": 3
+    },
+    "model": "api_peer_group.PeerGroup",
+    "pk": 3
   }
 ]

@@ -16,5 +16,23 @@
     },
     "model": "vlan.vlan",
     "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente": 3,
+      "nome": "VLAN 3 of env 3",
+      "num_vlan": 3
+    },
+    "model": "vlan.vlan",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "ambiente": 4,
+      "nome": "VLAN 4 of env 4",
+      "num_vlan": 4
+    },
+    "model": "vlan.vlan",
+    "pk": 4
   }
 ]

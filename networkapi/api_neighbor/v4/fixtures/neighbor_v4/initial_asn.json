@@ -30,5 +30,29 @@
     },
     "model": "api_asn.Asn",
     "pk": 4
+  },
+  {
+    "fields": {
+      "description": "ASN 5",
+      "name": "5"
+    },
+    "model": "api_asn.Asn",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "description": "ASN 6",
+      "name": "6"
+    },
+    "model": "api_asn.Asn",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "description": "ASN 7",
+      "name": "7"
+    },
+    "model": "api_asn.Asn",
+    "pk": 7
   }
 ]

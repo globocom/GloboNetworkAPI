@@ -98,7 +98,7 @@ class NeighborV4GetSuccessTestCase(NetworkApiTestCase):
             'asorting_cols': [],
             'searchable_columns': [],
             'extends_search': [{
-                'virtual_interface__icontains': 'test_vi'
+                'virtual_interface': 'test_vi'
             }]
         }
 

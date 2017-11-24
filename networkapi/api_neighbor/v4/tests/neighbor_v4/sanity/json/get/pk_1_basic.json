@@ -18,14 +18,14 @@
     "local_ip": {
       "description": null,
       "id": 1,
-      "ip_formated": "192.168.2.2",
+      "ip_formated": "192.168.1.2",
       "networkipv4": {
-        "broadcast": "192.168.2.0",
+        "broadcast": "192.168.1.255",
         "environmentvip": null,
         "id": 1,
         "mask_formated": "255.255.255.0",
         "network_type": 1,
-        "networkv4": "192.168.2.0/24",
+        "networkv4": "192.168.1.0/24",
         "vlan": {
           "id": 1,
           "name": "VLAN 1 of env 1",
@@ -53,14 +53,14 @@
     "remote_ip": {
       "description": null,
       "id": 2,
-      "ip_formated": "192.168.3.2",
+      "ip_formated": "192.168.2.2",
       "networkipv4": {
-        "broadcast": "193.168.3.0",
+        "broadcast": "192.168.2.255",
         "environmentvip": null,
         "id": 2,
         "mask_formated": "255.255.255.0",
         "network_type": 1,
-        "networkv4": "193.168.3.0/24",
+        "networkv4": "192.168.2.0/24",
         "vlan": {
           "id": 2,
           "name": "VLAN 2 of env 2",

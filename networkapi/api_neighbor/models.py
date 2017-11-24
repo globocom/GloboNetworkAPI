@@ -154,6 +154,16 @@ class NeighborV4(BaseModel):
 
         super(NeighborV4, self).delete()
 
+    def validate_neighbor_v4(self, user):
+
+        self.check_if_neighbor_already_deployed()
+        check_permissions_in_peer_group(self, user)
+        self.check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf()
+        self.check_if_local_ip_and_local_asn_shares_at_least_one_equipment()
+        self.check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment()
+        self.check_if_peer_group_environments_has_local_ip_environment()
+        self.check_if_neighbor_is_not_duplicated()
+
     def check_if_neighbor_already_deployed(self):
 
         if self.created:
@@ -206,16 +216,6 @@ class NeighborV4(BaseModel):
                                         peer_group=self.peer_group.id)
         if obj:
             raise NeighborDuplicatedException(self)
-
-    def validate_neighbor_v4(self, user):
-
-        self.check_if_neighbor_already_deployed()
-        check_permissions_in_peer_group(self, user)
-        self.check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf()
-        self.check_if_local_ip_and_local_asn_shares_at_least_one_equipment()
-        self.check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment()
-        self.check_if_peer_group_environments_has_local_ip_environment()
-        self.check_if_neighbor_is_not_duplicated()
 
 
 class NeighborV6(BaseModel):
@@ -337,6 +337,16 @@ class NeighborV6(BaseModel):
 
         super(NeighborV6, self).delete()
 
+    def validate_neighbor_v6(self, user):
+
+        self.check_if_neighbor_already_deployed()
+        check_permissions_in_peer_group(self, user)
+        self.check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf()
+        self.check_if_local_ip_and_local_asn_shares_at_least_one_equipment()
+        self.check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment()
+        self.check_if_peer_group_environments_has_local_ip_environment()
+        self.check_if_neighbor_is_not_duplicated()
+
     def check_if_neighbor_already_deployed(self):
 
         if self.created:
@@ -389,16 +399,6 @@ class NeighborV6(BaseModel):
                                         peer_group=self.peer_group.id)
         if obj:
             raise NeighborDuplicatedException(self)
-
-    def validate_neighbor_v6(self, user):
-
-        self.check_if_neighbor_already_deployed()
-        check_permissions_in_peer_group(self, user)
-        self.check_if_local_ip_vrf_is_the_same_as_remote_ip_vrf()
-        self.check_if_local_ip_and_local_asn_shares_at_least_one_equipment()
-        self.check_if_remote_ip_and_remote_asn_shares_at_least_one_equipment()
-        self.check_if_peer_group_environments_has_local_ip_environment()
-        self.check_if_neighbor_is_not_duplicated()
 
 
 def check_permissions_in_peer_group(neighbor, user):

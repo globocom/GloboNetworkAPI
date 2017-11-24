@@ -558,5 +558,15 @@
     },
     "model": "grupo.permissaoadministrativa",
     "pk": 58
+  },
+  {
+    "fields": {
+      "escrita": true,
+      "leitura": true,
+      "permission": 43,
+      "ugrupo": 2
+    },
+    "model": "grupo.permissaoadministrativa",
+    "pk": 59
   }
 ]

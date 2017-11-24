@@ -20,7 +20,7 @@
       "peer_group": 1,
       "remote_asn": 4,
       "remote_ip": 4,
-      "virtual_interface": "test_vi"
+      "virtual_interface": "test_vi2"
     },
     "model": "api_neighbor.NeighborV4",
     "pk": 2
