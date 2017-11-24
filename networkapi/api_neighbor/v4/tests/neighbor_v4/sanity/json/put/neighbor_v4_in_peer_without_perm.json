@@ -1,7 +1,7 @@
 {
   "neighbors": [
     {
-      "id": 1000,
+      "id": 1,
       "local_asn": 1,
       "local_ip": 1,
       "peer_group": 1,

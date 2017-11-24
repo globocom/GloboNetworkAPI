@@ -96,6 +96,19 @@ class NeighborV4PutErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_vrf.json'),
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_vlan.json'),
+        fixtures_path.format('initial_networkipv4.json'),
+        fixtures_path.format('initial_ipv4.json'),
+        fixtures_path.format('initial_asn.json'),
+        fixtures_path.format('initial_route_map.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_equipment.json'),
+        fixtures_path.format('initial_asn_equipment.json'),
+        fixtures_path.format('initial_ipv4_equipment.json'),
+        fixtures_path.format('initial_environment_peer_group.json'),
+        fixtures_path.format('initial_neighbor_v4.json')
     ]
 
     json_path = 'api_neighbor/v4/tests/neighbor_v4/sanity/json/put/{}'
@@ -122,6 +135,126 @@ class NeighborV4PutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'NeighborV4 id = 3 do not exist.',
+            u'NeighborV4 id = 1000 do not exist.',
+            response.data['detail']
+        )
+
+    def test_put_neighbor_v4_in_peer_group_without_permission(self):
+        """Test PUT NeighborV4 in peer group without permission."""
+
+        neighbor_v4_path = self.json_path. \
+            format('neighbor_v4_in_peer_without_perm.json')
+
+        authorization = self.get_http_authorization('test2')
+        response = self.client.put(
+            self.neighbor_v4_uri,
+            data=self.load_json(neighbor_v4_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'Peer Group id = 1 does not have permissions '
+            u'to be associated with Neighbor',
+            response.data['detail']
+        )
+
+    def test_put_neighbor_v4_with_local_ip_vrf_not_eq_to_remote_ip_vrf(self):
+        """Test PUT NeighborV4 with LocalIp Vrf not equal to RemoteIp Vrf."""
+
+        neighbor_v4_path = self.json_path. \
+            format('neighbor_v4_local_ip_vrf_not_eq_remote_ip_vrf.json')
+
+        response = self.client.put(
+            self.neighbor_v4_uri,
+            data=self.load_json(neighbor_v4_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'LocalIp id = 5 and RemoteIp id = 6 are in different Vrfs.',
+            response.data['detail']
+        )
+
+    def test_put_neighbor_v4_with_locals_in_different_eqpts(self):
+        """Test PUT NeighborV4 with LocalIp and LocalAsn
+           in different equipments.
+        """
+
+        neighbor_v4_path = self.json_path. \
+            format('neighbor_v4_locals_in_different_eqpts.json')
+
+        response = self.client.put(
+            self.neighbor_v4_uri,
+            data=self.load_json(neighbor_v4_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'LocalIp id = 6 and LocalAsn id = 5 belongs '
+            u'to different Equipments.',
+            response.data['detail']
+        )
+
+    def test_put_neighbor_v4_with_remotes_in_different_eqpts(self):
+        """Test PUT NeighborV4 with RemoteIp and RemoteAsn
+           in different equipments.
+        """
+
+        neighbor_v4_path = self.json_path. \
+            format('neighbor_v4_remotes_in_different_eqpts.json')
+
+        response = self.client.put(
+            self.neighbor_v4_uri,
+            data=self.load_json(neighbor_v4_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'RemoteIp id = 8 and RemoteAsn id = 7 '
+            u'belongs to different Equipments.',
+            response.data['detail']
+        )
+
+    def test_put_neighbor_v4_with_peer_group_envs_diff_local_ip_env(self):
+        """Test PUT NeighborV4 with peer groups environments
+           different than LocalIp Environment."""
+
+        neighbor_v4_path = self.json_path. \
+            format('neighbor_v4_with_peer_group_envs_'
+                   'diff_than_local_ip_env.json')
+
+        response = self.client.put(
+            self.neighbor_v4_uri,
+            data=self.load_json(neighbor_v4_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'LocalIp id = 1 and PeerGroup id = 3 '
+            u'belongs to different Environments.',
+            response.data['detail']
+        )
+
+    def test_put_neighbor_v4_duplicated(self):
+        """Test PUT duplicated NeighborV4."""
+
+        neighbor_v4_path = self.json_path. \
+            format('neighbor_v4_duplicated.json')
+
+        response = self.client.put(
+            self.neighbor_v4_uri,
+            data=self.load_json(neighbor_v4_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'It already exists Neighbor with LocalAsn id = 1, '
+            u'LocalIp id = 1, RemoteAsn id = 2 and RemoteIp id = 2',
             response.data['detail']
         )
