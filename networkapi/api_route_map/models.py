@@ -257,7 +257,9 @@ class RouteMapEntry(BaseModel):
         )
 
         if neighbors_v4 or neighbors_v6:
-            RouteMapEntryWithDeployedRouteMapException(self)
+            raise RouteMapEntryWithDeployedRouteMapException(self,
+                                                             neighbors_v4,
+                                                             neighbors_v6)
 
     def check_list_config_bgp_already_in_route_map_entries(self):
 

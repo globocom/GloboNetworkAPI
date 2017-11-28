@@ -1,0 +1,24 @@
+[
+  {
+    "fields": {
+      "networkipv4": 1,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 1,
+      "oct4": 2
+    },
+    "model": "ip.ip",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "networkipv4": 2,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 2,
+      "oct4": 2
+    },
+    "model": "ip.ip",
+    "pk": 2
+  }
+]

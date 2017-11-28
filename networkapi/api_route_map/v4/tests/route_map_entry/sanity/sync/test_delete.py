@@ -74,6 +74,17 @@ class RouteMapEntryDeleteErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_list_config_bgp.json'),
+        fixtures_path.format('initial_route_map.json'),
+        fixtures_path.format('initial_route_map_entry.json'),
+        fixtures_path.format('initial_asn.json'),
+        fixtures_path.format('initial_vrf.json'),
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_vlan.json'),
+        fixtures_path.format('initial_networkipv4.json'),
+        fixtures_path.format('initial_ipv4.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_neighbor_v4.json'),
     ]
 
     def setUp(self):
@@ -99,5 +110,24 @@ class RouteMapEntryDeleteErrorTestCase(NetworkApiTestCase):
 
         self.compare_values(
             u'RouteMapEntry id = 1000 do not exist',
+            response.data['detail']
+        )
+
+    def test_delete_route_map_entry_with_deployed_route_map(self):
+        """Test DELETE RouteMapEntry with deployed RouteMap."""
+
+        delete_ids = [2]
+        uri = mount_url(self.route_map_entry_uri,
+                        delete_ids)
+
+        response = self.client.delete(
+            uri,
+            HTTP_AUTHORIZATION=self.authorization
+        )
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'RouteMap id = 2 is deployed at '
+            u'NeighborsV4 = [1] and NeighborsV6 = []',
             response.data['detail']
         )

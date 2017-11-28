@@ -103,6 +103,9 @@ class RouteMapEntryDuplicatedException(APIException):
 class RouteMapEntryWithDeployedRouteMapException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
-    def __init__(self, route_map_entry):
-        self.detail = u'RouteMap id = {} is deployed'.\
-            format(route_map_entry.route_map)
+    def __init__(self, route_map_entry, neighbors_v4, neighbors_v6):
+        self.detail = u'RouteMap id = {} is deployed at ' \
+                      u'NeighborsV4 = {} and NeighborsV6 = {}'. \
+            format(route_map_entry.route_map,
+                   map(int, neighbors_v4.values_list('id', flat=True)),
+                   map(int, neighbors_v6.values_list('id', flat=True)))

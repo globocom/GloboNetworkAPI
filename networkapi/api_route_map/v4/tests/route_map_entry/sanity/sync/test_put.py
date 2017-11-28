@@ -85,6 +85,14 @@ class RouteMapEntryPutErrorTestCase(NetworkApiTestCase):
         fixtures_path.format('initial_list_config_bgp.json'),
         fixtures_path.format('initial_route_map.json'),
         fixtures_path.format('initial_route_map_entry.json'),
+        fixtures_path.format('initial_asn.json'),
+        fixtures_path.format('initial_vrf.json'),
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_vlan.json'),
+        fixtures_path.format('initial_networkipv4.json'),
+        fixtures_path.format('initial_ipv4.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_neighbor_v4.json'),
 
     ]
 
@@ -113,5 +121,24 @@ class RouteMapEntryPutErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
         self.compare_values(
             u'RouteMapEntry id = 1000 do not exist',
+            response.data['detail']
+        )
+
+    def test_put_route_map_entry_with_deployed_route_map(self):
+        """Test PUT RouteMapEntry with deployed RouteMap."""
+
+        route_map_entries_path = self.json_path.\
+            format('route_map_entry_with_deployed_route_map.json')
+
+        response = self.client.put(
+            self.route_map_entry_uri,
+            data=self.load_json(route_map_entries_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'RouteMap id = 2 is deployed at '
+            u'NeighborsV4 = [1] and NeighborsV6 = []',
             response.data['detail']
         )
