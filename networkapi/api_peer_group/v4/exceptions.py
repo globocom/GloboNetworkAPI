@@ -36,6 +36,13 @@ class PeerGroupDoesNotExistException(APIException):
     default_detail = u'PeerGroup does not exists'
 
 
+class RouteMapInAndOutAreEqualException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self):
+        self.detail = u'RouteMapIn cant be equal RouteMapOut'
+
+
 class EnvironmentPeerGroupDuplicatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 

@@ -10,12 +10,12 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.models import NeighborV6
 from networkapi.api_peer_group.v4 import exceptions
-from networkapi.api_peer_group.v4.exceptions import \
-    PeerGroupAssociatedWithDeployedNeighborsException
+from networkapi.api_peer_group.v4.exceptions import PeerGroupAssociatedWithDeployedNeighborsException
 from networkapi.api_peer_group.v4.exceptions import \
     PeerGroupDuplicatedException
 from networkapi.api_peer_group.v4.exceptions import \
     PeerGroupIsAssociatedWithNeighborsException
+from networkapi.api_peer_group.v4.exceptions import RouteMapInAndOutAreEqualException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -100,8 +100,6 @@ class PeerGroup(BaseModel):
     def create_v4(self, peer_group, user):
         """Create PeerGroup."""
 
-        self.name = peer_group.get('name')
-
         routemap_model = get_model('api_route_map', 'RouteMap')
 
         route_map_in_id = peer_group.get('route_map_in')
@@ -109,7 +107,10 @@ class PeerGroup(BaseModel):
 
         self.route_map_in = routemap_model.get_by_pk(route_map_in_id)
         self.route_map_out = routemap_model.get_by_pk(route_map_out_id)
+        self.name = peer_group.get('name')
 
+        # Validation
+        self.check_route_map_in_and_out_are_equal()
         self.check_route_maps_already_in_peer_group()
 
         self.save()
@@ -133,14 +134,12 @@ class PeerGroup(BaseModel):
 
         self.name = peer_group.get('name')
 
-        routemap_model = get_model('api_route_map', 'RouteMap')
-
+        # Validation
         self.check_peer_group_is_in_deployed_neighbors()
 
         self.save()
 
         environment_ids = peer_group.get('environments')
-
         # Get current associates
         current = self.environmentpeergroup_set \
             .filter(environment__in=environment_ids) \
@@ -197,6 +196,11 @@ class PeerGroup(BaseModel):
 
         if neighbors_v4 or neighbors_v6:
             raise PeerGroupAssociatedWithDeployedNeighborsException(self)
+
+    def check_route_map_in_and_out_are_equal(self):
+
+        if self.route_map_in == self.route_map_out:
+            raise RouteMapInAndOutAreEqualException()
 
     def check_route_maps_already_in_peer_group(self):
 
