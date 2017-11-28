@@ -21,6 +21,8 @@ from networkapi.api_neighbor.v4.exceptions import NeighborV4IsUndeployed
 from networkapi.api_neighbor.v4.exceptions import NeighborV4NotFoundError
 from networkapi.api_neighbor.v4.exceptions import NeighborV6DoesNotExistException
 from networkapi.api_neighbor.v4.exceptions import NeighborV6Error
+from networkapi.api_neighbor.v4.exceptions import NeighborV6IsDeployed
+from networkapi.api_neighbor.v4.exceptions import NeighborV6IsUndeployed
 from networkapi.api_neighbor.v4.exceptions import NeighborV6NotFoundError
 from networkapi.api_neighbor.v4.exceptions import \
     RemoteIpAndRemoteAsnAtDifferentEquipmentsException
@@ -29,6 +31,8 @@ from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import LOCK_LIST_CONFIG_BGP
 from networkapi.distributedlock import LOCK_NEIGHBOR
+from networkapi.distributedlock import LOCK_NEIGHBOR_V4
+from networkapi.distributedlock import LOCK_NEIGHBOR_V6
 from networkapi.distributedlock import LOCK_PEER_GROUP
 from networkapi.distributedlock import LOCK_ROUTE_MAP
 from networkapi.distributedlock import LOCK_ROUTE_MAP_ENTRY
@@ -297,11 +301,11 @@ def deploy_neighbor_v4(neighbor_id):
     if neighbor.created:
         raise NeighborV4IsDeployed(neighbor)
 
-    locks_list = lock_resources_used_by_neighbor(neighbor)
+    locks_list = lock_resources_used_by_neighbor_v4(neighbor)
 
     try:
-        deployed_v4 = get_created_neighbors_v4_shares_same_eqpt(neighbor)
-        deployed_v6 = get_created_neighbors_v6_shares_same_eqpt(neighbor)
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
 
         eqpt = get_v4_equipment(neighbor)
 
@@ -310,7 +314,7 @@ def deploy_neighbor_v4(neighbor_id):
         # Only if not exists other deployed neighbors sharing same
         # peer group and equipment with the neighbor that will be deployed,
         # deploy also RouteMaps and ListsConfigBGP.
-        if not deployed_v4 and not deployed_v6:
+        if not depl_v4 and not depl_v6:
 
             # Concatenate RouteMapEntries Lists
             rms = neighbor.peer_group.route_map_in.route_map_entries | \
@@ -341,11 +345,11 @@ def undeploy_neighbor_v4(neighbor_id):
     if not neighbor.created:
         raise NeighborV4IsUndeployed(neighbor)
 
-    locks_list = lock_resources_used_by_neighbor(neighbor)
+    locks_list = lock_resources_used_by_neighbor_v4(neighbor)
 
     try:
-        deployed_v4 = get_created_neighbors_v4_shares_same_eqpt(neighbor)
-        deployed_v6 = get_created_neighbors_v6_shares_same_eqpt(neighbor)
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
 
         eqpt = get_v4_equipment(neighbor)
 
@@ -357,7 +361,7 @@ def undeploy_neighbor_v4(neighbor_id):
         # Only if not exists other deployed neighbors sharing same
         # peer group and the same equipment, undeploy also RouteMaps
         # and ListsConfigBGP.
-        if deployed_v4.count() + deployed_v6.count() == 1:
+        if depl_v4.count() + depl_v6.count() == 1:
 
             undeploy_route_map(neighbor.peer_group.route_map_in, plugin)
             undeploy_route_map(neighbor.peer_group.route_map_out, plugin)
@@ -380,13 +384,89 @@ def undeploy_neighbor_v4(neighbor_id):
 @commit_on_success
 def deploy_neighbor_v6(neighbor_id):
 
-    pass
+    neighbor = NeighborV6.objects.get(id=neighbor_id)
+
+    if neighbor.created:
+        raise NeighborV6IsDeployed(neighbor)
+
+    locks_list = lock_resources_used_by_neighbor_v6(neighbor)
+
+    try:
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
+
+        eqpt = get_v6_equipment(neighbor)
+
+        plugin = PluginFactory.factory(eqpt)
+
+        # Only if not exists other deployed neighbors sharing same
+        # peer group and equipment with the neighbor that will be deployed,
+        # deploy also RouteMaps and ListsConfigBGP.
+        if not depl_v4 and not depl_v6:
+
+            # Concatenate RouteMapEntries Lists
+            rms = neighbor.peer_group.route_map_in.route_map_entries | \
+                neighbor.peer_group.route_map_out.route_map_entries
+            for rm_entry in rms:
+                deploy_list_config_bgp(rm_entry.list_config_bgp, plugin)
+
+            deploy_route_map(neighbor.peer_group.route_map_in, plugin)
+            deploy_route_map(neighbor.peer_group.route_map_out, plugin)
+
+        # TODO deploys neighbor
+        # plugin.bgp()
+
+        neighbor.update(created=True)
+
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
 
 
 @commit_on_success
 def undeploy_neighbor_v6(neighbor_id):
 
-    pass
+    neighbor = NeighborV6.objects.get(id=neighbor_id)
+
+    if not neighbor.created:
+        raise NeighborV6IsUndeployed(neighbor)
+
+    locks_list = lock_resources_used_by_neighbor_v6(neighbor)
+
+    try:
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
+
+        eqpt = get_v6_equipment(neighbor)
+
+        plugin = PluginFactory.factory(eqpt)
+
+        # TODO undeploys neighbor
+        # plugin.bgp()
+
+        # Only if not exists other deployed neighbors sharing same
+        # peer group and the same equipment, undeploy also RouteMaps
+        # and ListsConfigBGP.
+        if depl_v4.count() + depl_v6.count() == 1:
+
+            undeploy_route_map(neighbor.peer_group.route_map_in, plugin)
+            undeploy_route_map(neighbor.peer_group.route_map_out, plugin)
+
+            # Concatenate RouteMapEntries Lists
+            rms = neighbor.peer_group.route_map_in.route_map_entries | \
+                neighbor.peer_group.route_map_out.route_map_entries
+            for rm_entry in rms:
+                undeploy_list_config_bgp(rm_entry.list_config_bgp, plugin)
+
+        neighbor.update(created=False)
+
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
 
 
 def deploy_list_config_bgp(list_config_bgp, plugin):
@@ -413,10 +493,10 @@ def undeploy_route_map(route_map, plugin):
     # plugin.bgp()
 
 
-def lock_resources_used_by_neighbor(neighbor):
+def lock_resources_used_by_neighbor_v4(neighbor):
 
     locks_name = list()
-    locks_name.append(LOCK_NEIGHBOR % neighbor.id)
+    locks_name.append(LOCK_NEIGHBOR_V4 % neighbor.id)
     locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
     locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
 
@@ -437,7 +517,31 @@ def lock_resources_used_by_neighbor(neighbor):
     return create_lock_with_blocking(locks_name)
 
 
-def get_created_neighbors_v4_shares_same_eqpt(neighbor):
+def lock_resources_used_by_neighbor_v6(neighbor):
+
+    locks_name = list()
+    locks_name.append(LOCK_NEIGHBOR_V6 % neighbor.id)
+    locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
+    locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
+
+    for route_map_entry in neighbor.peer_group.route_map_in:
+        locks_name.append(LOCK_ROUTE_MAP_ENTRY %
+                          route_map_entry.id)
+        locks_name.append(LOCK_LIST_CONFIG_BGP %
+                          route_map_entry.list_config_bgp_id)
+
+    for route_map_entry in neighbor.peer_group.route_map_out:
+        locks_name.append(LOCK_ROUTE_MAP_ENTRY %
+                          route_map_entry.id)
+        locks_name.append(LOCK_LIST_CONFIG_BGP %
+                          route_map_entry.list_config_bgp_id)
+
+    # Remove duplicates locks
+    locks_name = list(set(locks_name))
+    return create_lock_with_blocking(locks_name)
+
+
+def get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor):
 
     return NeighborV4.objects.filter(created=True,
                                      peer_group=neighbor.peer_group_id,
@@ -445,7 +549,7 @@ def get_created_neighbors_v4_shares_same_eqpt(neighbor):
                                      local_ip=neighbor.local_ip_id)
 
 
-def get_created_neighbors_v6_shares_same_eqpt(neighbor):
+def get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor):
 
     return NeighborV6.objects.filter(created=True,
                                      peer_group=neighbor.peer_group_id,
