@@ -142,7 +142,7 @@ class NeighborV4GetErrorTestCase(NetworkApiTestCase):
     def test_get_inexistent_neighbor_v4(self):
         """Test GET inexistent NeighborV4 by id."""
 
-        get_ids = [3]
+        get_ids = [1000]
         uri = mount_url(self.neighbor_v4_uri,
                         get_ids)
 
@@ -154,6 +154,6 @@ class NeighborV4GetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'NeighborV4 id = 3 do not exist',
+            u'NeighborV4 id = 1000 do not exist',
             response.data['detail']
         )
