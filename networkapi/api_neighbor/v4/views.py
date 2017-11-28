@@ -218,7 +218,6 @@ class NeighborV4DeployView(CustomAPIView):
         response = list()
         obj_ids = kwargs['obj_ids'].split(';')
         for obj_id in obj_ids:
-            # deploy network configuration
             facade.deploy_neighbor_v4(obj_id)
             response.append({
                 'id': obj_id,
@@ -239,7 +238,6 @@ class NeighborV4DeployView(CustomAPIView):
         response = list()
         obj_ids = kwargs['obj_ids'].split(';')
         for obj_id in obj_ids:
-            # deploy network configuration
             facade.undeploy_neighbor_v4(obj_id)
             response.append({
                 'id': obj_id,
@@ -248,62 +246,44 @@ class NeighborV4DeployView(CustomAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-# class NeighborV6DeployView(CustomAPIView):
-#
-#     @logs_method_apiview
-#     @raise_json_validate('')
-#     @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
-#     def post(self, request, *args, **kwargs):
-#         """
-#         Creates list of NeighborV6 in equipments
-#         :url /api/v4/neighborv6/deploy/<neighbor_ids>/
-#         :param neighbor_ids=<neighbor_ids>
-#         """
-#
-#         object_ids = kwargs['obj_ids'].split(';')
-#         objects = facade.get_neighbor_v6_by_ids(object_ids)
-#         serializer = serializers.NeighborV6V4Serializer(objects,
-#                                                         many=True)
-#
-#         locks_list = create_lock(serializer.data, LOCK_NEIGHBOR)
-#
-#         try:
-#             response = facade.deploy_neighbors_v6(serializer.data)
-#         except exceptions.NeighborV6AlreadyCreated as e:
-#             raise ValidationAPIException(str(e))
-#         except Exception, exception:
-#             log.error(exception)
-#             raise NetworkAPIException(exception)
-#         finally:
-#             destroy_lock(locks_list)
-#
-#         return Response(response, status=status.HTTP_200_OK)
-#
-#     @logs_method_apiview
-#     @raise_json_validate('')
-#     @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
-#     def delete(self, request, *args, **kwargs):
-#         """
-#         Deletes list of NeighborV6 in equipments
-#         :url /api/v4/neighborv6/deploy/<neighbor_ids>/
-#         :param neighbor_ids=<neighbor_ids>
-#         """
-#
-#         object_ids = kwargs['obj_ids'].split(';')
-#         objects = facade.get_neighbor_v6_by_ids(object_ids)
-#         serializer = serializers.NeighborV6V4Serializer(objects,
-#                                                         many=True)
-#
-#         locks_list = create_lock(serializer.data, LOCK_NEIGHBOR)
-#
-#         try:
-#             response = facade.undeploy_neighbors_v6(serializer.data)
-#         except exceptions.NeighborV6NotCreated as e:
-#             raise ValidationAPIException(str(e))
-#         except Exception, exception:
-#             log.error(exception)
-#             raise NetworkAPIException(exception)
-#         finally:
-#             destroy_lock(locks_list)
-#
-#         return Response(response, status=status.HTTP_200_OK)
+class NeighborV6DeployView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployCreate))
+    def post(self, request, *args, **kwargs):
+        """
+        Creates list of NeighborV4 in equipments
+        :url /api/v4/neighborv6/deploy/<neighbor_ids>/
+        :param neighbor_ids=<neighbor_ids>
+        """
+
+        response = list()
+        obj_ids = kwargs['obj_ids'].split(';')
+        for obj_id in obj_ids:
+            facade.deploy_neighbor_v6(obj_id)
+            response.append({
+                'id': obj_id,
+            })
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write, DeployDelete))
+    def delete(self, request, *args, **kwargs):
+        """
+        Deletes list of NeighborV4 in equipments
+        :url /api/v4/neighborv6/deploy/<neighbor_ids>/
+        :param neighbor_ids=<neighbor_ids>
+        """
+
+        response = list()
+        obj_ids = kwargs['obj_ids'].split(';')
+        for obj_id in obj_ids:
+            facade.undeploy_neighbor_v6(obj_id)
+            response.append({
+                'id': obj_id,
+            })
+
+        return Response(response, status=status.HTTP_200_OK)
