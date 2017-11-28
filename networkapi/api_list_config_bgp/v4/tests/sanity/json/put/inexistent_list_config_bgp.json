@@ -2,7 +2,7 @@
   "lists_config_bgp": [
     {
       "config": "{'conf': 'test_3'}",
-      "id": 5,
+      "id": 1000,
       "name": "test_3",
       "type": "A"
     }

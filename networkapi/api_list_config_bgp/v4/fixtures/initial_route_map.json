@@ -12,5 +12,19 @@
     },
     "model": "api_route_map.RouteMap",
     "pk": 2
+  },
+  {
+    "fields": {
+      "name": "test_3"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "name": "test_4"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 4
   }
 ]

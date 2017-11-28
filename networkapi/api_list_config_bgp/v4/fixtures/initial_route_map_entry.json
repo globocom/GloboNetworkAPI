@@ -3,7 +3,7 @@
     "fields": {
       "action": "P",
       "action_reconfig": "action_reconfig_1",
-      "list_config_bgp": 3,
+      "list_config_bgp": 1,
       "order": 5,
       "route_map": 1
     },
@@ -14,7 +14,7 @@
     "fields": {
       "action": "P",
       "action_reconfig": "action_reconfig_2",
-      "list_config_bgp": 3,
+      "list_config_bgp": 2,
       "order": 7,
       "route_map": 2
     },

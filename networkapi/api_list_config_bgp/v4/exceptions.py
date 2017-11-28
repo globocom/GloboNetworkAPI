@@ -27,7 +27,7 @@ class ListConfigBGPAssociatedToRouteMapEntryException(APIException):
 
     def __init__(self, list_config_bgp):
         self.detail = u'ListConfigBGP id = {} is associated ' \
-                      u'with RouteMapEntries = {}'.\
+                      u'in RouteMapEntries = {}'.\
             format(list_config_bgp.id, list_config_bgp.route_map_entries_id)
 
 

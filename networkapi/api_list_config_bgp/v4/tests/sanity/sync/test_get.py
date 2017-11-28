@@ -149,7 +149,7 @@ class ListConfigBGPGetErrorTestCase(NetworkApiTestCase):
     def test_get_inexistent_list_config_bgp(self):
         """Test GET inexistent ListConfigBGP by id."""
 
-        get_ids = [5]
+        get_ids = [1000]
         uri = mount_url(self.list_config_bgp_uri,
                         get_ids)
 
@@ -161,6 +161,6 @@ class ListConfigBGPGetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'ListConfigBGP id = 5 do not exist',
+            u'ListConfigBGP id = 1000 do not exist',
             response.data['detail']
         )
