@@ -135,7 +135,6 @@ class PeerGroup(BaseModel):
 
         routemap_model = get_model('api_route_map', 'RouteMap')
 
-        self.check_route_maps_already_in_peer_group()
         self.check_peer_group_is_in_deployed_neighbors()
 
         self.save()

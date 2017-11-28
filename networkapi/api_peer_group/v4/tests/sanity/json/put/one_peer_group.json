@@ -6,9 +6,7 @@
         3
       ],
       "id": 1,
-      "name": "peer_3",
-      "route_map_in": 3,
-      "route_map_out": 4
+      "name": "peer_33"
     }
   ]
 }

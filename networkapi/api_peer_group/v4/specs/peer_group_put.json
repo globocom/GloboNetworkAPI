@@ -52,12 +52,6 @@
           "name": {
             "type": "string"
           },
-          "route_map_in": {
-            "type": "integer"
-          },
-          "route_map_out": {
-            "type": "integer"
-          },
           "users_permissions": {
             "items": {
               "properties": {
