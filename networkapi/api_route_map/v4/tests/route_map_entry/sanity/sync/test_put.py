@@ -32,8 +32,7 @@ class RouteMapEntryPutSuccessTestCase(NetworkApiTestCase):
         self.client = Client()
         self.authorization = self.get_http_authorization('test')
         self.content_type = 'application/json'
-        self.fields = ['id', 'action', 'action_reconfig', 'order',
-                       'list_config_bgp', 'route_map']
+        self.fields = ['id', 'action', 'action_reconfig', 'order']
 
     def tearDown(self):
         pass
@@ -113,25 +112,6 @@ class RouteMapEntryPutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'RouteMapEntry id = 3 do not exist',
-            response.data['detail']
-        )
-
-    def test_put_duplicated_route_map_entry(self):
-        """Test PUT duplicated RouteMapEntry."""
-
-        route_map_entry_path = self.json_path.\
-            format('duplicated_route_map_entry.json')
-
-        response = self.client.put(
-            self.route_map_entry_uri,
-            data=self.load_json(route_map_entry_path),
-            content_type=self.content_type,
-            HTTP_AUTHORIZATION=self.authorization)
-
-        self.compare_status(400, response.status_code)
-        self.compare_values(
-            u'It already exists RouteMapEntry with ListConfigBGP '
-            u'id = 2 and RouteMap id = 2',
+            u'RouteMapEntry id = 1000 do not exist',
             response.data['detail']
         )

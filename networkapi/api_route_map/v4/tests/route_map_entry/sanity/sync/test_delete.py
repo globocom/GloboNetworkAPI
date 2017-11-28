@@ -33,10 +33,10 @@ class RouteMapEntryDeleteSuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_delete_route_map_entries(self):
-        """Test DELETE RouteMapEntries."""
+    def test_delete_route_map_entry(self):
+        """Test DELETE RouteMapEntry."""
 
-        delete_ids = [1, 2]
+        delete_ids = [1]
         uri = mount_url(self.route_map_entry_uri,
                         delete_ids)
 
@@ -54,7 +54,7 @@ class RouteMapEntryDeleteSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'RouteMapEntry id = 1 do not exist.',
+            u'RouteMapEntry id = 1 do not exist',
             response.data['detail']
         )
 
@@ -86,7 +86,7 @@ class RouteMapEntryDeleteErrorTestCase(NetworkApiTestCase):
     def test_delete_inexistent_route_map_entries(self):
         """Test DELETE inexistent RouteMapEntries."""
 
-        delete_ids = [3, 4]
+        delete_ids = [1000, 1001]
         uri = mount_url(self.route_map_entry_uri,
                         delete_ids)
 
@@ -98,6 +98,6 @@ class RouteMapEntryDeleteErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'RouteMapEntry id = 3 do not exist',
+            u'RouteMapEntry id = 1000 do not exist',
             response.data['detail']
         )

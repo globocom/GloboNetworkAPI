@@ -97,8 +97,8 @@ class RouteMapEntryPostErrorTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_post_duplicated_route_map_entry(self):
-        """Test POST duplicated RouteMapEntry."""
+    def test_post_route_map_entry_with_duplicated_list_config_bgp(self):
+        """Test POST RouteMapEntry with duplicated ListConfigBGP."""
 
         route_map_entries_path = self.json_path.\
             format('duplicated_route_map_entry.json')
@@ -112,6 +112,6 @@ class RouteMapEntryPostErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
         self.compare_values(
             u'It already exists RouteMapEntry with ListConfigBGP '
-            u'id = 2 and RouteMap id = 2',
+            u'id = 2',
             response.data['detail']
         )

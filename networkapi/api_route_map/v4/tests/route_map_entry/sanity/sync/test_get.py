@@ -132,7 +132,7 @@ class RouteMapEntryGetErrorTestCase(NetworkApiTestCase):
     def test_get_inexistent_route_map_entry(self):
         """Test GET inexistent RouteMapEntry by id."""
 
-        get_ids = [3]
+        get_ids = [1000]
         uri = mount_url(self.route_map_entry_uri,
                         get_ids)
 
@@ -144,6 +144,6 @@ class RouteMapEntryGetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'RouteMapEntry id = 3 do not exist',
+            u'RouteMapEntry id = 1000 do not exist',
             response.data['detail']
         )

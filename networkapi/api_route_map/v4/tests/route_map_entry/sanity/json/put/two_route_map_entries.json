@@ -4,17 +4,13 @@
       "action": "P",
       "action_reconfig": "text-3",
       "id": 1,
-      "list_config_bgp": 2,
-      "order": 1,
-      "route_map": 3
+      "order": 1
     },
     {
       "action": "D",
       "action_reconfig": "text-4",
       "id": 2,
-      "list_config_bgp": 3,
-      "order": 2,
-      "route_map": 1
+      "order": 2
     }
   ]
 }
