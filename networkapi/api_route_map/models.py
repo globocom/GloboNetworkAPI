@@ -6,12 +6,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
 
+from networkapi.api_neighbor.models import NeighborV4
+from networkapi.api_neighbor.models import NeighborV6
 from networkapi.api_route_map.v4 import exceptions
 from networkapi.api_route_map.v4.exceptions import RouteMapAssociatedToPeerGroupException
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapAssociatedToRouteMapEntryException
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapEntryDuplicatedException
+from networkapi.api_route_map.v4.exceptions import RouteMapEntryWithDeployedRouteMapException
 from networkapi.api_route_map.v4.exceptions import RouteMapIsDeployedException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
@@ -34,11 +37,6 @@ class RouteMap(BaseModel):
         blank=False,
         max_length=45,
         db_column='name'
-    )
-
-    created = models.BooleanField(
-        default=False,
-        db_column='created'
     )
 
     log = logging.getLogger('RouteMap')
@@ -108,16 +106,12 @@ class RouteMap(BaseModel):
 
         self.name = route_map.get('name')
 
-        if self.created:
-            raise RouteMapIsDeployedException(self)
+        self.check_route_map_already_deployed()
 
         self.save()
 
     def delete_v4(self):
         """Delete RouteMap."""
-
-        if self.created:
-            raise RouteMapIsDeployedException(self)
 
         if self.routemapentry_set.count() > 0:
             raise RouteMapAssociatedToRouteMapEntryException(self)
@@ -126,7 +120,24 @@ class RouteMap(BaseModel):
            self.peergroup_route_map_out.count() > 0:
             raise RouteMapAssociatedToPeerGroupException(self)
 
-        super(RouteMap, self).delete()
+        self.delete()
+
+    def check_route_map_already_deployed(self):
+
+        neighbors_v4 = NeighborV4.objects.filter(
+            Q(created=True),
+            Q(peer_group__route_map_in__id=self.id) |
+            Q(peer_group__route_map_out__id=self.id)
+        )
+
+        neighbors_v6 = NeighborV6.objects.filter(
+            Q(created=True),
+            Q(peer_group__route_map_in__id=self.id) |
+            Q(peer_group__route_map_out__id=self.id)
+        )
+
+        if neighbors_v4 or neighbors_v6:
+            RouteMapIsDeployedException(self)
 
 
 class RouteMapEntry(BaseModel):
@@ -204,7 +215,8 @@ class RouteMapEntry(BaseModel):
             route_map_entry.get('list_config_bgp'))
         self.route_map = RouteMap.get_by_pk(route_map_entry.get('route_map'))
 
-        self.validate_route_map_entry()
+        self.check_list_config_bgp_already_in_route_map_entries()
+        self.check_route_map_already_deployed()
 
         self.save()
 
@@ -217,25 +229,38 @@ class RouteMapEntry(BaseModel):
         self.action_reconfig = route_map_entry.get('action_reconfig')
         self.order = route_map_entry.get('order')
 
-        self.list_config_bgp = listconfigbgp_model.get_by_pk(
-            route_map_entry.get('list_config_bgp'))
-        self.route_map = RouteMap.get_by_pk(route_map_entry.get('route_map'))
-
-        self.validate_route_map_entry()
+        self.check_route_map_already_deployed()
 
         self.save()
 
     def delete_v4(self):
         """Delete RouteMapEntry."""
 
-        super(RouteMapEntry, self).delete()
+        self.check_route_map_already_deployed()
 
-    def validate_route_map_entry(self):
+        self.delete()
 
-        # check if already exists route map entry
+    def check_route_map_already_deployed(self):
+
+        neighbors_v4 = NeighborV4.objects.filter(
+            Q(created=True),
+            Q(peer_group__route_map_in__id=self.route_map.id) |
+            Q(peer_group__route_map_out__id=self.route_map.id)
+        )
+
+        neighbors_v6 = NeighborV6.objects.filter(
+            Q(created=True),
+            Q(peer_group__route_map_in__id=self.route_map.id) |
+            Q(peer_group__route_map_out__id=self.route_map.id)
+        )
+
+        if neighbors_v4 or neighbors_v6:
+            RouteMapEntryWithDeployedRouteMapException(self)
+
+    def check_list_config_bgp_already_in_route_map_entries(self):
+
         route_map_entry = RouteMapEntry.objects.filter(
-            Q(list_config_bgp=self.list_config_bgp.id),
-            Q(route_map=self.route_map.id),
+            Q(list_config_bgp=self.list_config_bgp.id)
         )
 
         if route_map_entry:

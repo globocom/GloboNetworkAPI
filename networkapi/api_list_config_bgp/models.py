@@ -8,6 +8,8 @@ from django.db import models
 from networkapi.api_list_config_bgp.v4 import exceptions
 from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPAssociatedToRouteMapEntryException
 from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPIsDeployedException
+from networkapi.api_neighbor.models import NeighborV4
+from networkapi.api_neighbor.models import NeighborV6
 from networkapi.models.BaseModel import BaseModel
 
 
@@ -41,11 +43,6 @@ class ListConfigBGP(BaseModel):
     config = models.TextField(
         blank=False,
         db_column='config'
-    )
-
-    created = models.BooleanField(
-        default=False,
-        db_column='created'
     )
 
     log = logging.getLogger('ListConfigBGP')
@@ -100,8 +97,7 @@ class ListConfigBGP(BaseModel):
     def update_v4(self, list_config_bgp):
         """Update ListConfigBGP."""
 
-        if self.created:
-            raise ListConfigBGPIsDeployedException(self)
+        self.validate_list_config_bgp()
 
         self.name = list_config_bgp.get('name')
         self.type = list_config_bgp.get('type')
@@ -112,10 +108,26 @@ class ListConfigBGP(BaseModel):
     def delete_v4(self):
         """Delete ListConfigBGP."""
 
-        if self.created:
-            raise ListConfigBGPIsDeployedException(self)
-
         if self.routemapentry_set.count() > 0:
             raise ListConfigBGPAssociatedToRouteMapEntryException(self)
 
         super(ListConfigBGP, self).delete()
+
+    def validate_list_config_bgp(self):
+
+        routemapentry_set = self.routemapentry_set.all()
+        neighbors_v4 = NeighborV4.objects.filter(
+            created=True,
+            peer_group__route_map_in__routemapentry__in=routemapentry_set,
+            peer_group__route_map_out__routemapentry__in=routemapentry_set,
+        )
+
+        neighbors_v6 = NeighborV6.objects.filter(
+            created=True,
+            peer_group__route_map_in__routemapentry__in=routemapentry_set,
+            peer_group__route_map_out__routemapentry__in=routemapentry_set,
+        )
+
+        if neighbors_v4 or neighbors_v6:
+            raise ListConfigBGPIsDeployedException(self,
+                                                   neighbors_v4, neighbors_v6)

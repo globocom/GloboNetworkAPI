@@ -96,5 +96,13 @@ class RouteMapEntryDuplicatedException(APIException):
 
     def __init__(self, route_map_entry):
         self.detail = u'It already exists RouteMapEntry with ListConfigBGP ' \
-                      u'id = {} and RouteMap id = {}.'.\
+                      u'id = {}.'.\
             format(route_map_entry.list_config_bgp, route_map_entry.route_map)
+
+
+class RouteMapEntryWithDeployedRouteMapException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, route_map_entry):
+        self.detail = u'RouteMap id = {} is deployed'.\
+            format(route_map_entry.route_map)

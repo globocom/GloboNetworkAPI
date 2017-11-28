@@ -120,29 +120,3 @@ def delete_list_config_bgp(obj_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
-
-
-@commit_on_success
-def deploy_lists_config_bgp(lists_config_bgp):
-
-    # TODO Get the correct equipment to manage
-    for list_config_bgp in lists_config_bgp:
-        equipment = None
-        plugin = PluginFactory.factory(equipment)
-        plugin.bgp().deploy_prefix_list()
-
-    ids = [list_config_bgp.get('id') for list_config_bgp in lists_config_bgp]
-    ListConfigBGP.objects.filter(id__in=ids).update(created=True)
-
-
-@commit_on_success
-def undeploy_lists_config_bgp(lists_config_bgp):
-
-    # TODO Get the correct equipment to manage
-    for list_config_bgp in lists_config_bgp:
-        equipment = None
-        plugin = PluginFactory.factory(equipment)
-        plugin.bgp().undeploy_prefix_list()
-
-    ids = [list_config_bgp.get('id') for list_config_bgp in lists_config_bgp]
-    ListConfigBGP.objects.filter(id__in=ids).update(created=False)

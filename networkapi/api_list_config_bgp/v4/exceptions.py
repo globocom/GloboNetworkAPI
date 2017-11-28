@@ -34,9 +34,10 @@ class ListConfigBGPAssociatedToRouteMapEntryException(APIException):
 class ListConfigBGPIsDeployedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
-    def __init__(self, list_config_bgp):
-        self.detail = u'ListConfigBGP id = {} is deployed'. \
-            format(list_config_bgp.id)
+    def __init__(self, list_config_bgp, neighbors_v4, neighbors_v6):
+        self.detail = u'ListConfigBGP id = {} is deployed at ' \
+                      u'NeighborsV4 = {} and NeighborsV6 = {}'. \
+            format(list_config_bgp.id, neighbors_v4, neighbors_v6)
 
 
 class ListConfigBGPAlreadyCreated(APIException):

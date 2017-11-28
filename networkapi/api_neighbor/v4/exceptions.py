@@ -45,6 +45,13 @@ class NeighborV4IsDeployed(APIException):
         self.detail = u'NeighborV4 id = {} is deployed'.format(msg)
 
 
+class NeighborV4IsUndeployed(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, msg):
+        self.detail = u'NeighborV4 id = {} is undeployed'.format(msg)
+
+
 class NeighborV6NotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
@@ -85,6 +92,13 @@ class NeighborV6IsDeployed(APIException):
 
     def __init__(self, msg):
         self.detail = u'NeighborV6 id = {} is deployed'.format(msg)
+
+
+class NeighborV6IsUndeployed(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, msg):
+        self.detail = u'NeighborV6 id = {} is undeployed'.format(msg)
 
 
 class LocalIpAndRemoteIpAreInDifferentVrfsException(APIException):

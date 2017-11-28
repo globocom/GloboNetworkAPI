@@ -14,16 +14,7 @@
           "action_reconfig": {
             "type": "string"
           },
-          "id": {
-            "type": "integer"
-          },
-          "list_config_bgp": {
-            "type": "integer"
-          },
           "order": {
-            "type": "integer"
-          },
-          "route_map": {
             "type": "integer"
           }
         },

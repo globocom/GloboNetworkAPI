@@ -4,10 +4,14 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import Q
 
 from networkapi.admin_permission import AdminPermission
+from networkapi.api_neighbor.models import NeighborV4
+from networkapi.api_neighbor.models import NeighborV6
 from networkapi.api_peer_group.v4 import exceptions
 from networkapi.api_peer_group.v4.exceptions import EnvironmentPeerGroupDuplicatedException
+from networkapi.api_peer_group.v4.exceptions import PeerGroupAssociatedWithDeployedNeighborsException
 from networkapi.api_peer_group.v4.exceptions import \
     PeerGroupDuplicatedException
 from networkapi.api_peer_group.v4.exceptions import PeerGroupIsAssociatedWithNeighborsException
@@ -105,11 +109,7 @@ class PeerGroup(BaseModel):
         self.route_map_in = routemap_model.get_by_pk(route_map_in_id)
         self.route_map_out = routemap_model.get_by_pk(route_map_out_id)
 
-        # check if peer group already exists
-        obj = PeerGroup.objects.filter(route_map_in=route_map_in_id,
-                                       route_map_out=route_map_out_id)
-        if obj:
-            raise PeerGroupDuplicatedException(self)
+        self.check_route_maps_already_in_peer_group()
 
         self.save()
 
@@ -134,19 +134,8 @@ class PeerGroup(BaseModel):
 
         routemap_model = get_model('api_route_map', 'RouteMap')
 
-        route_map_in_id = peer_group.get('route_map_in')
-        route_map_out_id = peer_group.get('route_map_out')
-
-        self.route_map_in = routemap_model.get_by_pk(route_map_in_id)
-        self.route_map_out = routemap_model.get_by_pk(route_map_out_id)
-
-        # check if peer group already exists
-        obj = PeerGroup.objects.filter(route_map_in=route_map_in_id,
-                                       route_map_out=route_map_out_id)
-        if obj:
-            raise PeerGroupDuplicatedException(self)
-
-        self.save()
+        self.check_route_maps_already_in_peer_group()
+        self.check_peer_group_is_in_deployed_neighbors()
 
         self.save()
 
@@ -179,8 +168,7 @@ class PeerGroup(BaseModel):
     def delete_v4(self):
         """Delete PeerGroup."""
 
-        if self.neighborv4_set.count() > 0 or self.neighborv6_set.count() > 0:
-            raise PeerGroupIsAssociatedWithNeighborsException(self)
+        self.check_peer_group_associated_to_neighbors()
 
         # Deletes Permissions
         object_group_perm_model = get_model('api_ogp',
@@ -194,6 +182,35 @@ class PeerGroup(BaseModel):
             environment_peergroup.delete_v4()
 
         super(PeerGroup, self).delete()
+
+    def check_peer_group_is_in_deployed_neighbors(self):
+
+        neighbors_v4 = NeighborV4.objects.filter(
+            created=True,
+            peer_group_id=self.id
+        )
+
+        neighbors_v6 = NeighborV6.objects.filter(
+            created=True,
+            peer_group_id=self.id
+        )
+
+        if neighbors_v4 or neighbors_v6:
+            raise PeerGroupAssociatedWithDeployedNeighborsException(self)
+
+    def check_route_maps_already_in_peer_group(self):
+
+        objs = PeerGroup.objects.filter(Q(route_map_in=self.route_map_in.id) |
+                                        Q(route_map_in=self.route_map_out.id) |
+                                        Q(route_map_out=self.route_map_in.id) |
+                                        Q(route_map_out=self.route_map_out.id))
+        if objs:
+            raise PeerGroupDuplicatedException(self)
+
+    def check_peer_group_associated_to_neighbors(self):
+
+        if self.neighborv4_set.count() > 0 or self.neighborv6_set.count() > 0:
+            raise PeerGroupIsAssociatedWithNeighborsException(self)
 
 
 class EnvironmentPeerGroup(BaseModel):
