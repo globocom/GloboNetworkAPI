@@ -1,0 +1,14 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `route_map_entry`
+ADD UNIQUE INDEX `id_list_config_bgp_UNIQUE` (`id_list_config_bgp` ASC);
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `route_map_entry`
+DROP INDEX `id_list_config_bgp_UNIQUE` ;
+
+"""
