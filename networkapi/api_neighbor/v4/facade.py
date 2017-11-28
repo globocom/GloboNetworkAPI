@@ -6,7 +6,6 @@ from django.db.transaction import commit_on_success
 
 from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.models import NeighborV6
-from networkapi.api_neighbor.v4 import exceptions
 from networkapi.api_neighbor.v4.exceptions import DontHavePermissionForPeerGroupException
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndLocalAsnAtDifferentEquipmentsException
@@ -15,10 +14,12 @@ from networkapi.api_neighbor.v4.exceptions import \
 from networkapi.api_neighbor.v4.exceptions import \
     LocalIpAndRemoteIpAreInDifferentVrfsException
 from networkapi.api_neighbor.v4.exceptions import NeighborDuplicatedException
+from networkapi.api_neighbor.v4.exceptions import NeighborV4DoesNotExistException
 from networkapi.api_neighbor.v4.exceptions import NeighborV4Error
 from networkapi.api_neighbor.v4.exceptions import NeighborV4IsDeployed
 from networkapi.api_neighbor.v4.exceptions import NeighborV4IsUndeployed
 from networkapi.api_neighbor.v4.exceptions import NeighborV4NotFoundError
+from networkapi.api_neighbor.v4.exceptions import NeighborV6DoesNotExistException
 from networkapi.api_neighbor.v4.exceptions import NeighborV6Error
 from networkapi.api_neighbor.v4.exceptions import NeighborV6NotFoundError
 from networkapi.api_neighbor.v4.exceptions import \
@@ -63,8 +64,8 @@ def get_neighbor_v4_by_id(obj_id):
 
     try:
         obj = NeighborV4.get_by_pk(id=obj_id)
-    except NeighborV4NotFoundError, e:
-        raise exceptions.NeighborV4DoesNotExistException(str(e))
+    except NeighborV4NotFoundError as e:
+        raise NeighborV4DoesNotExistException(str(e))
 
     return obj
 
@@ -81,9 +82,9 @@ def get_neighbor_v4_by_ids(obj_ids):
         try:
             obj = get_neighbor_v4_by_id(obj_id).id
             ids.append(obj)
-        except exceptions.NeighborV4DoesNotExistException, e:
+        except NeighborV4DoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
     return NeighborV4.objects.filter(id__in=ids)
@@ -95,27 +96,27 @@ def update_neighbor_v4(obj, user):
     try:
         obj_to_update = get_neighbor_v4_by_id(obj.get('id'))
         obj_to_update.update_v4(obj, user)
-    except NeighborV4Error, e:
+    except NeighborV4Error as e:
         raise ValidationAPIException(str(e))
-    except DontHavePermissionForPeerGroupException, e:
+    except DontHavePermissionForPeerGroupException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndRemoteIpAreInDifferentVrfsException, e:
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndLocalAsnAtDifferentEquipmentsException, e:
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException, e:
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndPeerGroupAtDifferentEnvironmentsException, e:
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
         raise ValidationAPIException(str(e))
-    except NeighborDuplicatedException, e:
+    except NeighborDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except exceptions.NeighborV4IsDeployed, e:
+    except NeighborV4IsDeployed as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except exceptions.NeighborV4DoesNotExistException, e:
+    except NeighborV4DoesNotExistException as e:
         raise ObjectDoesNotExistException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_update
@@ -127,23 +128,23 @@ def create_neighbor_v4(obj, user):
     try:
         obj_to_create = NeighborV4()
         obj_to_create.create_v4(obj, user)
-    except NeighborV4Error, e:
+    except NeighborV4Error as e:
         raise ValidationAPIException(str(e))
-    except DontHavePermissionForPeerGroupException, e:
+    except DontHavePermissionForPeerGroupException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndRemoteIpAreInDifferentVrfsException, e:
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndLocalAsnAtDifferentEquipmentsException, e:
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException, e:
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndPeerGroupAtDifferentEnvironmentsException, e:
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
         raise ValidationAPIException(str(e))
-    except NeighborDuplicatedException, e:
+    except NeighborDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_create
@@ -156,13 +157,13 @@ def delete_neighbor_v4(obj_ids):
         try:
             obj_to_delete = get_neighbor_v4_by_id(obj_id)
             obj_to_delete.delete_v4()
-        except exceptions.NeighborV4DoesNotExistException, e:
+        except NeighborV4DoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except exceptions.NeighborV4IsDeployed, e:
+        except NeighborV4IsDeployed as e:
             raise ValidationAPIException(str(e))
-        except NeighborV4Error, e:
+        except NeighborV4Error as e:
             raise NetworkAPIException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
 
@@ -189,8 +190,8 @@ def get_neighbor_v6_by_id(obj_id):
 
     try:
         obj = NeighborV6.get_by_pk(id=obj_id)
-    except NeighborV6NotFoundError, e:
-        raise exceptions.NeighborV6DoesNotExistException(str(e))
+    except NeighborV6NotFoundError as e:
+        raise NeighborV6DoesNotExistException(str(e))
 
     return obj
 
@@ -207,9 +208,9 @@ def get_neighbor_v6_by_ids(obj_ids):
         try:
             obj = get_neighbor_v6_by_id(obj_id).id
             ids.append(obj)
-        except exceptions.NeighborV6DoesNotExistException, e:
+        except NeighborV6DoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
     return NeighborV6.objects.filter(id__in=ids)
@@ -221,25 +222,25 @@ def update_neighbor_v6(obj, user):
     try:
         obj_to_update = get_neighbor_v6_by_id(obj.get('id'))
         obj_to_update.update_v4(obj, user)
-    except NeighborV6Error, e:
+    except NeighborV6Error as e:
         raise ValidationAPIException(str(e))
-    except DontHavePermissionForPeerGroupException, e:
+    except DontHavePermissionForPeerGroupException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndRemoteIpAreInDifferentVrfsException, e:
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndLocalAsnAtDifferentEquipmentsException, e:
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException, e:
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndPeerGroupAtDifferentEnvironmentsException, e:
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
         raise ValidationAPIException(str(e))
-    except NeighborDuplicatedException, e:
+    except NeighborDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except exceptions.NeighborV6DoesNotExistException, e:
+    except NeighborV6DoesNotExistException as e:
         raise ObjectDoesNotExistException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_update
@@ -251,23 +252,23 @@ def create_neighbor_v6(obj, user):
     try:
         obj_to_create = NeighborV6()
         obj_to_create.create_v4(obj, user)
-    except NeighborV6Error, e:
+    except NeighborV6Error as e:
         raise ValidationAPIException(str(e))
-    except DontHavePermissionForPeerGroupException, e:
+    except DontHavePermissionForPeerGroupException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndRemoteIpAreInDifferentVrfsException, e:
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndLocalAsnAtDifferentEquipmentsException, e:
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException, e:
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
         raise ValidationAPIException(str(e))
-    except LocalIpAndPeerGroupAtDifferentEnvironmentsException, e:
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
         raise ValidationAPIException(str(e))
-    except NeighborDuplicatedException, e:
+    except NeighborDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_create
@@ -280,11 +281,11 @@ def delete_neighbor_v6(obj_ids):
         try:
             obj_to_delete = get_neighbor_v6_by_id(obj_id)
             obj_to_delete.delete_v4()
-        except exceptions.NeighborV6DoesNotExistException, e:
+        except NeighborV6DoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except NeighborV6Error, e:
+        except NeighborV6Error as e:
             raise NetworkAPIException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
 
@@ -325,7 +326,7 @@ def deploy_neighbor_v4(neighbor_id):
 
         neighbor.update(created=True)
 
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     finally:
@@ -369,7 +370,7 @@ def undeploy_neighbor_v4(neighbor_id):
 
         neighbor.update(created=False)
 
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     finally:

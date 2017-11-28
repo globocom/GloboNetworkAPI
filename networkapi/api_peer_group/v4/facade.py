@@ -4,10 +4,12 @@ import logging
 from django.core.exceptions import FieldError
 
 from networkapi.api_peer_group.models import PeerGroup
-from networkapi.api_peer_group.v4 import exceptions
-from networkapi.api_peer_group.v4.exceptions import EnvironmentPeerGroupDuplicatedException
-from networkapi.api_peer_group.v4.exceptions import PeerGroupDuplicatedException
+from networkapi.api_peer_group.v4.exceptions import PeerGroupAssociatedWithDeployedNeighborsException
+from networkapi.api_peer_group.v4.exceptions import PeerGroupDoesNotExistException
+from networkapi.api_peer_group.v4.exceptions import \
+    PeerGroupDuplicatedException
 from networkapi.api_peer_group.v4.exceptions import PeerGroupError
+from networkapi.api_peer_group.v4.exceptions import PeerGroupIsAssociatedWithNeighborsException
 from networkapi.api_peer_group.v4.exceptions import PeerGroupNotFoundError
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
@@ -40,8 +42,8 @@ def get_peer_group_by_id(obj_id):
 
     try:
         obj = PeerGroup.get_by_pk(id=obj_id)
-    except PeerGroupNotFoundError, e:
-        raise exceptions.PeerGroupDoesNotExistException(str(e))
+    except PeerGroupNotFoundError as e:
+        raise PeerGroupDoesNotExistException(str(e))
 
     return obj
 
@@ -58,9 +60,9 @@ def get_peer_group_by_ids(obj_ids):
         try:
             obj = get_peer_group_by_id(obj_id).id
             ids.append(obj)
-        except exceptions.PeerGroupDoesNotExistException, e:
+        except PeerGroupDoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
     return PeerGroup.objects.filter(id__in=ids)
@@ -72,15 +74,17 @@ def update_peer_group(obj, user):
     try:
         obj_to_update = get_peer_group_by_id(obj.get('id'))
         obj_to_update.update_v4(obj, user)
-    except PeerGroupError, e:
+    except PeerGroupError as e:
         raise ValidationAPIException(str(e))
-    except PeerGroupDuplicatedException, e:
+    except PeerGroupDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except exceptions.PeerGroupDoesNotExistException, e:
+    except PeerGroupDoesNotExistException as e:
         raise ObjectDoesNotExistException(str(e))
-    except Exception, e:
+    except PeerGroupAssociatedWithDeployedNeighborsException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_update
@@ -92,15 +96,13 @@ def create_peer_group(obj, user):
     try:
         obj_to_create = PeerGroup()
         obj_to_create.create_v4(obj, user)
-    except PeerGroupError, e:
+    except PeerGroupError as e:
         raise ValidationAPIException(str(e))
-    except PeerGroupDuplicatedException, e:
+    except PeerGroupDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except EnvironmentPeerGroupDuplicatedException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
-        raise ValidationAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_create
@@ -113,11 +115,11 @@ def delete_peer_group(obj_ids):
         try:
             obj_to_delete = get_peer_group_by_id(obj_id)
             obj_to_delete.delete_v4()
-        except exceptions.PeerGroupDoesNotExistException, e:
+        except PeerGroupDoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except exceptions.PeerGroupIsAssociatedWithNeighborsException, e:
+        except PeerGroupIsAssociatedWithNeighborsException as e:
             raise ValidationAPIException(str(e))
-        except PeerGroupError, e:
+        except PeerGroupError as e:
             raise NetworkAPIException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))

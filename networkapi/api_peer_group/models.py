@@ -10,11 +10,12 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.models import NeighborV6
 from networkapi.api_peer_group.v4 import exceptions
-from networkapi.api_peer_group.v4.exceptions import EnvironmentPeerGroupDuplicatedException
-from networkapi.api_peer_group.v4.exceptions import PeerGroupAssociatedWithDeployedNeighborsException
+from networkapi.api_peer_group.v4.exceptions import \
+    PeerGroupAssociatedWithDeployedNeighborsException
 from networkapi.api_peer_group.v4.exceptions import \
     PeerGroupDuplicatedException
-from networkapi.api_peer_group.v4.exceptions import PeerGroupIsAssociatedWithNeighborsException
+from networkapi.api_peer_group.v4.exceptions import \
+    PeerGroupIsAssociatedWithNeighborsException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -89,12 +90,12 @@ class PeerGroup(BaseModel):
             cls.log.error(u'PeerGroup not found. pk {}'.format(id))
             raise exceptions.PeerGroupNotFoundError(id)
         except OperationalError:
-            cls.log.error(u'Lock wait timeout exceeded.')
+            cls.log.error(u'Lock wait timeout exceeded')
             raise OperationalError()
         except Exception:
-            cls.log.error(u'Failure to search the PeerGroup.')
+            cls.log.error(u'Failure to search the PeerGroup')
             raise exceptions.PeerGroupError(
-                u'Failure to search the PeerGroup.')
+                u'Failure to search the PeerGroup')
 
     def create_v4(self, peer_group, user):
         """Create PeerGroup."""
@@ -251,12 +252,12 @@ class EnvironmentPeerGroup(BaseModel):
             cls.log.error(u'EnvironmentPeerGroup not found. pk {}'.format(id))
             raise exceptions.EnvironmentPeerGroupNotFoundError(id)
         except OperationalError:
-            cls.log.error(u'Lock wait timeout exceeded.')
+            cls.log.error(u'Lock wait timeout exceeded')
             raise OperationalError()
         except Exception:
-            cls.log.error(u'Failure to search the EnvironmentPeerGroup.')
+            cls.log.error(u'Failure to search the EnvironmentPeerGroup')
             raise exceptions.EnvironmentPeerGroupError(
-                u'Failure to search the EnvironmentPeerGroup.')
+                u'Failure to search the EnvironmentPeerGroup')
 
     def create_v4(self, environment_peergroup):
         """Create EnvironmentPeerGroup."""
@@ -265,12 +266,6 @@ class EnvironmentPeerGroup(BaseModel):
 
         environment_id = environment_peergroup.get('environment')
         peer_group_id = environment_peergroup.get('peer_group')
-
-        # check if already exists relationship
-        obj = EnvironmentPeerGroup.objects.filter(environment=environment_id,
-                                                  peer_group=peer_group_id)
-        if obj:
-            raise EnvironmentPeerGroupDuplicatedException(self)
 
         self.environment = environment_model.get_by_pk(environment_id)
         self.peer_group = PeerGroup.get_by_pk(peer_group_id)

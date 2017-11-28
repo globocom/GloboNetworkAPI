@@ -9,12 +9,14 @@ from django.db.models import Q
 from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.models import NeighborV6
 from networkapi.api_route_map.v4 import exceptions
-from networkapi.api_route_map.v4.exceptions import RouteMapAssociatedToPeerGroupException
+from networkapi.api_route_map.v4.exceptions import \
+    RouteMapAssociatedToPeerGroupException
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapAssociatedToRouteMapEntryException
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapEntryDuplicatedException
-from networkapi.api_route_map.v4.exceptions import RouteMapEntryWithDeployedRouteMapException
+from networkapi.api_route_map.v4.exceptions import \
+    RouteMapEntryWithDeployedRouteMapException
 from networkapi.api_route_map.v4.exceptions import RouteMapIsDeployedException
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
@@ -88,11 +90,11 @@ class RouteMap(BaseModel):
             cls.log.error(u'RouteMap not found. pk {}'.format(id))
             raise exceptions.RouteMapNotFoundError(id)
         except OperationalError:
-            cls.log.error(u'Lock wait timeout exceeded.')
+            cls.log.error(u'Lock wait timeout exceeded')
             raise OperationalError()
         except Exception:
-            cls.log.error(u'Failure to search the RouteMap.')
-            raise exceptions.RouteMapError(u'Failure to search the RouteMap.')
+            cls.log.error(u'Failure to search the RouteMap')
+            raise exceptions.RouteMapError(u'Failure to search the RouteMap')
 
     def create_v4(self, route_map):
         """Create RouteMap."""
@@ -195,12 +197,12 @@ class RouteMapEntry(BaseModel):
             cls.log.error(u'RouteMapEntry not found. pk {}'.format(id))
             raise exceptions.RouteMapEntryNotFoundError(id)
         except OperationalError:
-            cls.log.error(u'Lock wait timeout exceeded.')
+            cls.log.error(u'Lock wait timeout exceeded')
             raise OperationalError()
         except Exception:
-            cls.log.error(u'Failure to search the RouteMapEntry.')
+            cls.log.error(u'Failure to search the RouteMapEntry')
             raise exceptions.RouteMapEntryError(
-                u'Failure to search the RouteMapEntry.')
+                u'Failure to search the RouteMapEntry')
 
     def create_v4(self, route_map_entry):
         """Create RouteMapEntry."""

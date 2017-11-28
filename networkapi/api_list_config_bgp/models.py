@@ -4,10 +4,13 @@ import logging
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import Q
 
 from networkapi.api_list_config_bgp.v4 import exceptions
-from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPAssociatedToRouteMapEntryException
-from networkapi.api_list_config_bgp.v4.exceptions import ListConfigBGPIsDeployedException
+from networkapi.api_list_config_bgp.v4.exceptions import \
+    ListConfigBGPAssociatedToRouteMapEntryException
+from networkapi.api_list_config_bgp.v4.exceptions import \
+    ListConfigBGPIsDeployedException
 from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.models import NeighborV6
 from networkapi.models.BaseModel import BaseModel
@@ -78,12 +81,12 @@ class ListConfigBGP(BaseModel):
             cls.log.error(u'ListConfigBGP not found. pk {}'.format(id))
             raise exceptions.ListConfigBGPNotFoundError(id)
         except OperationalError:
-            cls.log.error(u'Lock wait timeout exceeded.')
+            cls.log.error(u'Lock wait timeout exceeded')
             raise OperationalError()
         except Exception:
-            cls.log.error(u'Failure to search the ListConfigBGP.')
+            cls.log.error(u'Failure to search the ListConfigBGP')
             raise exceptions.ListConfigBGPError(
-                u'Failure to search the ListConfigBGP.')
+                u'Failure to search the ListConfigBGP')
 
     def create_v4(self, list_config_bgp):
         """Create ListConfigBGP."""
@@ -117,15 +120,15 @@ class ListConfigBGP(BaseModel):
 
         routemapentry_set = self.routemapentry_set.all()
         neighbors_v4 = NeighborV4.objects.filter(
-            created=True,
-            peer_group__route_map_in__routemapentry__in=routemapentry_set,
-            peer_group__route_map_out__routemapentry__in=routemapentry_set,
+            Q(created=True),
+            Q(peer_group__route_map_in__routemapentry__in=routemapentry_set) |
+            Q(peer_group__route_map_out__routemapentry__in=routemapentry_set)
         )
 
         neighbors_v6 = NeighborV6.objects.filter(
-            created=True,
-            peer_group__route_map_in__routemapentry__in=routemapentry_set,
-            peer_group__route_map_out__routemapentry__in=routemapentry_set,
+            Q(created=True),
+            Q(peer_group__route_map_in__routemapentry__in=routemapentry_set) |
+            Q(peer_group__route_map_out__routemapentry__in=routemapentry_set)
         )
 
         if neighbors_v4 or neighbors_v6:

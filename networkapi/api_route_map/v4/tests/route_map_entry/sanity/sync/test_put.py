@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
-
 from django.test.client import Client
 
 from networkapi.test.test_case import NetworkApiTestCase

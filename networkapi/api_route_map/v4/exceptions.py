@@ -7,7 +7,7 @@ class RouteMapNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'RouteMap id = {} do not exist.' .format(msg)
+        self.detail = u'RouteMap id = {} do not exist' .format(msg)
 
 
 class RouteMapError(APIException):
@@ -19,14 +19,14 @@ class RouteMapError(APIException):
 
 class RouteMapDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = u'RouteMap does not exists.'
+    default_detail = u'RouteMap does not exists'
 
 
 class RouteMapEntryNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'RouteMapEntry id = {} do not exist.'.format(msg)
+        self.detail = u'RouteMapEntry id = {} do not exist'.format(msg)
 
 
 class RouteMapEntryError(APIException):
@@ -38,7 +38,7 @@ class RouteMapEntryError(APIException):
 
 class RouteMapEntryDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = u'RouteMapEntry does not exists.'
+    default_detail = u'RouteMapEntry does not exists'
 
 
 class RouteMapAssociatedToRouteMapEntryException(APIException):
@@ -96,7 +96,7 @@ class RouteMapEntryDuplicatedException(APIException):
 
     def __init__(self, route_map_entry):
         self.detail = u'It already exists RouteMapEntry with ListConfigBGP ' \
-                      u'id = {}.'.\
+                      u'id = {}'.\
             format(route_map_entry.list_config_bgp, route_map_entry.route_map)
 
 

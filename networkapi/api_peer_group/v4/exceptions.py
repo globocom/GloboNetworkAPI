@@ -7,7 +7,7 @@ class PeerGroupNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'PeerGroup id = {} do not exist.'.format(msg)
+        self.detail = u'PeerGroup id = {} do not exist'.format(msg)
 
 
 class PeerGroupError(APIException):
@@ -21,7 +21,7 @@ class EnvironmentPeerGroupNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'EnvironmentPeerGroup %s do not exist.' % (msg)
+        self.detail = u'EnvironmentPeerGroup %s do not exist' % (msg)
 
 
 class EnvironmentPeerGroupError(APIException):
@@ -33,7 +33,7 @@ class EnvironmentPeerGroupError(APIException):
 
 class PeerGroupDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = u'PeerGroup does not exists.'
+    default_detail = u'PeerGroup does not exists'
 
 
 class EnvironmentPeerGroupDuplicatedException(APIException):

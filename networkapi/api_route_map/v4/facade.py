@@ -2,25 +2,24 @@
 import logging
 
 from django.core.exceptions import FieldError
-from django.db.models import Q
-from django.db.transaction import commit_on_success
 
-from networkapi.api_list_config_bgp.models import ListConfigBGP
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.api_route_map.models import RouteMap
 from networkapi.api_route_map.models import RouteMapEntry
-from networkapi.api_route_map.v4 import exceptions
-from networkapi.api_route_map.v4.exceptions import AssociatedListsConfigBGPAreNotDeployedException
-from networkapi.api_route_map.v4.exceptions import RouteMapEntryDuplicatedException
+from networkapi.api_route_map.v4.exceptions import RouteMapAssociatedToPeerGroupException
+from networkapi.api_route_map.v4.exceptions import RouteMapAssociatedToRouteMapEntryException
+from networkapi.api_route_map.v4.exceptions import RouteMapDoesNotExistException
+from networkapi.api_route_map.v4.exceptions import RouteMapEntryDoesNotExistException
+from networkapi.api_route_map.v4.exceptions import \
+    RouteMapEntryDuplicatedException
 from networkapi.api_route_map.v4.exceptions import RouteMapEntryError
 from networkapi.api_route_map.v4.exceptions import RouteMapEntryNotFoundError
 from networkapi.api_route_map.v4.exceptions import RouteMapError
 from networkapi.api_route_map.v4.exceptions import RouteMapIsDeployedException
 from networkapi.api_route_map.v4.exceptions import RouteMapNotFoundError
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
-from networkapi.plugins.factory import PluginFactory
 
 log = logging.getLogger(__name__)
 
@@ -48,8 +47,8 @@ def get_route_map_by_id(obj_id):
 
     try:
         obj = RouteMap.get_by_pk(id=obj_id)
-    except RouteMapNotFoundError, e:
-        raise exceptions.RouteMapDoesNotExistException(str(e))
+    except RouteMapNotFoundError as e:
+        raise RouteMapDoesNotExistException(str(e))
 
     return obj
 
@@ -66,9 +65,9 @@ def get_route_map_by_ids(obj_ids):
         try:
             obj = get_route_map_by_id(obj_id).id
             ids.append(obj)
-        except exceptions.RouteMapDoesNotExistException, e:
+        except RouteMapDoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
     return RouteMap.objects.filter(id__in=ids)
@@ -80,15 +79,15 @@ def update_route_map(obj):
     try:
         obj_to_update = get_route_map_by_id(obj.get('id'))
         obj_to_update.update_v4(obj)
-    except RouteMapError, e:
+    except RouteMapError as e:
         raise ValidationAPIException(str(e))
-    except RouteMapIsDeployedException, e:
+    except RouteMapIsDeployedException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except exceptions.RouteMapDoesNotExistException, e:
+    except RouteMapDoesNotExistException as e:
         raise ObjectDoesNotExistException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_update
@@ -100,11 +99,11 @@ def create_route_map(obj):
     try:
         obj_to_create = RouteMap()
         obj_to_create.create_v4(obj)
-    except RouteMapError, e:
+    except RouteMapError as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_create
@@ -117,17 +116,17 @@ def delete_route_map(obj_ids):
         try:
             obj_to_delete = get_route_map_by_id(obj_id)
             obj_to_delete.delete_v4()
-        except exceptions.RouteMapDoesNotExistException, e:
+        except RouteMapDoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except exceptions.RouteMapIsDeployedException, e:
+        except RouteMapIsDeployedException as e:
             raise ValidationAPIException(str(e))
-        except exceptions.RouteMapAssociatedToRouteMapEntryException, e:
+        except RouteMapAssociatedToRouteMapEntryException as e:
             raise ValidationAPIException(str(e))
-        except exceptions.RouteMapAssociatedToPeerGroupException, e:
+        except RouteMapAssociatedToPeerGroupException as e:
             raise ValidationAPIException(str(e))
-        except RouteMapError, e:
+        except RouteMapError as e:
             raise NetworkAPIException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
 
@@ -154,8 +153,8 @@ def get_route_map_entry_by_id(obj_id):
 
     try:
         obj = RouteMapEntry.get_by_pk(id=obj_id)
-    except RouteMapEntryNotFoundError, e:
-        raise exceptions.RouteMapEntryDoesNotExistException(str(e))
+    except RouteMapEntryNotFoundError as e:
+        raise RouteMapEntryDoesNotExistException(str(e))
 
     return obj
 
@@ -172,9 +171,9 @@ def get_route_map_entry_by_ids(obj_ids):
         try:
             obj = get_route_map_entry_by_id(obj_id).id
             ids.append(obj)
-        except exceptions.RouteMapEntryDoesNotExistException, e:
+        except RouteMapEntryDoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
     return RouteMapEntry.objects.filter(id__in=ids)
@@ -186,15 +185,15 @@ def update_route_map_entry(obj):
     try:
         obj_to_update = get_route_map_entry_by_id(obj.get('id'))
         obj_to_update.update_v4(obj)
-    except RouteMapEntryError, e:
+    except RouteMapEntryError as e:
         raise ValidationAPIException(str(e))
-    except RouteMapEntryDuplicatedException, e:
+    except RouteMapEntryDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except exceptions.RouteMapEntryDoesNotExistException, e:
+    except RouteMapEntryDoesNotExistException as e:
         raise ObjectDoesNotExistException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_update
@@ -206,13 +205,13 @@ def create_route_map_entry(obj):
     try:
         obj_to_create = RouteMapEntry()
         obj_to_create.create_v4(obj)
-    except RouteMapEntryError, e:
+    except RouteMapEntryError as e:
         raise ValidationAPIException(str(e))
-    except RouteMapEntryDuplicatedException, e:
+    except RouteMapEntryDuplicatedException as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return obj_to_create
@@ -225,9 +224,9 @@ def delete_route_map_entry(obj_ids):
         try:
             obj_to_delete = get_route_map_entry_by_id(obj_id)
             obj_to_delete.delete_v4()
-        except exceptions.RouteMapEntryDoesNotExistException, e:
+        except RouteMapEntryDoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except RouteMapEntryError, e:
+        except RouteMapEntryError as e:
             raise NetworkAPIException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))

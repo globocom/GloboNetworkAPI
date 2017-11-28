@@ -7,7 +7,7 @@ class ListConfigBGPNotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'ListConfigBGP id = {} do not exist.'.format(msg)
+        self.detail = u'ListConfigBGP id = {} do not exist'.format(msg)
 
 
 class ListConfigBGPError(APIException):
@@ -19,7 +19,7 @@ class ListConfigBGPError(APIException):
 
 class ListConfigBGPDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = u'ListConfigBGP does not exists.'
+    default_detail = u'ListConfigBGP does not exists'
 
 
 class ListConfigBGPAssociatedToRouteMapEntryException(APIException):

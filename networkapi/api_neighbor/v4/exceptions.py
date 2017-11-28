@@ -7,7 +7,7 @@ class NeighborV4NotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'NeighborV4 id = {} do not exist.'.format(msg)
+        self.detail = u'NeighborV4 id = {} do not exist'.format(msg)
 
 
 class NeighborV4Error(APIException):
@@ -19,23 +19,23 @@ class NeighborV4Error(APIException):
 
 class NeighborV4AlreadyCreated(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = u'NeighborV4 already created.'
+    default_detail = u'NeighborV4 already created'
 
     def __init__(self, msg=None):
-        self.detail = u'NeighborV4 %s already created.' % msg
+        self.detail = u'NeighborV4 %s already created' % msg
 
 
 class NeighborV4NotCreated(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = u'NeighborV4 not created.'
+    default_detail = u'NeighborV4 not created'
 
     def __init__(self, msg=None):
-        self.detail = u'NeighborV4 %s not created.' % msg
+        self.detail = u'NeighborV4 %s not created' % msg
 
 
 class NeighborV4DoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = u'NeighborV4 does not exists.'
+    default_detail = u'NeighborV4 does not exists'
 
 
 class NeighborV4IsDeployed(APIException):
@@ -56,7 +56,7 @@ class NeighborV6NotFoundError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
 
     def __init__(self, msg):
-        self.detail = u'NeighborV6 id = {} do not exist.'.format(msg)
+        self.detail = u'NeighborV6 id = {} do not exist'.format(msg)
 
 
 class NeighborV6Error(APIException):
@@ -68,23 +68,23 @@ class NeighborV6Error(APIException):
 
 class NeighborV6AlreadyCreated(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = u'NeighborV6 already created.'
+    default_detail = u'NeighborV6 already created'
 
     def __init__(self, msg=None):
-        self.detail = u'NeighborV6 %s already created.' % msg
+        self.detail = u'NeighborV6 %s already created' % msg
 
 
 class NeighborV6NotCreated(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = u'NeighborV6 not created.'
+    default_detail = u'NeighborV6 not created'
 
     def __init__(self, msg=None):
-        self.detail = u'NeighborV6 %s not created.' % msg
+        self.detail = u'NeighborV6 %s not created' % msg
 
 
 class NeighborV6DoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = u'NeighborV6 does not exists.'
+    default_detail = u'NeighborV6 does not exists'
 
 
 class NeighborV6IsDeployed(APIException):
@@ -106,7 +106,7 @@ class LocalIpAndRemoteIpAreInDifferentVrfsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'LocalIp id = {} and RemoteIp id = {} are in ' \
-                      u'different Vrfs.'.\
+                      u'different Vrfs'.\
             format(neighbor.local_ip, neighbor.remote_ip)
 
 
@@ -115,7 +115,7 @@ class LocalIpAndLocalAsnAtDifferentEquipmentsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'LocalIp id = {} and LocalAsn id = {} belongs to ' \
-                      u'different Equipments.'.\
+                      u'different Equipments'.\
             format(neighbor.local_ip, neighbor.local_asn)
 
 
@@ -124,7 +124,7 @@ class RemoteIpAndRemoteAsnAtDifferentEquipmentsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'RemoteIp id = {} and RemoteAsn id = {} belongs to ' \
-                      u'different Equipments.'.\
+                      u'different Equipments'.\
             format(neighbor.remote_ip, neighbor.remote_asn)
 
 
@@ -133,7 +133,7 @@ class LocalIpAndPeerGroupAtDifferentEnvironmentsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'LocalIp id = {} and PeerGroup id = {} belongs to ' \
-                      u'different Environments.'. \
+                      u'different Environments'. \
             format(neighbor.local_ip, neighbor.peer_group)
 
 
