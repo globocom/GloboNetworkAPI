@@ -29,8 +29,7 @@ class ListConfigBGPGetSuccessTestCase(NetworkApiTestCase):
     def setUp(self):
         self.client = Client()
         self.authorization = self.get_http_authorization('test')
-        self.fields = ['id', 'name', 'route_map_entries', 'type', 'config',
-                       'created']
+        self.fields = ['id', 'name', 'route_map_entries', 'type', 'config']
 
     def tearDown(self):
         pass

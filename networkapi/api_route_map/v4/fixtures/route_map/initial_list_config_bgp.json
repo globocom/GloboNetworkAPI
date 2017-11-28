@@ -2,7 +2,6 @@
   {
     "fields": {
       "config": "{'conf': 'test_1'}",
-      "created": false,
       "name": "test_1",
       "type": "P"
     },

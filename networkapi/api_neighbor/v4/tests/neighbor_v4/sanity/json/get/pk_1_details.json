@@ -198,13 +198,11 @@
       "id": 1,
       "name": "peer_group_1",
       "route_map_in": {
-        "created": false,
         "id": 1,
         "name": "route_map_1",
         "route_map_entries": []
       },
       "route_map_out": {
-        "created": false,
         "id": 2,
         "name": "route_map_2",
         "route_map_entries": []

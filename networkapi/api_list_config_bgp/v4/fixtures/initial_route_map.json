@@ -1,7 +1,6 @@
 [
   {
     "fields": {
-      "created": false,
       "name": "test_1"
     },
     "model": "api_route_map.RouteMap",
@@ -9,7 +8,6 @@
   },
   {
     "fields": {
-      "created": false,
       "name": "test_2"
     },
     "model": "api_route_map.RouteMap",

@@ -27,7 +27,7 @@ class ListConfigBGPPostSuccessTestCase(NetworkApiTestCase):
         self.client = Client()
         self.authorization = self.get_http_authorization('test')
         self.content_type = 'application/json'
-        self.fields = ['name', 'type', 'config', 'created']
+        self.fields = ['name', 'type', 'config']
 
     def tearDown(self):
         pass

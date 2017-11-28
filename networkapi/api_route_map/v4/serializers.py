@@ -25,7 +25,6 @@ class RouteMapV4Serializer(DynamicFieldsModelSerializer):
         fields = (
             'id',
             'name',
-            'created',
             'route_map_entries',
             'peer_groups'
         )
@@ -33,7 +32,6 @@ class RouteMapV4Serializer(DynamicFieldsModelSerializer):
         basic_fields = (
             'id',
             'name',
-            'created'
         )
 
         default_fields = fields

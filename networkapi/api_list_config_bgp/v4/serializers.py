@@ -25,7 +25,6 @@ class ListConfigBGPV4Serializer(DynamicFieldsModelSerializer):
             'type',
             'config',
             'route_map_entries',
-            'created'
         )
 
         basic_fields = (
@@ -33,7 +32,6 @@ class ListConfigBGPV4Serializer(DynamicFieldsModelSerializer):
             'name',
             'type',
             'config',
-            'created'
         )
 
         default_fields = basic_fields

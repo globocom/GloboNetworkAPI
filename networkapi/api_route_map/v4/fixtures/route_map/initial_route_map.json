@@ -1,7 +1,6 @@
 [
   {
     "fields": {
-      "created": false,
       "name": "test_1"
     },
     "model": "api_route_map.RouteMap",
@@ -9,7 +8,6 @@
   },
   {
     "fields": {
-      "created": false,
       "name": "test_2"
     },
     "model": "api_route_map.RouteMap",
@@ -17,7 +15,6 @@
   },
   {
     "fields": {
-      "created": true,
       "name": "test_3"
     },
     "model": "api_route_map.RouteMap",
@@ -25,7 +22,6 @@
   },
   {
     "fields": {
-      "created": false,
       "name": "test_4"
     },
     "model": "api_route_map.RouteMap",
@@ -33,7 +29,6 @@
   },
   {
     "fields": {
-      "created": false,
       "name": "test_5"
     },
     "model": "api_route_map.RouteMap",
@@ -41,7 +36,6 @@
   },
   {
     "fields": {
-      "created": false,
       "name": "test_6"
     },
     "model": "api_route_map.RouteMap",

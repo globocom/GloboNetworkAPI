@@ -29,8 +29,7 @@ class RouteMapGetSuccessTestCase(NetworkApiTestCase):
     def setUp(self):
         self.client = Client()
         self.authorization = self.get_http_authorization('test')
-        self.fields = ['id', 'name', 'route_map_entries', 'peer_groups',
-                       'created']
+        self.fields = ['id', 'name', 'route_map_entries', 'peer_groups']
 
     def tearDown(self):
         pass

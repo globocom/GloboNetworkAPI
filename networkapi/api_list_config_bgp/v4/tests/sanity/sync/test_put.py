@@ -30,7 +30,7 @@ class ListConfigBGPPutSuccessTestCase(NetworkApiTestCase):
         self.client = Client()
         self.authorization = self.get_http_authorization('test')
         self.content_type = 'application/json'
-        self.fields = ['id', 'name', 'type', 'config', 'created']
+        self.fields = ['id', 'name', 'type', 'config']
 
     def tearDown(self):
         pass

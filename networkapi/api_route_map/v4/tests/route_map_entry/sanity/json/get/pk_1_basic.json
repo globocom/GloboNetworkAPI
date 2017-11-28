@@ -5,14 +5,12 @@
     "id": 1,
     "list_config_bgp": {
       "config": "{'conf': 'test_1'}",
-      "created": false,
       "id": 1,
       "name": "test_1",
       "type": "P"
     },
     "order": 5,
     "route_map": {
-      "created": false,
       "id": 1,
       "name": "test_1"
     }
