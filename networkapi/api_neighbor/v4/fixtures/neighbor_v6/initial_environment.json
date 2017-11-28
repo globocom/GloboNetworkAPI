@@ -1,0 +1,84 @@
+[
+  {
+    "fields": {
+      "nome": "DC-1"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "AMBLOG-1"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "GL-1"
+    },
+    "model": "ambiente.grupol3",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "DC-2"
+    },
+    "model": "ambiente.divisaodc",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "nome": "AMBLOG-2"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "nome": "GL-2"
+    },
+    "model": "ambiente.grupol3",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "grupo_l3": 1
+    },
+    "model": "ambiente.ambiente",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ambiente_logico": 2,
+      "default_vrf": 1,
+      "divisao_dc": 2,
+      "grupo_l3": 2
+    },
+    "model": "ambiente.ambiente",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 3,
+      "divisao_dc": 2,
+      "grupo_l3": 1
+    },
+    "model": "ambiente.ambiente",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "ambiente_logico": 2,
+      "default_vrf": 4,
+      "divisao_dc": 1,
+      "grupo_l3": 2
+    },
+    "model": "ambiente.ambiente",
+    "pk": 4
+  }
+]

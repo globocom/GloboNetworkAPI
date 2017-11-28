@@ -1,0 +1,71 @@
+[
+  {
+    "created": false,
+    "id": 1,
+    "local_asn": {
+      "description": "ASN 1",
+      "equipments": [
+        {
+          "equipment": {
+            "id": 1,
+            "name": "EQUIPMENT-1"
+          }
+        }
+      ],
+      "id": 1,
+      "name": "1"
+    },
+    "local_ip": {
+      "description": null,
+      "id": 1,
+      "ip_formated": "fc00:0000:0000:0001:0000:0000:0000:0002",
+      "networkipv6": {
+        "environmentvip": null,
+        "id": 1,
+        "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+        "network_type": 1,
+        "networkv6": "fc00:0000:0000:0001:0000:0000:0000:0000/64",
+        "vlan": {
+          "id": 1,
+          "name": "VLAN 1 of env 1",
+          "num_vlan": 1
+        }
+      }
+    },
+    "peer_group": {
+      "id": 1,
+      "name": "peer_group_1"
+    },
+    "remote_asn": {
+      "description": "ASN 2",
+      "equipments": [
+        {
+          "equipment": {
+            "id": 2,
+            "name": "EQUIPMENT-2"
+          }
+        }
+      ],
+      "id": 2,
+      "name": "2"
+    },
+    "remote_ip": {
+      "description": null,
+      "id": 2,
+      "ip_formated": "fc00:0000:0000:0002:0000:0000:0000:0002",
+      "networkipv6": {
+        "environmentvip": null,
+        "id": 2,
+        "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+        "network_type": 1,
+        "networkv6": "fc00:0000:0000:0002:0000:0000:0000:0000/64",
+        "vlan": {
+          "id": 2,
+          "name": "VLAN 2 of env 2",
+          "num_vlan": 2
+        }
+      }
+    },
+    "virtual_interface": "test_vi"
+  }
+]

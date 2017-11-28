@@ -1,0 +1,121 @@
+[
+  {
+    "fields": {
+      "tipo_rede": "some_network_type"
+    },
+    "model": "vlan.tiporede",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "active": true,
+      "ambient_vip": null,
+      "block": "64",
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0001",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0000",
+      "cluster_unit": "cluster-unit-1",
+      "mask1": "ffff",
+      "mask2": "ffff",
+      "mask3": "ffff",
+      "mask4": "ffff",
+      "mask5": "0000",
+      "mask6": "0000",
+      "mask7": "0000",
+      "mask8": "0000",
+      "network_type": 1,
+      "vlan": 1
+    },
+    "model": "ip.networkipv6",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "active": true,
+      "ambient_vip": null,
+      "block": "64",
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0002",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0000",
+      "cluster_unit": "cluster-unit-1",
+      "mask1": "ffff",
+      "mask2": "ffff",
+      "mask3": "ffff",
+      "mask4": "ffff",
+      "mask5": "0000",
+      "mask6": "0000",
+      "mask7": "0000",
+      "mask8": "0000",
+      "network_type": 1,
+      "vlan": 2
+    },
+    "model": "ip.networkipv6",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "active": true,
+      "ambient_vip": null,
+      "block": "64",
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0003",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0000",
+      "cluster_unit": "cluster-unit-1",
+      "mask1": "ffff",
+      "mask2": "ffff",
+      "mask3": "ffff",
+      "mask4": "ffff",
+      "mask5": "0000",
+      "mask6": "0000",
+      "mask7": "0000",
+      "mask8": "0000",
+      "network_type": 1,
+      "vlan": 3
+    },
+    "model": "ip.networkipv6",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "active": true,
+      "ambient_vip": null,
+      "block": "64",
+      "block1": "fc00",
+      "block2": "0000",
+      "block3": "0000",
+      "block4": "0004",
+      "block5": "0000",
+      "block6": "0000",
+      "block7": "0000",
+      "block8": "0000",
+      "cluster_unit": "cluster-unit-1",
+      "mask1": "ffff",
+      "mask2": "ffff",
+      "mask3": "ffff",
+      "mask4": "ffff",
+      "mask5": "0000",
+      "mask6": "0000",
+      "mask7": "0000",
+      "mask8": "0000",
+      "network_type": 1,
+      "vlan": 4
+    },
+    "model": "ip.networkipv6",
+    "pk": 4
+  }
+]

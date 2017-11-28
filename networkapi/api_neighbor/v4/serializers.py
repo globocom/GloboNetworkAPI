@@ -158,8 +158,8 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
     peer_group = serializers.SerializerMethodField('get_peer_group')
 
     class Meta:
-        NeighborV4 = get_model('api_neighbor', 'NeighborV4')
-        model = NeighborV4
+        NeighborV6 = get_model('api_neighbor', 'NeighborV6')
+        model = NeighborV6
 
         fields = (
             'id',
@@ -238,14 +238,14 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'local_ip_id',
                 },
                 'local_ip__basic': {
-                    'serializer': ip_slzs.IPv6V4Serializer,
+                    'serializer': ip_slzs.Ipv6V4Serializer,
                     'kwargs': {
                         'kind': 'basic'
                     },
                     'obj': 'local_ip'
                 },
                 'local_ip__details': {
-                    'serializer': ip_slzs.IPv6V4Serializer,
+                    'serializer': ip_slzs.Ipv6V4Serializer,
                     'kwargs': {
                         'kind': 'details'
                     },
@@ -255,14 +255,14 @@ class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'remote_ip_id',
                 },
                 'remote_ip__basic': {
-                    'serializer': ip_slzs.IPv6V4Serializer,
+                    'serializer': ip_slzs.Ipv6V4Serializer,
                     'kwargs': {
                         'kind': 'basic'
                     },
                     'obj': 'remote_ip'
                 },
                 'remote_ip__details': {
-                    'serializer': ip_slzs.IPv6V4Serializer,
+                    'serializer': ip_slzs.Ipv6V4Serializer,
                     'kwargs': {
                         'kind': 'details'
                     },

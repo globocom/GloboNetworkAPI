@@ -1,0 +1,38 @@
+[
+  {
+    "fields": {
+      "ambiente": 1,
+      "nome": "VLAN 1 of env 1",
+      "num_vlan": 1
+    },
+    "model": "vlan.vlan",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ambiente": 2,
+      "nome": "VLAN 2 of env 2",
+      "num_vlan": 2
+    },
+    "model": "vlan.vlan",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente": 3,
+      "nome": "VLAN 3 of env 3",
+      "num_vlan": 3
+    },
+    "model": "vlan.vlan",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "ambiente": 4,
+      "nome": "VLAN 4 of env 4",
+      "num_vlan": 4
+    },
+    "model": "vlan.vlan",
+    "pk": 4
+  }
+]

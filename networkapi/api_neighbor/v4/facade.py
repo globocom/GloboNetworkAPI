@@ -30,7 +30,6 @@ from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import LOCK_LIST_CONFIG_BGP
-from networkapi.distributedlock import LOCK_NEIGHBOR
 from networkapi.distributedlock import LOCK_NEIGHBOR_V4
 from networkapi.distributedlock import LOCK_NEIGHBOR_V6
 from networkapi.distributedlock import LOCK_PEER_GROUP
@@ -287,6 +286,8 @@ def delete_neighbor_v6(obj_ids):
             obj_to_delete.delete_v4()
         except NeighborV6DoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
+        except NeighborV6IsDeployed as e:
+            raise ValidationAPIException(str(e))
         except NeighborV6Error as e:
             raise NetworkAPIException(str(e))
         except Exception as e:
