@@ -49,7 +49,7 @@ class PeerGroupDuplicatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, peer_group):
-        self.detail = u'Already exists PeerGroup  with RouteMap id = {} ' \
+        self.detail = u'Already exists PeerGroup with RouteMap id = {} ' \
                       u'or id = {}'.\
             format(peer_group.route_map_in, peer_group.route_map_out)
 
