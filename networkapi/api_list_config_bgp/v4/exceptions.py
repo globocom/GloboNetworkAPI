@@ -37,7 +37,9 @@ class ListConfigBGPIsDeployedException(APIException):
     def __init__(self, list_config_bgp, neighbors_v4, neighbors_v6):
         self.detail = u'ListConfigBGP id = {} is deployed at ' \
                       u'NeighborsV4 = {} and NeighborsV6 = {}'. \
-            format(list_config_bgp.id, neighbors_v4, neighbors_v6)
+            format(list_config_bgp.id,
+                   map(int, neighbors_v4.values_list('id', flat=True)),
+                   map(int, neighbors_v6.values_list('id', flat=True)))
 
 
 class ListConfigBGPAlreadyCreated(APIException):

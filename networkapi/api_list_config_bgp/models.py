@@ -100,11 +100,12 @@ class ListConfigBGP(BaseModel):
     def update_v4(self, list_config_bgp):
         """Update ListConfigBGP."""
 
-        self.validate_list_config_bgp()
-
         self.name = list_config_bgp.get('name')
         self.type = list_config_bgp.get('type')
         self.config = list_config_bgp.get('config')
+
+        # Validate
+        self.validate_list_config_bgp()
 
         self.save()
 

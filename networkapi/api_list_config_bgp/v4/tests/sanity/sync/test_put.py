@@ -81,7 +81,18 @@ class ListConfigBGPPutErrorTestCase(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        fixtures_path.format('initial_asn.json'),
+        fixtures_path.format('initial_vrf.json'),
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_vlan.json'),
+        fixtures_path.format('initial_networkipv4.json'),
+        fixtures_path.format('initial_ipv4.json'),
         fixtures_path.format('initial_list_config_bgp.json'),
+        fixtures_path.format('initial_route_map.json'),
+        fixtures_path.format('initial_route_map_entry.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_neighbor_v4.json'),
+
     ]
 
     json_path = 'api_list_config_bgp/v4/tests/sanity/json/put/{}'
@@ -109,5 +120,24 @@ class ListConfigBGPPutErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
         self.compare_values(
             u'ListConfigBGP id = 1000 do not exist',
+            response.data['detail']
+        )
+
+    def test_put_list_config_bgp_assoc_to_deployed_neighbors(self):
+        """Test PUT ListConfigBGP associated to deployed Neighbors."""
+
+        list_config_bgp_path = self.json_path.\
+            format('list_config_bgp_assoc_to_deployed_neighbors.json')
+
+        response = self.client.put(
+            self.list_config_bgp_uri,
+            data=self.load_json(list_config_bgp_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'ListConfigBGP id = 1 is deployed at NeighborsV4 = [1] '
+            u'and NeighborsV6 = []',
             response.data['detail']
         )
