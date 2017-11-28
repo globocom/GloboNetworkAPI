@@ -111,7 +111,7 @@ class PeerGroup(BaseModel):
 
         # Validation
         self.check_route_map_in_and_out_are_equal()
-        self.check_route_maps_already_in_peer_group()
+        self.check_route_maps_already_in_other_peer_groups()
 
         self.save()
 
@@ -202,7 +202,7 @@ class PeerGroup(BaseModel):
         if self.route_map_in == self.route_map_out:
             raise RouteMapInAndOutAreEqualException()
 
-    def check_route_maps_already_in_peer_group(self):
+    def check_route_maps_already_in_other_peer_groups(self):
 
         objs = PeerGroup.objects.filter(Q(route_map_in=self.route_map_in.id) |
                                         Q(route_map_in=self.route_map_out.id) |

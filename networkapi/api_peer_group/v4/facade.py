@@ -11,6 +11,7 @@ from networkapi.api_peer_group.v4.exceptions import \
 from networkapi.api_peer_group.v4.exceptions import PeerGroupError
 from networkapi.api_peer_group.v4.exceptions import PeerGroupIsAssociatedWithNeighborsException
 from networkapi.api_peer_group.v4.exceptions import PeerGroupNotFoundError
+from networkapi.api_peer_group.v4.exceptions import RouteMapInAndOutAreEqualException
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
@@ -99,6 +100,8 @@ def create_peer_group(obj, user):
     except PeerGroupError as e:
         raise ValidationAPIException(str(e))
     except PeerGroupDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except RouteMapInAndOutAreEqualException as e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException as e:
         raise ValidationAPIException(str(e))

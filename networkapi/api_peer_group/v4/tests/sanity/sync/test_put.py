@@ -89,6 +89,14 @@ class PeerGroupPutErrorTestCase(NetworkApiTestCase):
         fixtures_path.format('initial_route_map.json'),
         fixtures_path.format('initial_peer_group.json'),
         fixtures_path.format('initial_environment_peer_group.json'),
+        fixtures_path.format('initial_asn.json'),
+        fixtures_path.format('initial_ipv4.json'),
+        fixtures_path.format('initial_ipv6.json'),
+        fixtures_path.format('initial_networkipv4.json'),
+        fixtures_path.format('initial_networkipv6.json'),
+        fixtures_path.format('initial_vlan.json'),
+        fixtures_path.format('initial_neighbor_v4.json'),
+        fixtures_path.format('initial_neighbor_v6.json'),
     ]
 
     json_path = 'api_peer_group/v4/tests/sanity/json/put/{}'
@@ -116,5 +124,24 @@ class PeerGroupPutErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
         self.compare_values(
             u'PeerGroup id = 1000 do not exist',
+            response.data['detail']
+        )
+
+    def test_put_peer_group_associated_to_deployed_neighbors(self):
+        """Test PUT PeerGroup associated to deployed Neighbors."""
+
+        peer_group_path = self.json_path.\
+            format('peer_group_assoc_to_deployed_neighbors.json')
+
+        response = self.client.put(
+            self.peer_group_uri,
+            data=self.load_json(peer_group_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(400, response.status_code)
+        self.compare_values(
+            u'PeerGroup id = 1 is associated with deployed '
+            u'NeighborsV4 id = [1] and NeighborsV6 id = [1]',
             response.data['detail']
         )

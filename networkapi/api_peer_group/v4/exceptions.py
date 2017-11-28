@@ -75,7 +75,7 @@ class PeerGroupAssociatedWithDeployedNeighborsException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, peer_group):
-        self.detail = u'PeerGroup id = {} is associated ' \
-                      u'with NeighborsV4 id = {} and NeighborsV6 id = {}'.\
+        self.detail = u'PeerGroup id = {} is associated with deployed ' \
+                      u'NeighborsV4 id = {} and NeighborsV6 id = {}'.\
             format(peer_group.id,
                    peer_group.neighbors_v4_id, peer_group.neighbors_v6_id)
