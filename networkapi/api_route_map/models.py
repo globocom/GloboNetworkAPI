@@ -139,7 +139,7 @@ class RouteMap(BaseModel):
         )
 
         if neighbors_v4 or neighbors_v6:
-            RouteMapIsDeployedException(self)
+            raise RouteMapIsDeployedException(self, neighbors_v4, neighbors_v6)
 
 
 class RouteMapEntry(BaseModel):

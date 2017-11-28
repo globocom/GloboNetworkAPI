@@ -62,9 +62,12 @@ class RouteMapAssociatedToPeerGroupException(APIException):
 class RouteMapIsDeployedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
-    def __init__(self, route_map):
-        self.detail = u'RouteMap id = {} is deployed'. \
-            format(route_map.id)
+    def __init__(self, route_map, neighbors_v4, neighbors_v6):
+        self.detail = u'RouteMap id = {} is deployed at NeighborsV4 id = {} ' \
+                      u'and NeighborsV6 id = {}'. \
+            format(route_map.id,
+                   map(int, neighbors_v4.values_list('id', flat=True)),
+                   map(int, neighbors_v6.values_list('id', flat=True)))
 
 
 class RouteMapAlreadyCreated(APIException):

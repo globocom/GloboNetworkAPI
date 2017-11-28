@@ -9,5 +9,16 @@
     },
     "model": "api_route_map.RouteMapEntry",
     "pk": 1
+  },
+  {
+    "fields": {
+      "action": "P",
+      "action_reconfig": "action_reconfig_2",
+      "list_config_bgp": 2,
+      "order": 3,
+      "route_map": 5
+    },
+    "model": "api_route_map.RouteMapEntry",
+    "pk": 2
   }
 ]

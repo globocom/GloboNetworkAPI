@@ -127,7 +127,7 @@ class RouteMapDeleteErrorTestCase(NetworkApiTestCase):
     def test_delete_route_map_assoc_to_peer_group(self):
         """Test DELETE RouteMap associated to PeerGroup."""
 
-        delete_ids = [5]
+        delete_ids = [6]
         uri = mount_url(self.route_map_uri,
                         delete_ids)
 
@@ -139,6 +139,6 @@ class RouteMapDeleteErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
         self.compare_values(
-            u'RouteMap id = 5 is associated with PeerGroups ids = [1]',
+            u'RouteMap id = 6 is associated with PeerGroups ids = [1]',
             response.data['detail']
         )
