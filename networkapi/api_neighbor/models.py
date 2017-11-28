@@ -212,8 +212,7 @@ class NeighborV4(BaseModel):
         obj = NeighborV4.objects.filter(local_asn=self.local_asn.id,
                                         remote_asn=self.remote_asn.id,
                                         local_ip=self.local_ip.id,
-                                        remote_ip=self.remote_ip.id,
-                                        peer_group=self.peer_group.id)
+                                        remote_ip=self.remote_ip.id)
         if obj:
             raise NeighborDuplicatedException(self)
 
@@ -395,8 +394,7 @@ class NeighborV6(BaseModel):
         obj = NeighborV6.objects.filter(local_asn=self.local_asn.id,
                                         remote_asn=self.remote_asn.id,
                                         local_ip=self.local_ip.id,
-                                        remote_ip=self.remote_ip.id,
-                                        peer_group=self.peer_group.id)
+                                        remote_ip=self.remote_ip.id)
         if obj:
             raise NeighborDuplicatedException(self)
 
