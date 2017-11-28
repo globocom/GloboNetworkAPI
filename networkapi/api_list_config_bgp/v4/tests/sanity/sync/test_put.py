@@ -108,7 +108,7 @@ class ListConfigBGPPutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'ListConfigBGP id = 5 do not exist.',
+            u'ListConfigBGP id = 5 do not exist',
             response.data['detail']
         )
 

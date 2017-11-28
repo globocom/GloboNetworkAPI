@@ -112,6 +112,6 @@ class RouteMapEntryPostErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
         self.compare_values(
             u'It already exists RouteMapEntry with ListConfigBGP '
-            u'id = 2 and RouteMap id = 2.',
+            u'id = 2 and RouteMap id = 2',
             response.data['detail']
         )

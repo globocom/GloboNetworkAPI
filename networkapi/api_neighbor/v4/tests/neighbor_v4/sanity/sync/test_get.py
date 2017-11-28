@@ -154,6 +154,6 @@ class NeighborV4GetErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'NeighborV4 id = 3 do not exist.',
+            u'NeighborV4 id = 3 do not exist',
             response.data['detail']
         )

@@ -98,6 +98,6 @@ class RouteMapEntryDeleteErrorTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'RouteMapEntry id = 3 do not exist.',
+            u'RouteMapEntry id = 3 do not exist',
             response.data['detail']
         )

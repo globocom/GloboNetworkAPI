@@ -133,7 +133,7 @@ class NeighborV4PutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'NeighborV4 id = 1000 do not exist.',
+            u'NeighborV4 id = 1000 do not exist',
             response.data['detail']
         )
 
@@ -171,7 +171,7 @@ class NeighborV4PutErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            u'LocalIp id = 5 and RemoteIp id = 6 are in different Vrfs.',
+            u'LocalIp id = 5 and RemoteIp id = 6 are in different Vrfs',
             response.data['detail']
         )
 
@@ -192,7 +192,7 @@ class NeighborV4PutErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
         self.compare_values(
             u'LocalIp id = 6 and LocalAsn id = 5 belongs '
-            u'to different Equipments.',
+            u'to different Equipments',
             response.data['detail']
         )
 
@@ -213,7 +213,7 @@ class NeighborV4PutErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
         self.compare_values(
             u'RemoteIp id = 8 and RemoteAsn id = 7 '
-            u'belongs to different Equipments.',
+            u'belongs to different Equipments',
             response.data['detail']
         )
 
@@ -234,7 +234,7 @@ class NeighborV4PutErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
         self.compare_values(
             u'LocalIp id = 1 and PeerGroup id = 3 '
-            u'belongs to different Environments.',
+            u'belongs to different Environments',
             response.data['detail']
         )
 

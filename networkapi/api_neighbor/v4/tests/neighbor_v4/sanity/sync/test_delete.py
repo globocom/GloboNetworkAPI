@@ -113,7 +113,7 @@ class NeighborV4DeleteErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(404, response.status_code)
         self.compare_values(
-            u'NeighborV4 id = 1000 do not exist.',
+            u'NeighborV4 id = 1000 do not exist',
             response.data['detail']
         )
 
