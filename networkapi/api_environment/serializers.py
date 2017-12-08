@@ -9,7 +9,6 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 log = logging.getLogger(__name__)
 
-
 class IpConfigV3Serializer(DynamicFieldsModelSerializer):
 
     id = serializers.RelatedField(source='ip_config.id')
@@ -208,6 +207,10 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'name',
                     'eager_loading': self.setup_eager_loading_name
                 },
+                'configs': {
+                    'obj': 'configs',
+                    'eager_loading': self.setup_eager_loading_configs
+                },
                 'grupo_l3': {
                     'obj': 'grupo_l3_id'
                 },
@@ -309,6 +312,21 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'children'
                 },
+                'children__basic': {
+                    'serializer': EnvironmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'id',
+                            'name',
+                            'vrf',
+                            'children',
+                            'configs',
+                        ),
+                        'kind': 'basic'
+                    },
+                    'obj': 'children'
+                },
                 'children__details': {
                     'serializer': EnvironmentV3Serializer,
                     'kwargs': {
@@ -319,7 +337,6 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                         'prohibited': (
                             'father_environment__details',
                         )
-
                     },
                     'obj': 'children'
                 },
@@ -377,6 +394,14 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         log.info('Using setup_eager_loading_father')
         queryset = queryset.select_related(
             'dcroom'
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_configs(queryset):
+        log.info('Using setup_eager_loading_configs')
+        queryset = queryset.select_related(
+            'configs'
         )
         return queryset
 
