@@ -311,25 +311,9 @@ def deploy_neighbor_v4(neighbor_id):
         eqpt = get_v4_equipment(neighbor)
 
         plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().deploy_neighbor(neighbor)
 
-        # Only if not exists other deployed neighbors sharing same
-        # peer group and equipment with the neighbor that will be deployed,
-        # deploy also RouteMaps and ListsConfigBGP.
-        if not depl_v4 and not depl_v6:
-
-            # Concatenate RouteMapEntries Lists
-            rms = neighbor.peer_group.route_map_in.route_map_entries | \
-                neighbor.peer_group.route_map_out.route_map_entries
-            for rm_entry in rms:
-                deploy_list_config_bgp(rm_entry.list_config_bgp, plugin)
-
-            deploy_route_map(neighbor.peer_group.route_map_in, plugin)
-            deploy_route_map(neighbor.peer_group.route_map_out, plugin)
-
-        # TODO deploys neighbor
-        # plugin.bgp()
-
-        neighbor.update(created=True)
+        neighbor.deploy()
 
     except Exception as e:
         raise NetworkAPIException(str(e))
@@ -355,25 +339,9 @@ def undeploy_neighbor_v4(neighbor_id):
         eqpt = get_v4_equipment(neighbor)
 
         plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().undeploy_neighbor(neighbor)
 
-        # TODO undeploys neighbor
-        # plugin.bgp()
-
-        # Only if not exists other deployed neighbors sharing same
-        # peer group and the same equipment, undeploy also RouteMaps
-        # and ListsConfigBGP.
-        if depl_v4.count() + depl_v6.count() == 1:
-
-            undeploy_route_map(neighbor.peer_group.route_map_in, plugin)
-            undeploy_route_map(neighbor.peer_group.route_map_out, plugin)
-
-            # Concatenate RouteMapEntries Lists
-            rms = neighbor.peer_group.route_map_in.route_map_entries | \
-                neighbor.peer_group.route_map_out.route_map_entries
-            for rm_entry in rms:
-                undeploy_list_config_bgp(rm_entry.list_config_bgp, plugin)
-
-        neighbor.update(created=False)
+        neighbor.undeploy()
 
     except Exception as e:
         raise NetworkAPIException(str(e))
@@ -396,28 +364,10 @@ def deploy_neighbor_v6(neighbor_id):
         depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
         depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
 
-        eqpt = get_v6_equipment(neighbor)
-
         plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().deploy_neighbor(neighbor)
 
-        # Only if not exists other deployed neighbors sharing same
-        # peer group and equipment with the neighbor that will be deployed,
-        # deploy also RouteMaps and ListsConfigBGP.
-        if not depl_v4 and not depl_v6:
-
-            # Concatenate RouteMapEntries Lists
-            rms = neighbor.peer_group.route_map_in.route_map_entries | \
-                neighbor.peer_group.route_map_out.route_map_entries
-            for rm_entry in rms:
-                deploy_list_config_bgp(rm_entry.list_config_bgp, plugin)
-
-            deploy_route_map(neighbor.peer_group.route_map_in, plugin)
-            deploy_route_map(neighbor.peer_group.route_map_out, plugin)
-
-        # TODO deploys neighbor
-        # plugin.bgp()
-
-        neighbor.update(created=True)
+        neighbor.deploy()
 
     except Exception as e:
         raise NetworkAPIException(str(e))
@@ -440,28 +390,10 @@ def undeploy_neighbor_v6(neighbor_id):
         depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
         depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
 
-        eqpt = get_v6_equipment(neighbor)
-
         plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().undeploy_neighbor(neighbor)
 
-        # TODO undeploys neighbor
-        # plugin.bgp()
-
-        # Only if not exists other deployed neighbors sharing same
-        # peer group and the same equipment, undeploy also RouteMaps
-        # and ListsConfigBGP.
-        if depl_v4.count() + depl_v6.count() == 1:
-
-            undeploy_route_map(neighbor.peer_group.route_map_in, plugin)
-            undeploy_route_map(neighbor.peer_group.route_map_out, plugin)
-
-            # Concatenate RouteMapEntries Lists
-            rms = neighbor.peer_group.route_map_in.route_map_entries | \
-                neighbor.peer_group.route_map_out.route_map_entries
-            for rm_entry in rms:
-                undeploy_list_config_bgp(rm_entry.list_config_bgp, plugin)
-
-        neighbor.update(created=False)
+        neighbor.deploy()
 
     except Exception as e:
         raise NetworkAPIException(str(e))
@@ -471,27 +403,27 @@ def undeploy_neighbor_v6(neighbor_id):
 
 
 def deploy_list_config_bgp(list_config_bgp, plugin):
-    pass
     # deploys neighbor
-    # plugin.bgp()
+    # pass
+    plugin.bgp().deploy_list_config_bgp(list_config_bgp)
 
 
 def deploy_route_map(route_map, plugin):
-    pass
     # deploys neighbor
-    # plugin.bgp()
+    # pass
+    plugin.bgp().deploy_route_map(route_map)
 
 
 def undeploy_list_config_bgp(list_config_bgp, plugin):
-    pass
     # deploys neighbor
-    # plugin.bgp()
+    pass
+    # plugin.undeploy_list_config_bgp()
 
 
 def undeploy_route_map(route_map, plugin):
-    pass
     # deploys neighbor
-    # plugin.bgp()
+    pass
+    # plugin.undeploy_route_map()
 
 
 def lock_resources_used_by_neighbor_v4(neighbor):
@@ -501,13 +433,13 @@ def lock_resources_used_by_neighbor_v4(neighbor):
     locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
     locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
 
-    for route_map_entry in neighbor.peer_group.route_map_in:
+    for route_map_entry in neighbor.peer_group.route_map_in.route_map_entries:
         locks_name.append(LOCK_ROUTE_MAP_ENTRY %
                           route_map_entry.id)
         locks_name.append(LOCK_LIST_CONFIG_BGP %
                           route_map_entry.list_config_bgp_id)
 
-    for route_map_entry in neighbor.peer_group.route_map_out:
+    for route_map_entry in neighbor.peer_group.route_map_out.route_map_entries:
         locks_name.append(LOCK_ROUTE_MAP_ENTRY %
                           route_map_entry.id)
         locks_name.append(LOCK_LIST_CONFIG_BGP %
@@ -525,13 +457,13 @@ def lock_resources_used_by_neighbor_v6(neighbor):
     locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
     locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
 
-    for route_map_entry in neighbor.peer_group.route_map_in:
+    for route_map_entry in neighbor.peer_group.route_map_in.route_map_entries:
         locks_name.append(LOCK_ROUTE_MAP_ENTRY %
                           route_map_entry.id)
         locks_name.append(LOCK_LIST_CONFIG_BGP %
                           route_map_entry.list_config_bgp_id)
 
-    for route_map_entry in neighbor.peer_group.route_map_out:
+    for route_map_entry in neighbor.peer_group.route_map_out.route_map_entries:
         locks_name.append(LOCK_ROUTE_MAP_ENTRY %
                           route_map_entry.id)
         locks_name.append(LOCK_LIST_CONFIG_BGP %

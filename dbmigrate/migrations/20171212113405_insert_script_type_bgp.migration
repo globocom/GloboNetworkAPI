@@ -1,0 +1,22 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('list_config_add', 'list_config_add');
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('list_config_remove', 'list_config_remove');
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('neighbor_v4_add', 'neighbor_v4_add');
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('neighbor_v4_remove', 'neighbor_v4_remove');
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('neighbor_v6_add', 'neighbor_v6_add');
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('neighbor_v6_remove', 'neighbor_v6_remove');
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('route_map_add', 'route_map_add');
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`) VALUES ('route_map_remove', 'route_map_remove');
+"""
+
+SQL_DOWN = u"""
+DELETE `tipo_roteiro` WHERE `tipo` = 'list_config_add';
+DELETE `tipo_roteiro` WHERE `tipo` = 'list_config_remove';
+DELETE `tipo_roteiro` WHERE `tipo` = 'neighbor_v4_add';
+DELETE `tipo_roteiro` WHERE `tipo` = 'neighbor_v4_remove';
+DELETE `tipo_roteiro` WHERE `tipo` = 'neighbor_v6_add';
+DELETE `tipo_roteiro` WHERE `tipo` = 'neighbor_v6_remove';
+DELETE `tipo_roteiro` WHERE `tipo` = 'route_map_add';
+DELETE `tipo_roteiro` WHERE `tipo` = 'route_map_remove';
+"""

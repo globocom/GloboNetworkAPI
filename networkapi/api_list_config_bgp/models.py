@@ -48,6 +48,11 @@ class ListConfigBGP(BaseModel):
         db_column='config'
     )
 
+    equipments = models.ManyToManyField(
+        'equipamento.Equipamento',
+        through='EquipmentListConfig'
+    )
+
     log = logging.getLogger('ListConfigBGP')
 
     class Meta(BaseModel.Meta):
@@ -135,3 +140,24 @@ class ListConfigBGP(BaseModel):
         if neighbors_v4 or neighbors_v6:
             raise ListConfigBGPIsDeployedException(self,
                                                    neighbors_v4, neighbors_v6)
+
+
+class EquipmentListConfig(BaseModel):
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id'
+    )
+
+    equipment = models.ForeignKey(
+        'equipamento.Equipamento',
+        db_column='id_equipment'
+    )
+    list_config_bgp = models.ForeignKey(
+        'api_list_config_bgp.ListConfigBGP',
+        db_column='id_list_config_bgp'
+    )
+
+    class Meta(BaseModel.Meta):
+        db_table = u'equipment_list_config_bgp'
+        managed = True

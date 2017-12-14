@@ -1,0 +1,41 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `equipment_route_map` (
+  `id` INT NOT NULL,
+  `id_equipment` INT UNSIGNED NOT NULL,
+  `id_route_map` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `equipment_route_map` 
+ADD INDEX `fk_equipment_route_map_1_idx` (`id_equipment` ASC)  COMMENT '',
+ADD INDEX `fk_equipment_route_map_2_idx` (`id_route_map` ASC)  COMMENT '';
+ALTER TABLE `equipment_route_map` 
+ADD CONSTRAINT `fk_equipment_route_map_1`
+  FOREIGN KEY (`id_equipment`)
+  REFERENCES `equipamentos` (`id_equip`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_equipment_route_map_2`
+  FOREIGN KEY (`id_route_map`)
+  REFERENCES `route_map` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `equipment_route_map`
+DROP FOREIGN KEY `fk_equipment_route_map_1`,
+DROP FOREIGN KEY `fk_equipment_route_map_2`;
+
+ALTER TABLE `equipment_route_map`
+DROP COLUMN `id_equipment`,
+DROP INDEX `fk_equipment_route_map_1_idx` ;
+
+ALTER TABLE `equipment_route_map`
+DROP COLUMN `id_route_map`,
+DROP INDEX `fk_equipment_route_map_2_idx` ;
+
+DROP TABLE `equipment_route_map`;
+"""

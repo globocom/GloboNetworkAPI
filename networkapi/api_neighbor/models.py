@@ -154,6 +154,22 @@ class NeighborV4(BaseModel):
 
         super(NeighborV4, self).delete()
 
+    def deploy(self):
+        self.created = True
+        self.save()
+
+        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
+        #     id=)
+        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
+
+    def undeploy(self):
+        self.created = False
+        self.save()
+
+        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
+        #     id=)
+        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
+
     def validate_neighbor_v4(self, user):
 
         self.check_if_neighbor_already_deployed()
@@ -335,6 +351,22 @@ class NeighborV6(BaseModel):
         self.check_if_neighbor_already_deployed()
 
         super(NeighborV6, self).delete()
+
+    def deploy(self):
+        self.created = True
+        self.save()
+
+        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
+        #     id=)
+        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
+
+    def undeploy(self):
+        self.created = False
+        self.save()
+
+        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
+        #     id=)
+        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
 
     def validate_neighbor_v6(self, user):
 

@@ -1,13 +1,16 @@
 # Fake template, only for test purpose
-{{ AS_NUMBER }}
-{{ VRF_NAME }}
-{{ REMOTE_IP }}
-{{ REMOTE_AS }}
-{{ PASSWORD }}
-{{ TIMER_KEEPALIVE }}
-{{ TIMER_TIMEOUT }}
-{{ DESCRIPTION }}
-{{ SOFT_RECONFIGURATION }}
-{{ NEXT_HOP_SELF }}
-{{ REMOVE_PRIVATE_AS }}
-{{ COMMUNITY }}
+neighbor {{ REMOTE_IP }} remote-as {{ REMOTE_AS }} 
+neighbor {{ REMOTE_IP }} description {{ DESCRIPTION }}
+neighbor {{ REMOTE_IP }} fall-over 
+{% if NEXT_HOP_SELF == "1" %}
+neighbor {{ REMOTE_IP }} next-hop-self 
+{% endif %}
+{% if COMMUNITY == "1" %}
+    neighbor {{ REMOTE_IP }} send-community 
+{% endif %}
+{% if SOFT_RECONFIGURATION == "1" %}
+neighbor {{ REMOTE_IP }} soft-reconfiguration inbound 
+{% endif %}
+neighbor {{ REMOTE_IP }} no shutdown 
+neighbor route-map {{ ROUTE_MAP_IN }} in
+neighbor route-map {{ ROUTE_MAP_OUT }} out

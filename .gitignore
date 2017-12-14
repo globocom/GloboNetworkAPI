@@ -23,5 +23,5 @@ build
 sqldump_vm_teste.sql
 sitestatic/
 reports/
-networkapi/generated_config/network/network_equip*
+networkapi/generated_config/*
 cover/

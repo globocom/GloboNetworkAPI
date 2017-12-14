@@ -41,6 +41,11 @@ class RouteMap(BaseModel):
         db_column='name'
     )
 
+    equipments = models.ManyToManyField(
+        'equipamento.Equipamento',
+        through='EquipmentRouteMap'
+    )
+
     log = logging.getLogger('RouteMap')
 
     class Meta(BaseModel.Meta):
@@ -140,6 +145,27 @@ class RouteMap(BaseModel):
 
         if neighbors_v4 or neighbors_v6:
             raise RouteMapIsDeployedException(self, neighbors_v4, neighbors_v6)
+
+
+class EquipmentRouteMap(BaseModel):
+
+    id = models.AutoField(
+        primary_key=True,
+        db_column='id'
+    )
+
+    equipment = models.ForeignKey(
+        'equipamento.Equipamento',
+        db_column='id_equipment'
+    )
+    route_map = models.ForeignKey(
+        'api_route_map.RouteMap',
+        db_column='id_route_map'
+    )
+
+    class Meta(BaseModel.Meta):
+        db_table = u'equipment_route_map'
+        managed = True
 
 
 class RouteMapEntry(BaseModel):

@@ -1,0 +1,35 @@
+interface Vlan{{ VLAN_NUMBER }}
+  description {{ VLAN_NAME }}
+  no shutdown
+  mtu 9216
+  {% if FIRST_NETWORK %}
+    {% if VRF %}
+      ip vrf forwarding {{ VRF }}
+    {% endif %}
+  {% endif %}
+  {% if IP_VERSION == "IPV4" %}
+    ip address {{IP}} {{NETWORK_MASK}}
+    no ip proxy-arp
+    {% if USE_GW_RED %}
+      vrrp-group 1
+        priority {{ GW_RED_PRIO }}
+        no virtual-address
+        virtual-address {{ GW_RED_ADDR }}
+        !
+    {% endif %}
+    {% for DHCPRELAY in DHCPRELAY_LIST %}
+      {% if VRF %}
+        ip helper-address vrf {{ VRF }} {{ DHCPRELAY }}
+      {% else %}
+        ip helper-address {{ DHCPRELAY }}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    ipv6 address {{IP}}/{{CIDR_BLOCK}}
+    {% if USE_GW_RED %}
+      vrrp-ipv6-group 1
+        priority {{ GW_RED_PRIO }}
+        virtual-address {{ GW_RED_ADDR }}
+        virtual-address fe80::{{ VLAN_NUMBER }}
+    {% endif %}
+  {% endif %}

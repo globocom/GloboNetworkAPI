@@ -1,0 +1,41 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `equipment_list_config_bgp` (
+  `id` INT NOT NULL,
+  `id_equipment` INT UNSIGNED NOT NULL,
+  `id_list_config_bgp` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `equipment_list_config_bgp` 
+ADD INDEX `fk_equipment_list_config_bgp_1_idx` (`id_equipment` ASC)  COMMENT '',
+ADD INDEX `fk_equipment_list_config_bgp_2_idx` (`id_list_config_bgp` ASC)  COMMENT '';
+ALTER TABLE `equipment_list_config_bgp` 
+ADD CONSTRAINT `fk_equipment_list_config_bgp_1`
+  FOREIGN KEY (`id_equipment`)
+  REFERENCES `equipamentos` (`id_equip`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_equipment_list_config_bgp_2`
+  FOREIGN KEY (`id_list_config_bgp`)
+  REFERENCES `route_map` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `equipment_list_config_bgp`
+DROP FOREIGN KEY `fk_equipment_list_config_bgp_1`,
+DROP FOREIGN KEY `fk_equipment_list_config_bgp_2`;
+
+ALTER TABLE `equipment_list_config_bgp`
+DROP COLUMN `id_equipment`,
+DROP INDEX `fk_equipment_list_config_bgp_1_idx` ;
+
+ALTER TABLE `equipment_list_config_bgp`
+DROP COLUMN `id_list_config_bgp`,
+DROP INDEX `fk_equipment_list_config_bgp_2_idx` ;
+
+DROP TABLE `equipment_list_config_bgp`;
+"""
