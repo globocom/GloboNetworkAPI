@@ -35,7 +35,6 @@ class HPE(BasePlugin):
     RETRY_WAIT_TIME = 5
     MAX_TRIES = 5
 
-
     @mock_return('')
     def copyScriptFileToConfig(self, filepath, use_vrf=None, destination=''):
         """
