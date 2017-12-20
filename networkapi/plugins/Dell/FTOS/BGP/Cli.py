@@ -175,7 +175,6 @@ class Generic(BasePlugin):
             self.TEMPLATE_NEIGHBOR_V6_ADD
 
         config = self._generate_template_dict_neighbor(neighbor)
-        self.vrf = neighbor.local_ip.networkipv4.vlan.ambiente.default_vrf.vrf
         self._operate_equipment('neighbor', template_type, config)
 
     def undeploy_neighbor(self, neighbor):
@@ -189,14 +188,13 @@ class Generic(BasePlugin):
             if ip_version == 4 else self.TEMPLATE_NEIGHBOR_V6_REMOVE
 
         config = self._generate_template_dict_neighbor(neighbor)
-        self.vrf = neighbor.local_ip.networkipv4.vlan.ambiente.default_vrf.vrf
         self._operate_equipment('neighbor', template_type, config)
 
     def deploy_list_config_bgp(self, list_config_bgp):
         """Deploy prefix list"""
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
-        self.vrf = ''
+
         self._operate_equipment(
             'list_config_bgp', self.TEMPLATE_LIST_CONFIG_ADD, config)
 
@@ -204,7 +202,7 @@ class Generic(BasePlugin):
         """Undeploy prefix list"""
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
-        self.vrf = ''
+
         self._operate_equipment(
             'list_config_bgp', self.TEMPLATE_LIST_CONFIG_REMOVE, config)
 
@@ -212,7 +210,7 @@ class Generic(BasePlugin):
         """Deploy route map"""
 
         config = self._generate_template_dict_route_map(route_map)
-        self.vrf = ''
+
         self._operate_equipment(
             'route_map', self.TEMPLATE_ROUTE_MAP_ADD, config)
 
@@ -220,7 +218,7 @@ class Generic(BasePlugin):
         """Undeploy route map"""
 
         config = self._generate_template_dict_route_map(route_map)
-        self.vrf = ''
+
         self._operate_equipment(
             'route_map', self.TEMPLATE_ROUTE_MAP_REMOVE, config)
 
@@ -302,8 +300,8 @@ class Generic(BasePlugin):
         """Make a dictionary to use in template"""
 
         key_dict = {
-            'AS_NUMBER': neighbor.remote_asn.name,
-            'VRF_NAME': neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf.vrf,
+            'AS_NUMBER': neighbor.local_asn.name,
+            'VRF_NAME': neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf.internal_name,
             'REMOTE_IP': str(neighbor.remote_ip),
             'REMOTE_AS': neighbor.remote_asn.name,
             'ROUTE_MAP_IN': neighbor.peer_group.route_map_in.name,
@@ -357,7 +355,7 @@ class Generic(BasePlugin):
         types = {
             'P': {
                 'config_list': 'prefix-list',
-                'route_map': 'ip address prefix-list'
+                'route_map': 'ip address'
             },
             'C': {
                 'config_list': 'community',
@@ -409,19 +407,17 @@ class Generic(BasePlugin):
         if self.equipment.maintenance:
             raise AllEquipmentsAreInMaintenanceException()
 
-        self._copy_script_file_to_config(filename, self.vrf)
+        self._copy_script_file_to_config(filename)
 
-    def _copy_script_file_to_config(self, filename, use_vrf=None,
+    def _copy_script_file_to_config(self, filename,
                                     destination='running-config'):
         """
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
         """
-        if use_vrf is None:
-            use_vrf = self.management_vrf
 
-        command = 'copy tftp://{}/{} {} {}\n\n'.format(
-            self.tftpserver, filename, destination, use_vrf)
+        command = 'copy tftp://{}/{} {}\n\n'.format(
+            self.tftpserver, filename, destination)
 
         file_copied = 0
         retries = 0
