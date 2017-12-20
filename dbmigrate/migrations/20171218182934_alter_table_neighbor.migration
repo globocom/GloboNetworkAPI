@@ -1,0 +1,54 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `neighbor_v4` 
+ADD COLUMN `password` VARCHAR(45) NULL,
+ADD COLUMN `maximum_hops` VARCHAR(45) NULL,
+ADD COLUMN `timer_keepalive` VARCHAR(45) NULL DEFAULT '30',
+ADD COLUMN `timer_timeout` VARCHAR(45) NULL DEFAULT '180',
+ADD COLUMN `description` VARCHAR(45) NULL,
+ADD COLUMN `soft_reconfiguration` TINYINT(1) NOT NULL DEFAULT 1,
+ADD COLUMN `community` TINYINT(1) NOT NULL DEFAULT 1,
+ADD COLUMN `remove_private_as` TINYINT(1) NOT NULL DEFAULT 0,
+ADD COLUMN `next_hop_self` TINYINT(1) NOT NULL,
+ADD COLUMN `kind` ENUM('E', 'I') NOT NULL DEFAULT 'I';
+
+ALTER TABLE `neighbor_v6` 
+ADD COLUMN `password` VARCHAR(45) NULL,
+ADD COLUMN `maximum_hops` VARCHAR(45) NULL,
+ADD COLUMN `timer_keepalive` VARCHAR(45) NULL DEFAULT '30',
+ADD COLUMN `timer_timeout` VARCHAR(45) NULL DEFAULT '180',
+ADD COLUMN `description` VARCHAR(45) NULL,
+ADD COLUMN `soft_reconfiguration` TINYINT(1) NOT NULL DEFAULT 1,
+ADD COLUMN `community` TINYINT(1) NOT NULL DEFAULT 1,
+ADD COLUMN `remove_private_as` TINYINT(1) NOT NULL DEFAULT 0,
+ADD COLUMN `next_hop_self` TINYINT(1) NOT NULL,
+ADD COLUMN `kind` ENUM('E', 'I') NOT NULL DEFAULT 'I';
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `neighbor_v4`
+DROP COLUMN `password`,
+DROP COLUMN `maximum_hops`,
+DROP COLUMN `timer_keepalive`,
+DROP COLUMN `timer_timeout`,
+DROP COLUMN `description`,
+DROP COLUMN `soft_reconfiguration`,
+DROP COLUMN `community`,
+DROP COLUMN `remove_private_as`,
+DROP COLUMN `next_hop_self`,
+DROP COLUMN `kind`;
+
+ALTER TABLE `neighbor_v6`
+DROP COLUMN `password`,
+DROP COLUMN `maximum_hops`,
+DROP COLUMN `timer_keepalive`,
+DROP COLUMN `timer_timeout`,
+DROP COLUMN `description`,
+DROP COLUMN `soft_reconfiguration`,
+DROP COLUMN `community`,
+DROP COLUMN `remove_private_as`,
+DROP COLUMN `next_hop_self`,
+DROP COLUMN `kind`;
+"""

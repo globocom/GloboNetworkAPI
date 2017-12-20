@@ -82,6 +82,55 @@ class NeighborV4(BaseModel):
         db_column='created'
     )
 
+    password = models.CharField(
+        blank=True,
+        max_length=45,
+        db_column='password'
+    )
+
+    maximum_hops = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='maximum_hops'
+    )
+
+    timer_keepalive = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='timer_keepalive'
+    )
+
+    timer_timeout = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='timer_timeout'
+    )
+
+    description = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='description'
+    )
+
+    soft_reconfiguration = models.BooleanField(
+        db_column='soft_reconfiguration')
+
+    community = models.BooleanField(
+        db_column='community')
+
+    remove_private_as = models.BooleanField(
+        db_column='remove_private_as')
+
+    next_hop_self = models.BooleanField(
+        db_column='next_hop_self')
+
+    kind = models.CharField(
+        db_column='kind',
+        max_length=2,
+        blank=False,
+        choices=BgpType.list_type
+    )
+
     log = logging.getLogger('NeighborV4')
 
     class Meta(BaseModel.Meta):
@@ -155,20 +204,91 @@ class NeighborV4(BaseModel):
         super(NeighborV4, self).delete()
 
     def deploy(self):
+        """Deploy NeighborV4."""
+
         self.created = True
         self.save()
+        EquipmentRouteMap = get_model('api_route_map', 'EquipmentRouteMap')
+        EquipmentListConfig = get_model(
+            'api_list_config_bgp', 'EquipmentListConfig')
 
-        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
-        #     id=)
-        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
+        equipment = self.local_ip.equipments[0]
+        route_map_out = self.peer_group.route_map_out
+        route_map_in = self.peer_group.route_map_in
+
+        eqpt_route_map = EquipmentRouteMap.objects.filter(
+            equipment=equipment,
+            route_map=route_map_in
+        )
+        if not eqpt_route_map:
+            EquipmentRouteMap().create_v4({
+                'equipment': equipment.id,
+                'route_map': route_map_in.id
+            })
+
+        eqpt_route_map = EquipmentRouteMap.objects.filter(
+            equipment=equipment,
+            route_map=route_map_out
+        )
+        if not eqpt_route_map:
+            EquipmentRouteMap().create_v4({
+                'equipment': equipment.id,
+                'route_map': route_map_out.id
+            })
+
+        entries = route_map_out.route_map_entries | route_map_in.route_map_entries
+        for entry in entries:
+            eqpt_list_config = EquipmentListConfig.objects.filter(
+                equipment=equipment,
+                list_config_bgp=entry.list_config_bgp
+            )
+            if not eqpt_list_config:
+                EquipmentListConfig().create_v4({
+                    'equipment': equipment.id,
+                    'list_config_bgp': entry.list_config_bgp.id
+                })
 
     def undeploy(self):
+        """Undeploy NeighborV4."""
         self.created = False
         self.save()
 
-        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
-        #     id=)
-        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
+        EquipmentRouteMap = get_model('api_route_map', 'EquipmentRouteMap')
+        EquipmentListConfig = get_model(
+            'api_list_config_bgp', 'EquipmentListConfig')
+
+        route_map_out = self.peer_group.route_map_out
+        route_map_in = self.peer_group.route_map_in
+        equipment = self.local_ip.equipments[0]
+
+        neighbor_v4, neighbor_v6 = get_neighbors_route_map(
+            route_map_in, equipment)
+        neighbor_v6 = neighbor_v6.exclude(id=self.id)
+        if not neighbor_v4 and not neighbor_v6:
+            EquipmentRouteMap.objects.filter(
+                equipment=equipment,
+                route_map=route_map_in
+            ).delete()
+
+        neighbor_v4, neighbor_v6 = get_neighbors_route_map(
+            route_map_out, equipment)
+        neighbor_v4 = neighbor_v4.exclude(id=self.id)
+        if not neighbor_v4 and not neighbor_v6:
+            EquipmentRouteMap.objects.filter(
+                equipment=equipment,
+                route_map=route_map_out
+            ).delete()
+
+        entries = route_map_out.route_map_entries | route_map_in.route_map_entries
+        for entry in entries:
+            neighbor_v4, neighbor_v6 = get_neighbors_list_config_bgp(
+                entry.list_config_bgp, equipment)
+            neighbor_v4 = neighbor_v4.exclude(id=self.id)
+            if not neighbor_v4 and not neighbor_v6:
+                EquipmentListConfig.objects.filter(
+                    equipment=equipment,
+                    list_config_bgp=entry.list_config_bgp
+                ).delete()
 
     def validate_neighbor_v4(self, user):
 
@@ -280,6 +400,55 @@ class NeighborV6(BaseModel):
         db_column='created'
     )
 
+    password = models.CharField(
+        blank=True,
+        max_length=45,
+        db_column='password'
+    )
+
+    maximum_hops = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='maximum_hops'
+    )
+
+    timer_keepalive = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='timer_keepalive'
+    )
+
+    timer_timeout = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='timer_timeout'
+    )
+
+    description = models.CharField(
+        blank=False,
+        max_length=45,
+        db_column='description'
+    )
+
+    soft_reconfiguration = models.BooleanField(
+        db_column='soft_reconfiguration')
+
+    community = models.BooleanField(
+        db_column='community')
+
+    remove_private_as = models.BooleanField(
+        db_column='remove_private_as')
+
+    next_hop_self = models.BooleanField(
+        db_column='next_hop_self')
+
+    kind = models.CharField(
+        db_column='kind',
+        max_length=2,
+        blank=False,
+        choices=BgpType.list_type
+    )
+
     log = logging.getLogger('NeighborV6')
 
     class Meta(BaseModel.Meta):
@@ -322,6 +491,16 @@ class NeighborV6(BaseModel):
         self.remote_ip = ipv6_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
+        self.password = neighbor_map.get('password')
+        self.maximum_hops = neighbor_map.get('maximum_hops')
+        self.timer_keepalive = neighbor_map.get('timer_keepalive')
+        self.timer_timeout = neighbor_map.get('timer_timeout')
+        self.description = neighbor_map.get('description')
+        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
+        self.community = neighbor_map.get('community')
+        self.remove_private_as = neighbor_map.get('remove_private_as')
+        self.next_hop_self = neighbor_map.get('next_hop_self')
+        self.kind = neighbor_map.get('kind')
 
         self.validate_neighbor_v6(user)
 
@@ -340,6 +519,16 @@ class NeighborV6(BaseModel):
         self.remote_ip = ipv6_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
+        self.password = neighbor_map.get('password')
+        self.maximum_hops = neighbor_map.get('maximum_hops')
+        self.timer_keepalive = neighbor_map.get('timer_keepalive')
+        self.timer_timeout = neighbor_map.get('timer_timeout')
+        self.description = neighbor_map.get('description')
+        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
+        self.community = neighbor_map.get('community')
+        self.remove_private_as = neighbor_map.get('remove_private_as')
+        self.next_hop_self = neighbor_map.get('next_hop_self')
+        self.kind = neighbor_map.get('kind')
 
         self.validate_neighbor_v6(user)
 
@@ -353,20 +542,93 @@ class NeighborV6(BaseModel):
         super(NeighborV6, self).delete()
 
     def deploy(self):
+        """Deploy NeighborV6."""
+
         self.created = True
         self.save()
 
-        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
-        #     id=)
-        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
+        EquipmentRouteMap = get_model('api_route_map', 'EquipmentRouteMap')
+        EquipmentListConfig = get_model(
+            'api_list_config_bgp', 'EquipmentListConfig')
+
+        equipment = self.local_ip.equipments[0]
+        route_map_out = self.peer_group.route_map_out
+        route_map_in = self.peer_group.route_map_in
+
+        eqpt_route_map = EquipmentRouteMap.objects.filter(
+            equipment=equipment,
+            route_map=route_map_in
+        )
+        if not eqpt_route_map:
+            EquipmentRouteMap().create_v4({
+                'equipment': equipment.id,
+                'route_map': route_map_in.id
+            })
+
+        eqpt_route_map = EquipmentRouteMap.objects.filter(
+            equipment=equipment,
+            route_map=route_map_out
+        )
+        if not eqpt_route_map:
+            EquipmentRouteMap().create_v4({
+                'equipment': equipment.id,
+                'route_map': route_map_out.id
+            })
+
+        entries = route_map_out.route_map_entries | route_map_in.route_map_entries
+        for entry in entries:
+            eqpt_list_config = EquipmentListConfig.objects.filter(
+                equipment=equipment,
+                route_map=entry.list_config_bgp
+            )
+            if not eqpt_list_config:
+                EquipmentListConfig().create_v4({
+                    'equipment': equipment.id,
+                    'list_config_bgp': entry.list_config_bgp.id
+                })
 
     def undeploy(self):
+        """Deploy NeighborV6."""
+
         self.created = False
         self.save()
 
-        # self.peer_group.route_map_in.equipmentroutemap_set.filter(
-        #     id=)
-        # self.peer_group.route_map_out.equipments.filter(id=self.equipment.id)
+        EquipmentRouteMap = get_model('api_route_map', 'EquipmentRouteMap')
+        EquipmentListConfig = get_model(
+            'api_list_config_bgp', 'EquipmentListConfig')
+
+        route_map_out = self.peer_group.route_map_out
+        route_map_in = self.peer_group.route_map_in
+        equipment = self.local_ip.equipments[0]
+
+        neighbor_v4, neighbor_v6 = get_neighbors_route_map(
+            route_map_in, equipment)
+        neighbor_v6 = neighbor_v6.exclude(id=self.id)
+        if not neighbor_v4 and not neighbor_v6:
+            EquipmentRouteMap.objects.filter(
+                equipment=equipment,
+                route_map=route_map_in
+            ).delete()
+
+        neighbor_v4, neighbor_v6 = get_neighbors_route_map(
+            route_map_out, equipment)
+        neighbor_v6 = neighbor_v6.exclude(id=self.id)
+        if not neighbor_v4 and not neighbor_v6:
+            EquipmentRouteMap.objects.filter(
+                equipment=equipment,
+                route_map=route_map_out
+            ).delete()
+
+        entries = route_map_out.route_map_entries | route_map_in.route_map_entries
+        for entry in entries:
+            neighbor_v4, neighbor_v6 = get_neighbors_list_config_bgp(
+                entry.list_config_bgp, equipment)
+            neighbor_v6 = neighbor_v6.exclude(id=self.id)
+            if not neighbor_v4 and not neighbor_v6:
+                EquipmentListConfig.objects.filter(
+                    equipment=equipment,
+                    route_map=entry.list_config_bgp
+                ).delete()
 
     def validate_neighbor_v6(self, user):
 
@@ -454,3 +716,49 @@ def check_permissions_in_peer_group(neighbor, user):
 
     if not perms_general and not perms_specific:
         raise DontHavePermissionForPeerGroupException(neighbor)
+
+
+def get_neighbors_route_map(route_map, equipment):
+
+    # Neighbors V4 with same route map and same equipment
+    neighbor_v4 = NeighborV4.objects.filter(
+        Q(peer_group__route_map_in=route_map) |
+        Q(peer_group__route_map_out=route_map)
+    ).filter(
+        created=True,
+        local_ip__ipequipamento__equipamento=equipment
+    )
+
+    # Neighbors V6 with same route map and same equipment
+    neighbor_v6 = NeighborV6.objects.filter(
+        Q(peer_group__route_map_in=route_map) |
+        Q(peer_group__route_map_out=route_map)
+    ).filter(
+        created=True,
+        local_ip__ipv6equipament__equipamento=equipment
+    )
+
+    return neighbor_v4, neighbor_v6
+
+
+def get_neighbors_list_config_bgp(list_config_bgp, equipment):
+
+    # Neighbors V4 with same list config bgp and same equipment
+    neighbor_v4 = NeighborV4.objects.filter(
+        Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+        Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp)
+    ).filter(
+        created=True,
+        local_ip__ipequipamento__equipamento=equipment
+    )
+
+    # Neighbors V6 with same list config bgp and same equipment
+    neighbor_v6 = NeighborV6.objects.filter(
+        Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+        Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp)
+    ).filter(
+        created=True,
+        local_ip__ipv6equipament__equipamento=equipment
+    )
+
+    return neighbor_v4, neighbor_v6

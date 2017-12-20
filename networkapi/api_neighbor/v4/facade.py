@@ -340,7 +340,6 @@ def undeploy_neighbor_v4(neighbor_id):
 
         plugin = PluginFactory.factory(eqpt)
         plugin.bgp().undeploy_neighbor(neighbor)
-
         neighbor.undeploy()
 
     except Exception as e:
@@ -432,6 +431,7 @@ def lock_resources_used_by_neighbor_v4(neighbor):
     locks_name.append(LOCK_NEIGHBOR_V4 % neighbor.id)
     locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
     locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
+    locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_out_id)
 
     for route_map_entry in neighbor.peer_group.route_map_in.route_map_entries:
         locks_name.append(LOCK_ROUTE_MAP_ENTRY %
@@ -456,6 +456,7 @@ def lock_resources_used_by_neighbor_v6(neighbor):
     locks_name.append(LOCK_NEIGHBOR_V6 % neighbor.id)
     locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
     locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
+    locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_out_id)
 
     for route_map_entry in neighbor.peer_group.route_map_in.route_map_entries:
         locks_name.append(LOCK_ROUTE_MAP_ENTRY %

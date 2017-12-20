@@ -14,6 +14,7 @@ from networkapi.api_list_config_bgp.v4.exceptions import \
 from networkapi.api_neighbor.models import NeighborV4
 from networkapi.api_neighbor.models import NeighborV6
 from networkapi.models.BaseModel import BaseModel
+from networkapi.util.geral import get_model
 
 
 class ListConfigBGPType:
@@ -161,3 +162,13 @@ class EquipmentListConfig(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'equipment_list_config_bgp'
         managed = True
+
+    def create_v4(self, list_config_bgp):
+
+        eqpt_model = get_model('equipamento', 'Equipamento')
+
+        self.equipment = eqpt_model.get_by_pk(
+            list_config_bgp.get('equipment'))
+        self.list_config_bgp = ListConfigBGP.get_by_pk(
+            list_config_bgp.get('list_config_bgp'))
+        self.save()

@@ -308,14 +308,14 @@ class Generic(BasePlugin):
             'REMOTE_AS': neighbor.remote_asn.name,
             'ROUTE_MAP_IN': neighbor.peer_group.route_map_in.name,
             'ROUTE_MAP_OUT': neighbor.peer_group.route_map_out.name,
-            # 'PASSWORD': neighbor.password,
-            # 'TIMER_KEEPALIVE': neighbor.timer_keepalive,
-            # 'TIMER_TIMEOUT': neighbor.timer_timeout,
-            # 'DESCRIPTION': neighbor.description,
-            # 'SOFT_RECONFIGURATION': neighbor.soft_reconfiguration,
-            # 'NEXT_HOP_SELF': neighbor.next_hop_self,
-            # 'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
-            # 'COMMUNITY': neighbor.community
+            'PASSWORD': neighbor.password,
+            'TIMER_KEEPALIVE': neighbor.timer_keepalive,
+            'TIMER_TIMEOUT': neighbor.timer_timeout,
+            'DESCRIPTION': neighbor.description,
+            'SOFT_RECONFIGURATION': neighbor.soft_reconfiguration,
+            'NEXT_HOP_SELF': neighbor.next_hop_self,
+            'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
+            'COMMUNITY': neighbor.community
         }
 
         return key_dict
@@ -336,8 +336,9 @@ class Generic(BasePlugin):
 
         entries = []
         for entry_obj in route_map.route_map_entries:
+            action = 'permit' if entry_obj.action == 'P' else 'deny'
             entry = {
-                'ACTION': entry_obj.action,
+                'ACTION': action,
                 'ORDER': entry_obj.order,
                 'TYPE_MATCH': self._get_type_list(entry_obj.list_config_bgp.type)['route_map'],
                 'LIST': entry_obj.list_config_bgp.name,

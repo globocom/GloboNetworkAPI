@@ -18,6 +18,7 @@ from networkapi.api_route_map.v4.exceptions import \
 from networkapi.api_route_map.v4.exceptions import \
     RouteMapEntryWithDeployedRouteMapException
 from networkapi.api_route_map.v4.exceptions import RouteMapIsDeployedException
+from networkapi.equipamento.models import Equipamento
 from networkapi.models.BaseModel import BaseModel
 from networkapi.util.geral import get_model
 
@@ -166,6 +167,12 @@ class EquipmentRouteMap(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'equipment_route_map'
         managed = True
+
+    def create_v4(self, route_map):
+
+        self.equipment = Equipamento.get_by_pk(route_map.get('equipment'))
+        self.route_map = RouteMap.get_by_pk(route_map.get('route_map'))
+        self.save()
 
 
 class RouteMapEntry(BaseModel):
