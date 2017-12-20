@@ -76,7 +76,9 @@ class PluginFactory(object):
             if re.search('FUSIS', marca.upper(), re.DOTALL):
                 from .SDN.FUSIS.Generic import Generic
                 return Generic
-
+            if re.search('HP', marca.upper(), re.DOTALL):
+                from .HP.plugin import HPE
+                return HPE
         raise NotImplementedError('plugin not implemented')
 
     @classmethod

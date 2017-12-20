@@ -347,16 +347,29 @@ def get_vlan_range(interface):
             vlan_range_temp = env_int.vlans
             vlan_range_list_temp = [vlan_range_temp]
         else:
-            vlan_range_1 = str(env_int.ambiente.min_num_vlan_1) + \
-                '-' + str(env_int.ambiente.max_num_vlan_1)
-            vlan_range_2 = str(env_int.ambiente.min_num_vlan_2) + \
-                '-' + str(env_int.ambiente.max_num_vlan_2)
-            if vlan_range_1 is not vlan_range_2:
-                vlan_range_temp = vlan_range_1 + ',' + vlan_range_2
-                vlan_range_list_temp = [vlan_range_1, vlan_range_2]
+            if interface.equipamento.modelo.marca.nome is "HP":
+                vlan_range_1 = str(env_int.ambiente.min_num_vlan_1) + \
+                               ' to ' + str(env_int.ambiente.max_num_vlan_1)
+                vlan_range_2 = str(env_int.ambiente.min_num_vlan_2) + \
+                               ' to ' + str(env_int.ambiente.max_num_vlan_2)
+                if vlan_range_1 is not vlan_range_2:
+                    vlan_range_temp = vlan_range_1 + ' ' + vlan_range_2
+                    vlan_range_list_temp = [vlan_range_1, vlan_range_2]
+                else:
+                    vlan_range_temp = vlan_range_1
+                    vlan_range_list_temp = [vlan_range_1]
             else:
-                vlan_range_temp = vlan_range_1
-                vlan_range_list_temp = [vlan_range_1]
+                vlan_range_1 = str(env_int.ambiente.min_num_vlan_1) + \
+                               '-' + str(env_int.ambiente.max_num_vlan_1)
+
+                vlan_range_2 = str(env_int.ambiente.min_num_vlan_2) + \
+                               '-' + str(env_int.ambiente.max_num_vlan_2)
+                if vlan_range_1 is not vlan_range_2:
+                    vlan_range_temp = vlan_range_1 + ',' + vlan_range_2
+                    vlan_range_list_temp = [vlan_range_1, vlan_range_2]
+                else:
+                    vlan_range_temp = vlan_range_1
+                    vlan_range_list_temp = [vlan_range_1]
         if vlan_range is '':
             vlan_range = vlan_range_temp
             vlan_range_list.extend(vlan_range_list_temp)
@@ -371,8 +384,9 @@ def get_vlan_range(interface):
 
 
 def verificar_vlan_range(amb, vlans):
+
     for intervalo in vlans.split(';'):
-        for i in intervalo.split('-'):
+        for i in re.split('\W+', intervalo.replace('to', '-')):
             try:
                 i = int(i)
             except:
