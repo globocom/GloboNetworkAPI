@@ -4,14 +4,32 @@
     "neighbors": {
       "items": {
         "properties": {
+          "community": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
           "id": {
             "type": "integer"
+          },
+          "kind": {
+            "type": "string"
           },
           "local_asn": {
             "type": "integer"
           },
           "local_ip": {
             "type": "integer"
+          },
+          "maximum_hops": {
+            "type": "string"
+          },
+          "next_hop_self": {
+            "type": "boolean"
+          },
+          "password": {
+            "type": "string"
           },
           "peer_group": {
             "type": "integer"
@@ -21,6 +39,18 @@
           },
           "remote_ip": {
             "type": "integer"
+          },
+          "remove_private_as": {
+            "type": "boolean"
+          },
+          "soft_reconfiguration": {
+            "type": "boolean"
+          },
+          "timer_keepalive": {
+            "type": "string"
+          },
+          "timer_timeout": {
+            "type": "string"
           },
           "virtual_interface": {
             "type": "string"
@@ -32,7 +62,11 @@
           "remote_asn",
           "local_ip",
           "remote_ip",
-          "peer_group"
+          "peer_group",
+          "community",
+          "soft_reconfiguration",
+          "remove_private_as",
+          "next_hop_self"
         ],
         "type": "object"
       },

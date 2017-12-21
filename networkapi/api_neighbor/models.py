@@ -113,16 +113,24 @@ class NeighborV4(BaseModel):
     )
 
     soft_reconfiguration = models.BooleanField(
-        db_column='soft_reconfiguration')
+        db_column='soft_reconfiguration',
+        default=False
+    )
 
     community = models.BooleanField(
-        db_column='community')
+        db_column='community',
+        default=False
+    )
 
     remove_private_as = models.BooleanField(
-        db_column='remove_private_as')
+        db_column='remove_private_as',
+        default=False
+    )
 
     next_hop_self = models.BooleanField(
-        db_column='next_hop_self')
+        db_column='next_hop_self',
+        default=False
+    )
 
     kind = models.CharField(
         db_column='kind',
@@ -173,6 +181,16 @@ class NeighborV4(BaseModel):
         self.remote_ip = ipv4_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
+        self.password = neighbor.get('password')
+        self.maximum_hops = neighbor.get('maximum_hops')
+        self.timer_keepalive = neighbor.get('timer_keepalive')
+        self.timer_timeout = neighbor.get('timer_timeout')
+        self.description = neighbor.get('description')
+        self.soft_reconfiguration = neighbor.get('soft_reconfiguration')
+        self.community = neighbor.get('community')
+        self.remove_private_as = neighbor.get('remove_private_as')
+        self.next_hop_self = neighbor.get('next_hop_self')
+        self.kind = neighbor.get('kind')
 
         self.validate_neighbor_v4(user)
 
@@ -191,6 +209,16 @@ class NeighborV4(BaseModel):
         self.remote_ip = ipv4_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
+        self.password = neighbor.get('password')
+        self.maximum_hops = neighbor.get('maximum_hops')
+        self.timer_keepalive = neighbor.get('timer_keepalive')
+        self.timer_timeout = neighbor.get('timer_timeout')
+        self.description = neighbor.get('description')
+        self.soft_reconfiguration = neighbor.get('soft_reconfiguration')
+        self.community = neighbor.get('community')
+        self.remove_private_as = neighbor.get('remove_private_as')
+        self.next_hop_self = neighbor.get('next_hop_self')
+        self.kind = neighbor.get('kind')
 
         self.validate_neighbor_v4(user)
 
@@ -431,16 +459,24 @@ class NeighborV6(BaseModel):
     )
 
     soft_reconfiguration = models.BooleanField(
-        db_column='soft_reconfiguration')
+        db_column='soft_reconfiguration',
+        default=False
+    )
 
     community = models.BooleanField(
-        db_column='community')
+        db_column='community',
+        default=False
+    )
 
     remove_private_as = models.BooleanField(
-        db_column='remove_private_as')
+        db_column='remove_private_as',
+        default=False
+    )
 
     next_hop_self = models.BooleanField(
-        db_column='next_hop_self')
+        db_column='next_hop_self',
+        default=False
+    )
 
     kind = models.CharField(
         db_column='kind',

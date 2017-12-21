@@ -227,12 +227,12 @@ class Generic(BasePlugin):
 
     def _operate_equipment(self, type, template_type, config):
 
-        self.connect()
-        self._ensure_privilege_level()
+        # self.connect()
+        # self._ensure_privilege_level()
         file_to_deploy = self._generate_config_file(
             type, template_type, config)
-        self._deploy_config_in_equipment(file_to_deploy)
-        self.close()
+        # self._deploy_config_in_equipment(file_to_deploy)
+        # self.close()
 
     ############
     # TEMPLATE #
