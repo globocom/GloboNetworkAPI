@@ -176,6 +176,7 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
 
 
 def _generate_config_file(interfaces_list):
+    log.info("_generate_config_file")
 
     try:
         INTERFACE_CONFIG_TOAPPLY_REL_PATH = get_variable(
@@ -204,8 +205,9 @@ def _generate_config_file(interfaces_list):
     equipment_id = interfaces_list[0].equipamento.id
 
     request_id = getattr(local, 'request_id', NO_REQUEST_ID)
-    filename_out = 'int-d_' + \
-        str(interfaces_list[0].id) + '_config_' + str(request_id)
+    extension = '.py' if interfaces_list[0].equipamento.modelo.marca.nome == "HP" else ''
+    filename_out = 'int-d_' + str(interfaces_list[0].id) + '_config_' + str(request_id) + extension
+    log.debug(filename_out)
     filename_to_save = INTERFACE_CONFIG_FILES_PATH + filename_out
     rel_file_to_deploy = INTERFACE_CONFIG_TOAPPLY_REL_PATH + filename_out
 
@@ -246,6 +248,7 @@ def _generate_config_file(interfaces_list):
 
 
 def _load_template_file(equipment_id, template_type):
+    log.info("_load_template_file")
 
     try:
         INTERFACE_CONFIG_TEMPLATE_PATH = get_variable(
@@ -284,6 +287,7 @@ def _load_template_file(equipment_id, template_type):
 
 
 def _generate_dict(interface):
+    log.info("_generate_dict")
 
     try:
         supported_string = get_variable('supported_equipment_brands')
@@ -338,6 +342,8 @@ def _generate_dict(interface):
 
 
 def get_vlan_range(interface):
+    log.info("get_vlan_range")
+
     # TODO Generate vlan range
     env_ints = EnvironmentInterface.get_by_interface(interface.id)
     vlan_range = ''
@@ -347,7 +353,7 @@ def get_vlan_range(interface):
             vlan_range_temp = env_int.vlans
             vlan_range_list_temp = [vlan_range_temp]
         else:
-            if interface.equipamento.modelo.marca.nome is "HP":
+            if interface.equipamento.modelo.marca.nome == "HP":
                 vlan_range_1 = str(env_int.ambiente.min_num_vlan_1) + \
                                ' to ' + str(env_int.ambiente.max_num_vlan_1)
                 vlan_range_2 = str(env_int.ambiente.min_num_vlan_2) + \
@@ -384,6 +390,7 @@ def get_vlan_range(interface):
 
 
 def verificar_vlan_range(amb, vlans):
+    log.info("verificar_vlan_range")
 
     for intervalo in vlans.split(';'):
         for i in re.split('\W+', intervalo.replace('to', '-')):
@@ -400,6 +407,7 @@ def verificar_vlan_range(amb, vlans):
 
 
 def verificar_vlan_nativa(vlan_nativa):
+    log.info("verificar_vlan_nativa")
 
     if vlan_nativa is not None:
         if int(vlan_nativa) < 1 or int(vlan_nativa) > 4096:
@@ -411,6 +419,7 @@ def verificar_vlan_nativa(vlan_nativa):
 
 
 def verificar_nome_channel(nome, interfaces):
+    log.info("verificar_nome_channel")
 
     interface = Interface()
 

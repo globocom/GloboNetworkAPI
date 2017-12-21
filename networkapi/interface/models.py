@@ -512,8 +512,6 @@ class Interface(BaseModel):
             regex = '^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$'
         elif marca == 5:
             regex = '^(eth)[0-9]+(/[0-9]+)?$'
-        elif marca == 8:
-            regex = '^[0-9]+$'
         else:
             regex = ''
 
@@ -548,9 +546,7 @@ class Interface(BaseModel):
             if Interface.objects.filter(equipamento=self.equipamento, interface__iexact=self.interface).count() > 0:
                 raise InterfaceForEquipmentDuplicatedError(
                     None, u'An interface with the same name on the same equipment already exists')
-
             return self.save()
-
         except InterfaceForEquipmentDuplicatedError, e:
             raise e
         except Exception, e:
@@ -588,8 +584,6 @@ class Interface(BaseModel):
             regex = '^(interface)\s[0-9]+(/[0-9]+.[0-9]+)?$'
         elif marca == 5:
             regex = '^(eth)[0-9]+(/[0-9]+)?$'
-        elif marca == 8:
-            regex = '^[0-9]+$'
         else:
             regex = ''
 
