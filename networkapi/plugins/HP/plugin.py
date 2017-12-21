@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 class HPE(BasePlugin):
 
-    ERROR_REGEX = 'File not found|Timeout was reached|The file or directory doesn\'t exist'
+    ERROR_REGEX = 'Wrong parameter found at|File not found|Timeout was reached|The file or directory doesn\'t exist'
     INVALID_REGEX = '([Ii]nvalid)|% Incomplete command found at|already exists'
     VALID_OUTPUT_CHARS = '-_.():/#<>\\\r\n %s%s' % (string.ascii_letters, string.digits)
     VALID_TFTP_GET_MESSAGE = '>'
@@ -67,7 +67,7 @@ class HPE(BasePlugin):
             self.channel.send('%s\n' % python_command)
             self.waitString(wait_str_ok_regex=">", wait_str_failed_regex="SystemError")
         except Exception, e:
-            raise Exception("Error enviando comando %s para o equipamento %s: %s" % (python_command, filepath, e))
+            raise Exception("Error sending command %s to equipment %s: %s" % (python_command, filepath, e))
 
         clean_command = 'delete %s' % (filename[-1])
         confirm_command = 'Y'
@@ -77,7 +77,7 @@ class HPE(BasePlugin):
             self.channel.send('%s\n' % confirm_command)
             self.waitString(wait_str_ok_regex="Done")
         except Exception, e:
-            raise Exception("Error enviando comando %s para o equipamento %s: %s" % (python_command, filepath, e))
+            raise Exception("Error sending command %s to equipment %s: %s" % (python_command, filepath, e))
 
         # not capable of configuring after max retries
         if retries is self.MAX_TRIES:
