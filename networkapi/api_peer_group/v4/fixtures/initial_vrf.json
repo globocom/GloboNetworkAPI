@@ -1,0 +1,10 @@
+[
+  {
+    "fields": {
+      "internal_name": "default",
+      "vrf": "default"
+    },
+    "model": "api_vrf.Vrf",
+    "pk": 1
+  }
+]

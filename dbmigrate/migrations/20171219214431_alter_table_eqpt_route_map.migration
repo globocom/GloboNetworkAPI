@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `equipment_route_map` 
+CHANGE COLUMN `id` `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `equipment_route_map` 
+CHANGE COLUMN `id` `id` INT(11) NOT NULL;
+
+"""

@@ -17,8 +17,8 @@ import logging
 import re
 
 from ...base import BasePlugin
-from networkapi.util.decorators import mock_return
 from networkapi.plugins.Cisco.NXOS.BGP.Cli import Generic as BGP
+from networkapi.util.decorators import mock_return
 
 # from time import sleep
 # import string
@@ -36,11 +36,9 @@ class NXOS(BasePlugin):
     VALID_TFTP_GET_MESSAGE = 'Copy complete.|Copy complete, now saving to disk'
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|utility is occupied'
 
-    def bgp(self, neighbor, virtual_interface=None, asn=None, vrf=None):
+    def bgp(self):
 
-        return BGP(equipment=self.equipment,
-                   neighbor=neighbor, virtual_interface=virtual_interface,
-                   asn=asn, vrf=vrf)
+        return BGP(equipment=self.equipment)
 
     @mock_return('')
     def create_svi(self, svi_number, svi_description='no description'):

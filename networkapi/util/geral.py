@@ -110,6 +110,12 @@ def url_search(obj_model, property_search, request):
     return url_search_str
 
 
+def mount_url(uri, ids=[], **kwargs):
+
+    uri = '{}{}/'.format(uri, ';'.join(map(str, ids))).replace('//', '/')
+    return prepare_url(uri, **kwargs)
+
+
 def prepare_url(uri, **kwargs):
     """Convert dict for URL params
     """

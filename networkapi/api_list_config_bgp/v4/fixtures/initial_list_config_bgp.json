@@ -1,0 +1,38 @@
+[
+  {
+    "fields": {
+      "config": "{'conf': 'test_1'}",
+      "name": "test_1",
+      "type": "P"
+    },
+    "model": "api_list_config_bgp.ListConfigBGP",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "config": "{'conf': 'test_2'}",
+      "name": "test_2",
+      "type": "A"
+    },
+    "model": "api_list_config_bgp.ListConfigBGP",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "config": "{'conf': 'test_3'}",
+      "name": "test_3",
+      "type": "P"
+    },
+    "model": "api_list_config_bgp.ListConfigBGP",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "config": "{'conf': 'test_4'}",
+      "name": "test_4",
+      "type": "P"
+    },
+    "model": "api_list_config_bgp.ListConfigBGP",
+    "pk": 4
+  }
+]

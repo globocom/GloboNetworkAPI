@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "route_map_entries": {
+      "items": {
+        "properties": {
+          "action": {
+            "enum": [
+              "P",
+              "D"
+            ],
+            "type": "string"
+          },
+          "action_reconfig": {
+            "type": "string"
+          },
+          "list_config_bgp": {
+            "type": "integer"
+          },
+          "order": {
+            "type": "integer"
+          },
+          "route_map": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "action_reconfig",
+          "order",
+          "list_config_bgp",
+          "route_map"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "route_map_entries"
+  ],
+  "title": "RouteMapEntry Post",
+  "type": "object"
+}

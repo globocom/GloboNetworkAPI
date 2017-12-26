@@ -1,0 +1,13 @@
+interface Vlan{{ VLAN_NUMBER }}
+  {% if IP_VERSION == "IPV4" %}
+     no ip address
+     ip proxy-arp
+    {% if USE_GW_RED %}
+      no vrrp-group 1
+    {% endif %}
+  {% else %}
+    no ipv6 address
+    {% if USE_GW_RED %}
+      no vrrp-ipv6-group 1
+    {% endif %}
+  {% endif %}

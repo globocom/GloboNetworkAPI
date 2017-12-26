@@ -1,0 +1,16 @@
+[
+  {
+    "config": "{'conf': 'test_1'}",
+    "id": 1,
+    "name": "test_1",
+    "route_map_entries": null,
+    "type": "P"
+  },
+  {
+    "config": "{'conf': 'test_2'}",
+    "id": 2,
+    "name": "test_2",
+    "route_map_entries": null,
+    "type": "A"
+  }
+]

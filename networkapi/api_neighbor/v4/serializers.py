@@ -10,84 +10,279 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 log = logging.getLogger(__name__)
 
 
-class NeighborV4Serializer(DynamicFieldsModelSerializer):
+class NeighborV4V4Serializer(DynamicFieldsModelSerializer):
 
-    soft_reconfiguration = serializers.Field(source='soft_reconfiguration')
-
-    community = serializers.Field(source='community')
-
-    remove_private_as = serializers.Field(source='remove_private_as')
-
-    next_hop_self = serializers.Field(source='next_hop_self')
-
-    created = serializers.Field(source='created')
-
-    virtual_interface = serializers.SerializerMethodField(
-        'get_virtual_interface')
+    local_asn = serializers.SerializerMethodField('get_local_asn')
+    remote_asn = serializers.SerializerMethodField('get_remote_asn')
+    local_ip = serializers.SerializerMethodField('get_local_ip')
+    remote_ip = serializers.SerializerMethodField('get_remote_ip')
+    peer_group = serializers.SerializerMethodField('get_peer_group')
 
     class Meta:
-        Neighbor = get_model('api_neighbor', 'Neighbor')
-        model = Neighbor
+        NeighborV4 = get_model('api_neighbor', 'NeighborV4')
+        model = NeighborV4
+
         fields = (
             'id',
-            'remote_as',
+            'local_asn',
+            'remote_asn',
+            'local_ip',
             'remote_ip',
-            'password',
-            'maximum_hops',
-            'timer_keepalive',
-            'timer_timeout',
-            'description',
-            'soft_reconfiguration',
-            'community',
-            'remove_private_as',
-            'next_hop_self',
-            'kind',
-            'created',
-            'virtual_interface'
+            'peer_group',
+            'virtual_interface',
+            'created'
         )
-
-        default_fields = fields
 
         basic_fields = fields
 
+        default_fields = fields
+
         details_fields = fields
 
-    def get_virtual_interface(self, obj):
-        return self.extends_serializer(obj, 'virtual_interface')
+    def get_local_asn(self, obj):
+        return self.extends_serializer(obj, 'local_asn')
+
+    def get_remote_asn(self, obj):
+        return self.extends_serializer(obj, 'remote_asn')
+
+    def get_local_ip(self, obj):
+        return self.extends_serializer(obj, 'local_ip')
+
+    def get_remote_ip(self, obj):
+        return self.extends_serializer(obj, 'remote_ip')
+
+    def get_peer_group(self, obj):
+        return self.extends_serializer(obj, 'peer_group')
 
     def get_serializers(self):
-        # serializers
-        vi_slz = get_app('api_virtual_interface',
-                          module_label='v4.serializers')
+        ip_slzs = get_app('api_ip', module_label='v4.serializers')
+        asn_slzs = get_app('api_asn', module_label='v4.serializers')
+        prg_slzs = get_app('api_peer_group', module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
-                'virtual_interface': {
-                    'obj': 'virtual_interface_id'
+                'local_asn': {
+                    'obj': 'local_asn_id',
                 },
-                'virtual_interface__details': {
-                    'serializer': vi_slz.VirtualInterfaceV4Serializer,
-                    'kwargs': {
-                        'kind': 'details'
-                    },
-                    'obj': 'virtual_interface',
-                    'eager_loading': self.setup_eager_loading_interface
-                },
-                'virtual_interface__basic': {
-                    'serializer': vi_slz.VirtualInterfaceV4Serializer,
+                'local_asn__basic': {
+                    'serializer': asn_slzs.AsnV4Serializer,
                     'kwargs': {
                         'kind': 'basic'
                     },
-                    'obj': 'virtual_interface',
-                    'eager_loading': self.setup_eager_loading_interface
+                    'obj': 'local_asn'
+                },
+                'local_asn__details': {
+                    'serializer': asn_slzs.AsnV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'local_asn'
+                },
+                'remote_asn': {
+                    'obj': 'remote_asn_id',
+                },
+                'remote_asn__basic': {
+                    'serializer': asn_slzs.AsnV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'remote_asn'
+                },
+                'remote_asn__details': {
+                    'serializer': asn_slzs.AsnV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'remote_asn'
+                },
+                'local_ip': {
+                    'obj': 'local_ip_id',
+                },
+                'local_ip__basic': {
+                    'serializer': ip_slzs.IPv4V4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'local_ip'
+                },
+                'local_ip__details': {
+                    'serializer': ip_slzs.IPv4V4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'local_ip'
+                },
+                'remote_ip': {
+                    'obj': 'remote_ip_id',
+                },
+                'remote_ip__basic': {
+                    'serializer': ip_slzs.IPv4V4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'remote_ip'
+                },
+                'remote_ip__details': {
+                    'serializer': ip_slzs.IPv4V4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'remote_ip'
+                },
+                'peer_group': {
+                    'obj': 'peer_group_id',
+                },
+                'peer_group__basic': {
+                    'serializer': prg_slzs.PeerGroupV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'peer_group'
+                },
+                'peer_group__details': {
+                    'serializer': prg_slzs.PeerGroupV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'peer_group'
                 },
             }
 
-    @staticmethod
-    def setup_eager_loading_interface(queryset):
 
-        log.info('Using setup_eager_loading_interface')
-        queryset = queryset.select_related(
+class NeighborV6V4Serializer(DynamicFieldsModelSerializer):
+
+    local_asn = serializers.SerializerMethodField('get_local_asn')
+    remote_asn = serializers.SerializerMethodField('get_remote_asn')
+    local_ip = serializers.SerializerMethodField('get_local_ip')
+    remote_ip = serializers.SerializerMethodField('get_remote_ip')
+    peer_group = serializers.SerializerMethodField('get_peer_group')
+
+    class Meta:
+        NeighborV6 = get_model('api_neighbor', 'NeighborV6')
+        model = NeighborV6
+
+        fields = (
+            'id',
+            'local_asn',
+            'remote_asn',
+            'local_ip',
+            'remote_ip',
+            'peer_group',
             'virtual_interface',
+            'created'
         )
-        return queryset
+
+        basic_fields = fields
+
+        default_fields = fields
+
+        details_fields = fields
+
+    def get_local_asn(self, obj):
+        return self.extends_serializer(obj, 'local_asn')
+
+    def get_remote_asn(self, obj):
+        return self.extends_serializer(obj, 'remote_asn')
+
+    def get_local_ip(self, obj):
+        return self.extends_serializer(obj, 'local_ip')
+
+    def get_remote_ip(self, obj):
+        return self.extends_serializer(obj, 'remote_ip')
+
+    def get_peer_group(self, obj):
+        return self.extends_serializer(obj, 'peer_group')
+
+    def get_serializers(self):
+        ip_slzs = get_app('api_ip', module_label='v4.serializers')
+        asn_slzs = get_app('api_asn', module_label='v4.serializers')
+        prg_slzs = get_app('api_peer_group', module_label='v4.serializers')
+
+        if not self.mapping:
+            self.mapping = {
+                'local_asn': {
+                    'obj': 'local_asn_id',
+                },
+                'local_asn__basic': {
+                    'serializer': asn_slzs.AsnV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'local_asn'
+                },
+                'local_asn__details': {
+                    'serializer': asn_slzs.AsnV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'local_asn'
+                },
+                'remote_asn': {
+                    'obj': 'remote_asn_id',
+                },
+                'remote_asn__basic': {
+                    'serializer': asn_slzs.AsnV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'remote_asn'
+                },
+                'remote_asn__details': {
+                    'serializer': asn_slzs.AsnV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'remote_asn'
+                },
+                'local_ip': {
+                    'obj': 'local_ip_id',
+                },
+                'local_ip__basic': {
+                    'serializer': ip_slzs.Ipv6V4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'local_ip'
+                },
+                'local_ip__details': {
+                    'serializer': ip_slzs.Ipv6V4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'local_ip'
+                },
+                'remote_ip': {
+                    'obj': 'remote_ip_id',
+                },
+                'remote_ip__basic': {
+                    'serializer': ip_slzs.Ipv6V4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'remote_ip'
+                },
+                'remote_ip__details': {
+                    'serializer': ip_slzs.Ipv6V4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'remote_ip'
+                },
+                'peer_group': {
+                    'obj': 'peer_group_id',
+                },
+                'peer_group__basic': {
+                    'serializer': prg_slzs.PeerGroupV4Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'peer_group'
+                },
+                'peer_group__details': {
+                    'serializer': prg_slzs.PeerGroupV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'peer_group'
+                },
+            }

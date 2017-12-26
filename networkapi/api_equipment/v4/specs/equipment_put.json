@@ -39,64 +39,16 @@
             "type": "integer"
           },
           "ipsv4": {
-            "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "ipv4": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                },
-                "virtual_interface": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                }
-              }
-            }
+              "type": "integer"
+            },
+            "type": "array"
           },
           "ipsv6": {
-            "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "ipv6": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                },
-                "virtual_interface": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                }
-              }
-            }
+              "type": "integer"
+            },
+            "type": "array"
           },
           "maintenance": {
             "type": "boolean"
@@ -107,7 +59,7 @@
           "name": {
             "type": "string"
           },
-          "id_as": {
+          "asn": {
             "type": "integer"
           }
         },

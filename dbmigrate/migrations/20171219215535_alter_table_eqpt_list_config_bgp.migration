@@ -1,0 +1,13 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `equipment_list_config_bgp` 
+CHANGE COLUMN `id` `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `equipment_list_config_bgp` 
+CHANGE COLUMN `id` `id` INT(11) NOT NULL;
+
+"""
+

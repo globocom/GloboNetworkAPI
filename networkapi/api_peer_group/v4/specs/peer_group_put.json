@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "peer_groups": {
+      "items": {
+        "properties": {
+          "environments": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "groups_permissions": {
+            "items": {
+              "properties": {
+                "change_config": {
+                  "type": "boolean"
+                },
+                "delete": {
+                  "type": "boolean"
+                },
+                "read": {
+                  "type": "boolean"
+                },
+                "user_group": {
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "write": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "user_group",
+                "read",
+                "write",
+                "delete",
+                "change_config"
+              ],
+              "type": "object"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "users_permissions": {
+            "items": {
+              "properties": {
+                "change_config": {
+                  "type": "boolean"
+                },
+                "delete": {
+                  "type": "boolean"
+                },
+                "read": {
+                  "type": "boolean"
+                },
+                "user": {
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                "write": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "user",
+                "read",
+                "write",
+                "delete",
+                "change_config"
+              ],
+              "type": "object"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "peer_groups"
+  ],
+  "title": "PeerGroup Put",
+  "type": "object"
+}

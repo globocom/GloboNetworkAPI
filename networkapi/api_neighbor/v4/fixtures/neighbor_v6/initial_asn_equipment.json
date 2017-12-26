@@ -1,0 +1,34 @@
+[
+  {
+    "fields": {
+      "asn": 1,
+      "equipment": 1
+    },
+    "model": "api_asn.asnequipment",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "asn": 2,
+      "equipment": 2
+    },
+    "model": "api_asn.asnequipment",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "asn": 5,
+      "equipment": 4
+    },
+    "model": "api_asn.asnequipment",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "asn": 7,
+      "equipment": 4
+    },
+    "model": "api_asn.asnequipment",
+    "pk": 3
+  }
+]

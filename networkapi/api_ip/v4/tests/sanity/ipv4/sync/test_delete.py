@@ -8,7 +8,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-class IPv4DeleteTestCase(NetworkApiTestCase):
+class IPv4DeleteTestCaseV4(NetworkApiTestCase):
 
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
@@ -22,15 +22,14 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_ip/v4/fixtures/initial_base.json',
-        'networkapi/api_ip/v4/fixtures/initial_base_v4.json',
-        'networkapi/api_ip/v4/fixtures/initial_pool.json',
-        'networkapi/api_ip/v4/fixtures/initial_vip_request_v4.json',
+        'networkapi/api_ip/fixtures/initial_base.json',
+        'networkapi/api_ip/fixtures/initial_base_v4.json',
+        'networkapi/api_ip/fixtures/initial_pool.json',
+        'networkapi/api_ip/fixtures/initial_vip_request_v4.json',
     ]
 
     def setUp(self):
         self.client = Client()
-        self.authorization = self.get_http_authorization('test')
 
     def tearDown(self):
         pass
@@ -42,7 +41,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv4/1/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(200, response.status_code)
@@ -51,7 +50,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv4/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -67,7 +66,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv4/1000/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(404, response.status_code)
@@ -84,7 +83,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv4/1000;1001/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(404, response.status_code)
@@ -101,7 +100,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv4/1;1001/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(404, response.status_code)
@@ -115,7 +114,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv4/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
@@ -126,14 +125,14 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv4/2/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
             '/api/v4/ipv4/2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -149,7 +148,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv4/1;2/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(200, response.status_code)
@@ -158,7 +157,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv4/1;2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -174,7 +173,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/ipv4/4/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(200, response.status_code)
@@ -183,7 +182,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v4/ipv4/4/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -196,7 +195,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v3/vip-request/1/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(404, response.status_code)
 
@@ -211,7 +210,7 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         """
         response = self.client.delete(
             '/api/v4/ipv4/5/',
-            HTTP_AUTHORIZATION=self.authorization
+            HTTP_AUTHORIZATION=self.get_http_authorization('test')
         )
 
         self.compare_status(400, response.status_code)
@@ -226,48 +225,6 @@ class IPv4DeleteTestCase(NetworkApiTestCase):
         response = self.client.get(
             '/api/v3/vip-request/2/',
             content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
-
-    def test_delete_one_ipv4_with_equipment_and_virtual_interface_none(self):
-        """V4 Test of success to delete ipv4 with equipment and virtual
-            interface none.
-        """
-
-        response = self.client.delete(
-            '/api/v4/ipv4/2/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(200, response.status_code)
-
-        response = self.client.get(
-            '/api/v4/ipv4/2/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            'There is no IP with pk = 2.',
-            response.data['detail'])
-
-    def test_delete_one_ipv4_with_equipment_and_virtual_interface_not_none(self):
-        """V4 Test of error to delete ipv4 with equipment and virtual
-            interface not none.
-        """
-
-        response = self.client.delete(
-            '/api/v4/ipv4/6/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(400, response.status_code)
-
-        self.compare_values(
-            'Error delete IP.: Causa: Cannot delete IpEquipment relationship '
-            'because Virtual Interface 1 is related with Equipment 1 '
-            'and Ip 6., Mensagem: None',
-            response.data['detail']
-        )

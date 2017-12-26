@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+INSERT INTO `object_type` (name) VALUES ('PeerGroup');
+
+"""
+
+SQL_DOWN = u"""
+
+DELETE FROM `object_type` where name='PeerGroup';
+
+"""

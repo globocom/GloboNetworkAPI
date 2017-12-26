@@ -21,10 +21,9 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
-        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
@@ -230,6 +229,10 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
+        for equipment in data['equipments']:
+            for ip in equipment['ipsv4']:
+                del ip['id']
+
         name_file = self.json_path % 'get/basic/equip_with_ipsv4_2;3.json'
 
         self.compare_json(name_file, data)
@@ -257,6 +260,10 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
+        for equipment in data['equipments']:
+            for ip in equipment['ipsv6']:
+                del ip['id']
+
         name_file = self.json_path % 'get/basic/equip_with_ipsv6_2;3.json'
 
         self.compare_json(name_file, data)
@@ -277,7 +284,7 @@ class EquipmentPutTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v4/equipment/4/?include=id_as',
+            '/api/v4/equipment/4/?include=asn',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
         data = response.data
@@ -285,62 +292,6 @@ class EquipmentPutTestCase(NetworkApiTestCase):
         self.compare_status(200, response.status_code)
 
         self.compare_json(name_file, data)
-
-    def test_put_equipment_with_two_ipsv4_relationships(self):
-        """V4 Test of success to put equipment with two ipsv4 relationships,
-           one with virtual interface None and other not None.
-        """
-
-        name_file = self.json_path % 'put/put_one_equipment_with_two_ipsv4.json'
-
-        # Does put request
-        response = self.client.put(
-            '/api/v4/equipment/3/',
-            data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-
-        # Does get request
-        response = self.client.get(
-            '/api/v4/equipment/3/?include=ipsv4',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-
-        name_file = self.json_path % 'get/basic/pk_3_with_ipsv4_updated.json'
-
-        self.compare_json(name_file, response.data)
-
-    def test_put_equipment_with_two_ipsv6_relationships(self):
-        """V4 Test of success to put equipment with two ipsv6 relationships,
-           one with virtual interface None and other not None.
-        """
-
-        name_file = self.json_path % 'put/put_one_equipment_with_two_ipsv6.json'
-
-        # Does put request
-        response = self.client.put(
-            '/api/v4/equipment/3/',
-            data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-
-        # Does get request
-        response = self.client.get(
-            '/api/v4/equipment/3/?include=ipsv6',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-
-        name_file = self.json_path % 'get/basic/pk_3_with_ipsv6_updated.json'
-
-        self.compare_json(name_file, response.data)
 
 
 class EquipmentPutErrorTestCase(NetworkApiTestCase):
@@ -355,10 +306,9 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
 
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
-        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
@@ -445,7 +395,7 @@ class EquipmentPutErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
         self.compare_values(
-            u'AS 1000 do not exist.',
+            u'ASN 1000 do not exist.',
             response.data['detail'])
 
 

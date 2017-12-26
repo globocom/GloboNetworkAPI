@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "lists_config_bgp": {
+      "items": {
+        "properties": {
+          "config": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "P",
+              "A",
+              "C"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "lists_config_bgp"
+  ],
+  "title": "ListConfigBGP Put",
+  "type": "object"
+}

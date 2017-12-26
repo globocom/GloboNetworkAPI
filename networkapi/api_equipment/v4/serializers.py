@@ -20,7 +20,7 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
     model = serializers.SerializerMethodField('get_model')
     environments = serializers.SerializerMethodField('get_environments')
     groups = serializers.SerializerMethodField('get_groups')
-    id_as = serializers.SerializerMethodField('get_id_as')
+    asn = serializers.SerializerMethodField('get_asn')
 
     class Meta:
         Equipment = get_model('equipamento', 'Equipamento')
@@ -35,7 +35,7 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
             'ipsv6',
             'environments',
             'groups',
-            'id_as'
+            'asn'
         )
 
         basic_fields = (
@@ -71,14 +71,14 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
     def get_ipsv6(self, obj):
         return self.extends_serializer(obj, 'ipsv6')
 
-    def get_id_as(self, obj):
-        return self.extends_serializer(obj, 'id_as')
+    def get_asn(self, obj):
+        return self.extends_serializer(obj, 'asn')
 
     def get_serializers(self):
         eqptv3_slzs = get_app('api_equipment', module_label='serializers')
         v4_ip_slz = get_app('api_ip', module_label='v4.serializers')
         grp_slz = get_app('api_group', module_label='serializers')
-        as_slz = get_app('api_as', module_label='v4.serializers')
+        asn_slz = get_app('api_asn', module_label='v4.serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -102,55 +102,73 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                 },
                 'ipsv4': {
                     'serializer': v4_ip_slz. \
-                        IPv4VirtualInterfaceV4Serializer,
+                        IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
+                        'prohibited': (
+                            'equipment',
+                        )
                     },
-                    'obj': 'ipv4_equipment_virtual_interface'
+                    'obj': 'ipv4_equipment'
                 },
                 'ipsv4__basic': {
                     'serializer': v4_ip_slz. \
-                        IPv4VirtualInterfaceV4Serializer,
+                        IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'equipment__basic',
+                        )
                     },
-                    'obj': 'ipv4_equipment_virtual_interface',
+                    'obj': 'ipv4_equipment',
                 },
                 'ipsv4__details': {
                     'serializer': v4_ip_slz. \
-                        IPv4VirtualInterfaceV4Serializer,
+                        IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'equipment__details',
+                        )
                     },
-                    'obj': 'ipv4_equipment_virtual_interface',
+                    'obj': 'ipv4_equipment',
                 },
                 'ipsv6': {
                     'serializer': v4_ip_slz. \
-                        IPv6VirtualInterfaceV4Serializer,
+                        IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
+                        'prohibited': (
+                            'equipment',
+                        )
                     },
-                    'obj': 'ipv6_equipment_virtual_interface'
+                    'obj': 'ipv6_equipment'
                 },
                 'ipsv6__basic': {
                     'serializer': v4_ip_slz. \
-                        IPv6VirtualInterfaceV4Serializer,
+                        IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'basic'
+                        'kind': 'basic',
+                        'prohibited': (
+                            'equipment__basic',
+                        ),
                     },
-                    'obj': 'ipv6_equipment_virtual_interface',
+                    'obj': 'ipv6_equipment',
                 },
                 'ipsv6__details': {
                     'serializer': v4_ip_slz. \
-                        IPv6VirtualInterfaceV4Serializer,
+                        IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
-                        'kind': 'details'
+                        'kind': 'details',
+                        'prohibited': (
+                            'equipment__details',
+                        ),
                     },
-                    'obj': 'ipv6_equipment_virtual_interface',
+                    'obj': 'ipv6_equipment',
                 },
                 'groups': {
                     'serializer': grp_slz.EquipmentGroupV3Serializer,
@@ -195,21 +213,21 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'environments'
                 },
-                'id_as':{
-                    'obj': 'id_as_id'
+                'asn':{
+                    'obj': 'asn_id'
                 },
-                'id_as__basic': {
-                    'serializer': as_slz.AsV4Serializer,
+                'asn__basic': {
+                    'serializer': asn_slz.AsnV4Serializer,
                     'kwargs': {
 
                     },
-                    'obj': 'id_as'
+                    'obj': 'asn'
                 },
-                'id_as__details': {
-                    'serializer': as_slz.AsV4Serializer,
+                'asn__details': {
+                    'serializer': asn_slz.AsnV4Serializer,
                     'kwargs': {
 
                     },
-                    'obj': 'id_as'
+                    'obj': 'asn'
                 }
             }

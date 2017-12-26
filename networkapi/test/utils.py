@@ -110,3 +110,10 @@ def load_json(file_path):
         data = json.loads(json_data.read())
         json_data.close()
         return data
+
+
+def load_file_as_string(file_path):
+    with open(file_path) as data:
+        file = data.read()
+        data.close()
+        return file

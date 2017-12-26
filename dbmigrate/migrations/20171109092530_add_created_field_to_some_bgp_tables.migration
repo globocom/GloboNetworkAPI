@@ -1,0 +1,18 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `neighbor_v4` ADD COLUMN `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '';
+ALTER TABLE `neighbor_v6` ADD COLUMN `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '';
+ALTER TABLE `list_config_bgp` ADD COLUMN `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '';
+ALTER TABLE `route_map` ADD COLUMN `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '';
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `neighbor_v4` DROP COLUMN `created`;
+ALTER TABLE `neighbor_v6` DROP COLUMN `created`;
+ALTER TABLE `list_config_bgp` DROP COLUMN `created`;
+ALTER TABLE `route_map` DROP COLUMN `created`;
+
+"""

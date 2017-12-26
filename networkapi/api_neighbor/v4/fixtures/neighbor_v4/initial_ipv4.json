@@ -1,0 +1,90 @@
+[
+  {
+    "fields": {
+      "networkipv4": 1,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 1,
+      "oct4": 2
+    },
+    "model": "ip.ip",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "networkipv4": 2,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 2,
+      "oct4": 2
+    },
+    "model": "ip.ip",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "networkipv4": 1,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 1,
+      "oct4": 3
+    },
+    "model": "ip.ip",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "networkipv4": 1,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 1,
+      "oct4": 4
+    },
+    "model": "ip.ip",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "networkipv4": 3,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 3,
+      "oct4": 2
+    },
+    "model": "ip.ip",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "networkipv4": 4,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 4,
+      "oct4": 2
+    },
+    "model": "ip.ip",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "networkipv4": 4,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 4,
+      "oct4": 3
+    },
+    "model": "ip.ip",
+    "pk": 7
+  },
+  {
+    "fields": {
+      "networkipv4": 2,
+      "oct1": 192,
+      "oct2": 168,
+      "oct3": 2,
+      "oct4": 3
+    },
+    "model": "ip.ip",
+    "pk": 8
+  }
+]

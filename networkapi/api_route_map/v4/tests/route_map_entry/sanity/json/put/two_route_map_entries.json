@@ -1,0 +1,16 @@
+{
+  "route_map_entries": [
+    {
+      "action": "P",
+      "action_reconfig": "text-3",
+      "id": 1,
+      "order": 1
+    },
+    {
+      "action": "D",
+      "action_reconfig": "text-4",
+      "id": 2,
+      "order": 2
+    }
+  ]
+}

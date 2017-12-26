@@ -15,6 +15,10 @@ SET @id_virtual_interface_management_perm := (SELECT `id_permission` FROM `permi
 SET @id_neighbor_create_script_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'neighbor_create_script');
 SET @id_neighbor_remove_script_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'neighbor_remove_script');
 
+SET @id_list_config_bgp_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'list_config_bgp_management');
+SET @id_peer_group_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'peer_group_management');
+SET @id_route_map_management_perm := (SELECT `id_permission` FROM `permissions` WHERE function = 'route_map_management');
+
 INSERT INTO
    `config` (id_config, ip_v4_min, ip_v4_max, ip_v6_min, ip_v6_max)
 VALUES
@@ -24,20 +28,26 @@ VALUES
 ;
 -- Dumping data for table `object_type`
 INSERT INTO
-   `object_type` (`id`, `name`)
+   `object_type` (`name`)
 VALUES
    (
-      1, 'ServerPool'
+      'ServerPool'
    )
 ,
    (
-      2, 'VipRequest'
+      'VipRequest'
    )
 ,
    (
-      3, 'Vlan'
+      'Vlan'
    )
 ;
+
+SET @id_pool_obj_name := (SELECT `id` FROM `object_type` WHERE name = 'ServerPool');
+SET @id_vip_obj_name := (SELECT `id` FROM `object_type` WHERE name = 'VipRequest');
+SET @id_vlan_obj_name := (SELECT `id` FROM `object_type` WHERE name = 'Vlan');
+SET @id_peer_obj_name := (SELECT `id` FROM `object_type` WHERE name = 'PeerGroup');
+
 -- Dumping data for table `marcas`
 INSERT INTO
    `marcas`
@@ -1577,6 +1587,30 @@ VALUES
    (
       44, 1, 1, 2, @id_neighbor_remove_script_perm
    )
+,
+   (
+      45, 1, 1, 1, @id_list_config_bgp_management_perm
+   )
+,
+   (
+      46, 1, 1, 2, @id_list_config_bgp_management_perm
+   )
+,
+   (
+      47, 1, 1, 1, @id_peer_group_management_perm
+   )
+,
+   (
+      48, 1, 1, 2, @id_peer_group_management_perm
+   )
+,
+   (
+      49, 1, 1, 1, @id_route_map_management_perm
+   )
+,
+   (
+      50, 1, 1, 2, @id_route_map_management_perm
+   )
 ;
 
 -- Dumping data for table `grupos_equip`
@@ -1798,15 +1832,19 @@ INSERT INTO
    `object_group_permission_general` (`id`, `id_user_group`, `id_object_type`, `read`, `write`, `change_config`, `delete`)
 VALUES
    (
-      1, 1, 1, '1', '1', '1', '1'
+      1, 1, @id_pool_obj_name, '1', '1', '1', '1'
    )
 ,
    (
-      2, 1, 2, '1', '1', '1', '1'
+      2, 1, @id_vip_obj_name, '1', '1', '1', '1'
    )
 ,
    (
-      3, 1, 3, '1', '1', '1', '1'
+      3, 1, @id_vlan_obj_name, '1', '1', '1', '1'
+   )
+,
+   (
+      4, 1, @id_peer_obj_name, '1', '1', '1', '1'
    )
 ;
 

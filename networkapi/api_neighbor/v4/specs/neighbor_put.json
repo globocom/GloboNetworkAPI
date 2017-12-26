@@ -1,30 +1,50 @@
 {
-  "title": "Neighbor Put",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "required": [
-    "neighbors"
-  ],
   "properties": {
-    "networks": {
-      "type": "array",
+    "neighbors": {
       "items": {
-        "type": "object",
         "properties": {
+          "community": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
           "id": {
             "type": "integer"
           },
-          "remote_as": {
+          "kind": {
             "type": "string"
           },
-          "remote_ip": {
+          "local_asn": {
+            "type": "integer"
+          },
+          "local_ip": {
+            "type": "integer"
+          },
+          "maximum_hops": {
             "type": "string"
+          },
+          "next_hop_self": {
+            "type": "boolean"
           },
           "password": {
             "type": "string"
           },
-          "maximum_hops": {
-            "type": "string"
+          "peer_group": {
+            "type": "integer"
+          },
+          "remote_asn": {
+            "type": "integer"
+          },
+          "remote_ip": {
+            "type": "integer"
+          },
+          "remove_private_as": {
+            "type": "boolean"
+          },
+          "soft_reconfiguration": {
+            "type": "boolean"
           },
           "timer_keepalive": {
             "type": "string"
@@ -32,36 +52,30 @@
           "timer_timeout": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
-          "soft_reconfiguration": {
-            "type": "boolean"
-          },
-          "community": {
-            "type": "boolean"
-          },
-          "remote_private_as": {
-            "type": "boolean"
-          },
-          "next_hop_self": {
-            "type": "boolean"
-          },
-          "kind": {
-            "type": "string"
-          },
-          "created": {
-            "type": "boolean"
-          },
           "virtual_interface": {
-            "type": "integer"
+            "type": "string"
           }
         },
         "required": [
           "id",
-          "virtual_interface"
-        ]
-      }
+          "local_asn",
+          "remote_asn",
+          "local_ip",
+          "remote_ip",
+          "peer_group",
+          "community",
+          "soft_reconfiguration",
+          "remove_private_as",
+          "next_hop_self"
+        ],
+        "type": "object"
+      },
+      "type": "array"
     }
-  }
+  },
+  "required": [
+    "neighbors"
+  ],
+  "title": "Neighbor Put",
+  "type": "object"
 }

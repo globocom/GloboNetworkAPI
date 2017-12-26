@@ -20,10 +20,9 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
 
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
-        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
@@ -88,55 +87,9 @@ class EquipmentDeleteTestCase(NetworkApiTestCase):
         self.compare_status(404, response.status_code)
 
         self.compare_values(
-            u'AS 4 do not exist.',
+            u'ASN 4 do not exist.',
             response.data['detail']
         )
-
-    def test_delete_one_equipment_with_ipsv4_and_virtual_interface_none(self):
-        """V4 Test of success to delete equipment with ipsv6 and virtual
-            interface none.
-        """
-
-        response = self.client.delete(
-            '/api/v4/equipment/4/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(200, response.status_code)
-
-        response = self.client.get(
-            '/api/v4/equipment/4/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            'Dont there is a equipament by pk = 4.',
-            response.data['detail'])
-
-    def test_delete_one_equipment_with_ipsv6_and_virtual_interface_none(self):
-        """V4 Test of success to delete equipment with ipsv6 and virtual
-           interface none.
-        """
-
-        response = self.client.delete(
-            '/api/v4/equipment/4/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(200, response.status_code)
-
-        response = self.client.get(
-            '/api/v4/equipment/4/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
-
-        self.compare_status(404, response.status_code)
-
-        self.compare_values(
-            'Dont there is a equipament by pk = 4.',
-            response.data['detail'])
 
 
 class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
@@ -151,10 +104,9 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
 
         'networkapi/api_equipment/v4/fixtures/initial_pre_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_equipment.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as.json',
-        'networkapi/api_equipment/v4/fixtures/initial_as_equipment.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn.json',
+        'networkapi/api_equipment/v4/fixtures/initial_asn_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_vrf.json',
-        'networkapi/api_equipment/v4/fixtures/initial_virtual_interface.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv4_equipment.json',
         'networkapi/api_equipment/v4/fixtures/initial_ipv6.json',
@@ -181,42 +133,3 @@ class EquipmentDeleteErrorTestCase(NetworkApiTestCase):
         self.compare_values(
             'Dont there is a equipament by pk = 10.',
             response.data['detail'])
-
-    def test_delete_one_equipment_with_ipsv4_and_virtual_interface_not_none(self):
-        """V4 Test of error to delete equipment with ipsv4 and virtual
-            interface not none.
-        """
-
-        response = self.client.delete(
-            '/api/v4/equipment/5/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(500, response.status_code)
-
-        self.compare_values(
-            'Causa: Cannot delete IpEquipment relationship because '
-            'Virtual Interface 1 is related with Equipment 5 '
-            'and Ip 1., Mensagem: None',
-            response.data['detail']
-        )
-
-    def test_delete_one_equipment_with_ipsv6_and_virtual_interface_not_none(self):
-        """V4 Test of error to delete equipment with ipsv6 and virtual
-           interface not none.
-        """
-
-        response = self.client.delete(
-            '/api/v4/equipment/6/',
-            HTTP_AUTHORIZATION=self.authorization
-        )
-
-        self.compare_status(500, response.status_code)
-
-        self.compare_values(
-            'Causa: Cannot delete IpEquipment relationship because '
-            'Virtual Interface 1 is related with Equipment 6 '
-            'and Ipv6 1., Mensagem: None',
-            response.data['detail']
-        )
-

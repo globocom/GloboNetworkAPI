@@ -1,0 +1,34 @@
+[
+  {
+    "fields": {
+      "internal_name": "default",
+      "vrf": "default"
+    },
+    "model": "api_vrf.Vrf",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "internal_name": "default2",
+      "vrf": "default2"
+    },
+    "model": "api_vrf.Vrf",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "internal_name": "default3",
+      "vrf": "default3"
+    },
+    "model": "api_vrf.Vrf",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "internal_name": "default4",
+      "vrf": "default4"
+    },
+    "model": "api_vrf.Vrf",
+    "pk": 4
+  }
+]

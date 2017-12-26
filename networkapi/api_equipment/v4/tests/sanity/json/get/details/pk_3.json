@@ -8,9 +8,10 @@
       },
       "groups": [],
       "id": 3,
-      "id_as": null,
+      "asn": null,
       "ipsv4": [
         {
+          "id": 1,
           "ip": {
             "description": "IP",
             "id": 1,
@@ -57,18 +58,10 @@
             "oct2": 0,
             "oct3": 0,
             "oct4": 1
-          },
-          "virtual_interface": {
-            "id": 1,
-            "name": "VIRTUAL-INTERFACE-1",
-            "vrf": {
-              "id": 1,
-              "internal_name": "default",
-              "vrf": "default"
-            }
           }
         },
         {
+          "id": 2,
           "ip": {
             "description": "IP",
             "id": 2,
@@ -115,12 +108,12 @@
             "oct2": 0,
             "oct3": 0,
             "oct4": 2
-          },
-          "virtual_interface": null
+          }
         }
       ],
       "ipsv6": [
         {
+          "id": 1,
           "ip": {
             "block1": "fc00",
             "block2": "0000",
@@ -178,18 +171,10 @@
                 "vrf": null
               }
             }
-          },
-          "virtual_interface": {
-            "id": 1,
-            "name": "VIRTUAL-INTERFACE-1",
-            "vrf": {
-              "id": 1,
-              "internal_name": "default",
-              "vrf": "default"
-            }
           }
         },
         {
+          "id": 2,
           "ip": {
             "block1": "fc00",
             "block2": "0000",
@@ -247,8 +232,7 @@
                 "vrf": null
               }
             }
-          },
-          "virtual_interface": null
+          }
         }
       ],
       "maintenance": false,

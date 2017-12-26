@@ -6,14 +6,13 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from networkapi.api_ip.v4 import facade as facade_v4
 from networkapi.api_ip import facade as facade_v3
-from networkapi.api_ip.v4 import serializers
-from networkapi.api_ip.v4 import tasks
 from networkapi.api_ip.permissions import Read
 from networkapi.api_ip.permissions import Write
 from networkapi.api_ip.permissions import write_objv4_permission
 from networkapi.api_ip.permissions import write_objv6_permission
+from networkapi.api_ip.v4 import serializers
+from networkapi.api_ip.v4 import tasks
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
@@ -47,7 +46,7 @@ class IPv4V4View(CustomAPIView):
             obj_model = None
 
         # serializer ips
-        serializer_ip = serializers.Ipv4V4Serializer(
+        serializer_ip = serializers.IPv4V4Serializer(
             ips,
             many=True,
             fields=self.fields,
@@ -79,7 +78,7 @@ class IPv4V4View(CustomAPIView):
         json_validate(SPECS.get('ipv4_post_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
-            ret = facade_v4.create_ipv4(ip, request.user)
+            ret = facade_v3.create_ipv4(ip, request.user)
             response.append({'id': ret.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -96,7 +95,7 @@ class IPv4V4View(CustomAPIView):
         json_validate(SPECS.get('ipv4_put_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
-            ret = facade_v4.update_ipv4(ip, request.user)
+            ret = facade_v3.update_ipv4(ip, request.user)
             response.append({'id': ret.id})
 
         return Response(response, status=status.HTTP_200_OK)
@@ -112,7 +111,7 @@ class IPv4V4View(CustomAPIView):
         obj_ids = kwargs['obj_ids'].split(';')
 
         for obj_id in obj_ids:
-            facade_v4.delete_ipv4(obj_id)
+            facade_v3.delete_ipv4(obj_id)
 
         return Response({}, status=status.HTTP_200_OK)
 
@@ -247,7 +246,7 @@ class IPv6V4View(CustomAPIView):
         json_validate(SPECS.get('ipv6_post_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
-            ret = facade_v4.create_ipv6(ip, request.user)
+            ret = facade_v3.create_ipv6(ip, request.user)
             response.append({'id': ret.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -264,7 +263,7 @@ class IPv6V4View(CustomAPIView):
         json_validate(SPECS.get('ipv6_put_v4')).validate(ips)
         response = list()
         for ip in ips['ips']:
-            ret = facade_v4.update_ipv6(ip, request.user)
+            ret = facade_v3.update_ipv6(ip, request.user)
             response.append({'id': ret.id})
 
         return Response(response, status=status.HTTP_200_OK)
@@ -280,7 +279,7 @@ class IPv6V4View(CustomAPIView):
         obj_ids = kwargs['obj_ids'].split(';')
 
         for obj_id in obj_ids:
-            facade_v4.delete_ipv6(obj_id)
+            facade_v3.delete_ipv6(obj_id)
 
         return Response({}, status=status.HTTP_200_OK)
 

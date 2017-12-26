@@ -7,16 +7,8 @@
       "equipment_type": 1,
       "model": 1,
       "ipsv4": [
-        {
-          "ipv4": {
-            "id": 2
-          }
-        },
-        {
-          "ipv4": {
-            "id": 3
-          }
-        }
+        2,
+        3
       ]
     }
   ]

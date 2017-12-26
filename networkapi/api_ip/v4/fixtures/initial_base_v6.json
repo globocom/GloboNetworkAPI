@@ -264,8 +264,7 @@
   {
     "fields": {
       "equipamento": 1,
-      "ip": 6,
-      "virtual_interface": 1
+      "ip": 6
     },
     "model": "ip.ipv6equipament",
     "pk": 5

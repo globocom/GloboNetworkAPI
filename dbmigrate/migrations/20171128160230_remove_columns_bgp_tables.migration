@@ -1,0 +1,14 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `list_config_bgp` DROP COLUMN `created`;
+ALTER TABLE `route_map` DROP COLUMN `created`;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `list_config_bgp` ADD COLUMN `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '';
+ALTER TABLE `route_map` ADD COLUMN `created` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '';
+
+"""

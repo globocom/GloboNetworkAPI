@@ -1,0 +1,16 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE  `as` RENAME  `asn`;
+ALTER TABLE  `as_equipment` RENAME  `asn_equipment`;
+
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE  `asn` RENAME  `as`;
+ALTER TABLE  `asn_equipment` RENAME  `as_equipment`;
+
+
+"""

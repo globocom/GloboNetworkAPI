@@ -1,0 +1,23 @@
+[
+  {
+    "fields": {
+      "name": "test_1"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "test_2"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "name": "test_3"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 3
+  }
+]

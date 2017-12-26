@@ -138,8 +138,7 @@ def delete_vip_request(vip_request_ids, keep_ip='0'):
             raise ValidationAPIException(e)
         except Exception, e:
             raise NetworkAPIException(e)
-        else:
-            return vip
+    return vip
 
 
 def get_vip_request_by_search(search=dict()):

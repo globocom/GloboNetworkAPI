@@ -3,218 +3,513 @@ import logging
 
 from django.core.exceptions import FieldError
 from django.db.transaction import commit_on_success
-from networkapi.plugins.factory import PluginFactory
-from networkapi.infrastructure.ipaddr import IPAddress
 
-from networkapi.api_vrf.models import Vrf
-from networkapi.api_as.models import As
-from networkapi.api_virtual_interface.models import VirtualInterface
-from networkapi.api_virtual_interface.v4.serializers import \
-    VirtualInterfaceV4Serializer
-from networkapi.api_neighbor.models import Neighbor
-from networkapi.api_neighbor.v4 import exceptions
-from networkapi.api_neighbor.v4.exceptions import NeighborErrorV4
-from networkapi.api_neighbor.v4.exceptions import NeighborNotFoundError
-from networkapi.api_neighbor.v4.exceptions import NeighborError
-from networkapi.api_neighbor.v4.exceptions import NeighborAlreadyCreated
-from networkapi.api_neighbor.v4.exceptions import NeighborNotCreated
+from networkapi.api_neighbor.models import NeighborV4
+from networkapi.api_neighbor.models import NeighborV6
+from networkapi.api_neighbor.v4.exceptions import DontHavePermissionForPeerGroupException
+from networkapi.api_neighbor.v4.exceptions import \
+    LocalIpAndLocalAsnAtDifferentEquipmentsException
+from networkapi.api_neighbor.v4.exceptions import \
+    LocalIpAndPeerGroupAtDifferentEnvironmentsException
+from networkapi.api_neighbor.v4.exceptions import \
+    LocalIpAndRemoteIpAreInDifferentVrfsException
+from networkapi.api_neighbor.v4.exceptions import NeighborDuplicatedException
+from networkapi.api_neighbor.v4.exceptions import NeighborV4DoesNotExistException
+from networkapi.api_neighbor.v4.exceptions import NeighborV4Error
+from networkapi.api_neighbor.v4.exceptions import NeighborV4IsDeployed
+from networkapi.api_neighbor.v4.exceptions import NeighborV4IsUndeployed
+from networkapi.api_neighbor.v4.exceptions import NeighborV4NotFoundError
+from networkapi.api_neighbor.v4.exceptions import NeighborV6DoesNotExistException
+from networkapi.api_neighbor.v4.exceptions import NeighborV6Error
+from networkapi.api_neighbor.v4.exceptions import NeighborV6IsDeployed
+from networkapi.api_neighbor.v4.exceptions import NeighborV6IsUndeployed
+from networkapi.api_neighbor.v4.exceptions import NeighborV6NotFoundError
+from networkapi.api_neighbor.v4.exceptions import \
+    RemoteIpAndRemoteAsnAtDifferentEquipmentsException
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
-from networkapi.api_as.v4.serializers import AsV4Serializer
-from networkapi.api_vrf.serializers import VrfV3Serializer
-
-from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.distributedlock import LOCK_LIST_CONFIG_BGP
+from networkapi.distributedlock import LOCK_NEIGHBOR_V4
+from networkapi.distributedlock import LOCK_NEIGHBOR_V6
+from networkapi.distributedlock import LOCK_PEER_GROUP
+from networkapi.distributedlock import LOCK_ROUTE_MAP
+from networkapi.distributedlock import LOCK_ROUTE_MAP_ENTRY
 from networkapi.equipamento.models import Equipamento
+from networkapi.infrastructure.datatable import build_query_to_datatable_v3
+from networkapi.plugins.factory import PluginFactory
+from networkapi.util.geral import create_lock_with_blocking
+from networkapi.util.geral import destroy_lock
 
 log = logging.getLogger(__name__)
 
-def get_neighbor_by_search(search=dict()):
-    """Return a list of Neighbor's by dict."""
+
+def get_neighbor_v4_by_search(search=dict()):
+    """Return a list of NeighborV4's by dict."""
 
     try:
-        neighbors = Neighbor.objects.filter()
-        neighbor_map = build_query_to_datatable_v3(neighbors, search)
+        objects = NeighborV4.objects.filter()
+        object_map = build_query_to_datatable_v3(objects, search)
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
         raise NetworkAPIException(str(e))
     else:
-        return neighbor_map
+        return object_map
 
 
-def get_neighbor_by_id(neighbor_id):
-    """Return an Neighbor by id.
+def get_neighbor_v4_by_id(obj_id):
+    """Return an NeighborV4 by id.
 
     Args:
-        neighbor_id: Id of Neighbor
+        obj_id: Id of NeighborV4
     """
 
     try:
-        neighbor = Neighbor.get_by_pk(id=neighbor_id)
-    except NeighborNotFoundError, e:
-        raise exceptions.NeighborDoesNotExistException(str(e))
+        obj = NeighborV4.get_by_pk(id=obj_id)
+    except NeighborV4NotFoundError as e:
+        raise NeighborV4DoesNotExistException(str(e))
 
-    return neighbor
+    return obj
 
 
-def get_neighbor_by_ids(neighbor_ids):
-    """Return Neighbor list by ids.
+def get_neighbor_v4_by_ids(obj_ids):
+    """Return NeighborV4 list by ids.
 
     Args:
-        neighbor_ids: List of Ids of Neighbors.
+        obj_ids: List of Ids of NeighborV4's.
     """
 
     ids = list()
-    for neighbor_id in neighbor_ids:
+    for obj_id in obj_ids:
         try:
-            neighbor = get_neighbor_by_id(neighbor_id).id
-            ids.append(neighbor)
-        except exceptions.NeighborDoesNotExistException, e:
+            obj = get_neighbor_v4_by_id(obj_id).id
+            ids.append(obj)
+        except NeighborV4DoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
-    neighbors = Neighbor.objects.filter(id__in=ids)
-
-    return neighbors
+    return NeighborV4.objects.filter(id__in=ids)
 
 
-def update_neighbor(neighbor):
-    """Update Neighbor."""
+def update_neighbor_v4(obj, user):
+    """Update NeighborV4."""
 
     try:
-        neighbor_obj = get_neighbor_by_id(neighbor.get('id'))
-        neighbor_obj.update_v4(neighbor)
-    except NeighborErrorV4, e:
+        obj_to_update = get_neighbor_v4_by_id(obj.get('id'))
+        obj_to_update.update_v4(obj, user)
+    except NeighborV4Error as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except DontHavePermissionForPeerGroupException as e:
         raise ValidationAPIException(str(e))
-    except exceptions.NeighborDoesNotExistException, e:
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborV4IsDeployed as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborV4DoesNotExistException as e:
         raise ObjectDoesNotExistException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
-    return neighbor_obj
+    return obj_to_update
 
 
-def create_neighbor(neighbor):
-    """Create Neighbor."""
+def create_neighbor_v4(obj, user):
+    """Create NeighborV4."""
 
     try:
-        neighbor_obj = Neighbor()
-        neighbor_obj.create_v4(neighbor)
-    except NeighborErrorV4, e:
+        obj_to_create = NeighborV4()
+        obj_to_create.create_v4(obj, user)
+    except NeighborV4Error as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except DontHavePermissionForPeerGroupException as e:
         raise ValidationAPIException(str(e))
-    except Exception, e:
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
-    return neighbor_obj
+    return obj_to_create
 
 
-def delete_neighbor(neighbor_ids):
-    """Delete Neighbor."""
+def delete_neighbor_v4(obj_ids):
+    """Delete NeighborV4."""
 
-    for neighbor_id in neighbor_ids:
+    for obj_id in obj_ids:
         try:
-            neighbor_obj = get_neighbor_by_id(neighbor_id)
-            neighbor_obj.delete_v4()
-        except exceptions.NeighborDoesNotExistException, e:
+            obj_to_delete = get_neighbor_v4_by_id(obj_id)
+            obj_to_delete.delete_v4()
+        except NeighborV4DoesNotExistException as e:
             raise ObjectDoesNotExistException(str(e))
-        except NeighborError, e:
+        except NeighborV4IsDeployed as e:
+            raise ValidationAPIException(str(e))
+        except NeighborV4Error as e:
             raise NetworkAPIException(str(e))
-        except Exception, e:
+        except Exception as e:
             raise NetworkAPIException(str(e))
 
 
-def get_equipment(id_, remote_ip):
+def get_neighbor_v6_by_search(search=dict()):
+    """Return a list of NeighborV6's by dict."""
 
-    version_ip = IPAddress(remote_ip).version
-
-    if version_ip == 4:
-        return Equipamento.objects.get(
-            ipequipamento__virtual_interface__neighbor=id_)
+    try:
+        objects = NeighborV6.objects.filter()
+        object_map = build_query_to_datatable_v3(objects, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
     else:
-        return Equipamento.objects.get(
-            ipv6equipament__virtual_interface__neighbor=id_)
+        return object_map
+
+
+def get_neighbor_v6_by_id(obj_id):
+    """Return an NeighborV6 by id.
+
+    Args:
+        obj_id: Id of NeighborV6
+    """
+
+    try:
+        obj = NeighborV6.get_by_pk(id=obj_id)
+    except NeighborV6NotFoundError as e:
+        raise NeighborV6DoesNotExistException(str(e))
+
+    return obj
+
+
+def get_neighbor_v6_by_ids(obj_ids):
+    """Return NeighborV6 list by ids.
+
+    Args:
+        obj_ids: List of Ids of NeighborV6's.
+    """
+
+    ids = list()
+    for obj_id in obj_ids:
+        try:
+            obj = get_neighbor_v6_by_id(obj_id).id
+            ids.append(obj)
+        except NeighborV6DoesNotExistException as e:
+            raise ObjectDoesNotExistException(str(e))
+        except Exception as e:
+            raise NetworkAPIException(str(e))
+
+    return NeighborV6.objects.filter(id__in=ids)
+
+
+def update_neighbor_v6(obj, user):
+    """Update NeighborV6."""
+
+    try:
+        obj_to_update = get_neighbor_v6_by_id(obj.get('id'))
+        obj_to_update.update_v4(obj, user)
+    except NeighborV6Error as e:
+        raise ValidationAPIException(str(e))
+    except DontHavePermissionForPeerGroupException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborV6DoesNotExistException as e:
+        raise ObjectDoesNotExistException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return obj_to_update
+
+
+def create_neighbor_v6(obj, user):
+    """Create NeighborV6."""
+
+    try:
+        obj_to_create = NeighborV6()
+        obj_to_create.create_v4(obj, user)
+    except NeighborV6Error as e:
+        raise ValidationAPIException(str(e))
+    except DontHavePermissionForPeerGroupException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return obj_to_create
+
+
+def delete_neighbor_v6(obj_ids):
+    """Delete NeighborV6."""
+
+    for obj_id in obj_ids:
+        try:
+            obj_to_delete = get_neighbor_v6_by_id(obj_id)
+            obj_to_delete.delete_v4()
+        except NeighborV6DoesNotExistException as e:
+            raise ObjectDoesNotExistException(str(e))
+        except NeighborV6IsDeployed as e:
+            raise ValidationAPIException(str(e))
+        except NeighborV6Error as e:
+            raise NetworkAPIException(str(e))
+        except Exception as e:
+            raise NetworkAPIException(str(e))
 
 
 @commit_on_success
-def deploy_neighbors(neighbors):
+def deploy_neighbor_v4(neighbor_id):
 
-    deployed_ids = list()
-    for neighbor in neighbors:
-        id_ = neighbor['id']
+    neighbor = NeighborV4.objects.get(id=neighbor_id)
 
-        if neighbor['created'] is True:
-            raise NeighborAlreadyCreated(id_)
+    if neighbor.created:
+        raise NeighborV4IsDeployed(neighbor)
 
-        remote_ip = neighbor['remote_ip']
-        try:
+    locks_list = lock_resources_used_by_neighbor_v4(neighbor)
 
-            equipment = get_equipment(id_, remote_ip)
+    try:
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
 
-            plugin = PluginFactory.factory(equipment)
+        eqpt = get_v4_equipment(neighbor)
 
-            asn = As.objects.get(asequipment__equipment=equipment.id)
-            vrf = Vrf.objects.get(virtualinterface__id=
-                                     neighbor['virtual_interface'])
-            virtual_interface = VirtualInterface.get_by_pk(
-                neighbor['virtual_interface'])
+        plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().deploy_neighbor(neighbor)
 
-            asn = AsV4Serializer(asn).data
-            vrf = VrfV3Serializer(vrf).data
-            virtual_interface = VirtualInterfaceV4Serializer(
-                virtual_interface).data
+        neighbor.deploy()
 
-            plugin.bgp(neighbor, virtual_interface, asn, vrf).deploy_neighbor()
+    except Exception as e:
+        raise NetworkAPIException(str(e))
 
-        except Exception as e:
-            raise NetworkAPIException(e.message)
-
-        deployed_ids.append(id_)
-
-    neighbors_obj = Neighbor.objects.filter(id__in=deployed_ids)
-    neighbors_obj.update(created=True)
+    finally:
+        destroy_lock(locks_list)
 
 
 @commit_on_success
-def undeploy_neighbors(neighbors):
+def undeploy_neighbor_v4(neighbor_id):
 
-    undeployed_ids = list()
-    for neighbor in neighbors:
-        id_ = neighbor['id']
+    neighbor = NeighborV4.objects.get(id=neighbor_id)
 
-        if neighbor['created'] is False:
-            raise NeighborNotCreated(id_)
+    if not neighbor.created:
+        raise NeighborV4IsUndeployed(neighbor)
 
-        remote_ip = neighbor['remote_ip']
-        try:
+    locks_list = lock_resources_used_by_neighbor_v4(neighbor)
 
-            equipment = get_equipment(id_, remote_ip)
+    try:
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
 
-            plugin = PluginFactory.factory(equipment)
+        eqpt = get_v4_equipment(neighbor)
 
-            asn = As.objects.get(asequipment__equipment=equipment.id)
-            vrf = Vrf.objects.get(virtualinterface__id=
-                                     neighbor['virtual_interface'])
-            virtual_interface = VirtualInterface.get_by_pk(
-                neighbor['virtual_interface'])
+        plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().undeploy_neighbor(neighbor)
+        neighbor.undeploy()
 
-            asn = AsV4Serializer(asn).data
-            vrf = VrfV3Serializer(vrf).data
-            virtual_interface = VirtualInterfaceV4Serializer(
-                virtual_interface).data
+    except Exception as e:
+        raise NetworkAPIException(str(e))
 
-            plugin.bgp(neighbor, virtual_interface, asn, vrf).\
-                undeploy_neighbor()
+    finally:
+        destroy_lock(locks_list)
 
-        except Exception as e:
-            raise NetworkAPIException(e.message)
 
-        undeployed_ids.append(id_)
+@commit_on_success
+def deploy_neighbor_v6(neighbor_id):
 
-    neighbors_obj = Neighbor.objects.filter(id__in=undeployed_ids)
-    neighbors_obj.update(created=False)
+    neighbor = NeighborV6.objects.get(id=neighbor_id)
+
+    if neighbor.created:
+        raise NeighborV6IsDeployed(neighbor)
+
+    locks_list = lock_resources_used_by_neighbor_v6(neighbor)
+
+    try:
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
+
+        plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().deploy_neighbor(neighbor)
+
+        neighbor.deploy()
+
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
+
+
+@commit_on_success
+def undeploy_neighbor_v6(neighbor_id):
+
+    neighbor = NeighborV6.objects.get(id=neighbor_id)
+
+    if not neighbor.created:
+        raise NeighborV6IsUndeployed(neighbor)
+
+    locks_list = lock_resources_used_by_neighbor_v6(neighbor)
+
+    try:
+        depl_v4 = get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor)
+        depl_v6 = get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor)
+
+        plugin = PluginFactory.factory(eqpt)
+        plugin.bgp().undeploy_neighbor(neighbor)
+
+        neighbor.deploy()
+
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    finally:
+        destroy_lock(locks_list)
+
+
+def deploy_list_config_bgp(list_config_bgp, plugin):
+    # deploys neighbor
+    # pass
+    plugin.bgp().deploy_list_config_bgp(list_config_bgp)
+
+
+def deploy_route_map(route_map, plugin):
+    # deploys neighbor
+    # pass
+    plugin.bgp().deploy_route_map(route_map)
+
+
+def undeploy_list_config_bgp(list_config_bgp, plugin):
+    # deploys neighbor
+    pass
+    # plugin.undeploy_list_config_bgp()
+
+
+def undeploy_route_map(route_map, plugin):
+    # deploys neighbor
+    pass
+    # plugin.undeploy_route_map()
+
+
+def lock_resources_used_by_neighbor_v4(neighbor):
+
+    locks_name = list()
+    locks_name.append(LOCK_NEIGHBOR_V4 % neighbor.id)
+    locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
+    locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
+    locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_out_id)
+
+    for route_map_entry in neighbor.peer_group.route_map_in.route_map_entries:
+        locks_name.append(LOCK_ROUTE_MAP_ENTRY %
+                          route_map_entry.id)
+        locks_name.append(LOCK_LIST_CONFIG_BGP %
+                          route_map_entry.list_config_bgp_id)
+
+    for route_map_entry in neighbor.peer_group.route_map_out.route_map_entries:
+        locks_name.append(LOCK_ROUTE_MAP_ENTRY %
+                          route_map_entry.id)
+        locks_name.append(LOCK_LIST_CONFIG_BGP %
+                          route_map_entry.list_config_bgp_id)
+
+    # Remove duplicates locks
+    locks_name = list(set(locks_name))
+    return create_lock_with_blocking(locks_name)
+
+
+def lock_resources_used_by_neighbor_v6(neighbor):
+
+    locks_name = list()
+    locks_name.append(LOCK_NEIGHBOR_V6 % neighbor.id)
+    locks_name.append(LOCK_PEER_GROUP % neighbor.peer_group_id)
+    locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_in_id)
+    locks_name.append(LOCK_ROUTE_MAP % neighbor.peer_group.route_map_out_id)
+
+    for route_map_entry in neighbor.peer_group.route_map_in.route_map_entries:
+        locks_name.append(LOCK_ROUTE_MAP_ENTRY %
+                          route_map_entry.id)
+        locks_name.append(LOCK_LIST_CONFIG_BGP %
+                          route_map_entry.list_config_bgp_id)
+
+    for route_map_entry in neighbor.peer_group.route_map_out.route_map_entries:
+        locks_name.append(LOCK_ROUTE_MAP_ENTRY %
+                          route_map_entry.id)
+        locks_name.append(LOCK_LIST_CONFIG_BGP %
+                          route_map_entry.list_config_bgp_id)
+
+    # Remove duplicates locks
+    locks_name = list(set(locks_name))
+    return create_lock_with_blocking(locks_name)
+
+
+def get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor):
+
+    return NeighborV4.objects.filter(created=True,
+                                     peer_group=neighbor.peer_group_id,
+                                     local_asn=neighbor.local_asn_id,
+                                     local_ip=neighbor.local_ip_id)
+
+
+def get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor):
+
+    return NeighborV6.objects.filter(created=True,
+                                     peer_group=neighbor.peer_group_id,
+                                     local_asn=neighbor.local_asn_id,
+                                     local_ip=neighbor.local_ip_id)
+
+
+def get_v4_equipment(neighbor):
+
+    eqpts_of_local_ip = set(neighbor.local_ip.ipequipamento_set.all().
+                            values_list('equipamento', flat=True))
+    eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
+                             values_list('equipment', flat=True))
+
+    ids_eqpts = set.intersection(eqpts_of_local_ip, eqpts_of_local_asn)
+
+    return Equipamento.objects.get(id__in=ids_eqpts)
+
+
+def get_v6_equipment(neighbor):
+
+    eqpts_of_local_ip = set(neighbor.local_ip.ipv6equipament_set.all().
+                            values_list('equipamento', flat=True))
+    eqpts_of_local_asn = set(neighbor.local_asn.asnequipment_set.all().
+                             values_list('equipment', flat=True))
+
+    ids_eqpts = set.intersection(eqpts_of_local_ip, eqpts_of_local_asn)
+
+    return Equipamento.objects.get(id__in=ids_eqpts)

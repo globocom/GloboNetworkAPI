@@ -1,0 +1,29 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `asn_equipment` DROP FOREIGN KEY `fk_as_equipment_as`;
+ALTER TABLE `asn_equipment` DROP COLUMN `id_as`;
+ALTER TABLE `asn_equipment` ADD COLUMN `id_asn` INT(10) UNSIGNED NOT NULL;
+ALTER TABLE `asn_equipment` ADD CONSTRAINT `fk_asn_equipment_id_asn`
+    FOREIGN KEY (`id_asn`)
+    REFERENCES `asn` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `asn_equipment` DROP FOREIGN KEY `fk_asn_equipment_id_asn`;
+ALTER TABLE `asn_equipment` DROP COLUMN `id_asn`;
+ALTER TABLE `asn_equipment` ADD COLUMN `id_as` INT(10) UNSIGNED NOT NULL;
+ALTER TABLE `asn_equipment` ADD CONSTRAINT `fk_as_equipment_as`
+    FOREIGN KEY (`id_as`)
+    REFERENCES `asn` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION;
+
+"""
+
+
+

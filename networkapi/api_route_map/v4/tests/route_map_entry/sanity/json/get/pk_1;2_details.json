@@ -1,0 +1,36 @@
+[
+  {
+    "action": "P",
+    "action_reconfig": "action_reconfig_1",
+    "id": 1,
+    "list_config_bgp": {
+      "config": "{'conf': 'test_1'}",
+      "id": 1,
+      "name": "test_1",
+      "type": "P"
+    },
+    "order": 5,
+    "route_map": {
+      "id": 1,
+      "name": "test_1",
+      "peer_groups": []
+    }
+  },
+  {
+    "action": "P",
+    "action_reconfig": "action_reconfig_2",
+    "id": 2,
+    "list_config_bgp": {
+      "config": "{'conf': 'test_2'}",
+      "id": 2,
+      "name": "test_2",
+      "type": "A"
+    },
+    "order": 7,
+    "route_map": {
+      "id": 2,
+      "name": "test_2",
+      "peer_groups": []
+    }
+  }
+]

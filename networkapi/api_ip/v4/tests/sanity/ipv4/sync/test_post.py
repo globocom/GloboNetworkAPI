@@ -11,7 +11,7 @@ from networkapi.util.geral import prepare_url
 log = logging.getLogger(__name__)
 
 
-class IPv4GetTestCase(NetworkApiTestCase):
+class IPv4GetTestCaseV4(NetworkApiTestCase):
     fixtures = [
         'networkapi/config/fixtures/initial_config.json',
         'networkapi/system/fixtures/initial_variables.json',
@@ -22,8 +22,8 @@ class IPv4GetTestCase(NetworkApiTestCase):
         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-        'networkapi/api_ip/v4/fixtures/initial_base.json',
-        'networkapi/api_ip/v4/fixtures/initial_base_v4.json',
+        'networkapi/api_ip/fixtures/initial_base.json',
+        'networkapi/api_ip/fixtures/initial_base_v4.json',
     ]
 
     def setUp(self):
@@ -38,7 +38,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         in a Network with available addresses.
         """
 
-        name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/ipv4_auto_net_free.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/post/ipv4_auto_net_free.json'
 
         # Does get request
         response = self.client.post(
@@ -64,7 +64,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         (e.g.: 10.0.0.430).
         """
 
-        name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/ipv4_10_0_0_430_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/post/ipv4_10_0_0_430_net_5.json'
         response = self.client.post(
             '/api/v4/ipv4/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -81,7 +81,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
         it to an equipment in a Network with available addresses.
         """
 
-        name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/ipv4_10_0_0_99_net_5_eqpt_1.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/post/ipv4_10_0_0_99_net_5_eqpt_1.json'
         response = self.client.post(
             '/api/v4/ipv4/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -104,7 +104,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
     def test_try_create_ip_in_full_network(self):
         """V4 Tests if NAPI deny an IPv4 manually creation in a full network."""
 
-        name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/ipv4_10_0_4_1_net_8.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/post/ipv4_10_0_4_1_net_8.json'
         response = self.client.post(
             '/api/v4/ipv4/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -119,7 +119,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
     def test_try_create_out_of_range_ip_in_network(self):
         """V4 Tests if NAPI deny out of range network IPv4 manually creation."""
 
-        name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/out_of_range_ipv4_172_0_0_5_net_5.json'
+        name_file = 'api_ip/tests/sanity/ipv4/json/post/out_of_range_ipv4_172_0_0_5_net_5.json'
         response = self.client.post(
             '/api/v4/ipv4/',
             data=json.dumps(self.load_json_file(name_file)),
@@ -130,34 +130,3 @@ class IPv4GetTestCase(NetworkApiTestCase):
         self.compare_values(
             'Ip 172.0.0.5 not available for network 5.',
             response.data['detail'])
-
-    def test_try_create_ip_associating_to_equipment_and_virtual_interface(self):
-        """V4 Tests if NAPI can allocate two IPv4 Addresses manually and
-           associate it to equipments and for the first equipment associate it
-           also to Virtual Interface in a Network with available addresses.
-        """
-
-        name_file = 'api_ip/v4/tests/sanity/ipv4/json/post/' \
-                    'ipv4_with_two_equipments_and_virtual_interface.json'
-        response = self.client.post(
-            '/api/v4/ipv4/',
-            data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(201, response.status_code)
-
-        url = prepare_url('/api/v4/ipv4/%s/' % response.data[0]['id'],
-                          include=['equipments'])
-        response = self.client.get(
-            url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(200, response.status_code)
-
-        name_file = 'api_ip/v4/tests/sanity/ipv4/json/get/' \
-                    'ipv4_created_with_eqpts_and_virtual_interface.json'
-
-        del response.data['ips'][0]['id']
-        self.compare_json(name_file, response.data)

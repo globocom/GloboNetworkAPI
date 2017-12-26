@@ -1,0 +1,14 @@
+{
+  "lists_config_bgp": [
+    {
+      "config": "{'conf': 'test_1'}",
+      "name": "test_1",
+      "type": "P"
+    },
+    {
+      "config": "{'conf': 'test_2'}",
+      "name": "test_2",
+      "type": "C"
+    }
+  ]
+}

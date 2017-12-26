@@ -1,0 +1,18 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE  `environment_peer_group` ADD UNIQUE KEY `unique_id_environment_id_peer_group` (`id_environment`,`id_peer_group`);
+ALTER TABLE  `peer_group` ADD UNIQUE KEY `unique_id_route_map_in_id_route_map_out` (`id_route_map_in`,`id_route_map_out`);
+ALTER TABLE  `neighbor_v4` ADD UNIQUE KEY `unique_id_local_asn_id_local_ip_id_remote_asn_id_remote_ip` (`id_local_asn`, `id_local_ip`, `id_remote_asn`, `id_remote_ip`);
+ALTER TABLE  `neighbor_v6` ADD UNIQUE KEY `unique_id_local_asn_id_local_ip_id_remote_asn_id_remote_ip` (`id_local_asn`, `id_local_ip`, `id_remote_asn`, `id_remote_ip`);
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE  `environment_peer_group` DROP INDEX `unique_id_environment_id_peer_group`;
+ALTER TABLE  `peer_group` DROP INDEX `unique_id_route_map_in_id_route_map_out`;
+ALTER TABLE  `neighbor_v4` DROP INDEX `unique_id_local_asn_id_local_ip_id_remote_asn_id_remote_ip`;
+ALTER TABLE  `neighbor_v6` DROP INDEX `unique_id_local_asn_id_local_ip_id_remote_asn_id_remote_ip`;
+
+"""

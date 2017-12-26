@@ -8,6 +8,7 @@ Using GloboNetworkAPI V4
    v4/ipv6/ipv6
    v4/neighbor/neighbor
    v4/virtual-interface/virtual-interface
+   v4/sdn/sdn
 
 
 

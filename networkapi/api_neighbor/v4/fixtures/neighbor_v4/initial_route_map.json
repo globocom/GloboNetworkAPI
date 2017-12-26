@@ -1,0 +1,44 @@
+[
+  {
+    "fields": {
+      "name": "route_map_1"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "route_map_2"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "name": "route_map_3"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "name": "route_map_4"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "name": "route_map_5"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "name": "route_map_6"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 6
+  }
+]
