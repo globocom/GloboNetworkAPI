@@ -70,9 +70,13 @@ class VipRequestDeployView(CustomAPIView):
         Deletes list of vip request in equipments
         :url /api/v3/vip-request/deploy/<vip_request_ids>/
         :param vip_request_ids=<vip_request_ids>
+        cleanup = request.GET.get('cleanup', '0')
+
         """
 
         vip_request_ids = kwargs['obj_ids'].split(';')
+        cleanup = request.GET.get('cleanup', '0')
+
         vips = facade.get_vip_request_by_ids(vip_request_ids)
         vip_serializer = VipRequestV3Serializer(
             vips, many=True, include=('ports__identifier',))
@@ -80,7 +84,7 @@ class VipRequestDeployView(CustomAPIView):
         locks_list = create_lock(vip_serializer.data, LOCK_VIP)
         try:
             response = facade.delete_real_vip_request(
-                vip_serializer.data, request.user)
+                vip_serializer.data, request.user, cleanup)
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)

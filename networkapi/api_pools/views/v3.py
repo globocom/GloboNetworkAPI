@@ -75,7 +75,8 @@ class PoolMemberStateView(CustomAPIView):
 
             try:
 
-                locks_list = create_lock(serializer_server_pool.data, LOCK_POOL)
+                locks_list = create_lock(
+                    serializer_server_pool.data, LOCK_POOL)
 
                 mbr_state = facade_pool_deploy.get_poolmember_state(
                     serializer_server_pool.data)
@@ -177,12 +178,14 @@ class PoolDeployView(CustomAPIView):
         """
 
         pool_ids = kwargs['obj_ids'].split(';')
+        cleanup = request.GET.get('cleanup') or '0'
+
         pools = facade.get_pool_by_ids(pool_ids)
         pool_serializer = serializers.PoolV3Serializer(pools, many=True)
         locks_list = create_lock(pool_serializer.data, LOCK_POOL)
         try:
             response = facade_pool_deploy.delete_real_pool(
-                pool_serializer.data, request.user)
+                pool_serializer.data, request.user, cleanup)
         except Exception, exception:
             log.error(exception)
             raise rest_exceptions.NetworkAPIException(exception)

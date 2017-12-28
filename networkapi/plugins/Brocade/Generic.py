@@ -119,7 +119,7 @@ class Generic(BasePlugin):
 
     @util.connection
     @util.logger
-    def delete_pool(self, pools):
+    def delete_pool(self, pools, cleanup=False):
 
         for pool in pools['pools']:
 
@@ -234,7 +234,7 @@ class Generic(BasePlugin):
 
     @util.connection
     @util.logger
-    def delete_vip(self, vips):
+    def delete_vip(self, vips, cleanup=False):
 
         pools_del = list()
         for vip in vips['vips']:

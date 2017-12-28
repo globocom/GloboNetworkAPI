@@ -116,15 +116,35 @@ def create_real_pool(pools, user):
 
 
 @commit_on_success
-def delete_real_pool(pools, user):
+def delete_real_pool(pools, user, cleanup='0'):
     """Delete real pool in eqpt."""
 
+    cleanup = True if cleanup == '1' else False
     load_balance = _prepare_apply(pools=pools, created=True, user=user)
 
-    for lb_id in load_balance:
-        load_balance[lb_id]['plugin'].delete_pool(load_balance[lb_id])
+    id_lists = list()
+    if cleanup:
+        for lb_id in load_balance:
+            ids_aux = load_balance[lb_id]['plugin'].delete_pool(
+                load_balance[lb_id], cleanup)
+            id_lists.append(ids_aux)
 
-    ids = [pool['id'] for pool in pools]
+        num_list = len(id_lists)
+        exists = True
+        # ids from first list
+        ids = list()
+        for id in id_lists[0]:
+            for i in range(1, len(id_lists)):
+                if id not in id_lists[i]:
+                    exists = False
+            if exists:
+                ids.append(id)
+    else:
+        for lb_id in load_balance:
+            load_balance[lb_id]['plugin'].delete_pool(
+                load_balance[lb_id], cleanup)
+        ids = [pool['id'] for pool in pools]
+
     ServerPool.objects.filter(id__in=ids).update(pool_created=False)
 
     return {}

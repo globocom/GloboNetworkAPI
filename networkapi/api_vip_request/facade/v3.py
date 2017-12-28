@@ -613,8 +613,9 @@ def patch_real_vip_request(vip_requests, user):
 
 
 @commit_on_success
-def delete_real_vip_request(vip_requests, user):
+def delete_real_vip_request(vip_requests, user, cleanup='0'):
     load_balance = dict()
+    cleanup = True if cleanup == '1' else False
 
     keys = list()
     for vip in vip_requests:
@@ -633,7 +634,7 @@ def delete_real_vip_request(vip_requests, user):
     for lb in load_balance:
         inst = copy.deepcopy(load_balance.get(lb))
         log.info('started call:%s' % lb)
-        pool_del = inst.get('plugin').delete_vip(inst)
+        pool_del = inst.get('plugin').delete_vip(inst, cleanup)
         log.info('ended call')
         pools_ids += pool_del
 

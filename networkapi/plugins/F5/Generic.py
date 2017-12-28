@@ -35,16 +35,19 @@ class Generic(BasePlugin):
 
     @logger
     @util.connection
-    def delete_vip(self, vips):
+    def delete_vip(self, vips, cleanup=False):
         tratado = util.trata_param_vip(vips)
         dict_vip = {
             'vips': tratado.get('vips_filter'),
             'vips_cache': tratado.get('vips_cache_filter'),
             'pool_created': tratado.get('pool_filter_created')
         }
-        pools_del = self._delete_vip(dict_vip)
-
-        return pools_del
+        if cleanup:
+            self._cleanup_vip(dict_vip)
+            return []
+        else:
+            pools_del = self._delete_vip(dict_vip)
+            return pools_del
 
     @logger
     def _delete_vip(self, tratado):
@@ -82,6 +85,30 @@ class Generic(BasePlugin):
         return pools_del
 
     @logger
+    def _cleanup_vip(self, tratado):
+
+        pools_del = list()
+        vts = virtualserver.VirtualServer(self._lb)
+        if tratado.get('vips'):
+            for vip in tratado.get('vips'):
+                try:
+                    vts.delete(vps_names=[vip['name']])
+                except:
+                    pass
+
+                try:
+                    if vip.get('pool_l7'):
+                        rl = rule.Rule(self._lb)
+                        rl.delete(rule_names='{}_RULE_L7'.format(vip['name']))
+                except:
+                    pass
+
+        # CACHE
+        if tratado.get('vips_cache'):
+            for vip in tratado.get('vips_cache'):
+                vts.delete(vps_names=[vip['name']])
+
+    @logger
     @util.connection
     def create_vip(self, vips):
         tratado = util.trata_param_vip(vips)
@@ -109,7 +136,7 @@ class Generic(BasePlugin):
             log.error(e)
 
             if tratado.get('pool'):
-                self.__delete_pool({'pools': tratado.get('pool')})
+                self._delete_pool({'pools': tratado.get('pool')})
             raise base_exceptions.CommandErrorException(e)
 
         else:
@@ -131,7 +158,7 @@ class Generic(BasePlugin):
                     raise base_exceptions.CommandErrorException(e)
                 else:
                     if tratado.get('pool'):
-                        self.__delete_pool({'pools': tratado.get('pool')})
+                        self._delete_pool({'pools': tratado.get('pool')})
 
                 raise base_exceptions.CommandErrorException(e)
         return pools_ins
@@ -257,7 +284,7 @@ class Generic(BasePlugin):
     @logger
     def _delete_pool_by_pass(self, server_pool):
         try:
-            self.__delete_pool({'pools': [server_pool]})
+            self._delete_pool({'pools': [server_pool]})
         except Exception, e:
             if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
                 log.warning(
@@ -554,11 +581,15 @@ class Generic(BasePlugin):
 
     @logger
     @util.connection
-    def delete_pool(self, pools):
-        self.__delete_pool(pools)
+    def delete_pool(self, pools, cleanup=False):
+
+        if cleanup:
+            return self._cleanup_pool(pools)
+        else:
+            self._delete_pool(pools)
 
     @logger
-    def __delete_pool(self, pools):
+    def _delete_pool(self, pools):
 
         pls = util.trata_param_pool(pools)
 
@@ -590,3 +621,59 @@ class Generic(BasePlugin):
                         mon.delete_template(template_names=template_names)
                 except bigsuds.OperationFailed:
                     pass
+
+    @logger
+    def _cleanup_pool(self, pools):
+
+        pls = util.trata_param_pool(pools)
+
+        pl = pool.Pool(self._lb)
+        mon = monitor.Monitor(self._lb)
+
+        ids = list()
+
+        for idx, pool_name in enumerate(pls['pools_names']):
+
+            try:
+                monitor_associations = pl.get_monitor_association(
+                    names=[pool_name])
+            except:
+                pass
+
+            can_delete = True
+            try:
+                pl.delete(names=[pool_name])
+            except Exception, e:
+                can_delete = False
+                if 'cannot be deleted because it is in use by a Virtual Server' in str(e.message):
+                    log.warning(
+                        'Pool cannot be deleted because it is in use by a Virtual Server')
+                    pass
+                elif 'is referenced by one or more virtual servers' in str(e.message):
+                    log.warning(
+                        'Pool cannot be deleted because it is referenced by one or more virtual servers')
+                    pass
+                elif 'is referenced by one or more rules' in str(e.message):
+                    log.warning(
+                        'Pool cannot be deleted because is referenced by one or more rules')
+                    pass
+                elif 'was not found.' in str(e.message):
+                    log.warning('Pool already deleted')
+                    can_delete = True
+                    pass
+                else:
+                    raise e
+
+            if can_delete:
+                ids.append(pools['pools'][idx]['id'])
+
+            try:
+                template_names = [m for m in list(
+                    itertools.chain(
+                        *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
+                if template_names:
+                    mon.delete_template(template_names=template_names)
+            except:
+                pass
+
+        return ids
