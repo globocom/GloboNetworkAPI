@@ -37,7 +37,7 @@
     hooks:
     -   id: reorder-python-imports
         language_version: python2.7
--   repo: git://github.com/pre-commit/mirrors-autopep8
+-   repo: https://github.com/pre-commit/mirrors-autopep8
     sha: 726322761e33581fcc0886d49a693945dece8594
     hooks:
     -   id: autopep8
