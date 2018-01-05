@@ -349,33 +349,30 @@ def get_vlan_range(interface):
     vlan_range = ''
     vlan_range_list = []
     for env_int in env_ints:
+        #This test is not good. Has to be treated elsewhere with plugins
+        if interface.equipamento.modelo.marca.nome == "HP":
+            separator = ' to '
+        else:
+            separator = '-'
+
         if env_int.vlans:
             vlan_range_temp = env_int.vlans
+            vlan_range_temp = vlan_range_temp.replace('-', separator)
             vlan_range_list_temp = [vlan_range_temp]
         else:
-            if interface.equipamento.modelo.marca.nome == "HP":
-                vlan_range_1 = str(env_int.ambiente.min_num_vlan_1) + \
-                               ' to ' + str(env_int.ambiente.max_num_vlan_1)
-                vlan_range_2 = str(env_int.ambiente.min_num_vlan_2) + \
-                               ' to ' + str(env_int.ambiente.max_num_vlan_2)
-                if vlan_range_1 is not vlan_range_2:
-                    vlan_range_temp = vlan_range_1 + ' ' + vlan_range_2
-                    vlan_range_list_temp = [vlan_range_1, vlan_range_2]
-                else:
-                    vlan_range_temp = vlan_range_1
-                    vlan_range_list_temp = [vlan_range_1]
-            else:
-                vlan_range_1 = str(env_int.ambiente.min_num_vlan_1) + \
-                               '-' + str(env_int.ambiente.max_num_vlan_1)
 
-                vlan_range_2 = str(env_int.ambiente.min_num_vlan_2) + \
-                               '-' + str(env_int.ambiente.max_num_vlan_2)
-                if vlan_range_1 is not vlan_range_2:
-                    vlan_range_temp = vlan_range_1 + ',' + vlan_range_2
-                    vlan_range_list_temp = [vlan_range_1, vlan_range_2]
-                else:
-                    vlan_range_temp = vlan_range_1
-                    vlan_range_list_temp = [vlan_range_1]
+            vlan_range_1 = str(env_int.ambiente.min_num_vlan_1) + \
+                           separator + str(env_int.ambiente.max_num_vlan_1)
+            vlan_range_2 = str(env_int.ambiente.min_num_vlan_2) + \
+                           separator + str(env_int.ambiente.max_num_vlan_2)
+
+            if vlan_range_1 is not vlan_range_2:
+                vlan_range_temp = vlan_range_1 + ',' + vlan_range_2
+                vlan_range_list_temp = [vlan_range_1, vlan_range_2]
+            else:
+                vlan_range_temp = vlan_range_1
+                vlan_range_list_temp = [vlan_range_1]
+
         if vlan_range is '':
             vlan_range = vlan_range_temp
             vlan_range_list.extend(vlan_range_list_temp)
