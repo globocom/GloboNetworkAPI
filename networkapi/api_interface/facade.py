@@ -352,8 +352,10 @@ def get_vlan_range(interface):
         #This test is not good. Has to be treated elsewhere with plugins
         if interface.equipamento.modelo.marca.nome == "HP":
             separator = ' to '
+            range_list_separator = ' '
         else:
             separator = '-'
+            range_list_separator = ','
 
         if env_int.vlans:
             vlan_range_temp = env_int.vlans
@@ -367,7 +369,7 @@ def get_vlan_range(interface):
                            separator + str(env_int.ambiente.max_num_vlan_2)
 
             if vlan_range_1 is not vlan_range_2:
-                vlan_range_temp = vlan_range_1 + ',' + vlan_range_2
+                vlan_range_temp = vlan_range_1 + range_list_separator + vlan_range_2
                 vlan_range_list_temp = [vlan_range_1, vlan_range_2]
             else:
                 vlan_range_temp = vlan_range_1
@@ -377,7 +379,7 @@ def get_vlan_range(interface):
             vlan_range = vlan_range_temp
             vlan_range_list.extend(vlan_range_list_temp)
         elif vlan_range_temp not in vlan_range:
-            vlan_range += ',' + vlan_range_temp
+            vlan_range += range_list_separator + vlan_range_temp
             vlan_range_list.extend(vlan_range_list_temp)
 
     if vlan_range == '':
