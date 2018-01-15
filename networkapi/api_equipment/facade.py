@@ -132,7 +132,7 @@ def get_equipments(**kwargs):
 
         if kwargs.get('environment_sdn_controller', None) is not None:
             q_filter_controller = {
-                'equipamentoambiente__is_controller': kwargs.get('environment_sdn_controller')
+                'equipmentcontrollerenvironment': kwargs.get('environment_sdn_controller')
             }
             eqpts = eqpts.filter(Q(**q_filter_controller))
 

@@ -20,7 +20,6 @@ class EquipmentEnvironmentV3Serializer(DynamicFieldsModelSerializer):
         model = EquipamentoAmbiente
         fields = (
             'is_router',
-            'is_controller',
             'environment',
             'equipment',
         )
@@ -309,7 +308,6 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'many': True,
                         'fields': (
                             'is_router',
-                            'is_controller',
                             'environment',
                         )
                     },
@@ -321,7 +319,6 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                         'many': True,
                         'fields': (
                             'is_router',
-                            'is_controller',
                             'environment__details',
                         ),
                     },

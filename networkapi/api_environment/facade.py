@@ -162,8 +162,7 @@ def delete_environment(env_ids):
 
 def get_controller_by_envid(env_id):
     q_filter_environment = {
-        'equipamentoambiente__ambiente': env_id,
-        'equipamentoambiente__is_controller': env_id
+        'equipmentcontrollerenvironment': env_id
     }
 
     return Equipamento.objects.filter(Q(**q_filter_environment))
@@ -171,7 +170,7 @@ def get_controller_by_envid(env_id):
 
 def list_flows_by_envid(env_id, flow_id=0):
     eqpts = get_controller_by_envid(env_id)
-    flows_list={}
+    flows_list = {}
 
     for eqpt in eqpts:
         plugin = PluginFactory.factory(eqpt, env_id=env_id)
@@ -191,7 +190,7 @@ def list_flows_by_envid(env_id, flow_id=0):
 
 def insert_flow(env_id, data, user_id):
     eqpts = get_controller_by_envid(env_id)
-    plugins=[]
+    plugins = []
     for eqpt in eqpts:
         plugins.append(PluginFactory.factory(eqpt, env_id=env_id))
     try:

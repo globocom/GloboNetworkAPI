@@ -879,7 +879,7 @@ class Ambiente(BaseModel):
     dcroom = models.ForeignKey(
         DatacenterRooms,
         null=True,
-        db_column = 'id_dcroom'
+        db_column='id_dcroom'
     )
 
     log = logging.getLogger('Ambiente')
@@ -939,10 +939,10 @@ class Ambiente(BaseModel):
     vlans = property(_get_vlan)
 
     def _get_sdn_controllers(self):
-        ctrls = self.equipamentoambiente_set.prefetch_related('equipamento')\
-            .filter(is_controller=True)
+        ctrls = self.equipmentcontrollerenvironment_set.prefetch_related(
+            'equipment')
 
-        return [eqpt.equipamento for eqpt in ctrls]
+        return [eqpt.equipment for eqpt in ctrls]
 
     sdn_controllers = property(_get_sdn_controllers)
 

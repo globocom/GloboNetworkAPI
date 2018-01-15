@@ -4,6 +4,9 @@
     "equipments": {
       "items": {
         "properties": {
+          "asn": {
+            "type": "integer"
+          },
           "environments": {
             "items": {
               "properties": {
@@ -11,9 +14,6 @@
                   "type": "integer"
                 },
                 "is_router": {
-                  "type": "boolean"
-                },
-                "is_controller": {
                   "type": "boolean"
                 }
               },
@@ -59,8 +59,16 @@
           "name": {
             "type": "string"
           },
-          "asn": {
-            "type": "integer"
+          "sdn_controlled_environment": {
+            "items": {
+              "properties": {
+                "environment": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
           }
         },
         "required": [
