@@ -63,9 +63,9 @@ def generate_delete_file(user, equip_id, interface_list, channel):
     key_dict = dict()
     config_to_be_saved = ''
     request_id = getattr(local, 'request_id', NO_REQUEST_ID)
-    filename_out = 'equip_' + \
-        str(equip_id) + '_channel_' + str(channel.id) + \
-        '_remove_' + str(request_id)
+    extension = '.py' if interface_list[0].equipamento.modelo.marca.nome == "HP" else ''
+    filename_out = 'equip_' + str(equip_id) + '_channel_' + str(channel.id) + '_remove_' + str(request_id) + extension
+    log.debug(filename_out)
     filename_to_save = INTERFACE_CONFIG_FILES_PATH + filename_out
     rel_file_to_deploy = INTERFACE_CONFIG_TOAPPLY_REL_PATH + filename_out
 

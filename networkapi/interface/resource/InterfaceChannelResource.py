@@ -334,8 +334,7 @@ class InterfaceChannelResource(RestResource):
                              tipo=tipo,
                              vlan_nativa='1')
 
-                status = api_interface_facade.delete_channel(
-                    user, e, equip_dict.get(e), channel)
+                api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
 
             channel.delete(user)
 
