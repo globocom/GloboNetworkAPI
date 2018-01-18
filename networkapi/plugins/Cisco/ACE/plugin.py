@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 class ACE(BasePlugin):
 
-    def delete_vip(self, vips):
+    def delete_vip(self, vips, cleanup=False):
         try:
             if vips.get('layers'):
                 for vip_id in vips.get('layers'):
