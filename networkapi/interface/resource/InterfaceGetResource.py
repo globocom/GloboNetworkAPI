@@ -15,11 +15,11 @@
 # limitations under the License.
 import logging
 
+from django.db.models import Q
 from django.forms.models import model_to_dict
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.auth import has_perm
-from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoError
 from networkapi.exception import InvalidValueError
 from networkapi.grupo.models import GrupoError
@@ -33,6 +33,8 @@ from networkapi.rest import RestResource
 from networkapi.rest import UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
 
+
+log = logging.getLogger(__name__)
 
 def get_new_interface_map(interface):
     int_map = model_to_dict(interface)
@@ -124,17 +126,13 @@ class InterfaceGetResource(RestResource):
                 # Return interface map
                 return self.response(dumps_networkapi({'interface': int_map}))
 
-            if channel is not None:
-                if equip_name is not None:
-                    interfaces = Interface.objects.all().filter(channel__nome=channel)
-                    channel_id = None
-                    for interf in interfaces:
-                        if interf.equipamento.nome == equip_name or interf.ligacao_front.equipamento.nome == equip_name:
-                            channel_id = interf.channel.id
-                    for interf in interfaces:
-                        if interf.channel.id == channel_id:
-                            equipInterface_list.append(
-                                get_new_interface_map(interf))
+            if channel:
+                if equip_name:
+                    get_channel = Interface.objects.get(equipamento__nome=equip_name,channel__nome=channel)
+                    channel_id = get_channel.channel.id if get_channel else ""
+                    interfaces = Interface.objects.filter(channel__id=channel_id) if channel_id else []
+                    for i in interfaces:
+                        equipInterface_list.append(get_new_interface_map(i))
                     return self.response(dumps_networkapi({'interfaces': equipInterface_list}))
                 if equipamento is not None:
                     interfaces = Interface.objects.all().filter(channel__nome=channel)
@@ -142,8 +140,7 @@ class InterfaceGetResource(RestResource):
                         if interf.equipamento.id == int(equipamento):
                             int_server = interf.get_server_switch_or_router_interface_from_host_interface()
                             equipamento = int_server.equipamento.id
-                    interfaces_equip = Interface.objects.all().filter(
-                        equipamento__id=int(equipamento))
+                    interfaces_equip = Interface.objects.all().filter(equipamento__id=int(equipamento))
                     for interf in interfaces_equip:
                         try:
                             i = interf.get_switch_and_router_interface_from_host_interface()
