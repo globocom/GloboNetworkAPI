@@ -17,12 +17,15 @@ import ast
 import logging
 import re
 
+from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
 from django.template import Context
 from django.template import Template
 
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.api_interface import exceptions
+from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import LOCK_EQUIPMENT
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
 from networkapi.equipamento.models import Equipamento
@@ -30,6 +33,7 @@ from networkapi.equipamento.models import EquipamentoRoteiro
 from networkapi.exception import InvalidValueError
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
+from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface
 from networkapi.interface.models import PortChannel
@@ -46,6 +50,33 @@ log = logging.getLogger(__name__)
 # def get(dictionary, key):
 #    return dictionary.get(key)
 
+def get_interface_by_search(search=dict()):
+    """Return a list of interface by dict."""
+
+    try:
+        interfaces = Interface.objects.filter()
+        interface_map = build_query_to_datatable_v3(interfaces, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interface_map
+
+def get_interface_by_ids(interface_ids):
+    try:
+        interfaces_obj = list()
+        for i in interface_ids:
+            interface = Interface.objects.get(id=int(i))
+            interfaces_obj.append(interface)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except ObjectDoesNotExist, e:
+        raise Exception(u'There is no interface with id = %s. %s' % (id, e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interfaces_obj
 
 def generate_delete_file(user, equip_id, interface_list, channel):
     try:
