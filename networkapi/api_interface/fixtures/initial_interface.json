@@ -1,0 +1,31 @@
+[
+  {
+    "pk": 1,
+    "model": "interface.TipoInterface",
+    "fields": {
+      "tipo": "access"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "interface.TipoInterface",
+    "fields": {
+      "tipo": "trunk"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth1",
+      "equipamento": "1",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": null,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": "1",
+      "channel": null
+    }
+  }
+]

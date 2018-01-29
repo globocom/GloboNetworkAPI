@@ -99,6 +99,8 @@ class HPE(BasePlugin):
         if wait_str_failed_regex is None:
             wait_str_failed_regex = self.ERROR_REGEX
 
+        confirm_regex = "[Y/N]"
+        confirm_command = 'Y'
         string_ok = 0
         recv_string = ''
         while not string_ok:
@@ -115,5 +117,7 @@ class HPE(BasePlugin):
             elif re.search(wait_str_ok_regex, recv_string):
                 log.debug('Equipment output: %s' % recv_string)
                 string_ok = 1
+            elif re.search(confirm_regex, recv_string):
+                self.channel.send('%s\n' % confirm_command)
 
         return recv_string

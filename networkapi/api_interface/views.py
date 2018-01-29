@@ -16,6 +16,7 @@
 import logging
 
 from django.db.transaction import commit_on_success
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
@@ -25,14 +26,20 @@ from rest_framework.views import APIView
 
 from networkapi.api_interface import exceptions
 from networkapi.api_interface import facade
+from networkapi.api_interface import serializers
 from networkapi.api_interface.permissions import DeployConfig
-from networkapi.api_interface.permissions import Read
 from networkapi.api_interface.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_INTERFACE
 from networkapi.interface.models import Interface
 from networkapi.interface.models import InterfaceNotFoundError
+from networkapi.util.classes import CustomAPIView
+from networkapi.util.decorators import logs_method_apiview
+from networkapi.util.decorators import permission_classes_apiview
+from networkapi.util.decorators import prepare_search
+from networkapi.util.json_validate import raise_json_validate
+from networkapi.util.geral import render_to_json
 
 
 log = logging.getLogger(__name__)
@@ -144,3 +151,42 @@ class DisconnectView(APIView):
         except Exception, exception:
             log.error(exception)
             raise api_exceptions.NetworkAPIException(exception)
+
+
+class InterfaceV3View(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    #@permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get (self, request, *args, **kwargs):
+        """URL: api/interface/"""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_interface_by_search(self.search)
+            interfaces = obj_model['query_set']
+            only_main_property = False
+        else:
+            interface_ids = kwargs.get('obj_ids').split(';')
+            interfaces = facade.get_interface_by_ids(interface_ids)
+            only_main_property = True
+            obj_model = None
+
+        serializer_interface = serializers.InterfaceV3Serializer(
+            interfaces,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        ) if interfaces else list()
+
+        data = render_to_json(
+            serializer_interface,
+            main_property='interfaces',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
