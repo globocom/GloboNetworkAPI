@@ -162,7 +162,7 @@ def delete_environment(env_ids):
 
 def get_controller_by_envid(env_id):
     q_filter_environment = {
-        'equipmentcontrollerenvironment': env_id
+        'equipmentcontrollerenvironment__environment': env_id
     }
 
     return Equipamento.objects.filter(Q(**q_filter_environment))
