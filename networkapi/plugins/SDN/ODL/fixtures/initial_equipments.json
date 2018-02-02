@@ -62,11 +62,10 @@
   },
   {
     "fields": {
-      "ambiente": 1,
-      "equipamento": 10,
-      "is_router": false
+      "environment": 1,
+      "equipment": 10
     },
-    "model": "equipamento.equipamentoambiente",
+    "model": "equipamento.equipmentcontrollerenvironment",
     "pk": 3
   },
   {
