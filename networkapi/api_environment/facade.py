@@ -19,6 +19,8 @@ from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.equipamento.models import Equipamento
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.plugins.factory import PluginFactory
+from networkapi.api_equipment import exceptions as exceptions_eqpt
+from networkapi.api_equipment import facade as facade_eqpt
 
 
 log = logging.getLogger(__name__)
@@ -161,11 +163,19 @@ def delete_environment(env_ids):
 
 
 def get_controller_by_envid(env_id):
+    """ Get all controllers from a given environment """
+
     q_filter_environment = {
-        'equipmentcontrollerenvironment__environment': env_id
+        'equipmentcontrollerenvironment__environment': env_id,
+        'maintenance': 0
     }
 
-    return Equipamento.objects.filter(Q(**q_filter_environment))
+    equips = Equipamento.objects.filter(Q(**q_filter_environment))
+
+    if facade_eqpt.all_equipments_are_in_maintenance(equips):
+        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+
+    return equips
 
 
 def list_flows_by_envid(env_id, flow_id=0):
