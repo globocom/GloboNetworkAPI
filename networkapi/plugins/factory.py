@@ -71,7 +71,6 @@ class PluginFactory(object):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
             if re.search('OPENDAYLIGHT', marca.upper(), re.DOTALL):
-                # from .SDN.ODL.Generic import ODLPlugin
                 return ODLPlugin
             if re.search('FUSIS', marca.upper(), re.DOTALL):
                 from .SDN.FUSIS.Generic import Generic
@@ -86,22 +85,22 @@ class PluginFactory(object):
 
         marca = equipment.modelo.marca.nome
         modelo = equipment.modelo.nome
-        plugin_name = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
+        plugin_class = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
 
-        if type(plugin_name)==type(ODLPlugin):
+        if type(plugin_class) == type(ODLPlugin):
             version='BERYLLIUM'
-            if modelo.upper().find("BORON")>-1:
+            if modelo.upper().find("BORON") > -1:
                 version="BORON"
-            if modelo.upper().find("CARBON")>-1:
+            if modelo.upper().find("CARBON") > -1:
                 version = "CARBON"
-            if modelo.upper().find("NITROGEN")>-1:
+            if modelo.upper().find("NITROGEN") > -1:
                 version = "NITROGEN"
 
             env_id = kwargs.get("env_id")
-            return plugin_name(
+            return plugin_class(
                 equipment=equipment,
                 environment=env_id,
                 version=version
             )
 
-        return plugin_name(equipment=equipment)
+        return plugin_class(equipment=equipment)
