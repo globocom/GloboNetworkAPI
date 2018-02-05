@@ -38,8 +38,8 @@ class PluginFactory(object):
         if 'modelo' in kwargs:
             modelo = kwargs.get('modelo')
 
-            # TODO create a table in networkapi to specify wich plugin to load for
-            # each equipment configuration
+            # TODO create a table in networkapi to specify wich plugin
+            # to load for each equipment configuration
             if re.search('NEXUS', modelo.upper(), re.DOTALL):
                 # if 'bgp' in kwargs:
                 #     from .BGP.NXAPI.Generic import NxApiPlugin
@@ -64,7 +64,8 @@ class PluginFactory(object):
             if re.search('F5', marca.upper(), re.DOTALL):
                 from .F5.Generic import Generic
                 return Generic
-            if re.search('BROCADE', marca.upper(), re.DOTALL) or re.search('FOUNDRY', marca.upper(), re.DOTALL):
+            if re.search('BROCADE', marca.upper(), re.DOTALL) \
+               or re.search('FOUNDRY', marca.upper(), re.DOTALL):
                 from .Brocade.Generic import Generic
                 return Generic
             if re.search('DELL', marca.upper(), re.DOTALL):
@@ -88,9 +89,9 @@ class PluginFactory(object):
         plugin_class = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
 
         if type(plugin_class) == type(ODLPlugin):
-            version='BERYLLIUM'
+            version = 'BERYLLIUM'
             if modelo.upper().find("BORON") > -1:
-                version="BORON"
+                version = "BORON"
             if modelo.upper().find("CARBON") > -1:
                 version = "CARBON"
             if modelo.upper().find("NITROGEN") > -1:
