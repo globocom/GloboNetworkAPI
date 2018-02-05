@@ -16,7 +16,7 @@
   {
     "fields": {
       "marca": "1",
-      "nome": "Beryllium"
+      "nome": "Carbon"
     },
     "model": "equipamento.modelo",
     "pk": 1
