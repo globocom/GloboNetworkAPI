@@ -1,0 +1,5 @@
+{% for ENTRY in ENTRIES %}
+route-map {{ NAME }} {{ ENTRY.ACTION }} {{ ENTRY.ORDER }}
+match {{ ENTRY.TYPE_MATCH}} {{ ENTRY.LIST}}
+{{ ENTRY.ACTION_RECONFIG }}
+{% endfor %}

@@ -106,6 +106,22 @@ class EquipamentoAmbienteDuplicatedError(EquipamentoError):
         EquipamentoError.__init__(self, cause, message)
 
 
+class EquipmentControllerEnvironmentNotFoundError(EquipamentoError):
+
+    """Retorna exceção quando o equipment_controller_environment não existe."""
+
+    def __init__(self, cause, message=None):
+        EquipamentoError.__init__(self, cause, message)
+
+
+class EquipmentControllerEnvironmentDuplicatedError(EquipamentoError):
+
+    """Retorna exceção quando o equipment_controller_environment já existe."""
+
+    def __init__(self, cause, message=None):
+        EquipamentoError.__init__(self, cause, message)
+
+
 class TipoEquipamentoNotFoundError(EquipamentoError):
 
     """Retorna exceção para pesquisa de tipo de equipamento por chave primária."""
@@ -504,6 +520,13 @@ class Equipamento(BaseModel):
 
     environments = property(_get_environments)
 
+    def _get_equipment_controller_environment(self):
+        envs = self.equipmentcontrollerenvironment_set.all()
+        return envs
+
+    equipment_controller_environment = property(
+        _get_equipment_controller_environment)
+
     def _get_ipv4_equipment(self):
 
         return self.ipequipamento_set.all()
@@ -844,7 +867,6 @@ class Equipamento(BaseModel):
                     environment.get('environment'))
                 eqpt_env.equipamento = self
                 eqpt_env.is_router = environment.get('is_router')
-                eqpt_env.is_controller = environment.get('is_controller')
                 eqpt_env.create()
 
             # ipv4s
@@ -922,24 +944,20 @@ class Equipamento(BaseModel):
                 for environment in equipment.get('environments'):
                     env_id = environment.get('environment')
                     if env_id not in env_db_ids:
-                        # insert new relashionship with enviroment
+                        # insert new relashionship with environment
                         eqpt_env = EquipamentoAmbiente()
                         eqpt_env.ambiente = Ambiente.get_by_pk(env_id)
                         eqpt_env.equipamento = self
                         eqpt_env.is_router = environment.get('is_router')
-                        eqpt_env.is_controller = environment.get(
-                            'is_controller')
                         eqpt_env.create()
                     else:
-                        # update relashionship with enviroment
+                        # update relashionship with environment
                         env_current = env_db[env_db_ids.index(env_id)]
                         env_current.is_router = environment.get('is_router')
-                        env_current.is_controller = environment.get(
-                            'is_controller')
                         env_current.save()
                     env_ids.append(env_id)
 
-                # delete relashionship with enviroment not sended
+                # delete relashionship with environment not sended
                 env_db_ids_old = list(set(env_db_ids) - set(env_ids))
                 env_db.filter(ambiente__in=env_db_ids_old).delete()
 
@@ -1055,7 +1073,6 @@ class Equipamento(BaseModel):
                     environment.get('environment'))
                 eqpt_env.equipamento = self
                 eqpt_env.is_router = environment.get('is_router')
-                eqpt_env.is_controller = environment.get('is_controller')
                 eqpt_env.create()
 
             # ipv4s
@@ -1080,6 +1097,15 @@ class Equipamento(BaseModel):
                 asneqpt_model().create_v4({
                     'equipment': self.id,
                     'asn': equipment.get('asn')
+                })
+
+            # controller environments
+            for environment in equipment.get('sdn_controlled_environment', []):
+                eqpt_env = EquipmentControllerEnvironment()
+                env_id = environment.get('environment')
+                eqpt_env.create({
+                    'equipment': self.id,
+                    'environment': env_id
                 })
 
         except EquipmentInvalidValueException, e:
@@ -1143,24 +1169,21 @@ class Equipamento(BaseModel):
                 for environment in equipment.get('environments'):
                     env_id = environment.get('environment')
                     if env_id not in env_db_ids:
-                        # insert new relashionship with enviroment
+                        # insert new relashionship with environment
                         eqpt_env = EquipamentoAmbiente()
                         eqpt_env.ambiente = Ambiente.get_by_pk(env_id)
                         eqpt_env.equipamento = self
                         eqpt_env.is_router = environment.get('is_router')
-                        eqpt_env.is_controller = environment.get(
-                            'is_controller')
                         eqpt_env.create()
                     else:
-                        # update relashionship with enviroment
+                        # update relashionship with environment
                         env_current = env_db[env_db_ids.index(env_id)]
                         env_current.is_router = environment.get('is_router')
-                        env_current.is_controller = environment.get(
-                            'is_controller')
+
                         env_current.save()
                     env_ids.append(env_id)
 
-                # delete relashionship with enviroment not sended
+                # delete relashionship with environment not sended
                 env_db_ids_old = list(set(env_db_ids) - set(env_ids))
                 env_db.filter(ambiente__in=env_db_ids_old).delete()
 
@@ -1216,6 +1239,33 @@ class Equipamento(BaseModel):
                     'asn': equipment.get('asn')
                 })
 
+            # controlled environment
+            if equipment.get('sdn_controlled_environment'):
+                env_db = EquipmentControllerEnvironment.get_by_equipment(
+                    self.id)
+                env_db_ids = list(env_db.values_list('environment', flat=True))
+                env_ids = list()
+
+                for environment in equipment.get('sdn_controlled_environment'):
+                    env_id = environment.get('environment')
+                    if env_id not in env_db_ids:
+                        # insert new relashionship with environment
+                        eqpt_env = EquipmentControllerEnvironment()
+                        eqpt_env.create({
+                            'equipment': self.id,
+                            'environment': env_id
+                        })
+                    else:
+                        # update relashionship with environment
+                        env_current = env_db[env_db_ids.index(env_id)]
+
+                        env_current.save()
+                    env_ids.append(env_id)
+
+                # delete relashionship with environment not sended
+                env_db_ids_old = list(set(env_db_ids) - set(env_ids))
+                env_db.filter(environment__in=env_db_ids_old).delete()
+
         except EquipmentInvalidValueException, e:
             raise EquipmentInvalidValueException(e.detail)
         except AmbienteNotFoundError, e:
@@ -1233,7 +1283,6 @@ class EquipamentoAmbiente(BaseModel):
     ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
     equipamento = models.ForeignKey(Equipamento, db_column='id_equip')
     is_router = models.BooleanField(db_column='is_router')
-    is_controller = models.BooleanField(db_column='is_controller')
 
     log = logging.getLogger('EquipamentoAmbiente')
 
@@ -1373,6 +1422,102 @@ class EquipamentoAmbiente(BaseModel):
             msg = u'Failure to insert the relashionship between ' \
                 'equipment and environment. %s/%s.' % \
                 (self.equipamento.id, self.ambiente.id)
+
+            self.log.error(msg)
+
+            raise EquipamentoError(e, msg)
+
+
+class EquipmentControllerEnvironment(BaseModel):
+    id = models.AutoField(primary_key=True, db_column='id')
+    environment = models.ForeignKey(
+        Ambiente,
+        db_column='id_environment'
+    )
+    equipment = models.ForeignKey(
+        Equipamento,
+        db_column='id_equipment'
+    )
+
+    log = logging.getLogger('EquipmentControllerEnvironment')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'equipment_controller_environment'
+        managed = True
+        unique_together = ('equipment', 'environment')
+
+    def get_by_equipment_environment(self, equipment_id, environment_id):
+        try:
+            eqpt = EquipmentControllerEnvironment.objects.get(
+                environment__id=environment_id,
+                equipment__id=equipment_id
+            )
+            return eqpt
+        except ObjectDoesNotExist, e:
+            raise EquipmentControllerEnvironmentNotFoundError(
+                e, u'Não existe um equipment_environment com o equipment = %s e o environment = %s.' % (equipment_id, environment_id))
+        except Exception, e:
+            self.log.error(u'Falha ao pesquisar o equipment-environment.')
+            raise EquipamentoError(
+                e, u'Falha ao pesquisar o equipment-environment.')
+
+    def get_by_environment(self, environment_id):
+        try:
+            return EquipmentControllerEnvironment.objects.get(environment__id=environment_id)
+        except ObjectDoesNotExist, e:
+            raise EquipmentControllerEnvironmentNotFoundError(
+                e, u'Não existe um environment com o environment = %s.' %
+                (environment_id))
+        except Exception, e:
+            self.log.error(u'Falha ao pesquisar o equipment-environment.')
+            raise EquipamentoError(
+                e, u'Falha ao pesquisar o equipment-environment.')
+
+    @classmethod
+    def get_by_equipment(cls, equipment_id):
+        try:
+            return EquipmentControllerEnvironment.objects.filter(equipment__id=equipment_id)
+        except ObjectDoesNotExist, e:
+            raise EquipmentControllerEnvironmentNotFoundError(
+                e, u'Não existe um environment com o equipment = %s.' % equipment_id)
+        except Exception, e:
+            cls.log.error(u'Falha ao pesquisar o equipment-environment.')
+            raise EquipamentoError(
+                e, u'Falha ao pesquisar o equipment-environment.')
+
+    def create(self, eqpt_env_map):
+        """
+        Insert a new relashionship between an equipment and an environment.
+
+        @return: Nothing
+
+        @raise AmbienteNotFoundError: Environment not registered.
+        @raise EquipmentControllerEnvironmentDuplicatedError: Equipment already
+                                                   registered in
+                                                   environment.
+        @raise EquipamentoError: Failure to insert the relashionship
+                                 between equipment and environment.
+        """
+
+        self.environment = Ambiente()\
+            .get_by_pk(eqpt_env_map.get('environment'))
+        self.equipment = Equipamento()\
+            .get_by_pk(eqpt_env_map.get('equipment'))
+
+        try:
+            EquipmentControllerEnvironment().get_by_equipment_environment(
+                self.equipment.id, self.environment.id)
+            raise EquipmentControllerEnvironmentDuplicatedError(
+                None, u'Equipment already registered in environment.')
+        except EquipmentControllerEnvironmentNotFoundError:
+            pass
+
+        try:
+            self.save()
+        except Exception, e:
+            msg = u'Failure to insert the relashionship between ' \
+                'equipment and environment. %s/%s.' % \
+                (self.equipment.id, self.environment.id)
 
             self.log.error(msg)
 

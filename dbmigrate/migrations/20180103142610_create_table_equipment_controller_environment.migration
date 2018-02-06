@@ -1,0 +1,38 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `equipment_controller_environment` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `id_equipment` INT(10) UNSIGNED NOT NULL,
+  `id_environment` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `equipment_controller_environment` 
+ADD INDEX `fk_equipment_controller_environment_fk1_idx` (`id_equipment` ASC)  COMMENT '',
+ADD INDEX `fk_equipment_controller_environment_fk2_idx` (`id_environment` ASC)  COMMENT '';
+
+ALTER TABLE `equipment_controller_environment` 
+ADD CONSTRAINT `fk_equipment_controller_environment_fk1`
+  FOREIGN KEY (`id_equipment`)
+  REFERENCES `equipamentos` (`id_equip`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_equipment_controller_environment_fk2`
+  FOREIGN KEY (`id_environment`)
+  REFERENCES `ambiente` (`id_ambiente`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `networkapi`.`equipment_controller_environment` 
+DROP FOREIGN KEY `fk_equipment_controller_environment_fk2`,
+DROP FOREIGN KEY `fk_equipment_controller_environment_fk1`;
+
+ALTER TABLE `networkapi`.`equipment_controller_environment` 
+DROP INDEX `fk_equipment_controller_environment_fk2_idx` ,
+DROP INDEX `fk_equipment_controller_environment_fk1_idx` ;
+
+DROP TABLE `equipment_controller_environment`;
+
+"""

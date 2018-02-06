@@ -2,13 +2,69 @@
 import logging
 
 from django.db.models import get_model
-
 from rest_framework import serializers
 
 from networkapi.util.geral import get_app
 from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 log = logging.getLogger(__name__)
+
+
+class EquipmentControllerEnvironmentV4Serializer(DynamicFieldsModelSerializer):
+
+    environment = serializers.SerializerMethodField('get_environment')
+    equipment = serializers.SerializerMethodField('get_equipment')
+
+    class Meta:
+        EquipmentControllerEnvironment = get_model(
+            'equipamento', 'EquipmentControllerEnvironment')
+        model = EquipmentControllerEnvironment
+
+        fields = (
+            'id',
+            'environment',
+            'equipment',
+        )
+
+        details_fields = (
+            'environment',
+            'equipment',
+        )
+
+    def get_environment(self, obj):
+        return self.extends_serializer(obj, 'environment')
+
+    def get_equipment(self, obj):
+        return self.extends_serializer(obj, 'equipment')
+
+    def get_serializers(self):
+        # serializers
+        eqpt_slz = get_app('api_equipment', module_label='v4.serializers')
+        env_slz = get_app('api_environment', module_label='serializers')
+
+        if not self.mapping:
+            self.mapping = {
+                'environment': {
+                    'obj': 'environment_id'
+                },
+                'environment__details': {
+                    'serializer': env_slz.EnvironmentV3Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'environment'
+                },
+                'equipment': {
+                    'obj': 'equipment_id'
+                },
+                'equipment__details': {
+                    'serializer': eqpt_slz.EquipmentV4Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'equipment'
+                }
+            }
 
 
 class EquipmentV4Serializer(DynamicFieldsModelSerializer):
@@ -19,6 +75,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
     equipment_type = serializers.SerializerMethodField('get_equipment_type')
     model = serializers.SerializerMethodField('get_model')
     environments = serializers.SerializerMethodField('get_environments')
+    sdn_controlled_environment = serializers.SerializerMethodField(
+        'get_sdn_controlled_environment')
     groups = serializers.SerializerMethodField('get_groups')
     asn = serializers.SerializerMethodField('get_asn')
 
@@ -34,6 +92,7 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
             'ipsv4',
             'ipsv6',
             'environments',
+            'sdn_controlled_environment',
             'groups',
             'asn'
         )
@@ -64,6 +123,9 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
 
     def get_environments(self, obj):
         return self.extends_serializer(obj, 'environments')
+
+    def get_sdn_controlled_environment(self, obj):
+        return self.extends_serializer(obj, 'sdn_controlled_environment')
 
     def get_ipsv4(self, obj):
         return self.extends_serializer(obj, 'ipsv4')
@@ -101,8 +163,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'tipo_equipamento'
                 },
                 'ipsv4': {
-                    'serializer': v4_ip_slz. \
-                        IPv4EquipmentV4Serializer,
+                    'serializer': v4_ip_slz.
+                    IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'prohibited': (
@@ -112,8 +174,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ipv4_equipment'
                 },
                 'ipsv4__basic': {
-                    'serializer': v4_ip_slz. \
-                        IPv4EquipmentV4Serializer,
+                    'serializer': v4_ip_slz.
+                    IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'kind': 'basic',
@@ -124,8 +186,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ipv4_equipment',
                 },
                 'ipsv4__details': {
-                    'serializer': v4_ip_slz. \
-                        IPv4EquipmentV4Serializer,
+                    'serializer': v4_ip_slz.
+                    IPv4EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'kind': 'details',
@@ -136,8 +198,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ipv4_equipment',
                 },
                 'ipsv6': {
-                    'serializer': v4_ip_slz. \
-                        IPv6EquipmentV4Serializer,
+                    'serializer': v4_ip_slz.
+                    IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'prohibited': (
@@ -147,8 +209,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ipv6_equipment'
                 },
                 'ipsv6__basic': {
-                    'serializer': v4_ip_slz. \
-                        IPv6EquipmentV4Serializer,
+                    'serializer': v4_ip_slz.
+                    IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'kind': 'basic',
@@ -159,8 +221,8 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'ipv6_equipment',
                 },
                 'ipsv6__details': {
-                    'serializer': v4_ip_slz. \
-                        IPv6EquipmentV4Serializer,
+                    'serializer': v4_ip_slz.
+                    IPv6EquipmentV4Serializer,
                     'kwargs': {
                         'many': True,
                         'kind': 'details',
@@ -188,32 +250,50 @@ class EquipmentV4Serializer(DynamicFieldsModelSerializer):
                     'obj': 'groups'
                 },
                 'environments': {
-                    'serializer': eqptv3_slzs.\
-                        EquipmentEnvironmentV3Serializer,
+                    'serializer': eqptv3_slzs.
+                    EquipmentEnvironmentV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
                             'is_router',
-                            'is_controller',
                             'environment',
                         )
                     },
                     'obj': 'environments'
                 },
                 'environments__details': {
-                    'serializer': eqptv3_slzs.\
-                        EquipmentEnvironmentV3Serializer,
+                    'serializer': eqptv3_slzs.
+                    EquipmentEnvironmentV3Serializer,
                     'kwargs': {
                         'many': True,
                         'fields': (
                             'is_router',
-                            'is_controller',
                             'environment__details',
                         ),
                     },
                     'obj': 'environments'
                 },
-                'asn':{
+                'sdn_controlled_environment': {
+                    'serializer': EquipmentControllerEnvironmentV4Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'environment',
+                        )
+                    },
+                    'obj': 'equipment_controller_environment'
+                },
+                'sdn_controlled_environment__details': {
+                    'serializer': EquipmentControllerEnvironmentV4Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'fields': (
+                            'environment__details',
+                        ),
+                    },
+                    'obj': 'equipment_controller_environment'
+                },
+                'asn': {
                     'obj': 'asn_id'
                 },
                 'asn__basic': {

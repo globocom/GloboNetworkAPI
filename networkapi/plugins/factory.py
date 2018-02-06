@@ -38,8 +38,8 @@ class PluginFactory(object):
         if 'modelo' in kwargs:
             modelo = kwargs.get('modelo')
 
-            # TODO create a table in networkapi to specify wich plugin to load for
-            # each equipment configuration
+            # TODO create a table in networkapi to specify wich plugin
+            # to load for each equipment configuration
             if re.search('NEXUS', modelo.upper(), re.DOTALL):
                 # if 'bgp' in kwargs:
                 #     from .BGP.NXAPI.Generic import NxApiPlugin
@@ -64,14 +64,14 @@ class PluginFactory(object):
             if re.search('F5', marca.upper(), re.DOTALL):
                 from .F5.Generic import Generic
                 return Generic
-            if re.search('BROCADE', marca.upper(), re.DOTALL) or re.search('FOUNDRY', marca.upper(), re.DOTALL):
+            if re.search('BROCADE', marca.upper(), re.DOTALL) \
+               or re.search('FOUNDRY', marca.upper(), re.DOTALL):
                 from .Brocade.Generic import Generic
                 return Generic
             if re.search('DELL', marca.upper(), re.DOTALL):
                 from .Dell.FTOS.plugin import FTOS
                 return FTOS
             if re.search('OPENDAYLIGHT', marca.upper(), re.DOTALL):
-                # from .SDN.ODL.Generic import ODLPlugin
                 return ODLPlugin
             if re.search('FUSIS', marca.upper(), re.DOTALL):
                 from .SDN.FUSIS.Generic import Generic
@@ -86,22 +86,22 @@ class PluginFactory(object):
 
         marca = equipment.modelo.marca.nome
         modelo = equipment.modelo.nome
-        plugin_name = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
+        plugin_class = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
 
-        if type(plugin_name)==type(ODLPlugin):
-            version='BERYLLIUM'
-            if modelo.upper().find("BORON")>-1:
-                version="BORON"
-            if modelo.upper().find("CARBON")>-1:
+        if type(plugin_class) == type(ODLPlugin):
+            version = 'BERYLLIUM'
+            if modelo.upper().find("BORON") > -1:
+                version = "BORON"
+            if modelo.upper().find("CARBON") > -1:
                 version = "CARBON"
-            if modelo.upper().find("NITROGEN")>-1:
+            if modelo.upper().find("NITROGEN") > -1:
                 version = "NITROGEN"
 
             env_id = kwargs.get("env_id")
-            return plugin_name(
+            return plugin_class(
                 equipment=equipment,
                 environment=env_id,
                 version=version
             )
 
-        return plugin_name(equipment=equipment)
+        return plugin_class(equipment=equipment)

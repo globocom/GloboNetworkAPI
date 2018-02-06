@@ -1,0 +1,19 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT  INTO equipment_controller_environment(id_environment, id_equipment)  
+SELECT id_ambiente, id_equip FROM networkapi.equip_do_ambiente WHERE is_controller = 1;
+"""
+
+SQL_DOWN = u"""
+UPDATE equip_do_ambiente
+        JOIN
+    (SELECT 
+        id_environment, id_equipment
+    FROM
+        equipment_controller_environment) c ON id_ambiente = c.id_environment
+        AND id_equip = c.id_equipment 
+SET 
+    is_controller = 1;
+
+DELETE FROM equipment_controller_environment;
+"""

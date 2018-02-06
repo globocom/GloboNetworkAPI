@@ -1,154 +1,152 @@
 [
   {
-    "pk": 1,
-    "model": "equipamento.tipoequipamento",
     "fields": {
       "tipo_equipamento": "Switch"
-    }
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 1
   },
   {
-    "pk": 1,
-    "model": "equipamento.marca",
     "fields": {
       "nome": "OpenDaylight"
-    }
+    },
+    "model": "equipamento.marca",
+    "pk": 1
   },
   {
-    "pk": 1,
+    "fields": {
+      "marca": "1",
+      "nome": "Carbon"
+    },
     "model": "equipamento.modelo",
-    "fields": {
-      "nome": "Beryllium",
-      "marca": "1"
-    }
+    "pk": 1
   },
   {
-    "pk": 2,
+    "fields": {
+      "marca": "1",
+      "nome": "Nitrogen"
+    },
     "model": "equipamento.modelo",
-    "fields": {
-      "nome": "Nitrogen",
-      "marca": "1"
-    }
+    "pk": 2
   },
   {
-    "pk": 10,
-    "model": "equipamento.equipamento",
     "fields": {
-      "tipo_equipamento": "1",
+      "maintenance": false,
       "modelo": 1,
       "nome": "OVS Controller 1",
-      "maintenance": false
-    }
-  },
-    {
-    "pk": 11,
+      "tipo_equipamento": "1"
+    },
     "model": "equipamento.equipamento",
+    "pk": 10
+  },
+  {
     "fields": {
-      "tipo_equipamento": "1",
+      "maintenance": false,
       "modelo": 2,
       "nome": "OVS Controller 2",
-      "maintenance": false
-    }
-  },
-  {
-    "model": "ambiente.ambiente",
-    "pk": 1,
-    "fields": {
-        "ambiente_logico": 1,
-        "default_vrf": 1,
-        "divisao_dc": 1,
-        "grupo_l3": 1,
-        "father_environment": 4
-    }
-  },
-  {
-    "fields": {
-        "ambiente": 1,
-        "equipamento": 10,
-        "is_controller": true,
-        "is_router": false
+      "tipo_equipamento": "1"
     },
-    "model": "equipamento.equipamentoambiente",
+    "model": "equipamento.equipamento",
+    "pk": 11
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "father_environment": 4,
+      "grupo_l3": 1
+    },
+    "model": "ambiente.ambiente",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "environment": 1,
+      "equipment": 10
+    },
+    "model": "equipamento.equipmentcontrollerenvironment",
     "pk": 3
   },
   {
-    "pk": 1,
-    "model": "tipoacesso.tipoacesso",
     "fields": {
       "protocolo": "http"
-    }
+    },
+    "model": "tipoacesso.tipoacesso",
+    "pk": 1
   },
   {
-    "pk": 1,
-    "model": "equipamento.equipamentoacesso",
     "fields": {
+      "enable_pass": "---",
       "equipamento": 10,
       "fqdn": "http://odl.controller:8181",
-      "user": "admin",
       "password": "admin",
       "tipo_acesso": 1,
-      "enable_pass": "---"
-    }
+      "user": "admin"
+    },
+    "model": "equipamento.equipamentoacesso",
+    "pk": 1
   },
   {
-    "pk": 2,
-    "model": "equipamento.equipamentoacesso",
     "fields": {
+      "enable_pass": "---",
       "equipamento": 11,
       "fqdn": "http://odl.controller:8181",
-      "user": "admin",
       "password": "admin",
       "tipo_acesso": 1,
-      "enable_pass": "---"
-    }
+      "user": "admin"
+    },
+    "model": "equipamento.equipamentoacesso",
+    "pk": 2
   },
   {
-    "pk": 1,
+    "fields": {
+      "descricao": "IP of SDN Controller",
+      "networkipv4": 1,
+      "oct1": 10,
+      "oct2": 0,
+      "oct3": 0,
+      "oct4": 42
+    },
     "model": "ip.ip",
+    "pk": 1
+  },
+  {
     "fields": {
-        "oct4": 42,
-        "oct2": 0,
-        "oct3": 0,
-        "oct1": 10,
-        "networkipv4": 1,
-        "descricao": "IP of SDN Controller"
-    }
+      "ambiente": 1,
+      "nome": "VLAN 1 - AMBIENTE 1",
+      "num_vlan": "1"
+    },
+    "model": "vlan.vlan",
+    "pk": 1
   },
   {
-  "pk": 1,
-  "model": "vlan.vlan",
-  "fields": {
-    "ambiente": 1,
-    "nome": "VLAN 1 - AMBIENTE 1",
-    "num_vlan": "1"
-    }
-  },
-  {
-    "pk": 1,
+    "fields": {
+      "active": true,
+      "ambient_vip": null,
+      "block": 24,
+      "broadcast": "10.0.0.255",
+      "cluster_unit": null,
+      "mask_oct1": 255,
+      "mask_oct2": 255,
+      "mask_oct3": 255,
+      "mask_oct4": 0,
+      "network_type": 2,
+      "oct1": 10,
+      "oct2": 0,
+      "oct3": 0,
+      "oct4": 0,
+      "vlan": 1
+    },
     "model": "ip.networkipv4",
-    "fields": {
-        "mask_oct1": 255,
-        "mask_oct2": 255,
-        "mask_oct3": 255,
-        "mask_oct4": 0,
-        "oct4": 0,
-        "vlan": 1,
-        "oct2": 0,
-        "oct3": 0,
-        "cluster_unit": null,
-        "oct1": 10,
-        "broadcast": "10.0.0.255",
-        "ambient_vip": null,
-        "active": true,
-        "network_type": 2,
-        "block": 24
-    }
+    "pk": 1
   },
   {
-    "pk": 1,
-    "model": "ip.ipequipamento",
     "fields": {
-        "ip": 1,
-        "equipamento": 10
-    }
+      "equipamento": 10,
+      "ip": 1
+    },
+    "model": "ip.ipequipamento",
+    "pk": 1
   }
 ]
