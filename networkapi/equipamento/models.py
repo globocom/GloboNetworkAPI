@@ -1140,7 +1140,7 @@ class Equipamento(BaseModel):
             self.save()
 
             # groups
-            if equipment.get('groups'):
+            if equipment.get('groups') is not None:
                 groups_db = EquipamentoGrupo.get_by_equipment(self.id)
                 groups_db_ids = groups_db.values_list('egrupo', flat=True)
                 groups = equipment.get('groups')
@@ -1161,7 +1161,7 @@ class Equipamento(BaseModel):
                 groups_db.filter(egrupo__in=groups_db_ids_old).delete()
 
             # environments
-            if equipment.get('environments'):
+            if equipment.get('environments') is not None:
                 env_db = EquipamentoAmbiente.get_by_equipment(self.id)
                 env_db_ids = list(env_db.values_list('ambiente', flat=True))
                 env_ids = list()
@@ -1188,7 +1188,7 @@ class Equipamento(BaseModel):
                 env_db.filter(ambiente__in=env_db_ids_old).delete()
 
             # ipv4s
-            if equipment.get('ipsv4'):
+            if equipment.get('ipsv4') is not None:
                 ipeqpt_model = get_model('ip', 'IpEquipamento')
                 ips_db = ipeqpt_model.list_by_equip(self.id)
                 ips_db_ids = ips_db.values_list('ip', flat=True)
@@ -1207,7 +1207,7 @@ class Equipamento(BaseModel):
                 ips_db.filter(ip__in=ips_db_ids_old).delete()
 
             # ipv6s
-            if equipment.get('ipsv6'):
+            if equipment.get('ipsv6') is not None:
                 ipeqpt_model = get_model('ip', 'Ipv6Equipament')
                 ipv6s_db = ipeqpt_model.list_by_equip(self.id)
                 ipv6s_db_ids = ipv6s_db.values_list('ip', flat=True)
@@ -1226,7 +1226,7 @@ class Equipamento(BaseModel):
                 ipv6s_db.filter(ip__in=ipv6s_db_ids_old).delete()
 
             # asn
-            if equipment.get('asn'):
+            if equipment.get('asn') is not None:
                 asneqpt_model = get_model('api_asn', 'AsnEquipment')
 
                 # delete old AsnEquipment association
@@ -1240,7 +1240,7 @@ class Equipamento(BaseModel):
                 })
 
             # controlled environment
-            if equipment.get('sdn_controlled_environment'):
+            if equipment.get('sdn_controlled_environment') is not None:
                 env_db = EquipmentControllerEnvironment.get_by_equipment(
                     self.id)
                 env_db_ids = list(env_db.values_list('environment', flat=True))
