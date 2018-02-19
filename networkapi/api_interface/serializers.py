@@ -27,6 +27,8 @@ log = logging.getLogger(__name__)
 
 class InterfaceTypeSerializer(DynamicFieldsModelSerializer):
 
+    log.info("InterfaceTypeV3Serializer")
+
     type = serializers.RelatedField(source='tipo')
 
     class Meta:
@@ -36,18 +38,36 @@ class InterfaceTypeSerializer(DynamicFieldsModelSerializer):
             'type',
         )
 
+        default_fields = fields
+
+        basic_fields = fields
+
+        details_fields = fields
+
 
 class PortChannelSerializer(DynamicFieldsModelSerializer):
+
+    log.info("PortChannelV3Serializer")
 
     name = serializers.RelatedField(source='nome')
 
     class Meta:
         model = get_model('interface', 'PortChannel')
+
         fields = (
             'id',
             'name',
             'lacp',
         )
+
+        default_fields = fields
+
+        basic_fields = (
+            'id',
+            'name',
+        )
+
+        details_fields = fields
 
 
 class InterfaceV3Serializer(DynamicFieldsModelSerializer):
@@ -56,25 +76,28 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
 
     protected = serializers.Field(source='protegida')
     description = serializers.Field(source='descricao')
-    equipment = serializers.Field(source='equipamento')
     native_vlan = serializers.Field(source='vlan_nativa')
 
-    interface_type = serializers.SerializerMethodField('get_interface_type')
+    equipamento = serializers.SerializerMethodField('get_equipment')
+    tipo = serializers.SerializerMethodField('get_interface_type')
     channel = serializers.SerializerMethodField('get_channel')
-    front_interface = serializers.SerializerMethodField('get_front_interface')
-    back_interface = serializers.SerializerMethodField('get_back_interface')
+    ligacao_front = serializers.SerializerMethodField('get_front_interface')
+    ligacao_back = serializers.SerializerMethodField('get_back_interface')
 
     def get_interface_type(self, obj):
-        return self.extends_serializer(obj, 'tipo_interface')
+        return self.extends_serializer(obj, 'tipo')
 
     def get_channel(self, obj):
-        return self.extends_serializer(obj, 'port_channel')
+        return self.extends_serializer(obj, 'channel')
 
     def get_front_interface(self, obj):
-        return self.extends_serializer(obj, 'interfaces')
+        return self.extends_serializer(obj, 'ligacao_front')
 
     def get_back_interface(self, obj):
-        return self.extends_serializer(obj, 'interfaces')
+        return self.extends_serializer(obj, 'ligacao_back')
+
+    def get_equipment(self, obj):
+        return self.extends_serializer(obj, 'equipamento')
 
     class Meta:
         interface_model = get_app('interface', module_label='models')
@@ -84,49 +107,98 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
             'interface',
             'protected',
             'description',
-            'equipment',
+            'equipamento',
             'description',
             'native_vlan',
-            'interface_type',
+            'tipo',
             'channel',
-            'front_interface',
-            'back_interface',
+            'ligacao_front',
+            'ligacao_back',
         )
 
-        default_fields = (
+        default_fields = fields
+
+        basic_fields = (
             'id',
             'interface',
-            'protected',
-            'description',
-            'equipment',
-            'description',
-            'native_vlan',
-            'interface_type',
-            'channel',
-            'front_interface',
-            'back_interface',
+            'equipamento',
         )
 
-        basic_fields = default_fields
-
-        details_fields = default_fields
+        details_fields = fields
 
     def get_serializers(self):
         """Returns the mapping of serializers."""
 
+        equipment_serializers = get_app('api_equipment', module_label='serializers')
+
         if not self.mapping:
             self.mapping = {
-                'interface_type': {
-                    'obj': 'interface_type_id'
+                'tipo__details': {
+                    'serializer': InterfaceTypeSerializer,
+                    'kwargs': {
+                        'kind': 'details',
+                    },
+                    'obj': 'tipo'
                 },
                 'channel': {
                     'obj': 'channel_id'
                 },
-                'front_interface': {
-                    'obj': 'front_interface_id'
+                'channel__basic': {
+                    'serializer': PortChannelSerializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'channel',
                 },
-                'back_interface': {
-                    'obj': 'back_interface_id'
+                'ligacao_front__basic': {
+                    'serializer': InterfaceV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'ligacao_front',
                 },
-
+                'ligacao_front__details': {
+                    'serializer': InterfaceV3Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'ligacao_front',
+                },
+                'ligacao_back__basic': {
+                    'serializer': InterfaceV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'ligacao_back',
+                },
+                'ligacao_back__details': {
+                    'serializer': InterfaceV3Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'ligacao_back',
+                },
+                'equipamento': {
+                    'obj': 'equipamento_id'
+                },
+                'equipamento__basic': {
+                    'serializer': equipment_serializers.EquipmentV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'equipamento',
+                },
+                'equipamento__details': {
+                    'serializer': equipment_serializers.EquipmentV3Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'equipamento',
+                },
             }
+
+    @staticmethod
+    def setup_eager_loading_channel(queryset):
+        log.info('Using setup_eager_loading_channel')
+        queryset = queryset.select_related('channel')
+        return queryset

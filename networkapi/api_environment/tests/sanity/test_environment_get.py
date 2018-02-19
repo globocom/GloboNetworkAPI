@@ -96,13 +96,40 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
         expected_data = [
             {'id': 1},
             {'id': 2},
-            {'id': 10},
             {'id': 7},
             {'id': 8}
         ]
         expected_data = json.dumps(expected_data, sort_keys=True)
-
         self.compare_values(expected_data, data)
+
+    def test_get_success_one_environment_with_equipments_and_controllers(self):
+        """
+        Test of success to get one environment with equipments and SDN
+        controllers
+        """
+
+        response = self.client.get(
+            '/api/v3/environment/1/?include=equipments,sdn_controllers',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        data = json.dumps(response.data['environments'][0]['equipments'],
+                          sort_keys=True)
+        expected_data = [
+            {'id': 1},
+            {'id': 2},
+            {'id': 7},
+            {'id': 8}
+        ]
+
+        expected_data = json.dumps(expected_data, sort_keys=True)
+        self.compare_values(expected_data, data)
+        assert isinstance(response.data["environments"][0]["sdn_controllers"],
+                          list), "Wrong controller data type. Must be a list"
+        assert len(response.data["environments"][0]["sdn_controllers"]) > 0, \
+            "sdn_controllers must have at least one entry"
 
     def test_get_success_one_environment_with_children(self):
         """Test of success to get one environment with children."""
