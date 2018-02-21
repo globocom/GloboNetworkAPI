@@ -440,12 +440,8 @@ def verificar_vlan_nativa(vlan_nativa):
     log.info("verificar_vlan_nativa")
 
     if vlan_nativa is not None:
-        if int(vlan_nativa) < 1 or int(vlan_nativa) > 4096:
-            raise InvalidValueError(
-                None, 'Vlan Nativa', 'Range valido: 1 - 4096.')
-        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) == 4096:
-            raise InvalidValueError(
-                None, 'Vlan Nativa', 'Range reservado: 3968-4047;4094.')
+        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) >= 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Range valido: 1-3967, 4048-4095.')
 
 
 def verificar_nome_channel(nome, interfaces):
@@ -477,3 +473,28 @@ def verificar_nome_channel(nome, interfaces):
                         raise exceptions.InterfaceException(
                             u'O nome do port channel ja foi '
                             'utilizado no equipamento')
+
+
+def available_channel_number (channel_name, interface_ids):
+    log.info("available channel")
+
+    interface_obj = Interface()
+
+    for interface_id in interface_ids:
+
+        interface = interface_obj.get_by_pk(interface_id)
+
+        if not interface:
+            raise Exception("Do not exist interface with id: %s" % interface_id)
+
+        equipment_id = interface.equipamento.id
+
+        if not interface.ligacao_front:
+            raise Exception("Interface is not connected.")
+
+        front_equipment_id = interface.ligacao_front.equipamento.id
+
+        if Interface.objects.filter(equipamento=equipment_id, channel__nome=channel_name):
+            raise Exception("Channel name already exist on the equipment: %s" % channel_name)
+        if Interface.objects.filter(equipamento=front_equipment_id, channel__nome=channel_name):
+            raise Exception("Channel name already exist on the equipment: %s" % channel_name)

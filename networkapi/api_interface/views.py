@@ -179,7 +179,7 @@ class InterfaceV3View(CustomAPIView):
             include=self.include,
             exclude=self.exclude,
             kind=self.kind
-        ) if interfaces else list()
+        )
 
         data = render_to_json(
             serializer_interface,
