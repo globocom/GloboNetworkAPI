@@ -37,6 +37,7 @@ from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface
 from networkapi.interface.models import PortChannel
+from networkapi.interface import models
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.util import is_valid_int_greater_zero_param
@@ -49,6 +50,20 @@ log = logging.getLogger(__name__)
 # @register.filter
 # def get(dictionary, key):
 #    return dictionary.get(key)
+
+def create_interface(interface):
+
+    try:
+        interface_obj = Interface()
+        interface_obj.create_v3(interface)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return interface_obj
 
 def get_interface_by_search(search=dict()):
     """Return a list of interface by dict."""
