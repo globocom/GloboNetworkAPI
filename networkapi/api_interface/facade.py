@@ -37,6 +37,7 @@ from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface
 from networkapi.interface.models import PortChannel
+from networkapi.interface import models
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.util import is_valid_int_greater_zero_param
@@ -49,6 +50,20 @@ log = logging.getLogger(__name__)
 # @register.filter
 # def get(dictionary, key):
 #    return dictionary.get(key)
+
+def create_interface(interface):
+
+    try:
+        interface_obj = Interface()
+        interface_obj.create_v3(interface)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return interface_obj
 
 def get_interface_by_search(search=dict()):
     """Return a list of interface by dict."""
@@ -136,7 +151,6 @@ def generate_delete_file(user, equip_id, interface_list, channel):
 
     return rel_file_to_deploy
 
-
 def delete_channel(user, equip_id, interface_list, channel):
 
     file_to_deploy = generate_delete_file(
@@ -154,7 +168,6 @@ def delete_channel(user, equip_id, interface_list, channel):
 
     return status_deploy
 
-
 def generate_and_deploy_interface_config_sync(user, id_interface):
 
     if not is_valid_int_greater_zero_param(id_interface):
@@ -171,7 +184,6 @@ def generate_and_deploy_interface_config_sync(user, id_interface):
         file_to_deploy, interface.equipamento, lockvar)
 
     return status_deploy
-
 
 def generate_and_deploy_channel_config_sync(user, id_channel):
 
@@ -204,7 +216,6 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
             files_to_deploy[equipment_id], equipamento, lockvar)
 
     return status_deploy
-
 
 def _generate_config_file(interfaces_list):
     log.info("_generate_config_file")
@@ -277,7 +288,6 @@ def _generate_config_file(interfaces_list):
 
     return rel_file_to_deploy
 
-
 def _load_template_file(equipment_id, template_type):
     log.info("_load_template_file")
 
@@ -315,7 +325,6 @@ def _load_template_file(equipment_id, template_type):
         # TemplateSyntaxError
 
     return template_file
-
 
 def _generate_dict(interface):
     log.info("_generate_dict")
@@ -371,7 +380,6 @@ def _generate_dict(interface):
 
     return key_dict
 
-
 def get_vlan_range(interface):
     log.info("get_vlan_range")
 
@@ -418,7 +426,6 @@ def get_vlan_range(interface):
 
     return [vlan_range, vlan_range_list]
 
-
 def verificar_vlan_range(amb, vlans):
     log.info("verificar_vlan_range")
 
@@ -435,45 +442,56 @@ def verificar_vlan_range(amb, vlans):
                             u'Numero de vlan fora do range '
                             'definido para o ambiente')
 
-
 def verificar_vlan_nativa(vlan_nativa):
     log.info("verificar_vlan_nativa")
 
     if vlan_nativa is not None:
-        if int(vlan_nativa) < 1 or int(vlan_nativa) > 4096:
-            raise InvalidValueError(
-                None, 'Vlan Nativa', 'Range valido: 1 - 4096.')
-        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) == 4096:
-            raise InvalidValueError(
-                None, 'Vlan Nativa', 'Range reservado: 3968-4047;4094.')
+        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) >= 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Range valido: 1-3967, 4048-4095.')
 
+def check_channel_name_on_equipment(nome, interfaces):
+    log.info("check_channel_name_on_equipment")
 
-def verificar_nome_channel(nome, interfaces):
-    log.info("verificar_nome_channel")
+    for i in interfaces:
 
-    interface = Interface()
+        interface = Interface.objects.get(id=int(i))
 
-    channels = PortChannel.objects.filter(nome=nome)
-    channels_id = []
-    for ch in channels:
-        channels_id.append(int(ch.id))
-    if channels_id:
-        for var in interfaces:
-            if not var == '' and var is not None:
-                interface_id = int(var)
-        interface_id = interface.get_by_pk(interface_id)
-        equip_id = interface_id.equipamento.id
-        equip_interfaces = interface.search(equip_id)
-        for i in equip_interfaces:
-            try:
-                sw = i.get_switch_and_router_interface_from_host_interface(
-                    i.protegida)
-            except:
-                sw = None
-                pass
-            if sw is not None:
-                if sw.channel is not None:
-                    if sw.channel.id in channels_id:
-                        raise exceptions.InterfaceException(
-                            u'O nome do port channel ja foi '
-                            'utilizado no equipamento')
+        interface_obj = Interface.objects.filter(
+            channel__nome=nome,
+            equipamento__id=interface.equipamento.id)
+
+        if interface_obj:
+            raise Exception ("Channel name %s already exist on the equipment %s" % (nome, interface.equipamento.nome))
+
+        front_interface_obj = Interface.objects.filter(
+            channel__nome=nome,
+            equipamento__id=interface.ligacao_front.equipamento.id)
+
+        if front_interface_obj:
+            raise Exception ("Channel name %s already exist on the equipment %s" % (nome, interface.ligacao_front.equipamento.nome))
+
+    log.info("passei")
+
+def available_channel_number(channel_name, interface_ids):
+    log.info("available channel")
+
+    interface_obj = Interface()
+
+    for interface_id in interface_ids:
+
+        interface = interface_obj.get_by_pk(interface_id)
+
+        if not interface:
+            raise Exception("Do not exist interface with id: %s" % interface_id)
+
+        equipment_id = interface.equipamento.id
+
+        if not interface.ligacao_front:
+            raise Exception("Interface is not connected.")
+
+        front_equipment_id = interface.ligacao_front.equipamento.id
+
+        if Interface.objects.filter(equipamento=equipment_id, channel__nome=channel_name):
+            raise Exception("Channel name already exist on the equipment: %s" % channel_name)
+        if Interface.objects.filter(equipamento=front_equipment_id, channel__nome=channel_name):
+            raise Exception("Channel name already exist on the equipment: %s" % channel_name)

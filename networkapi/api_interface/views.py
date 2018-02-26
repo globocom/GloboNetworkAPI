@@ -28,16 +28,19 @@ from networkapi.api_interface import exceptions
 from networkapi.api_interface import facade
 from networkapi.api_interface import serializers
 from networkapi.api_interface.permissions import DeployConfig
+from networkapi.api_interface.permissions import Read
 from networkapi.api_interface.permissions import Write
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LOCK_INTERFACE
 from networkapi.interface.models import Interface
 from networkapi.interface.models import InterfaceNotFoundError
+from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
+from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 from networkapi.util.geral import render_to_json
 
@@ -157,7 +160,7 @@ class InterfaceV3View(CustomAPIView):
 
     @logs_method_apiview
     @raise_json_validate('')
-    #@permission_classes_apiview((IsAuthenticated, Read))
+    @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get (self, request, *args, **kwargs):
         """URL: api/interface/"""
@@ -179,7 +182,7 @@ class InterfaceV3View(CustomAPIView):
             include=self.include,
             exclude=self.exclude,
             kind=self.kind
-        ) if interfaces else list()
+        )
 
         data = render_to_json(
             serializer_interface,
@@ -190,3 +193,28 @@ class InterfaceV3View(CustomAPIView):
         )
 
         return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @prepare_search
+    def post (self, request, *args, **kwargs):
+        """
+        Create Interface
+        URL: api/interface/
+        """
+
+        interfaces = request.DATA
+
+        json_validate(SPECS.get('interface_post')).validate(interfaces)
+
+        response = list()
+
+        for i in interfaces['interfaces']:
+            interface = facade.create_interface(i)
+            response.append({'id': interface.id})
+
+        data = dict()
+        data['interfaces'] = response
+
+        return Response(data, status=status.HTTP_201_CREATED)

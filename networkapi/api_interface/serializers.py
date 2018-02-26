@@ -122,6 +122,7 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
             'id',
             'interface',
             'equipamento',
+            'channel',
         )
 
         details_fields = fields

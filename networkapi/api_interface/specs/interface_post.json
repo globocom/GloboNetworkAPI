@@ -1,0 +1,49 @@
+{
+  "title": "Interface Post",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "interfaces"
+  ],
+  "properties": {
+    "interfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "vlan": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "integer"
+          },
+          "protected": {
+            "type": "boolean"
+          },
+          "equipment_id": {
+            "type": "integer"
+          },
+          "front_connection_id": {
+            "type": "integer"
+          },
+          "back_connection_id": {
+            "type": "integer"
+          }
+        },
+
+        "required": [
+          "name",
+          "type",
+          "protected",
+          "equipment_id"
+        ]
+      }
+    }
+  }
+}
