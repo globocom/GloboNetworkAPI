@@ -191,7 +191,10 @@ def trata_param_pool(pools):
                 member_description.append(pool_member['identifier'])
 
             if pool_member.get('weight') is not None:
-                member_weight.append(pool_member['weight'])
+                if p.get('lb_method') == 'weighted' and int(pool_member['weight']) > 0:
+                    member_weight.append(pool_member['weight'])
+                else:
+                    member_weight.append('1')
 
             if not pool_member.get('remove'):
                 member.append({

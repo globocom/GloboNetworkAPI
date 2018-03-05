@@ -143,6 +143,17 @@ class PoolMember(F5Base):
             kwargs['members'],
             kwargs['description'])
 
+    @logger
+    def set_ratio(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        self._lb._channel.LocalLB.Pool.set_member_ratio(
+            kwargs['names'],
+            kwargs['members'],
+            kwargs['ratio'])
+
     def __repr__(self):
         log.info('%s' % (self._lb))
         return self._lb
