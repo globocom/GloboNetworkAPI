@@ -134,6 +134,9 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
 
         if not self.mapping:
             self.mapping = {
+                'tipo': {
+                    'obj': 'tipo_id'
+                },
                 'tipo__details': {
                     'serializer': InterfaceTypeSerializer,
                     'kwargs': {
@@ -151,6 +154,9 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'channel',
                 },
+                'ligacao_front': {
+                    'obj': 'ligacao_front_id'
+                },
                 'ligacao_front__basic': {
                     'serializer': InterfaceV3Serializer,
                     'kwargs': {
@@ -164,6 +170,9 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
                         'kind': 'details'
                     },
                     'obj': 'ligacao_front',
+                },
+                'ligacao_back': {
+                    'obj': 'ligacao_back_id'
                 },
                 'ligacao_back__basic': {
                     'serializer': InterfaceV3Serializer,
