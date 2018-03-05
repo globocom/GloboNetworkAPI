@@ -4,12 +4,12 @@
       "interface": "Eth2",
       "protected": false,
       "description": "",
-      "equipamento": 1,
+      "equipment": 1,
       "native_vlan": "1",
-      "tipo": 1,
+      "type": 1,
       "channel": null,
-      "ligacao_front": null,
-      "ligacao_back": null
+      "front_interface": null,
+      "back_interface": null
     }
   ]
 }
