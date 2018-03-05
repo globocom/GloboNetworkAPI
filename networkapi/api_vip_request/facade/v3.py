@@ -345,8 +345,7 @@ def prepare_apply(load_balance, vip, created=True, user=None):
                                                 }
 
                                             idx_layer = str(idx)
-                                            idx_port_str = str(
-                                                port['port'])
+                                            idx_port_str = str(port['port'])
                                             if not load_balance[eqpt_id]['layers'].get(id_vip):
                                                 load_balance[eqpt_id][
                                                     'layers'][id_vip] = dict()
@@ -365,6 +364,10 @@ def prepare_apply(load_balance, vip, created=True, user=None):
                                                         idx_port_str: definitions
                                                     }
                                                 }
+                                # In first validated==True stops conditionals.
+                                # Removing this break will add a wrong
+                                # conditional.
+                                break
 
     for e in equips:
         eqpt_id = str(e.id)
