@@ -78,26 +78,26 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
     description = serializers.Field(source='descricao')
     native_vlan = serializers.Field(source='vlan_nativa')
 
-    equipamento = serializers.SerializerMethodField('get_equipment')
-    tipo = serializers.SerializerMethodField('get_interface_type')
+    equipment = serializers.SerializerMethodField('get_equipment')
+    type = serializers.SerializerMethodField('get_interface_type')
     channel = serializers.SerializerMethodField('get_channel')
-    ligacao_front = serializers.SerializerMethodField('get_front_interface')
-    ligacao_back = serializers.SerializerMethodField('get_back_interface')
+    front_interface = serializers.SerializerMethodField('get_front_interface')
+    back_interface = serializers.SerializerMethodField('get_back_interface')
 
     def get_interface_type(self, obj):
-        return self.extends_serializer(obj, 'tipo')
+        return self.extends_serializer(obj, 'type')
 
     def get_channel(self, obj):
         return self.extends_serializer(obj, 'channel')
 
     def get_front_interface(self, obj):
-        return self.extends_serializer(obj, 'ligacao_front')
+        return self.extends_serializer(obj, 'front_interface')
 
     def get_back_interface(self, obj):
-        return self.extends_serializer(obj, 'ligacao_back')
+        return self.extends_serializer(obj, 'back_interface')
 
     def get_equipment(self, obj):
-        return self.extends_serializer(obj, 'equipamento')
+        return self.extends_serializer(obj, 'equipment')
 
     class Meta:
         interface_model = get_app('interface', module_label='models')
@@ -107,13 +107,13 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
             'interface',
             'protected',
             'description',
-            'equipamento',
+            'equipment',
             'description',
             'native_vlan',
-            'tipo',
+            'type',
             'channel',
-            'ligacao_front',
-            'ligacao_back',
+            'front_interface',
+            'back_interface',
         )
 
         default_fields = fields
@@ -121,7 +121,7 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
         basic_fields = (
             'id',
             'interface',
-            'equipamento',
+            'equipment',
             'channel',
         )
 
@@ -134,7 +134,10 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
 
         if not self.mapping:
             self.mapping = {
-                'tipo__details': {
+                'type': {
+                    'obj': 'tipo_id'
+                },
+                'type__details': {
                     'serializer': InterfaceTypeSerializer,
                     'kwargs': {
                         'kind': 'details',
@@ -151,45 +154,51 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'channel',
                 },
-                'ligacao_front__basic': {
+                'front_interface': {
+                    'obj': 'ligacao_front_id'
+                },
+                'front_interface__basic': {
                     'serializer': InterfaceV3Serializer,
                     'kwargs': {
                         'kind': 'basic'
                     },
                     'obj': 'ligacao_front',
                 },
-                'ligacao_front__details': {
+                'front_interface__details': {
                     'serializer': InterfaceV3Serializer,
                     'kwargs': {
                         'kind': 'details'
                     },
                     'obj': 'ligacao_front',
                 },
-                'ligacao_back__basic': {
+                'back_interface': {
+                    'obj': 'ligacao_back_id'
+                },
+                'back_interface__basic': {
                     'serializer': InterfaceV3Serializer,
                     'kwargs': {
                         'kind': 'basic'
                     },
                     'obj': 'ligacao_back',
                 },
-                'ligacao_back__details': {
+                'back_interface__details': {
                     'serializer': InterfaceV3Serializer,
                     'kwargs': {
                         'kind': 'details'
                     },
                     'obj': 'ligacao_back',
                 },
-                'equipamento': {
+                'equipment': {
                     'obj': 'equipamento_id'
                 },
-                'equipamento__basic': {
+                'equipment__basic': {
                     'serializer': equipment_serializers.EquipmentV3Serializer,
                     'kwargs': {
                         'kind': 'basic'
                     },
                     'obj': 'equipamento',
                 },
-                'equipamento__details': {
+                'equipment__details': {
                     'serializer': equipment_serializers.EquipmentV3Serializer,
                     'kwargs': {
                         'kind': 'details'
