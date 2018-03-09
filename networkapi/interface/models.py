@@ -564,75 +564,6 @@ class Interface(BaseModel):
             raise InterfaceError(
                 e, u'Failed to add interface for the equipment.')
 
-    def create_v3(self, interface):
-        """
-        Add new interface
-
-        @return: Interface instance
-        @raise EquipamentoNotFoundError: Equipment doesn't exist
-        @raise EquipamentoError: Failed to find equipment
-        @raise FrontLinkNotFoundError: FrontEnd interface doesn't exist
-        @raise BackLinkNotFoundError: BackEnd interface doesn't exist
-        @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same
-        equipment already exists
-        @raise InterfaceError: Failed to add new interface
-        """
-
-        # validate interface name
-        if Interface.objects.filter(equipamento__id=interface.get('equipment_id'),
-                                    interface__iexact=interface.get('name')):
-            raise InterfaceForEquipmentDuplicatedError(None, u'Duplicate interface name for the device.')
-
-        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
-
-        self.equipamento = facade.get_equipment_by_id(interface.get('equipment_id'))
-
-        marca = self.equipamento.modelo.marca.id if self.equipamento.tipo_equipamento.id != 2 else 0
-
-        if marca == 0:
-            regex = '^([a-zA-Z0-9-_/ ]+(:)?){1,6}$'
-        elif marca == 2:
-            regex = '^(Int)\s[0-9]+$'
-        elif marca == 3:
-            regex = '^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$'
-        elif marca == 4:
-            regex = '^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$'
-        elif marca == 5:
-            regex = '^(eth)[0-9]+(/[0-9]+)?$'
-        else:
-            regex = ''
-
-        # Validate if interface name conforms to the brand
-        if not is_valid_regex(self.interface, regex):
-            raise InvalidValueError(None, 'nome', self.interface)
-
-        try:
-            self.ligacao_front = Interface.get_by_pk(interface.get('front_connection_id')) \
-                if interface.get('front_connection_id') else None
-        except InterfaceNotFoundError, e:
-            raise FrontLinkNotFoundError(e, u'Frontend interface does not exist')
-
-        try:
-            self.ligacao_back = Interface.get_by_pk(interface.get('back_connection_id')) \
-                if interface.get('back_connection_id') else None
-        except InterfaceNotFoundError, e:
-            raise BackLinkNotFoundError(e, u'Backend interface does not exist')
-
-
-        self.vlan_nativa = interface.get('vlan') if interface.get('vlan') else 1
-
-        if int(self.vlan_nativa) < 1 \
-                or 3967 < int(self.vlan_nativa) < 4048 \
-                or int(self.vlan_nativa) == 4096:
-            raise InvalidValueError(None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
-
-        self.interface = interface.get('name')
-        self.descricao = interface.get('description')
-        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
-        self.protegida = interface.get('protected')
-
-        return self.save()
-
     @classmethod
     def update(cls, authenticated_user, id_interface, **kwargs):
         """Update interface according to arguments
@@ -780,6 +711,88 @@ class Interface(BaseModel):
             i.save()
 
         super(Interface, self).delete()
+
+    def create_v3(self, interface):
+        """
+        Add new interface
+
+        @return: Interface instance
+        @raise EquipamentoNotFoundError: Equipment doesn't exist
+        @raise EquipamentoError: Failed to find equipment
+        @raise FrontLinkNotFoundError: FrontEnd interface doesn't exist
+        @raise BackLinkNotFoundError: BackEnd interface doesn't exist
+        @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same
+        equipment already exists
+        @raise InterfaceError: Failed to add new interface
+        """
+
+        # validate interface name
+        if Interface.objects.filter(equipamento__id=interface.get('equipment_id'),
+                                    interface__iexact=interface.get('name')):
+            raise InterfaceForEquipmentDuplicatedError(None, u'Duplicate interface name for the device.')
+
+        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
+
+        self.equipamento = facade.get_equipment_by_id(interface.get('equipment_id'))
+
+        marca = self.equipamento.modelo.marca.id if self.equipamento.tipo_equipamento.id != 2 else 0
+
+        if marca == 0:
+            regex = '^([a-zA-Z0-9-_/ ]+(:)?){1,6}$'
+        elif marca == 2:
+            regex = '^(Int)\s[0-9]+$'
+        elif marca == 3:
+            regex = '^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$'
+        elif marca == 4:
+            regex = '^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$'
+        elif marca == 5:
+            regex = '^(eth)[0-9]+(/[0-9]+)?$'
+        else:
+            regex = ''
+
+        # Validate if interface name conforms to the brand
+        if not is_valid_regex(self.interface, regex):
+            raise InvalidValueError(None, 'nome', self.interface)
+
+        try:
+            self.ligacao_front = Interface.get_by_pk(interface.get('front_connection_id')) \
+                if interface.get('front_connection_id') else None
+        except InterfaceNotFoundError, e:
+            raise FrontLinkNotFoundError(e, u'Frontend interface does not exist')
+
+        try:
+            self.ligacao_back = Interface.get_by_pk(interface.get('back_connection_id')) \
+                if interface.get('back_connection_id') else None
+        except InterfaceNotFoundError, e:
+            raise BackLinkNotFoundError(e, u'Backend interface does not exist')
+
+
+        self.vlan_nativa = interface.get('vlan') if interface.get('vlan') else 1
+
+        if int(self.vlan_nativa) < 1 \
+                or 3967 < int(self.vlan_nativa) < 4048 \
+                or int(self.vlan_nativa) == 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
+
+        self.interface = interface.get('name')
+        self.descricao = interface.get('description')
+        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
+        self.protegida = interface.get('protected')
+
+        return self.save()
+
+    def remove_v3(self):
+        """Before removing it eliminates all your relationships.
+        """
+        log.debug("remove v3")
+
+        #if self.ligacao_front or self.ligacao_back:
+         #   raise Exception('Interface connected.')
+
+        if Interface.objects.filter(models.Q(ligacao_front__id=self.id)|models.Q(ligacao_back__id=self.id)):
+            raise Exception('Interface connected.')
+
+        self.delete()
 
 
 class EnvironmentInterface(BaseModel):

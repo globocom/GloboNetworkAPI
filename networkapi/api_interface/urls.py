@@ -25,5 +25,5 @@ urlpatterns = patterns('networkapi.api_interface.views',
                            'deploy_channel_configuration_sync'),
                        url(r'^interface/disconnect/(?P<id_interface_1>\d+)/(?P<id_interface_2>\d+)/$',
                            DisconnectView.as_view()),
-                       url(r'^v3/interface/((?P<obj_ids>[;\w]+)/)?$', InterfaceV3View.as_view()),
+                       url(r'^v3/interface/((?P<obj_ids>[;\w]+)[/])?$', InterfaceV3View.as_view()),
                        )

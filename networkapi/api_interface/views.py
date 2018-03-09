@@ -218,3 +218,26 @@ class InterfaceV3View(CustomAPIView):
         data['interfaces'] = response
 
         return Response(data, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Deletes list of equipments."""
+
+        obj_ids = kwargs.get('obj_ids').split(';')
+
+        exceptions_list = list()
+        status_str = status.HTTP_200_OK
+
+        for i in obj_ids:
+            try:
+                facade.delete_interface(i)
+            except api_exceptions.NetworkAPIException, e:
+                exceptions_list.append(str(e))
+                status_str = status.HTTP_400_BAD_REQUEST
+
+        data = dict()
+        data['errors'] = exceptions_list
+
+        return Response(data, status=status_str)

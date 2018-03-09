@@ -25,8 +25,9 @@ from django.template import Template
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.api_interface import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
-from networkapi.distributedlock import LOCK_EQUIPMENT
+from networkapi.distributedlock import LOCK_INTERFACE
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoRoteiro
@@ -45,11 +46,6 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 
-# register = template.Library()
-
-# @register.filter
-# def get(dictionary, key):
-#    return dictionary.get(key)
 
 def create_interface(interface):
 
@@ -64,6 +60,23 @@ def create_interface(interface):
         raise NetworkAPIException(str(e))
 
     return interface_obj
+
+def delete_interface(interface):
+    """Delete interface by id"""
+
+    log.debug("delete_interface")
+
+    try:
+        interface_obj = Interface.objects.get(id=int(interface))
+        interface_obj.remove_v3()
+    except ObjectDoesNotExistException, e:
+        raise NetworkAPIException(e.detail)
+    except ValidationAPIException, e:
+        raise NetworkAPIException(e.detail)
+    except models.InterfaceUsedByOtherInterfaceError, e:
+        raise NetworkAPIException(e)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
 
 def get_interface_by_search(search=dict()):
     """Return a list of interface by dict."""
