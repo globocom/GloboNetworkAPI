@@ -26,7 +26,7 @@ services:
             - netapi_net
         depends_on:
             - odl
-    
+
     ovs2:
         container_name: ovs2
         image: socketplane/openvswitch
