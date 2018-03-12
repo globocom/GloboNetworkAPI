@@ -8,6 +8,7 @@
 - [Alejandra Klachquin](https://github.com/alejandraklachquin)
 - Avner Gonçalves
 - [Ederson Brilhante](https://github.com/edersonbrilhante)
+- [Gustavo Pantuza](https://github.com/pantuza)
 - [Laura Panzariello](https://github.com/laurapanzariello)
 - Lucas Borges
 - Mauricio Leoncio dos Santos
