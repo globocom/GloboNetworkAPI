@@ -27,7 +27,7 @@ from networkapi.api_interface import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
-from networkapi.distributedlock import LOCK_INTERFACE
+from networkapi.distributedlock import LOCK_EQUIPMENT
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
 from networkapi.equipamento.models import Equipamento
 from networkapi.equipamento.models import EquipamentoRoteiro
