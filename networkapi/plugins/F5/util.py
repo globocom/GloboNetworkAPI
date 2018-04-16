@@ -2,6 +2,7 @@
 import copy
 import logging
 from functools import wraps
+import ipaddress
 
 import bigsuds
 
@@ -260,6 +261,7 @@ def trata_param_vip(vips):
                 if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
             vip_filter['name'] = port['identifier']
+            address = str(ipaddress.ip_address(address))
             vip_filter['address'] = address
             vip_filter['port'] = port['port']
             vip_filter['optionsvip'] = vip_request['options']
@@ -419,6 +421,7 @@ def trata_param_vip(vips):
 
                     vip_cache_filter['pool'] = None
                     vip_cache_filter['name'] = port['identifier']
+                    address = str(ipaddress.ip_address(address))
                     vip_cache_filter['address'] = address
                     vip_cache_filter['port'] = port['port']
 
