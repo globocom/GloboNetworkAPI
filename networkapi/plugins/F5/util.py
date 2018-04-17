@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import copy
 import logging
 from functools import wraps
-import ipaddress
 
 import bigsuds
+import ipaddress
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
@@ -285,7 +287,7 @@ def trata_param_vip(vips):
                             cluster_unit is None:
                         cluster_unit = None
                         break
-            except:
+            except Exception:
                 cluster_unit = None
                 pass
 
