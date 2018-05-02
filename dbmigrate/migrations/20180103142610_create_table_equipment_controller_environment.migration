@@ -25,11 +25,11 @@ ADD CONSTRAINT `fk_equipment_controller_environment_fk2`
 """
 
 SQL_DOWN = u"""
-ALTER TABLE `networkapi`.`equipment_controller_environment` 
+ALTER TABLE `equipment_controller_environment` 
 DROP FOREIGN KEY `fk_equipment_controller_environment_fk2`,
 DROP FOREIGN KEY `fk_equipment_controller_environment_fk1`;
 
-ALTER TABLE `networkapi`.`equipment_controller_environment` 
+ALTER TABLE `equipment_controller_environment` 
 DROP INDEX `fk_equipment_controller_environment_fk2_idx` ,
 DROP INDEX `fk_equipment_controller_environment_fk1_idx` ;
 
