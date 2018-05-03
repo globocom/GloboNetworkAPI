@@ -1,27 +1,63 @@
 {
-  "title": "Environment Put",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "required": [
-    "environments"
-  ],
   "properties": {
     "environments": {
-      "type": "array",
       "items": {
-        "type": "object",
         "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "grupo_l3": {
-            "type": "integer"
+          "acl_path": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "ambiente_logico": {
             "type": "integer"
           },
+          "aws_vpc": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "configs": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "network_type": {
+                  "type": "integer"
+                },
+                "new_prefix": {
+                  "type": "string"
+                },
+                "subnet": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "default_vrf": {
+            "type": [
+              "integer"
+            ]
+          },
           "divisao_dc": {
             "type": "integer"
+          },
+          "father_environment": {
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "filter": {
             "type": [
@@ -29,29 +65,11 @@
               "null"
             ]
           },
-          "min_num_vlan_1": {
-            "type": [
-              "integer",
-              "null"
-            ]
+          "grupo_l3": {
+            "type": "integer"
           },
-          "max_num_vlan_1": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "min_num_vlan_2": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "max_num_vlan_2": {
-            "type": [
-              "integer",
-              "null"
-            ]
+          "id": {
+            "type": "integer"
           },
           "ipv4_template": {
             "type": [
@@ -71,9 +89,27 @@
               "null"
             ]
           },
-          "acl_path": {
+          "max_num_vlan_1": {
             "type": [
-              "string",
+              "integer",
+              "null"
+            ]
+          },
+          "max_num_vlan_2": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "min_num_vlan_1": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "min_num_vlan_2": {
+            "type": [
+              "integer",
               "null"
             ]
           },
@@ -82,43 +118,6 @@
               "string",
               "null"
             ]
-          },
-          "father_environment": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "default_vrf": {
-            "type": [
-              "integer"
-            ]
-          },
-          "configs": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": [
-                    "integer",
-                    "null"
-                  ]
-                },
-                "subnet": {
-                  "type": "string"
-                },
-                "new_prefix": {
-                  "type": "string"
-                },
-                "type": {
-                  "type": "string"
-                },
-                "network_type": {
-                  "type": "integer"
-                }
-              }
-            }
           }
         },
         "required": [
@@ -127,8 +126,15 @@
           "ambiente_logico",
           "divisao_dc",
           "default_vrf"
-        ]
-      }
+        ],
+        "type": "object"
+      },
+      "type": "array"
     }
-  }
+  },
+  "required": [
+    "environments"
+  ],
+  "title": "Environment Put",
+  "type": "object"
 }

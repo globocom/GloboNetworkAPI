@@ -9,6 +9,7 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 
 log = logging.getLogger(__name__)
 
+
 class IpConfigV3Serializer(DynamicFieldsModelSerializer):
 
     id = serializers.RelatedField(source='ip_config.id')
@@ -69,7 +70,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
     configs = IpConfigV3Serializer(source='configs', many=True)
 
-    father_environment = serializers.SerializerMethodField('get_father_environment')
+    father_environment = serializers.SerializerMethodField(
+        'get_father_environment')
     grupo_l3 = serializers.SerializerMethodField('get_grupo_l3')
     ambiente_logico = serializers.SerializerMethodField('get_ambiente_logico')
     divisao_dc = serializers.SerializerMethodField('get_divisao_dc')
@@ -92,16 +94,16 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         for i, ctrl in enumerate(obj.sdn_controllers):
             controllers.insert(i, model_to_dict(ctrl))
 
-            controllers[i]["ipv4"] = []
-            controllers[i]["ipv6"] = []
+            controllers[i]['ipv4'] = []
+            controllers[i]['ipv6'] = []
 
             for ipv4 in ctrl.ipv4:
-                controllers[i]["ipv4"].append(
-                    "%s/%d" % (str(ipv4), ipv4.networkipv4.block)
+                controllers[i]['ipv4'].append(
+                    '%s/%d' % (str(ipv4), ipv4.networkipv4.block)
                 )
             for ipv6 in ctrl.ipv6:
-                controllers[i]["ipv6"].append(
-                    "%s/%d" % (str(ipv6), ipv6.networkipv6.block)
+                controllers[i]['ipv6'].append(
+                    '%s/%d' % (str(ipv6), ipv6.networkipv6.block)
                 )
 
         return self.extends_serializer(controllers, 'sdn_controllers')
@@ -164,6 +166,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'equipments',
             'sdn_controllers',
             'dcroom',
+            'aws_vpc',
         )
         default_fields = (
             'id',
@@ -184,6 +187,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'father_environment',
             'sdn_controllers',
             'dcroom',
+            'aws_vpc',
         )
 
         basic_fields = (
@@ -199,7 +203,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         filter_slz = get_app('api_filter', module_label='serializers')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         vrf_slz = get_app('api_vrf', module_label='serializers')
-        datacenter_serializers = get_app('api_rack', module_label='serializers')
+        datacenter_serializers = get_app(
+            'api_rack', module_label='serializers')
 
         if not self.mapping:
             self.mapping = {

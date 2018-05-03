@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "vpcs": {
+      "items": {
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "vpc": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "vpc"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "vpcs"
+  ],
+  "title": "Vrf Post",
+  "type": "object"
+}

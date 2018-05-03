@@ -324,6 +324,7 @@ TEMPLATE_DIRS = (
 PROJECT_APPS = (
     'networkapi.ambiente',
     'networkapi.api_asn',
+    'networkapi.api_aws',
     'networkapi.api_environment',
     'networkapi.api_environment_vip',
     'networkapi.api_equipment',

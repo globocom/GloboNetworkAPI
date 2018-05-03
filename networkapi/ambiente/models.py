@@ -881,6 +881,11 @@ class Ambiente(BaseModel):
         null=True,
         db_column='id_dcroom'
     )
+    aws_vpc = models.ForeignKey(
+        'api_aws.VPC',
+        null=True,
+        db_column='id_aws_vpc'
+    )
 
     log = logging.getLogger('Ambiente')
 
@@ -1297,6 +1302,10 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
+
+            aws_vpc = get_model('api_aws', 'VPC')
+            self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
+
             if env_map.get('fabric_id'):
                 fabric = env_map.get('fabric_id')
             elif env_map.get('dcroom'):
