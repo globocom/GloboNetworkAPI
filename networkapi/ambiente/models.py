@@ -1303,8 +1303,10 @@ class Ambiente(BaseModel):
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
 
-            aws_vpc = get_model('api_aws', 'VPC')
-            self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
+            if env_map.get('aws_vpc'):
+                aws_vpc = get_model('api_aws', 'VPC')
+                self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
+            self.aws_vpc = None
 
             if env_map.get('fabric_id'):
                 fabric = env_map.get('fabric_id')
@@ -1314,6 +1316,7 @@ class Ambiente(BaseModel):
                 fabric = None
             if fabric:
                 self.dcroom = DatacenterRooms().get_dcrooms(idt=fabric)
+
             self.validate_v3()
             self.save()
 
@@ -1355,6 +1358,11 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
+
+            if env_map.get('aws_vpc'):
+                aws_vpc = get_model('api_aws', 'VPC')
+                self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
+            self.aws_vpc = None
 
         except Exception, e:
             raise EnvironmentErrorV3(e)

@@ -83,9 +83,13 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     name = serializers.SerializerMethodField('get_name')
     sdn_controllers = serializers.SerializerMethodField('get_sdn_controllers')
     dcroom = serializers.SerializerMethodField('get_dcroom')
+    aws_vpc = serializers.SerializerMethodField('get_aws_vpc')
 
     def get_dcroom(self, obj):
         return self.extends_serializer(obj, 'dcroom')
+
+    def get_aws_vpc(self, obj):
+        return self.extends_serializer(obj, 'aws_vpc')
 
     def get_sdn_controllers(self, obj):
         from django.forms.models import model_to_dict
@@ -205,6 +209,8 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         vrf_slz = get_app('api_vrf', module_label='serializers')
         datacenter_serializers = get_app(
             'api_rack', module_label='serializers')
+        aws_vpc_serializers = get_app(
+            'api_aws', module_label='serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -391,12 +397,28 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'dcroom',
                     'eager_loading': self.setup_eager_loading_datacenter
-                }
+                },
+                'aws_vpc': {
+                    'obj': 'aws_vpc_id'
+                },
+                'aws_vpc__details': {
+                    'serializer': aws_vpc_serializers.AwsVPCSerializer,
+                    'obj': 'aws_vpc',
+                    'eager_loading': self.setup_eager_loading_aws_vpc
+                },
             }
 
     @staticmethod
+    def setup_eager_loading_aws_vpc(queryset):
+        log.info('Using setup_eager_loading_aws_vpc')
+        queryset = queryset.select_related(
+            'aws_vpc'
+        )
+        return queryset
+
+    @staticmethod
     def setup_eager_loading_datacenter(queryset):
-        log.info('Using setup_eager_loading_father')
+        log.info('Using setup_eager_loading_datacenter')
         queryset = queryset.select_related(
             'dcroom'
         )
