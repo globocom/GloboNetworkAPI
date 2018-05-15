@@ -1306,7 +1306,8 @@ class Ambiente(BaseModel):
             if env_map.get('aws_vpc'):
                 aws_vpc = get_model('api_aws', 'VPC')
                 self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
-            self.aws_vpc = None
+            else:
+                self.aws_vpc = None
 
             if env_map.get('fabric_id'):
                 fabric = env_map.get('fabric_id')
@@ -1362,7 +1363,8 @@ class Ambiente(BaseModel):
             if env_map.get('aws_vpc'):
                 aws_vpc = get_model('api_aws', 'VPC')
                 self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
-            self.aws_vpc = None
+            else:
+                self.aws_vpc = None
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
