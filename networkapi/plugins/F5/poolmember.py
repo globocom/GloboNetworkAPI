@@ -70,6 +70,8 @@ class PoolMember(F5Base):
                     session = '1'
                 elif sessions[p][s] == 'SESSION_STATUS_DISABLED':
                     session = '0'
+                elif sessions[p][s] == 'SESSION_STATUS_FORCED_DISABLED':
+                    session = '0'
                 else:
                     session = '1'
 
