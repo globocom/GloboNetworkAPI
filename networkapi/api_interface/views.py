@@ -42,6 +42,8 @@ from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
+from networkapi.util.geral import create_lock
+from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
 
 
@@ -162,8 +164,8 @@ class InterfaceV3View(CustomAPIView):
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
-    def get (self, request, *args, **kwargs):
-        """URL: api/interface/"""
+    def get(self, request, *args, **kwargs):
+        """URL: api/v3/interface/"""
 
         if not kwargs.get('obj_ids'):
             obj_model = facade.get_interface_by_search(self.search)
@@ -195,24 +197,30 @@ class InterfaceV3View(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('')
+    @raise_json_validate('interface_post')
     @permission_classes_apiview((IsAuthenticated, Write))
-    @prepare_search
-    def post (self, request, *args, **kwargs):
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
         """
         Create Interface
-        URL: api/interface/
+        URL: api/v3/interface/
         """
-
-        interfaces = request.DATA
-
-        json_validate(SPECS.get('interface_post')).validate(interfaces)
 
         response = list()
 
-        for i in interfaces['interfaces']:
-            interface = facade.create_interface(i)
-            response.append({'id': interface.id})
+        interfaces = request.DATA
+        json_validate(SPECS.get('interface_post')).validate(interfaces)
+
+        for i in interfaces.get('interfaces'):
+            try:
+                interface = facade.create_interface(i)
+                response.append({'id': interface.id})
+            except api_exceptions.NetworkAPIException, e:
+                log.error(e)
+                raise api_exceptions.NetworkAPIException(e)
+            except api_exceptions.ValidationAPIException, e:
+                log.error(e)
+                raise api_exceptions.NetworkAPIException(e)
 
         data = dict()
         data['interfaces'] = response
@@ -220,24 +228,22 @@ class InterfaceV3View(CustomAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
+    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
         """Deletes list of equipments."""
 
         obj_ids = kwargs.get('obj_ids').split(';')
+        locks_list = create_lock(obj_ids, LOCK_INTERFACE)
 
-        exceptions_list = list()
-        status_str = status.HTTP_200_OK
-
-        for i in obj_ids:
+        for obj in obj_ids:
             try:
-                facade.delete_interface(i)
+                facade.delete_interface(obj)
             except api_exceptions.NetworkAPIException, e:
-                exceptions_list.append(str(e))
-                status_str = status.HTTP_400_BAD_REQUEST
+                log.error(e)
+                raise api_exceptions.NetworkAPIException(e)
+            finally:
+                destroy_lock(locks_list)
 
-        data = dict()
-        data['errors'] = exceptions_list
-
-        return Response(data, status=status_str)
+        return Response({}, status=status.HTTP_200_OK)

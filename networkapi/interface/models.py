@@ -726,33 +726,15 @@ class Interface(BaseModel):
         @raise InterfaceError: Failed to add new interface
         """
 
-        # validate interface name
         if Interface.objects.filter(equipamento__id=interface.get('equipment_id'),
                                     interface__iexact=interface.get('name')):
             raise InterfaceForEquipmentDuplicatedError(None, u'Duplicate interface name for the device.')
 
+        self.interface = interface.get('name')
         self.tipo = TipoInterface.get_by_pk(interface.get('type'))
-
         self.equipamento = facade.get_equipment_by_id(interface.get('equipment_id'))
-
-        marca = self.equipamento.modelo.marca.id if self.equipamento.tipo_equipamento.id != 2 else 0
-
-        if marca == 0:
-            regex = '^([a-zA-Z0-9-_/ ]+(:)?){1,6}$'
-        elif marca == 2:
-            regex = '^(Int)\s[0-9]+$'
-        elif marca == 3:
-            regex = '^(Fa|Gi|Te|Serial|Eth|mgmt)\s?[0-9]+(/[0-9]+(/[0-9]+)?)?$'
-        elif marca == 4:
-            regex = '^(interface)\s[0-9a-zA-Z]+(/[0-9a-zA-Z])+([0-9a-zA-Z-.]+)?$'
-        elif marca == 5:
-            regex = '^(eth)[0-9]+(/[0-9]+)?$'
-        else:
-            regex = ''
-
-        # Validate if interface name conforms to the brand
-        if not is_valid_regex(self.interface, regex):
-            raise InvalidValueError(None, 'nome', self.interface)
+        self.descricao = interface.get('description')
+        self.protegida = interface.get('protected')
 
         try:
             self.ligacao_front = Interface.get_by_pk(interface.get('front_connection_id')) \
@@ -766,18 +748,12 @@ class Interface(BaseModel):
         except InterfaceNotFoundError, e:
             raise BackLinkNotFoundError(e, u'Backend interface does not exist')
 
-
         self.vlan_nativa = interface.get('vlan') if interface.get('vlan') else 1
 
         if int(self.vlan_nativa) < 1 \
                 or 3967 < int(self.vlan_nativa) < 4048 \
                 or int(self.vlan_nativa) == 4096:
             raise InvalidValueError(None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
-
-        self.interface = interface.get('name')
-        self.descricao = interface.get('description')
-        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
-        self.protegida = interface.get('protected')
 
         return self.save()
 

@@ -74,7 +74,7 @@ class InterfaceDeleteTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.compare_status(400, response.status_code)
+        self.compare_status(500, response.status_code)
 
 
         # Check if deleted

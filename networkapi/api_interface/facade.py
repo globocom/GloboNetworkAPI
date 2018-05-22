@@ -54,6 +54,8 @@ def create_interface(interface):
         interface_obj.create_v3(interface)
     except models.InterfaceError, e:
         raise ValidationAPIException(e.message)
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
     except ValidationAPIException, e:
         raise ValidationAPIException(e.detail)
     except Exception, e:
