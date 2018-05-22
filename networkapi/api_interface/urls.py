@@ -13,10 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from django.conf.urls import patterns
 from django.conf.urls import url
 
-from networkapi.api_interface.views import DisconnectView, InterfaceV3View
+from networkapi.api_interface.views import DisconnectView
+from networkapi.api_interface.views import InterfaceV3View
+from networkapi.api_interface.views import InterfaceTypeV3View
+
 
 urlpatterns = patterns('networkapi.api_interface.views',
                        url(r'^interface/(?P<id_interface>\d+)/deploy_config_sync/$',
@@ -27,6 +31,6 @@ urlpatterns = patterns('networkapi.api_interface.views',
                            DisconnectView.as_view()),
                        url(r'^v3/interface/((?P<obj_ids>[;\w]+)[/])?$',
                            InterfaceV3View.as_view()),
-                       url(r'^v3/interface[/])?$',
-                           InterfaceV3View.as_view()),
+                       url(r'^v3/interfacetype/((?P<obj_ids>[;\w]+)[/])?$',
+                           InterfaceTypeV3View.as_view()),
                        )

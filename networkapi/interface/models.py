@@ -31,6 +31,7 @@ from networkapi.api_equipment import facade
 
 log = logging.getLogger(__name__)
 
+
 class InterfaceError(Exception):
 
     """Representa um erro ocorrido durante acesso à tabela interfaces."""
@@ -120,12 +121,12 @@ class TipoInterface(BaseModel):
         managed = True
 
     @classmethod
-    def get_by_pk(cls, id):
+    def get_by_pk(cls, ids):
         try:
-            return TipoInterface.objects.get(id=id)
+            return TipoInterface.objects.get(id=ids)
         except ObjectDoesNotExist, e:
             raise InterfaceNotFoundError(
-                e, u'Can not find a TipoInterface with id = %s.' % id)
+                e, u'Can not find a TipoInterface with id = %s.' % ids)
         except Exception, e:
             cls.log.error(u'Falha ao pesquisar o tipo de interface.')
             raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
@@ -345,7 +346,8 @@ class Interface(BaseModel):
         from_interface = self
         interface = self.ligacao_front
         try:
-            while (interface is not None) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) \
+            while (interface is not None) \
+                    and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) \
                     and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_ROUTER)\
                     and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SERVIDOR):
                 interface_ids.append(interface.id)
@@ -361,8 +363,9 @@ class Interface(BaseModel):
 
                 if interface is not None:
                     if interface.id in interface_ids:
-                        raise InterfaceNotFoundError(
-                            None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+                        raise InterfaceNotFoundError(None,
+                                                     u'Interface do tipo switch não encontrada a partir do front da '
+                                                     u'interface %d.' % self.id)
         except InterfaceNotFoundError, e:
             raise e
         except Exception, e:
@@ -370,11 +373,11 @@ class Interface(BaseModel):
             raise InterfaceError(
                 e, u'Falha ao pesquisar a interface do switch.')
 
-        if (interface is None):
+        if interface is None:
             raise InterfaceNotFoundError(
                 None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
 
-        if ((protegida is not None) and (interface.protegida != protegida)):
+        if (protegida is not None) and (interface.protegida != protegida):
             raise InterfaceProtectedError(
                 None, u'Interface do switch com o campo protegida diferente de %s.' % protegida)
 
@@ -428,7 +431,7 @@ class Interface(BaseModel):
             raise InterfaceNotFoundError(
                 None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
 
-        if ((protegida is not None) and (interface.protegida != protegida)):
+        if (protegida is not None) and (interface.protegida != protegida):
             raise InterfaceProtectedError(
                 None, u'Interface do switch com o campo protegida diferente de %s.' % protegida)
 
@@ -496,6 +499,7 @@ class Interface(BaseModel):
     def create(self, authenticated_user):
         """Add new interface
 
+        @param authenticated_user: User Authentication
         @return: Interface instance
 
         @raise EquipamentoNotFoundError: Equipment doesn't exist
@@ -569,6 +573,7 @@ class Interface(BaseModel):
         """Update interface according to arguments
 
         @param id_interface: Interface identifier
+        @param authenticated_user: User identifier
 
         @return: Interface instance
 

@@ -158,6 +158,46 @@ class DisconnectView(APIView):
             raise api_exceptions.NetworkAPIException(exception)
 
 
+
+class InterfaceTypeV3View(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """URL: api/v3/interface-type/"""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_interface_type_by_search(self.search)
+            interfaces_type = obj_model['query_set']
+            only_main_property = False
+        else:
+            interface_ids = kwargs.get('obj_ids').split(';')
+            interfaces_type = facade.get_interface_by_ids(interface_ids)
+            only_main_property = True
+            obj_model = None
+
+        serializer_interface_type = serializers.InterfaceTypeSerializer(
+            interfaces_type,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_interface_type,
+            main_property='interfaces_type',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
 class InterfaceV3View(CustomAPIView):
 
     @logs_method_apiview

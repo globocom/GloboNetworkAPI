@@ -38,6 +38,7 @@ from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface
 from networkapi.interface.models import PortChannel
+from networkapi.interface.models import TipoInterface
 from networkapi.interface import models
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
@@ -45,6 +46,36 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 
 log = logging.getLogger(__name__)
+
+
+def get_interface_type_by_search(search=dict()):
+    """Return a list of interface by dict."""
+
+    try:
+        interfaces = TipoInterface.objects.filter()
+        interface_map = build_query_to_datatable_v3(interfaces, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interface_map
+
+
+def get_interface_type_by_ids(types_ids):
+    try:
+        interfaces_obj = list()
+        for i in types_ids:
+            interface = TipoInterface.objects.get(id=int(i))
+            interfaces_obj.append(interface)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except ObjectDoesNotExist, e:
+        raise Exception(u'There is no interface with id = %s. %s' % (id, e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interfaces_obj
 
 
 def create_interface(interface):
@@ -63,6 +94,7 @@ def create_interface(interface):
 
     return interface_obj
 
+
 def delete_interface(interface):
     """Delete interface by id"""
 
@@ -80,6 +112,7 @@ def delete_interface(interface):
     except Exception, e:
         raise NetworkAPIException(str(e))
 
+
 def get_interface_by_search(search=dict()):
     """Return a list of interface by dict."""
 
@@ -92,6 +125,7 @@ def get_interface_by_search(search=dict()):
         raise NetworkAPIException(str(e))
     else:
         return interface_map
+
 
 def get_interface_by_ids(interface_ids):
     try:
@@ -107,6 +141,7 @@ def get_interface_by_ids(interface_ids):
         raise NetworkAPIException(str(e))
     else:
         return interfaces_obj
+
 
 def generate_delete_file(user, equip_id, interface_list, channel):
     try:
@@ -166,6 +201,7 @@ def generate_delete_file(user, equip_id, interface_list, channel):
 
     return rel_file_to_deploy
 
+
 def delete_channel(user, equip_id, interface_list, channel):
 
     file_to_deploy = generate_delete_file(
@@ -183,6 +219,7 @@ def delete_channel(user, equip_id, interface_list, channel):
 
     return status_deploy
 
+
 def generate_and_deploy_interface_config_sync(user, id_interface):
 
     if not is_valid_int_greater_zero_param(id_interface):
@@ -199,6 +236,7 @@ def generate_and_deploy_interface_config_sync(user, id_interface):
         file_to_deploy, interface.equipamento, lockvar)
 
     return status_deploy
+
 
 def generate_and_deploy_channel_config_sync(user, id_channel):
 
@@ -231,6 +269,7 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
             files_to_deploy[equipment_id], equipamento, lockvar)
 
     return status_deploy
+
 
 def _generate_config_file(interfaces_list):
     log.info("_generate_config_file")
@@ -303,6 +342,7 @@ def _generate_config_file(interfaces_list):
 
     return rel_file_to_deploy
 
+
 def _load_template_file(equipment_id, template_type):
     log.info("_load_template_file")
 
@@ -340,6 +380,7 @@ def _load_template_file(equipment_id, template_type):
         # TemplateSyntaxError
 
     return template_file
+
 
 def _generate_dict(interface):
     log.info("_generate_dict")
@@ -395,6 +436,7 @@ def _generate_dict(interface):
 
     return key_dict
 
+
 def get_vlan_range(interface):
     log.info("get_vlan_range")
 
@@ -441,6 +483,7 @@ def get_vlan_range(interface):
 
     return [vlan_range, vlan_range_list]
 
+
 def verificar_vlan_range(amb, vlans):
     log.info("verificar_vlan_range")
 
@@ -457,12 +500,14 @@ def verificar_vlan_range(amb, vlans):
                             u'Numero de vlan fora do range '
                             'definido para o ambiente')
 
+
 def verificar_vlan_nativa(vlan_nativa):
     log.info("verificar_vlan_nativa")
 
     if vlan_nativa is not None:
         if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) >= 4096:
             raise InvalidValueError(None, 'Vlan Nativa', 'Range valido: 1-3967, 4048-4095.')
+
 
 def check_channel_name_on_equipment(nome, interfaces):
     log.info("check_channel_name_on_equipment")
@@ -476,16 +521,17 @@ def check_channel_name_on_equipment(nome, interfaces):
             equipamento__id=interface.equipamento.id)
 
         if interface_obj:
-            raise Exception ("Channel name %s already exist on the equipment %s" % (nome, interface.equipamento.nome))
+            raise Exception("Channel name %s already exist on the equipment %s" % (nome, interface.equipamento.nome))
 
         front_interface_obj = Interface.objects.filter(
             channel__nome=nome,
             equipamento__id=interface.ligacao_front.equipamento.id)
 
         if front_interface_obj:
-            raise Exception ("Channel name %s already exist on the equipment %s" % (nome, interface.ligacao_front.equipamento.nome))
+            raise Exception("Channel name %s already exist on the equipment %s" % (nome, interface.ligacao_front.equipamento.nome))
 
     log.info("passei")
+
 
 def available_channel_number(channel_name, interface_ids):
     log.info("available channel")
