@@ -11,6 +11,9 @@
       "items": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer"
+          },
           "interface": {
             "type": "string"
           },
@@ -44,10 +47,13 @@
         },
 
         "required": [
+          "id",
           "interface",
           "type",
           "protected",
-          "equipment"
+          "equipment",
+          "front_interface",
+          "back_interface"
         ]
       }
     }

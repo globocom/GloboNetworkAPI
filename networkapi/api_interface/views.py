@@ -158,7 +158,6 @@ class DisconnectView(APIView):
             raise api_exceptions.NetworkAPIException(exception)
 
 
-
 class InterfaceTypeV3View(CustomAPIView):
 
     @logs_method_apiview
@@ -201,7 +200,6 @@ class InterfaceTypeV3View(CustomAPIView):
 class InterfaceV3View(CustomAPIView):
 
     @logs_method_apiview
-    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
@@ -268,11 +266,10 @@ class InterfaceV3View(CustomAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
-    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, request, *args, **kwargs):
-        """Deletes list of equipments."""
+        """Deletes list of interfaces."""
 
         obj_ids = kwargs.get('obj_ids').split(';')
         locks_list = create_lock(obj_ids, LOCK_INTERFACE)
@@ -280,10 +277,29 @@ class InterfaceV3View(CustomAPIView):
         for obj in obj_ids:
             try:
                 facade.delete_interface(obj)
-            except api_exceptions.NetworkAPIException, e:
-                log.error(e)
-                raise api_exceptions.NetworkAPIException(e)
             finally:
                 destroy_lock(locks_list)
 
         return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('interface_put')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Updates list of interfaces."""
+
+        response = list()
+        data = request.DATA
+
+        json_validate(SPECS.get('interface_put')).validate(data)
+        locks_list = create_lock(data['interfaces'], LOCK_INTERFACE)
+
+        for interface in data['interfaces']:
+            try:
+                interface = facade.update_interface(interface)
+                response.append({'id': interface.id})
+            finally:
+                destroy_lock(locks_list)
+
+        return Response(response, status=status.HTTP_200_OK)

@@ -731,33 +731,31 @@ class Interface(BaseModel):
         @raise InterfaceError: Failed to add new interface
         """
 
-        if Interface.objects.filter(equipamento__id=interface.get('equipment_id'),
-                                    interface__iexact=interface.get('name')):
+        if Interface.objects.filter(equipamento__id=interface.get('equipment'),
+                                    interface__iexact=interface.get('interface')):
             raise InterfaceForEquipmentDuplicatedError(None, u'Duplicate interface name for the device.')
 
-        self.interface = interface.get('name')
+        self.interface = interface.get('interface')
         self.tipo = TipoInterface.get_by_pk(interface.get('type'))
-        self.equipamento = facade.get_equipment_by_id(interface.get('equipment_id'))
+        self.equipamento = facade.get_equipment_by_id(interface.get('equipment'))
         self.descricao = interface.get('description')
         self.protegida = interface.get('protected')
 
         try:
-            self.ligacao_front = Interface.get_by_pk(interface.get('front_connection_id')) \
-                if interface.get('front_connection_id') else None
+            self.ligacao_front = Interface.get_by_pk(interface.get('front_interface')) \
+                if interface.get('front_interface') else None
         except InterfaceNotFoundError, e:
             raise FrontLinkNotFoundError(e, u'Frontend interface does not exist')
 
         try:
-            self.ligacao_back = Interface.get_by_pk(interface.get('back_connection_id')) \
-                if interface.get('back_connection_id') else None
+            self.ligacao_back = Interface.get_by_pk(interface.get('back_interface')) \
+                if interface.get('back_interface') else None
         except InterfaceNotFoundError, e:
             raise BackLinkNotFoundError(e, u'Backend interface does not exist')
 
-        self.vlan_nativa = interface.get('vlan') if interface.get('vlan') else 1
+        self.vlan_nativa = interface.get('native_vlan') if interface.get('native_vlan') else 1
 
-        if int(self.vlan_nativa) < 1 \
-                or 3967 < int(self.vlan_nativa) < 4048 \
-                or int(self.vlan_nativa) == 4096:
+        if int(self.vlan_nativa) < 1 or 3967 < int(self.vlan_nativa) < 4048 or int(self.vlan_nativa) == 4096:
             raise InvalidValueError(None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
 
         return self.save()
@@ -767,14 +765,107 @@ class Interface(BaseModel):
         """
         log.debug("remove v3")
 
-        #if self.ligacao_front or self.ligacao_back:
-         #   raise Exception('Interface connected.')
-
-        if Interface.objects.filter(models.Q(ligacao_front__id=self.id)|models.Q(ligacao_back__id=self.id)):
+        if Interface.objects.filter(models.Q(ligacao_front__id=self.id) | models.Q(ligacao_back__id=self.id)):
             raise Exception('Interface connected.')
 
         self.delete()
 
+    def update_v3(self, interface):
+        """
+        Update an interface
+
+        @return: Interface instance
+        @raise EquipamentoNotFoundError: Equipment doesn't exist
+        @raise EquipamentoError: Failed to find equipment
+        @raise FrontLinkNotFoundError: FrontEnd interface doesn't exist
+        @raise BackLinkNotFoundError: BackEnd interface doesn't exist
+        @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same
+        equipment already exists
+        @raise InterfaceError: Failed to add new interface
+        """
+
+        log.info("model")
+
+        if not self.interface == interface.get('interface') \
+                and Interface.objects.filter(equipamento__id=interface.get('equipment_id'),
+                                             interface__iexact=interface.get('interface')):
+            raise InterfaceForEquipmentDuplicatedError(None, u'Duplicate interface name for the device.')
+
+        self.interface = interface.get('interface')
+
+        self.vlan_nativa = int(interface.get('native_vlan')) if interface.get('native_vlan') else 1
+
+        if self.vlan_nativa and 3967 < self.vlan_nativa < 4048 or self.vlan_nativa == 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
+
+        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
+        self.equipamento = facade.get_equipment_by_id(interface.get('equipment'))
+        self.descricao = interface.get('description')
+        self.protegida = interface.get('protected')
+
+        if self.ligacao_front:
+            if interface.get('front_interface'):
+                if not self.ligacao_front.id == interface.get('front_interface'):
+                    new_front_connection = Interface.objects.get(id=interface.get('front_interface'))
+                    if new_front_connection.ligacao_front:
+                        raise Exception('The interface %s from equipment %s is already connected.'
+                                        % (new_front_connection.interface, new_front_connection.equipamento.nome))
+                    if not self.ligacao_front.id == new_front_connection.id:
+                        self.remove_connection(front=True)
+                        self.create_connection(front=new_front_connection)
+            else:
+                self.remove_connection(front=True)
+        elif interface.get('front_interface'):
+            new_front_connection = Interface.objects.get(id=interface.get('front_interface'))
+            if new_front_connection.ligacao_front:
+                raise Exception('The interface %s from equipment %s is already connected.'
+                                 % (new_front_connection.interface, new_front_connection.equipamento.nome))
+            self.create_connection(front=new_front_connection)
+
+        if self.ligacao_back:
+            if interface.get('back_interface'):
+                if not self.ligacao_back.id == interface.get('back_interface'):
+                    new_back_connection = Interface.objects.get(id=interface.get('back_interface'))
+                    if new_back_connection.ligacao_back:
+                        raise Exception('The interface %s from equipment %s is already connected.'
+                                        % (new_back_connection.interface, new_back_connection.equipamento.nome))
+                    if not self.ligacao_back.id == new_back_connection.id:
+                        self.remove_connection(back=True)
+                        self.create_connection(back=new_back_connection)
+            else:
+                self.remove_connection(back=True)
+        elif interface.get('back_interface'):
+            new_back_connection = Interface.objects.get(id=interface.get('back_interface'))
+            if new_back_connection.ligacao_back:
+                raise Exception('The interface %s from equipment %s is already connected.'
+                                 % (new_back_connection.interface, new_back_connection.equipamento.nome))
+            self.create_connection(back=new_back_connection)
+
+        return self.save()
+
+    def remove_connection(self, front=None, back=None):
+        if front:
+            self.ligacao_front.ligacao_front = None
+            interface = self.ligacao_front
+            interface.save()
+            self.ligacao_front = None
+        if back:
+            self.ligacao_back.ligacao_back = None
+            interface = self.ligacao_back
+            interface.save()
+            self.ligacao_back = None
+
+    def create_connection(self, front=None, back=None):
+        if front:
+            self.ligacao_front = front
+            front.ligacao_front = self
+            interface = self.ligacao_front
+            interface.save()
+        if back:
+            self.ligacao_back = back
+            back.ligacao_back = self
+            interface = self.ligacao_back
+            interface.save()
 
 class EnvironmentInterface(BaseModel):
 

@@ -54,6 +54,8 @@ def get_interface_type_by_search(search=dict()):
     try:
         interfaces = TipoInterface.objects.filter()
         interface_map = build_query_to_datatable_v3(interfaces, search)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
@@ -70,8 +72,8 @@ def get_interface_type_by_ids(types_ids):
             interfaces_obj.append(interface)
     except FieldError as e:
         raise ValidationAPIException(str(e))
-    except ObjectDoesNotExist, e:
-        raise Exception(u'There is no interface with id = %s. %s' % (id, e))
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(u'There is no interface with id = %s. %s' % (id, e))
     except Exception as e:
         raise NetworkAPIException(str(e))
     else:
@@ -95,6 +97,25 @@ def create_interface(interface):
     return interface_obj
 
 
+def update_interface(interface):
+
+    try:
+        interface_obj = Interface.objects.get(id=interface.get('id'))
+        interface_obj.update_v3(interface)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return interface_obj
+
+
 def delete_interface(interface):
     """Delete interface by id"""
 
@@ -104,7 +125,7 @@ def delete_interface(interface):
         interface_obj = Interface.objects.get(id=int(interface))
         interface_obj.remove_v3()
     except ObjectDoesNotExistException, e:
-        raise NetworkAPIException(e.detail)
+        raise ObjectDoesNotExistException(e.detail)
     except ValidationAPIException, e:
         raise NetworkAPIException(e.detail)
     except models.InterfaceUsedByOtherInterfaceError, e:

@@ -45,42 +45,31 @@ class InterfaceDeleteTestCase(NetworkApiTestCase):
 
         interface_id = "1"
 
-        response = self.client.delete(
-            '/api/v3/interface/%s/' % interface_id,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        response = self.client.delete('/api/v3/interface/%s/' % interface_id,
+                                      content_type='application/json',
+                                      HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
-
-        # Check if deleted
-        response = self.client.get(
-            '/api/v3/interface/%s/' % interface_id,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-
-        self.compare_status(500, response.status_code)
-
     def test_delete_interface_connected(self):
         """
-        Test of success to delete one interface.
+        Test of success to delete one connected interface.
         It should not delete an interface connected.
         """
 
-        interface_id = "2"
+        interface_id = "3"
 
-        response = self.client.delete(
-            '/api/v3/interface/%s/' % interface_id,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        try:
+            response = self.client.delete('/api/v3/interface/%s/' % interface_id,
+                                          content_type='application/json',
+                                          HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        except:
+            pass
 
         self.compare_status(500, response.status_code)
 
-
-        # Check if deleted
-        response = self.client.get(
-            '/api/v3/interface/%s/' % interface_id,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+        response = self.client.get('/api/v3/interface/%s/' % interface_id,
+                                   content_type='application/json',
+                                   HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)

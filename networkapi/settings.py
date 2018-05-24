@@ -564,6 +564,10 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_interface/specs/interface_post.json'
     ),
+    'interface_put': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_interface/specs/interface_put.json'
+    ),
     'neighbor_v4_post_v4': os.path.join(
         PROJECT_ROOT_PATH,
         'api_neighbor/v4/specs/neighbor_post.json'

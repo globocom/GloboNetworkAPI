@@ -22,7 +22,7 @@
       "equipamento": "1",
       "protegida": "False",
       "descricao": "",
-      "ligacao_front": 2,
+      "ligacao_front": 5,
       "ligacao_back": null,
       "vlan_nativa": "1",
       "tipo": 1,
@@ -38,7 +38,127 @@
       "protegida": "False",
       "descricao": "",
       "ligacao_front": null,
-      "ligacao_back": 2,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 5,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth5",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": 3,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 6,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth6",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": 7,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 7,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth7",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": 6,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 8,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth8",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": 9,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 9,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth9",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": 8,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 10,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth10",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": null,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 11,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth11",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": 12,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": null
+    }
+  },
+  {
+    "pk": 12,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth12",
+      "equipamento": "2",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": 11,
+      "ligacao_back": null,
       "vlan_nativa": "1",
       "tipo": 1,
       "channel": null
