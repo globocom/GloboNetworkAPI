@@ -20,13 +20,15 @@ from django.conf.urls import url
 from networkapi.api_interface.views import DisconnectView
 from networkapi.api_interface.views import InterfaceV3View
 from networkapi.api_interface.views import InterfaceTypeV3View
+from networkapi.api_interface.views import DeployInterfaceConfV3View
+from networkapi.api_interface.views import DeployChannelConfV3View
 
 
 urlpatterns = patterns('networkapi.api_interface.views',
-                       url(r'^interface/(?P<id_interface>\d+)/deploy_config_sync/$',
-                           'deploy_interface_configuration_sync'),
-                       url(r'^interface/channel/(?P<id_channel>\d+)/deploy_config_sync/$',
-                           'deploy_channel_configuration_sync'),
+                       url(r'^interface/(?P<interface_id>\d+)/deploy_config_sync/$',
+                           DeployInterfaceConfV3View.as_view()),
+                       url(r'^interface/channel/(?P<channel_id>\d+)/deploy_config_sync/$',
+                           DeployChannelConfV3View.as_view()),
                        url(r'^interface/disconnect/(?P<id_interface_1>\d+)/(?P<id_interface_2>\d+)/$',
                            DisconnectView.as_view()),
                        url(r'^v3/interface/((?P<obj_ids>[;\w]+)[/])?$',
