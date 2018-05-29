@@ -87,43 +87,6 @@ class DeployInterfaceConfV3View(APIView):
             raise exception
 
 
-class DeployChannelConfV3View(APIView):
-    """
-    View class to handle requests to deploy configuration on interfaces
-    channels on equipments
-    """
-
-    @logs_method_apiview
-    @permission_classes((IsAuthenticated, DeployConfig))
-    def put(self, request, *args, **kwargs):
-        """ Tries to configure interface channel using facade method """
-
-        log.info('Deploy Channel Conf')
-
-        interface_id = kwargs.get('channel_id')
-        if not interface_id:
-            return Response({"error": "Channel not found"},
-                            status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            data = facade.generate_and_deploy_channel_config_sync(
-                request.user, channel_id)
-
-            return Response(data, status=status.HTTP_201_CREATED)
-
-        except exceptions.InvalidIdInterfaceException, exception:
-            raise exception
-        except exceptions.UnsupportedEquipmentException, exception:
-            raise exception
-        except exceptions.InterfaceTemplateException, exception:
-            raise exception
-        except InterfaceNotFoundError:
-            raise exceptions.InvalidIdInterfaceException
-        except Exception, exception:
-            log.error(exception)
-            raise exception
-
-
 class DisconnectView(APIView):
 
     @permission_classes((IsAuthenticated, Write))
