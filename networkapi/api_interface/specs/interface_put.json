@@ -18,7 +18,10 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "native_vlan": {
             "type": "string"
