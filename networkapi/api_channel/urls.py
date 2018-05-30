@@ -24,6 +24,6 @@ from networkapi.api_channel.views import DeployChannelConfV3View
 
 urlpatterns = patterns(
     'networkapi.api_channel.views',
-    url(r'^interface/channel/(?P<channel_id>\d+)/deploy/?$',
+    url(r'^v3/interface/channel/(?P<channel_id>\d+)/deploy/?$',
        DeployChannelConfV3View.as_view()),
 )
