@@ -24,7 +24,10 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from networkapi.util.decorators import logs_method_apiview
+
 from networkapi.api_channel.permissions import ChannelDeploy
+from networkapi.api_channel.permissions import ChannelRead
+from networkapi.api_channel.permissions import ChannelWrite
 
 from networkapi.api_interface import facade
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
@@ -33,6 +36,32 @@ from networkapi.api_interface.exceptions import UnsupportedEquipmentException
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
 
 from networkapi.interface.models import InterfaceNotFoundError
+
+
+class ChannelV3View(APIView):
+    """ Implements CRUD routes handlers of Channels """
+
+    log = getLogger(__name__)
+
+    @logs_method_apiview
+    @permission_classes((IsAuthenticated, ChannelRead))
+    def get(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @permission_classes((IsAuthenticated, ChannelWrite))
+    def post(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @permission_classes((IsAuthenticated, ChannelWrite))
+    def put(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @permission_classes((IsAuthenticated, ChannelWrite))
+    def delete(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_200_OK)
 
 
 class DeployChannelConfV3View(APIView):
