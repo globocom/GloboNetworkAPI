@@ -24,9 +24,15 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from networkapi.util.decorators import logs_method_apiview
-from networkapi.api_interface.permissions import DeployConfig
+from networkapi.api_channel.permissions import ChannelDeploy
+
 from networkapi.api_interface import facade
-from networkapi.api_interface import exceptions
+from networkapi.api_interface.exceptions import InvalidIdInterfaceException
+from networkapi.api_interface.exceptions import InterfaceTemplateException
+from networkapi.api_interface.exceptions import UnsupportedEquipmentException
+from networkapi.api_interface.exceptions import InvalidIdInterfaceException
+
+from networkapi.interface.models import InterfaceNotFoundError
 
 
 class DeployChannelConfV3View(APIView):
@@ -38,7 +44,7 @@ class DeployChannelConfV3View(APIView):
     log = getLogger(__name__)
 
     @logs_method_apiview
-    @permission_classes((IsAuthenticated, DeployConfig))
+    @permission_classes((IsAuthenticated, ChannelDeploy))
     def put(self, request, *args, **kwargs):
         """ Tries to configure interface channel using facade method """
 
@@ -48,21 +54,19 @@ class DeployChannelConfV3View(APIView):
         if not interface_id:
             return Response({"error": "Channel not found"},
                             status=status.HTTP_404_NOT_FOUND)
-
         try:
             data = facade.generate_and_deploy_channel_config_sync(
-                request.user, channel_id)
+                request.user, interface_id)
 
-            return Response(data, status=status.HTTP_201_CREATED)
+            return Response(data, status=status.HTTP_200_OK)
 
-        except exceptions.InvalidIdInterfaceException, exception:
-            raise exception
-        except exceptions.UnsupportedEquipmentException, exception:
-            raise exception
-        except exceptions.InterfaceTemplateException, exception:
-            raise exception
+        except (InvalidIdInterfaceException, UnsupportedEquipmentException,
+                InterfaceTemplateException) as err:
+            raise err
+
         except InterfaceNotFoundError:
-            raise exceptions.InvalidIdInterfaceException
-        except Exception, exception:
-            self.log.error(exception)
-            raise exception
+            raise InvalidIdInterfaceException
+
+        except Exception as err:
+            self.log.error(err)
+            raise err
