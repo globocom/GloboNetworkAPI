@@ -63,3 +63,43 @@ class TestChannelRoutes(NetworkApiTestCase):
                 data=dumps({}),
                 content_type='application/json',
                 HTTP_AUTHORIZATION=self.get_http_authorization('fake'))
+
+    def test_should_get_a_channel(self):
+        """ Should get a Channel """
+
+        response = self.client.get(
+            '/api/v3/interface/channel/1/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_post_a_channel(self):
+        """ Should post a Channel """
+
+        response = self.client.post(
+            '/api/v3/interface/channel/1/',
+            content_type='application/json',
+            data=dumps({}),
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(201, response.status_code)
+
+    def test_should_update_a_channel(self):
+        """ Should update a Channel """
+
+        response = self.client.put(
+            '/api/v3/interface/channel/1/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_delete_a_channel(self):
+        """ Should delete a Channel """
+
+        response = self.client.delete(
+            '/api/v3/interface/channel/1/',
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(200, response.status_code)
