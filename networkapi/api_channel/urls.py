@@ -19,11 +19,18 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
+from networkapi.api_channel.views import ChannelV3View
 from networkapi.api_channel.views import DeployChannelConfV3View
 
 
 urlpatterns = patterns(
     'networkapi.api_channel.views',
+
+    # Basic CRUD routes
+    url(r'^v3/interface/channel/(?P<channel_id>\d+)/?$',
+       ChannelV3View.as_view()),
+
+    # Channel deploy operation
     url(r'^v3/interface/channel/(?P<channel_id>\d+)/deploy/?$',
        DeployChannelConfV3View.as_view()),
 )
