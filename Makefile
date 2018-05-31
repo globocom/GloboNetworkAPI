@@ -7,6 +7,7 @@ help:
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
 	@echo "  test       to execute all tests"
+	@echo "  tests      to execute tests using containers. Use app variable"
 	@echo "  build      to build without installing"
 	@echo "  install    to install"
 	@echo "  dist       to create egg for distribution"
@@ -50,6 +51,13 @@ test: compile
 	@[ ! -z $(NETWORKAPI_DATABASE_PASSWORD) ] && [ ! -z $(NETWORKAPI_DATABASE_USER) ] && [ ! -z $(NETWORKAPI_DATABASE_HOST) ] && mysqladmin -h $(NETWORKAPI_DATABASE_HOST) -u $(NETWORKAPI_DATABASE_USER) -p $(NETWORKAPI_DATABASE_PASSWORD) -f drop if exists test_networkapi; true
 	@[ -z $(NETWORKAPI_DATABASE_PASSWORD) ] && [ -z $(NETWORKAPI_DATABASE_USER) ] && [ -z $(NETWORKAPI_DATABASE_HOST) ] && mysql -u root -e "DROP DATABASE IF EXISTS test_networkapi;"; true
 	@python manage.py test --traceback $(filter-out $@,$(MAKECMDGOALS))
+
+# Runs tests inside container
+tests:
+	@clear
+	@echo "Running NetAPI tests.."
+	time docker exec -it netapi_app ./fast_start_test_reusedb.sh ${app}
+
 
 install:
 	@python setup.py install

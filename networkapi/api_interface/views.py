@@ -50,56 +50,41 @@ from networkapi.util.geral import render_to_json
 log = logging.getLogger(__name__)
 
 
-@api_view(['PUT'])
-@permission_classes((IsAuthenticated, DeployConfig))
-def deploy_interface_configuration_sync(request, id_interface):
+class DeployInterfaceConfV3View(APIView):
     """
-    Deploy interface configuration on equipment(s)
-    """
-
-    try:
-        data = facade.generate_and_deploy_interface_config_sync(
-            request.user, id_interface)
-
-        return Response(data)
-
-    except exceptions.InvalidIdInterfaceException, exception:
-        raise exception
-    except exceptions.UnsupportedEquipmentException, exception:
-        raise exception
-    except exceptions.InterfaceTemplateException, exception:
-        raise exception
-    except InterfaceNotFoundError:
-        raise exceptions.InvalidIdInterfaceException
-    except Exception, exception:
-        log.error(exception)
-        raise exception
-
-
-@api_view(['PUT'])
-@permission_classes((IsAuthenticated, DeployConfig))
-def deploy_channel_configuration_sync(request, id_channel):
-    """
-    Deploy interface channel configuration on equipment(s)
+    View class to handle requests to deploy configuration on equipments
+    interfaces.
     """
 
-    try:
-        data = facade.generate_and_deploy_channel_config_sync(
-            request.user, id_channel)
+    @logs_method_apiview
+    @permission_classes((IsAuthenticated, DeployConfig))
+    def put(self, request, *args, **kwargs):
+        """ Tries to configure interface using facade method """
 
-        return Response(data)
+        log.info('Deploy Interface Conf')
 
-    except exceptions.InvalidIdInterfaceException, exception:
-        raise exception
-    except exceptions.UnsupportedEquipmentException, exception:
-        raise exception
-    except exceptions.InterfaceTemplateException, exception:
-        raise exception
-    except InterfaceNotFoundError:
-        raise exceptions.InvalidIdInterfaceException
-    except Exception, exception:
-        log.error(exception)
-        raise exception
+        interface_id = kwargs.get('interface_id')
+        if not interface_id:
+            return Response({"error": "Interface not found"},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            data = facade.generate_and_deploy_interface_config_sync(
+                request.user, interface_id)
+
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        except exceptions.InvalidIdInterfaceException, exception:
+            raise exception
+        except exceptions.UnsupportedEquipmentException, exception:
+            raise exception
+        except exceptions.InterfaceTemplateException, exception:
+            raise exception
+        except InterfaceNotFoundError:
+            raise exceptions.InvalidIdInterfaceException
+        except Exception, exception:
+            log.error(exception)
+            raise exception
 
 
 class DisconnectView(APIView):

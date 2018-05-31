@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,23 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from django.conf.urls import patterns
 from django.conf.urls import url
 
-from networkapi.api_interface.views import DisconnectView
-from networkapi.api_interface.views import InterfaceV3View
-from networkapi.api_interface.views import InterfaceTypeV3View
-from networkapi.api_interface.views import DeployInterfaceConfV3View
+from networkapi.api_channel.views import ChannelV3View
+from networkapi.api_channel.views import DeployChannelConfV3View
 
 
 urlpatterns = patterns(
-    'networkapi.api_interface.views',
-    url(r'^interface/(?P<interface_id>\d+)/deploy_config_sync/$',
-       DeployInterfaceConfV3View.as_view()),
-    url(r'^interface/disconnect/(?P<id_interface_1>\d+)/(?P<id_interface_2>\d+)/$',
-       DisconnectView.as_view()),
-    url(r'^v3/interface/((?P<obj_ids>[;\w]+)[/])?$',
-       InterfaceV3View.as_view()),
-    url(r'^v3/interfacetype/((?P<obj_ids>[;\w]+)[/])?$',
-       InterfaceTypeV3View.as_view()),
+    'networkapi.api_channel.views',
+
+    # Basic CRUD routes
+    url(r'^v3/interface/channel/(?P<channel_id>\d+)/?$',
+       ChannelV3View.as_view()),
+
+    # Channel deploy operation
+    url(r'^v3/interface/channel/(?P<channel_id>\d+)/deploy/?$',
+       DeployChannelConfV3View.as_view()),
 )
