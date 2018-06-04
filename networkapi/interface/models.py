@@ -901,3 +901,17 @@ class EnvironmentInterface(BaseModel):
             cls.log.error(u'Falha ao pesquisar interfaces neste ambiente.')
             raise InterfaceError(
                 e, u'Falha ao pesquisar interfaces neste ambiente.')
+
+    def remove_v3(self):
+        log.debug("remove v3")
+
+        self.delete()
+
+    def create_v3(self, interface_environments):
+        """Set new relationship between an interface and an environment."""
+
+        self.interface = Interface.objects.get(id=int(interface_environments.get('interface')))
+        self.ambiente = Ambiente.objects.get(id=int(interface_environments.get('environment')))
+        self.vlans = interface_environments.get('range_vlans')
+
+        return self.save()

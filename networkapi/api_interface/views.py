@@ -188,20 +188,20 @@ class InterfaceEnvironmentsV3View(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
-        """URL: api/v3/interface-type/"""
+        """URL: api/v3/interface/environments/<obj_ids>"""
 
         if not kwargs.get('obj_ids'):
             obj_model = facade.get_interfaces_environments_by_search(self.search)
-            interfaces_environment = obj_model['query_set']
+            interface_environments = obj_model['query_set']
             only_main_property = False
         else:
             ids = kwargs.get('obj_ids').split(';')
-            interfaces_environment = facade.get_interfaces_environments_by_ids(ids)
+            interface_environments = facade.get_interfaces_environments_by_ids(ids)
             only_main_property = True
             obj_model = None
 
         serializer_interface_environment = serializers.InterfaceEnvironmentV3Serializer(
-            interfaces_environment,
+            interface_environments,
             many=True,
             fields=self.fields,
             include=self.include,
@@ -211,13 +211,66 @@ class InterfaceEnvironmentsV3View(CustomAPIView):
 
         data = render_to_json(
             serializer_interface_environment,
-            main_property='interfaces_environment',
+            main_property='interface_environments',
             obj_model=obj_model,
             request=request,
             only_main_property=only_main_property
         )
 
         return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """
+        Remove the relationship between an interface and environments.
+
+        :param kwargs: obj_ids
+        :return: 200 OK
+        """
+
+        obj_ids = kwargs.get('obj_ids').split(';')
+        locks_list = create_lock(obj_ids, LOCK_INTERFACE)
+
+        for obj in obj_ids:
+            try:
+                facade.delete_interface_environments(obj)
+            finally:
+                destroy_lock(locks_list)
+
+        return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('interface_environments_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """
+        Associates an interface to an environment.
+        URL: api/v3/interface/environments/
+        """
+
+        response = list()
+
+        interface_environments = request.DATA
+        json_validate(SPECS.get('interface_environments_post')).validate(interface_environments)
+
+        for i in interface_environments.get('interface_environments'):
+            try:
+                int_envs = facade.create_interface_environments(i)
+                response.append({'id': int_envs.id})
+            except api_exceptions.NetworkAPIException, e:
+                log.error(e)
+                raise api_exceptions.NetworkAPIException(e)
+            except api_exceptions.ValidationAPIException, e:
+                log.error(e)
+                raise api_exceptions.NetworkAPIException(e)
+
+        data = dict()
+        data['interface_environments'] = response
+
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 class InterfaceV3View(CustomAPIView):

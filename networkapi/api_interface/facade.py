@@ -80,6 +80,43 @@ def get_interfaces_environments_by_search(search=dict()):
         return interfaces_envs_map
 
 
+def delete_interface_environments(int_env_id):
+    """Delete association between interface and environments by id"""
+
+    log.debug("delete_interface_environments")
+
+    try:
+        interfaces_envs = EnvironmentInterface.objects.get(id=int(int_env_id))
+        interfaces_envs.remove_v3()
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except ValidationAPIException, e:
+        raise NetworkAPIException(e.detail)
+    except models.InterfaceUsedByOtherInterfaceError, e:
+        raise NetworkAPIException(e)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+
+def create_interface_environments(interface_environment):
+
+    try:
+        interface_envs_obj = EnvironmentInterface()
+        interface_envs_obj.create_v3(interface_environment)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return interface_envs_obj
+
+
 def get_interface_type_by_search(search=dict()):
     """Return a list of interface by dict."""
 

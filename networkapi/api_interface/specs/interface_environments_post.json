@@ -1,0 +1,34 @@
+{
+  "title": "Interface-Environments Post",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "interface_environments"
+  ],
+  "properties": {
+    "interface_environments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "interface": {
+            "type": "integer"
+          },
+          "environment": {
+            "type": "integer"
+          },
+          "range_vlans": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "interface",
+          "environment"
+        ]
+      }
+    }
+  }
+}
