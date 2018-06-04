@@ -26,7 +26,8 @@
         },
         "required": [
           "interface",
-          "environment"
+          "environment",
+          "range_vlans"
         ]
       }
     }

@@ -31,7 +31,7 @@ class InterfacePostTestCase(NetworkApiTestCase):
         'networkapi/api_interface/fixtures/initial_interface.json',
     ]
 
-    json_path = 'api_interface/tests/sanity/json/%s'
+    json_path = 'api_interface/tests/sanity/json/interface_environments/%s'
 
     def setUp(self):
         self.client = Client()
@@ -39,32 +39,32 @@ class InterfacePostTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_post_one_interface(self):
-        """Test of success to post one interface."""
+    def test_post_one_interface_environments(self):
+        """Test of success associating an interface to an environment."""
 
-        post_file = self.json_path % 'post/post_one_interface.json'
-        expected_file = self.json_path % 'get/get_one_interface.json'
+        post_file = self.json_path % 'post/post_interface_environments.json'
+        expected_file = self.json_path % 'get/get_interface_environments.json'
 
         # Does post request
         response = self.client.post(
-            '/api/v3/interface/',
+            '/api/v3/interface/environments/',
             data=json.dumps(self.load_json_file(post_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(201, response.status_code)
 
-        interface_id = response.data.get('interfaces')[0]['id']
+        interface_environments_id = response.data.get('interface_environments')[0]['id']
 
         # Does get request
         response = self.client.get(
-            '/api/v3/interface/%s/' % interface_id,
+            '/api/v3/interface/environments/%s/' % interface_environments_id,
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
         self.compare_status(200, response.status_code)
 
         data = response.data
-        del data['interfaces'][0]['id']
+        del data['interface_environments'][0]['id']
 
         self.compare_json(expected_file, data)

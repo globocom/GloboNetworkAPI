@@ -33,7 +33,7 @@ class InterfaceGetTestCase(NetworkApiTestCase):
 
     ]
 
-    json_path = 'api_interface/tests/sanity/json/get/%s'
+    json_path = 'api_interface/tests/sanity/json/interface/get/%s'
 
     def setUp(self):
         self.client = Client()

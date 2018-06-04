@@ -32,7 +32,7 @@ class InterfaceDeleteTestCase(NetworkApiTestCase):
         'networkapi/api_interface/fixtures/initial_interface_connected.json',
     ]
 
-    json_path = 'api_interface/tests/sanity/json/%s'
+    json_path = 'api_interface/tests/sanity/json/interface/%s'
 
     def setUp(self):
         self.client = Client()

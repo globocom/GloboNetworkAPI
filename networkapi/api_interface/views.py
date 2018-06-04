@@ -254,7 +254,7 @@ class InterfaceEnvironmentsV3View(CustomAPIView):
         response = list()
 
         interface_environments = request.DATA
-        json_validate(SPECS.get('interface_environments_post')).validate(interface_environments)
+        # json_validate(SPECS.get('interface_environments_post')).validate(interface_environments)
 
         for i in interface_environments.get('interface_environments'):
             try:
