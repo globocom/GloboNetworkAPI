@@ -33,6 +33,7 @@ class InterfaceTypeSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = get_model('interface', 'TipoInterface')
+
         fields = (
             'id',
             'type',
@@ -68,6 +69,91 @@ class PortChannelSerializer(DynamicFieldsModelSerializer):
         )
 
         details_fields = fields
+
+
+class InterfaceEnvironmentV3Serializer(DynamicFieldsModelSerializer):
+
+    log.info("InterfaceEnvironmentV3Serializer")
+
+    range_vlans = serializers.RelatedField(source='vlans')
+
+    environment = serializers.SerializerMethodField('get_environment')
+    interface = serializers.SerializerMethodField('get_interface')
+
+    def get_interface(self, obj):
+        return self.extends_serializer(obj, 'interface')
+
+    def get_environment(self, obj):
+        return self.extends_serializer(obj, 'environment')
+
+    class Meta:
+        model = get_model('interface', 'EnvironmentInterface')
+
+
+        fields = (
+            'id',
+            'interface',
+            'environment',
+            'range_vlans',
+        )
+
+        default_fields = fields
+
+        basic_fields = fields
+
+        details_fields = fields
+
+    def get_serializers(self):
+        """Returns the mapping of serializers."""
+
+        environment_serializers = get_app('api_environment', module_label='serializers')
+
+        if not self.mapping:
+            self.mapping = {
+                'range_vlans': {
+                    'obj': 'vlans'
+                },
+                'interface': {
+                    'obj': 'interface_id'
+                },
+                'interface__basic': {
+                    'serializer': InterfaceV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'interface',
+                },
+                'interface__details': {
+                    'serializer': InterfaceV3Serializer,
+                    'kwargs': {
+                        'kind': 'details',
+                    },
+                    'obj': 'interface'
+                },
+                'environment': {
+                    'obj': 'ambiente_id'
+                },
+                'environment__basic': {
+                    'serializer': environment_serializers.EnvironmentV3Serializer,
+                    'kwargs': {
+                        'kind': 'basic'
+                    },
+                    'obj': 'ambiente',
+                },
+                'environment__details': {
+                    'serializer': environment_serializers.EnvironmentV3Serializer,
+                    'kwargs': {
+                        'kind': 'details'
+                    },
+                    'obj': 'ambiente',
+                },
+            }
+
+    @staticmethod
+    def setup_eager_loading_environment(queryset):
+        log.info('Using setup_eager_loading_environment')
+        queryset = queryset.select_related('environment')
+        return queryset
 
 
 class InterfaceV3Serializer(DynamicFieldsModelSerializer):

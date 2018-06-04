@@ -48,6 +48,38 @@ from networkapi.util import is_valid_int_greater_zero_param
 log = logging.getLogger(__name__)
 
 
+def get_interfaces_environments_by_ids(ids):
+    try:
+        interfaces_envs_obj = list()
+        for i in ids:
+            interfaces_envs = EnvironmentInterface.objects.get(id=int(i))
+            interfaces_envs_obj.append(interfaces_envs)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(u'There is no interface with id = %s. %s' % (id, e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interfaces_envs_obj
+
+
+def get_interfaces_environments_by_search(search=dict()):
+    """Return a list of interface by dict."""
+
+    try:
+        interfaces_envs = EnvironmentInterface.objects.filter()
+        interfaces_envs_map = build_query_to_datatable_v3(interfaces_envs, search)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interfaces_envs_map
+
+
 def get_interface_type_by_search(search=dict()):
     """Return a list of interface by dict."""
 
@@ -514,12 +546,11 @@ def verificar_vlan_range(amb, vlans):
                 i = int(i)
             except:
                 raise InvalidValueError(None, None, 'Numero da Vlan')
-            if amb.min_num_vlan_1:
-                if not (i >= amb.min_num_vlan_1 and i <= amb.max_num_vlan_1):
-                    if not (i >= amb.min_num_vlan_2 and i <= amb.max_num_vlan_2):
-                        raise exceptions.InterfaceException(
-                            u'Numero de vlan fora do range '
-                            'definido para o ambiente')
+            if amb.min_num_vlan_1 and not (amb.min_num_vlan_1 <= i <= amb.max_num_vlan_1) and not (
+                    amb.min_num_vlan_2 <= i <= amb.max_num_vlan_2):
+                raise exceptions.InterfaceException(
+                    u'Numero de vlan fora do range '
+                    'definido para o ambiente')
 
 
 def verificar_vlan_nativa(vlan_nativa):
@@ -549,7 +580,8 @@ def check_channel_name_on_equipment(nome, interfaces):
             equipamento__id=interface.ligacao_front.equipamento.id)
 
         if front_interface_obj:
-            raise Exception("Channel name %s already exist on the equipment %s" % (nome, interface.ligacao_front.equipamento.nome))
+            raise Exception("Channel name %s already exist on the equipment %s" %
+                            (nome, interface.ligacao_front.equipamento.nome))
 
     log.info("passei")
 

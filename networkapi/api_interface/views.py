@@ -18,7 +18,6 @@ import logging
 from django.db.transaction import commit_on_success
 
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -174,6 +173,45 @@ class InterfaceTypeV3View(CustomAPIView):
         data = render_to_json(
             serializer_interface_type,
             main_property='interfaces_type',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class InterfaceEnvironmentsV3View(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """URL: api/v3/interface-type/"""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_interfaces_environments_by_search(self.search)
+            interfaces_environment = obj_model['query_set']
+            only_main_property = False
+        else:
+            ids = kwargs.get('obj_ids').split(';')
+            interfaces_environment = facade.get_interfaces_environments_by_ids(ids)
+            only_main_property = True
+            obj_model = None
+
+        serializer_interface_environment = serializers.InterfaceEnvironmentV3Serializer(
+            interfaces_environment,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_interface_environment,
+            main_property='interfaces_environment',
             obj_model=obj_model,
             request=request,
             only_main_property=only_main_property
