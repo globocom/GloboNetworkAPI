@@ -16,18 +16,11 @@
           },
           "environment": {
             "type": "integer"
-          },
-          "range_vlans": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "interface",
-          "environment",
-          "range_vlans"
+          "environment"
         ]
       }
     }

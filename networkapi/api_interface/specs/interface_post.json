@@ -45,7 +45,6 @@
             ]
           }
         },
-
         "required": [
           "interface",
           "type",

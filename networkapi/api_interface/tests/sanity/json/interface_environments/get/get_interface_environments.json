@@ -3,7 +3,7 @@
     {
       "interface": 1,
       "environment": 1,
-      "range_vlans": "2 - 100"
+      "range_vlans": null
     }
   ]
 }

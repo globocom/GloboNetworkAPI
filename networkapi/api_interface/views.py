@@ -242,7 +242,7 @@ class InterfaceEnvironmentsV3View(CustomAPIView):
         return Response({}, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('interface_environments_post')
+    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
