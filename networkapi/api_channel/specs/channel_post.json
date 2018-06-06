@@ -1,0 +1,28 @@
+{
+  "title": "Channel Post",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "interface"
+  ],
+  "properties": {
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lacp": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "lacp"
+        ]
+      }
+    }
+  }
+}
