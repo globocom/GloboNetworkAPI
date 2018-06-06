@@ -17,17 +17,20 @@
 
 from logging import getLogger
 
+from django.db.transaction import commit_on_success
+
 from rest_framework.views import APIView
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-from networkapi.util.decorators import logs_method_apiview
+from networkapi.settings import SPECS
 
 from networkapi.api_channel.permissions import ChannelDeploy
 from networkapi.api_channel.permissions import ChannelRead
 from networkapi.api_channel.permissions import ChannelWrite
+from networkapi.api_channel.facade import ChannelV3
 
 from networkapi.api_interface import facade
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
@@ -36,6 +39,10 @@ from networkapi.api_interface.exceptions import UnsupportedEquipmentException
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
 
 from networkapi.interface.models import InterfaceNotFoundError
+
+from networkapi.util.decorators import logs_method_apiview
+from networkapi.util.json_validate import json_validate
+from networkapi.util.json_validate import raise_json_validate
 
 
 class ChannelV3View(APIView):
@@ -46,21 +53,38 @@ class ChannelV3View(APIView):
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelRead))
     def get(self, request, *args, **kwargs):
+        """ Http handler to route v3/interface/channel for GET method """
         return Response(status=status.HTTP_200_OK)
 
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelWrite))
+    @raise_json_validate('channel_post_v3')
+    @commit_on_success
     def post(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_201_CREATED)
+        """ Http handler to route v3/interface/channel for POST method """
+
+        channels = request.DATA
+        #json_validate(SPECS.get('channel_post')).validate(channels)
+
+        response = list()
+        for channel_data in channels:
+
+            channel = ChannelV3()
+            channel.create(channel_data)
+            response.append({'id': channel.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelWrite))
     def put(self, request, *args, **kwargs):
+        """ Http handler to route v3/interface/channel for PUT method """
         return Response(status=status.HTTP_200_OK)
 
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelWrite))
     def delete(self, request, *args, **kwargs):
+        """ Http handler to route v3/interface/channel for DELETE method """
         return Response(status=status.HTTP_200_OK)
 
 
