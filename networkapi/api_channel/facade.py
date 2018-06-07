@@ -16,9 +16,38 @@
 # limitations under the License.
 
 
+from networkapi.interface.models import PortChannel
+from networkapi.interface.models import InterfaceNotFoundError
+
+
 class ChannelV3(object):
     """ Facade class that implements business rules for interfaces channels """
 
-    def create(data):
+    def create(self, data):
         self.id = 42
         pass
+
+    def retrieve(self, channel_name):
+        """ Tries to retrieve a Port Channel based on its name """
+
+        channel = {}
+        try:
+            channel = PortChannel.get_by_name(channel_name)
+
+            # Copied from old implementation. We really need to iterate?
+            for ch in channel:
+                channel = model_to_dict(ch)
+
+        except InterfaceNotFoundError as err:
+            return None
+        except:
+            channel = model_to_dict(channel)
+
+        return {"channel": channel}
+
+    def update(self):
+        pass
+
+    def delete(self):
+        pass
+
