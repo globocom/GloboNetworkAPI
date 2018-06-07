@@ -54,7 +54,17 @@ class ChannelV3View(APIView):
     @permission_classes((IsAuthenticated, ChannelRead))
     def get(self, request, *args, **kwargs):
         """ Http handler to route v3/interface/channel for GET method """
-        return Response(status=status.HTTP_200_OK)
+
+        channel_name = kwargs.get('channel_name')
+
+        channel = ChannelV3()
+        data = channel.retrieve(channel_name)
+
+        if data is None:
+            error = {"error": "Channel not found: '%s'" % channel_name}
+            return Response(error, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelWrite))
@@ -66,7 +76,7 @@ class ChannelV3View(APIView):
         channels = request.DATA
         #json_validate(SPECS.get('channel_post')).validate(channels)
 
-        response = list()
+        response = []
         for channel_data in channels:
 
             channel = ChannelV3()
