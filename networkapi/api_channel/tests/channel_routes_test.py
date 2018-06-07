@@ -74,6 +74,10 @@ class TestChannelRoutes(NetworkApiTestCase):
 
         self.assertEqual(200, response.status_code)
 
+    def test_should_not_found_channel_by_name(self):
+        """ Test should not found channel by name """
+        pass
+
     def test_should_post_a_channel(self):
         """ Should post a Channel """
 
