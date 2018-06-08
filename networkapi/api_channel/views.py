@@ -34,9 +34,9 @@ from networkapi.api_channel.facade import ChannelV3
 
 from networkapi.api_interface import facade
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
-from networkapi.api_interface.exceptions import InterfaceTemplateException
 from networkapi.api_interface.exceptions import UnsupportedEquipmentException
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
+from networkapi.api_interface.exceptions import InterfaceException
 
 from networkapi.interface.models import InterfaceNotFoundError
 
@@ -53,12 +53,19 @@ class ChannelV3View(APIView):
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelRead))
     def get(self, request, *args, **kwargs):
-        """ Http handler to route v3/interface/channel for GET method """
+        """ Http handler to route v3/interface/channel/ for GET method """
 
-        channel_name = kwargs.get('channel_name')
+        data = None
+        channel_name = kwargs.get('channel_id')
+        try:
+            channel_id = int(channel_name)
+            channel = ChannelV3()
+            data = channel.retrieve_by_id(channel_id)
 
-        channel = ChannelV3()
-        data = channel.retrieve(channel_name)
+        except ValueError:  # In case we have a name instead of a ID
+
+            channel = ChannelV3()
+            data = channel.retrieve(channel_name)
 
         if data is None:
             error = {"error": "Channel not found: '%s'" % channel_name}
