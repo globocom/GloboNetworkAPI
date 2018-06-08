@@ -1,0 +1,10 @@
+[
+  {
+    "model": "interface.portchannel",
+    "pk": 1,
+    "fields": {
+      "nome": "tor42",
+      "lacp": 1
+    }
+  }
+]
