@@ -12,6 +12,7 @@ help:
 	@echo "  install    to install"
 	@echo "  dist       to create egg for distribution"
 	@echo "  publish    to publish the package to PyPI"
+	@echo "  fixture    to generate fixtures from given model variable"
 	@echo
 
 default:
@@ -58,6 +59,12 @@ tests:
 	@echo "Running NetAPI tests.."
 	time docker exec -it netapi_app ./fast_start_test_reusedb.sh ${app}
 
+
+fixture:
+ifeq (${model},)
+	$(error Missing model. Usage: make fixture model=interface.PortChannel)
+endif
+	docker exec -it netapi_app django-admin.py dumpdata ${model}
 
 install:
 	@python setup.py install
