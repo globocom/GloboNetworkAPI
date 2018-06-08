@@ -16,6 +16,7 @@
 # limitations under the License.
 
 from json import dumps
+from json import loads
 
 from django.test.client import Client
 
@@ -36,7 +37,7 @@ class TestChannelRoutes(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
-#        "networkapi/api_channel/fixtures/initial_channel.json"
+        "networkapi/api_channel/fixtures/initial_channel.json"
     ]
 
     def setUp(self):
@@ -64,8 +65,8 @@ class TestChannelRoutes(NetworkApiTestCase):
                 content_type='application/json',
                 HTTP_AUTHORIZATION=self.get_http_authorization('fake'))
 
-    def test_should_get_a_channel(self):
-        """ Should get a Channel """
+    def test_should_get_a_channel_by_id(self):
+        """ Should get a Channel by id """
 
         response = self.client.get(
             '/api/v3/interface/channel/1/',
@@ -74,9 +75,37 @@ class TestChannelRoutes(NetworkApiTestCase):
 
         self.assertEqual(200, response.status_code)
 
-    def test_should_not_found_channel_by_name(self):
-        """ Test should not found channel by name """
-        pass
+    def test_should_not_get_a_channel_by_id(self):
+        """ Should not get a Channel with an unexisting id """
+
+        response = self.client.get(
+            '/api/v3/interface/channel/0/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(404, response.status_code)
+
+    def test_should_get_a_channel_by_name(self):
+        """ Should get a channel by Name """
+        response = self.client.get(
+            '/api/v3/interface/channel/tor42/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(200, response.status_code)
+        content = loads(response.content)
+        self.assertEqual(content["channel"]["id"], 1)
+
+    def test_should_not_get_a_channel_by_name(self):
+        """ Should not get a channel with an unexisting Name """
+        response = self.client.get(
+            '/api/v3/interface/channel/fakechannel/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(404, response.status_code)
+        channel = loads(response.content)
+        self.assertIn("error", channel)
 
     def test_should_post_a_channel(self):
         """ Should post a Channel """
@@ -106,4 +135,4 @@ class TestChannelRoutes(NetworkApiTestCase):
             '/api/v3/interface/channel/1/',
             HTTP_AUTHORIZATION=self.auth)
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(404, response.status_code)
