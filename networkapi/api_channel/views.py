@@ -101,8 +101,26 @@ class ChannelV3View(APIView):
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelWrite))
     def delete(self, request, *args, **kwargs):
-        """ Http handler to route v3/interface/channel for DELETE method """
-        return Response(status=status.HTTP_200_OK)
+        """ Http handler to route v3/interface/channel/id for DELETE method """
+
+        channel_id = kwargs.get('channel_id')
+
+        channel = ChannelV3()
+
+        deletion = {}
+        try:
+            deletion = channel.delete(channel_id)
+
+        except InterfaceNotFoundError:
+            return Response({
+                "error": "Could not find channel '%s'" % channel_id},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if "error" in deletion:
+            return Response(deletion, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(deletion, status=status.HTTP_200_OK)
 
 
 class DeployChannelConfV3View(APIView):
