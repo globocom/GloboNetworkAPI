@@ -6,5 +6,66 @@
       "nome": "tor42",
       "lacp": 1
     }
+  },
+  {
+    "pk": 1,
+    "model": "interface.TipoInterface",
+    "fields": {
+      "tipo": "access"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "interface.TipoInterface",
+    "fields": {
+      "tipo": "trunk"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "interface.Interface",
+    "fields": {
+      "interface": "Eth1",
+      "equipamento": "1",
+      "protegida": "False",
+      "descricao": "",
+      "ligacao_front": null,
+      "ligacao_back": null,
+      "vlan_nativa": "1",
+      "tipo": 1,
+      "channel": 1
+    }
+  },
+  {
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "VM-SANITY-TEST",
+      "tipo_equipamento": 1
+    },
+    "model": "equipamento.equipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "tipo_equipamento": "Switch"
+    },
+    "model": "equipamento.tipoequipamento",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "marca": 1,
+      "nome": "Generic Switch Model"
+    },
+    "model": "equipamento.modelo",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "nome": "Generic Switch Brand"
+    },
+    "model": "equipamento.marca",
+    "pk": 1
   }
 ]
