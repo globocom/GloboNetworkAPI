@@ -26,6 +26,7 @@ from networkapi.interface.models import TipoInterface
 from networkapi.api_interface.exceptions import InterfaceException
 from networkapi.api_interface.exceptions import InvalidKeyException
 from networkapi.api_interface.exceptions import InterfaceTemplateException
+from networkapi.api_interface import facade as api_interface_facade
 
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 
@@ -33,9 +34,13 @@ from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 class ChannelV3(object):
     """ Facade class that implements business rules for interfaces channels """
 
-    def create(self, data):
+    def __init__(self, user=None):
+        """ Contructor of Port Channels V3 implementation """
+        self.user = user
         self.id = 42
         self.channel = None
+
+    def create(self, data):
         pass
 
     def retrieve(self, channel_name):
@@ -74,7 +79,7 @@ class ChannelV3(object):
             try:
                 interface.channel.id
                 channel = interface.channel
-            except:
+            except AtributeError:
                 channel = interface.ligacao_front.channel
 
             try:
@@ -87,8 +92,8 @@ class ChannelV3(object):
             iface_type = TipoInterface.get_by_name('access')
             equip_dict = self._get_equipment_dict(interfaces)
 
-            self._update_equipments(equip_dict, iface_type, user, channel)
-            channel.delete(user)
+            self._update_equipments(equip_dict, iface_type, self.user, channel)
+            channel.delete(self.user)
 
             return {"channel": channel.id}
 
@@ -104,6 +109,8 @@ class ChannelV3(object):
 
             equip_dict[str(equip_id)] = interfaces.filter(
                     equipamento__id=equip_id)
+
+        return equip_dict
 
     def _update_equipments(self, equip_dict, iface_type, user, channel):
         """ Updates data on models instances of each equipment interface """
@@ -121,7 +128,7 @@ class ChannelV3(object):
                     back = None
 
                 iface.update(
-                    user,
+                    self.user,
                     iface.id,
                     interface=iface.interface,
                     protegida=iface.protegida,
@@ -132,7 +139,8 @@ class ChannelV3(object):
                     vlan_nativa='1'
                  )
 
-            api_interface.delete_channel(user, equip_id, ifaces, channel)
+            api_interface_facade.delete_channel(
+                self.user, equip_id, ifaces, channel)
 
     def retrieve_by_id(self, channel_id):
         """ Tries to retrieve a Port Channel based on its id """
