@@ -81,13 +81,17 @@ class ChannelV3View(APIView):
         """ Http handler to route v3/interface/channel for POST method """
 
         channels = request.DATA
-        #json_validate(SPECS.get('channel_post')).validate(channels)
+        json_validate(SPECS.get('channel_post')).validate(channels)
 
         response = []
         for channel_data in channels:
 
             channel = ChannelV3()
-            channel.create(channel_data)
+            data = channel.create(channel_data)
+
+            if "error" in data:
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
             response.append({'id': channel.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -96,7 +100,22 @@ class ChannelV3View(APIView):
     @permission_classes((IsAuthenticated, ChannelWrite))
     def put(self, request, *args, **kwargs):
         """ Http handler to route v3/interface/channel for PUT method """
-        return Response(status=status.HTTP_200_OK)
+
+        channels = request.DATA
+        json_validate(SPECS.get('channel_put')).validate(channels)
+
+        response = []
+        for channel_data in channels:
+
+            channel = ChannelV3(request.user)
+            data = channel.update(channel_data)
+
+            if "error" in data:
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+            response.append({'id': channel.id})
+
+        return Response(response, status=status.HTTP_200_OK)
 
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelWrite))
