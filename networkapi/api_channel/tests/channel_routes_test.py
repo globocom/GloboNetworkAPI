@@ -37,6 +37,7 @@ class TestChannelRoutes(NetworkApiTestCase):
         'networkapi/grupo/fixtures/initial_permissions.json',
         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
 
+        "networkapi/api_interface/fixtures/initial_interface.json",
         "networkapi/api_channel/fixtures/initial_channel.json"
     ]
 
@@ -128,11 +129,20 @@ class TestChannelRoutes(NetworkApiTestCase):
 
         self.assertEqual(200, response.status_code)
 
+    def test_should_not_delete_an_unexistent_channel(self):
+        """ Should not delete an unexistent channel """
+
+        response = self.client.delete(
+            '/api/v3/interface/channel/0/',
+            HTTP_AUTHORIZATION=self.auth)
+
+        self.assertEqual(404, response.status_code)
+
     def test_should_delete_a_channel(self):
-        """ Should delete a Channel """
+        """ Should delete a channel """
 
         response = self.client.delete(
             '/api/v3/interface/channel/1/',
             HTTP_AUTHORIZATION=self.auth)
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(400, response.status_code)
