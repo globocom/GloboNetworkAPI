@@ -155,8 +155,6 @@ class DeployChannelConfV3View(APIView):
     def put(self, request, *args, **kwargs):
         """ Tries to configure interface channel using facade method """
 
-        self.log.info('Deploy Channel Conf')
-
         interface_id = kwargs.get('channel_id')
         if not interface_id:
             return Response({"error": "Channel not found"},
