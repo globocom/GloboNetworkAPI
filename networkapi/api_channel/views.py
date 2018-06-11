@@ -105,15 +105,15 @@ class ChannelV3View(APIView):
 
         channel_id = kwargs.get('channel_id')
 
-        channel = ChannelV3()
+        channel = ChannelV3(request.user)
 
         deletion = {}
         try:
             deletion = channel.delete(channel_id)
 
         except InterfaceNotFoundError:
-            return Response({
-                "error": "Could not find channel '%s'" % channel_id},
+            return Response(
+                {"error": "Could not find channel '%s'" % channel_id},
                 status=status.HTTP_404_NOT_FOUND
             )
 
