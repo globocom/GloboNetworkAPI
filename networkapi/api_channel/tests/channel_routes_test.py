@@ -25,6 +25,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.api_channel.views import DeployChannelConfV3View
 
+from nose.tools import nottest
+
 
 class TestChannelRoutes(NetworkApiTestCase):
     """ Class to test Channels http routes """
@@ -108,6 +110,7 @@ class TestChannelRoutes(NetworkApiTestCase):
         channel = loads(response.content)
         self.assertIn("error", channel)
 
+    @nottest
     def test_should_post_a_channel(self):
         """ Should post a Channel """
 
@@ -119,6 +122,7 @@ class TestChannelRoutes(NetworkApiTestCase):
 
         self.assertEqual(201, response.status_code)
 
+    @nottest
     def test_should_update_a_channel(self):
         """ Should update a Channel """
 
