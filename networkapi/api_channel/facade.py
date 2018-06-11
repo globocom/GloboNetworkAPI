@@ -181,8 +181,131 @@ class ChannelV3(object):
 
         return {"channel": channel}
 
-    def update(self):
-        pass
+    def update(self, data):
+
+        try:
+            id_channel = data.get('id_channel')
+            nome = data.get('nome')
+
+            if not is_valid_int_greater_zero_param(nome):
+                raise InvalidValueError(
+                    None, 'Channel number', 'must be integer.')
+
+            lacp = data.get('lacp')
+            int_type = data.get('int_type')
+            vlan_nativa = data.get('vlan')
+            envs_vlans = data.get('envs')
+            ids_interface = data.get('ids_interface')
+
+            if ids_interface is None:
+                raise InterfaceError('No interfaces selected')
+
+            if type(ids_interface) == list:
+                interfaces_list = ids_interface
+            else:
+                interfaces_list = str(ids_interface).split('-')
+
+            api_interface_facade.verificar_vlan_nativa(vlan_nativa)
+
+            # verifica se o nome do port channel já existe no equipamento
+            self.channel = PortChannel.get_by_pk(int(id_channel))
+
+            if not nome == self.channel.nome:
+                api_interface_facade.verificar_nome_channel(
+                    nome, interfaces_list)
+
+            # buscar interfaces do channel
+            interfaces = Interface.objects.all().filter(channel__id=id_channel)
+            ids_list = []
+            for i in interfaces:
+                ids_list.append(i.id)
+
+            self._dissociate_interfaces_from_channel(ids_list, ids_interface)
+
+            # update channel
+            self.channel.nome = str(nome)
+            self.channel.lacp = convert_string_or_int_to_boolean(lacp)
+            self.channel.save()
+
+            int_type = TipoInterface.get_by_name(str(int_type))
+
+            self._update_interfaces_from_http_put(
+                ids_interface, int_type, vlan_nativa, envs_vlans)
+
+        except Exception as err:
+            return {"error": str(err)}
+
+        return {"port_channel": self.channel}
+
+    def _dissociate_interfaces_from_channel(self, ids_list, ids_interface):
+
+        ids_list = [int(y) for y in ids_list]
+
+        if type(ids_interface) is list:
+
+            ids_interface = [int(x) for x in ids_interface]
+            dissociate = set(ids_list) - set(ids_interface)
+            for item in dissociate:
+                item = Interface.get_by_pk(int(item))
+                item.channel = None
+                item.save()
+        else:
+            if ids_interface is not None:
+                ids_interface = int(ids_interface)
+
+                if ids_interface is not None:
+                    for item in ids_list:
+                        item = Interface.get_by_pk(int(item))
+                        item.channel = None
+                        item.save()
+                else:
+                    for item in ids_list:
+                        if not item == ids_interface:
+                            item = Interface.get_by_pk(int(item))
+                            item.channel = None
+                            item.save()
+
+    def _update_interfaces_from_http_put(self, ids_interface, int_type,
+            vlan_nativa, envs_vlans):
+
+        # update interfaces
+        if type(ids_interface) is not list:
+            i = ids_interface
+            ids_interface = []
+            ids_interface.append(i)
+
+        ifaces_on_channel = []
+        for iface_id in ids_interface:
+
+            iface = Interface.get_by_pk(int(iface_id))
+
+            self._update_interfaces_from_a_channel(iface, vlan_nativa,
+                ifaces_on_channel, int_type)
+
+            interface_sw = Interface.get_by_pk(int(iface))
+            interface_server = Interface.get_by_pk(
+                interface_sw.ligacao_front.id)
+
+            front = None
+            if interface_server.ligacao_front.id is not None:
+                front = interface_server.ligacao_front.id
+
+            back = None
+            if interface_server.ligacao_back.id is not None:
+                back = interface_server.ligacao_back.id
+
+            Interface.update(
+                user,
+                interface_server.id,
+                interface=interface_server.interface,
+                protegida=interface_server.protegida,
+                descricao=interface_server.descricao,
+                ligacao_front_id=front,
+                ligacao_back_id=back,
+                tipo=int_type,
+                vlan_nativa=int(vlan_nativa)
+            )
+
 
     def delete(self, channel_id):
         """ tries to delete a channel and update equipments interfaces """
