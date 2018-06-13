@@ -42,7 +42,6 @@ class ChannelV3(object):
     def __init__(self, user=None):
         """ Contructor of Port Channels V3 implementation """
         self.user = user
-        self.id = 42
         self.channel = None
 
     def create(self, data):
