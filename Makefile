@@ -1,8 +1,13 @@
-# Makefile for globonetworkapi
+#
+# Makefile for Network API project
+#
+
 
 help:
 	@echo
-	@echo "Please use 'make <target>' where <target> is one of"
+	@echo "Network API"
+	@echo
+	@echo "Available target rules:"
 	@echo "  docs       to create documentation files"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
@@ -15,8 +20,6 @@ help:
 	@echo "  fixture    to generate fixtures from given model variable"
 	@echo
 
-default:
-	@awk -F\: '/^[a-z_]+:/ && !/default/ {printf "- %-20s %s\n", $$1, $$2}' Makefile
 
 pip: # install pip libraries
 	@pip install -r requirements.txt
