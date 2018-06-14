@@ -1,11 +1,31 @@
-# initial vars
+#
+# Script to run Network API on a docker container
+#
+
+
+
+# Time to sleep before retrying to talk to database container
 SLEEP_TIME=5
+
+# Maximum number of retries on database container
 MAX_RETRIES=30
+
+# Network API pid file path
 PIDFILE=/var/run/netapi_main.pid
+
+# Control variable to check if the database container is ready
 DB_READY=0
 
-# DB
+
+
+
+#
+# Script begin
+#
 echo "Starting netapi_app ..."
+
+
+# Waits for database container to be ready
 for i in $(seq 1  ${MAX_RETRIES}); do
 
   mysql -u root -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
