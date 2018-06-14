@@ -90,13 +90,15 @@ cat > /etc/init.d/gunicorn_networkapi <<- EOM
 /usr/local/bin/gunicorn --pid $PIDFILE -c /netapi/gunicorn.conf.py networkapi_wsgi:application
 EOM
 
+
+# Enable the init script
 chmod 777 /etc/init.d/gunicorn_networkapi
 update-rc.d gunicorn_networkapi defaults
-export PYTHONPATH="/netapi/networkapi:/netapi/$PYTHONPATH"
 
-echo "starting gunicorn"
+
+echo "Starting gunicorn"
+cd /netapi
+touch /tmp/gunicorn-networkapi_error.log
 /etc/init.d/gunicorn_networkapi
 
-touch /tmp/gunicorn-networkapi_error.log
 tail -f /tmp/gunicorn-networkapi_error.log
-
