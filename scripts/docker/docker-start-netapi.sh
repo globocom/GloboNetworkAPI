@@ -36,29 +36,45 @@ for i in $(seq 1  ${MAX_RETRIES}); do
     break;
   fi
 
-  echo "DB not ready. I'll try again in ${SLEEP_TIME} seconds."
+  echo "DB not ready. Trying again in ${SLEEP_TIME} seconds."
   sleep ${SLEEP_TIME}
   echo "Retrying ${i}.."
 done
 
+
+# Exits if we can not connect to database container
 if [ "$DB_READY" -eq "0" ]; then
   echo "Fatal error: Could not connect to DB"
   exit 1;
 fi
 
+
+
 echo "Creating networkapi database"
 mysql -u root -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
+
+
+# Running database migrations if exists
 cd /netapi/dbmigrate; db-migrate --show-sql
-echo "Loading example environment into database"
+
+
+echo "Loading base Network API data into database"
 mysql -u root -h netapi_db networkapi < /netapi/dev/load_example_environment.sql
 
+
 # Updates the SDN controller ip address
-echo "Configuring ODL container's host address"
+echo "Configuring ODL container's host address if exists"
 REMOTE_CTRL=$(nslookup netapi_odl | grep Address | tail -1 | awk '{print $2}')
 echo "$REMOTE_CTRL  odl.controller" >> /etc/hosts
 
-echo -e "PYTHONPATH=\"/netapi/networkapi:/netapi/$PYTHONPATH\"" >> /etc/environment
 
+# Adds project root directory to Python path
+echo -e "PYTHONPATH=\"/netapi/networkapi:/netapi/$PYTHONPATH\"" >> /etc/environment
+export PYTHONPATH="/netapi/networkapi:/netapi/$PYTHONPATH"
+
+
+# Creates System V init script
+# TODO: We should move to System D or Supervisor D
 cat > /etc/init.d/gunicorn_networkapi <<- EOM
 #!/bin/bash
 ### BEGIN INIT INFO
