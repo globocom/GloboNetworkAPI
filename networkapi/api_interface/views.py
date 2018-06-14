@@ -273,6 +273,34 @@ class InterfaceEnvironmentsV3View(CustomAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
+class InterfaceV3ConnectionsView(CustomAPIView):
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """
+        Create Interface
+        URL: api/v3/interface/connections/<interface_a>/<interface_b>
+        data: [{"id": id1, "link": "front"},{"id": id2, "link": "back"}]
+        """
+
+        interfaces = request.DATA
+
+        try:
+            facade.link_interface(interfaces.get('interfaces'))
+        except api_exceptions.NetworkAPIException, e:
+            log.error(e)
+            raise api_exceptions.NetworkAPIException(e)
+        except api_exceptions.ValidationAPIException, e:
+            log.error(e)
+            raise api_exceptions.NetworkAPIException(e)
+
+        data = dict()
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
 class InterfaceV3View(CustomAPIView):
 
     @logs_method_apiview

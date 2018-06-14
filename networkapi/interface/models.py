@@ -784,8 +784,6 @@ class Interface(BaseModel):
         @raise InterfaceError: Failed to add new interface
         """
 
-        log.info("model")
-
         if not self.interface == interface.get('interface') \
                 and Interface.objects.filter(equipamento__id=interface.get('equipment_id'),
                                              interface__iexact=interface.get('interface')):
@@ -842,6 +840,30 @@ class Interface(BaseModel):
             self.create_connection(back=new_back_connection)
 
         return self.save()
+
+    def connecting_interfaces(self, interfaces):
+
+        for i in interfaces:
+            if i.get('link') in "front" and i.get('interface').ligacao_front \
+                    or i.get('link') in "back" and i.get('interface').ligacao_back:
+                raise Exception('The interface %s from equipment %s is already connected.')
+
+        interface_a = interfaces[0].get('interface')
+        link_a = interfaces[0].get('link')
+        interface_b = interfaces[1].get('interface')
+        link_b = interfaces[1].get('link')
+
+        if link_a in "front":
+            interface_a.ligacao_front = interface_b
+        elif link_a in "back":
+            interface_a.ligacao_back = interface_b
+        interface_a.save()
+
+        if link_b in "front":
+            interface_b.ligacao_front = interface_a
+        elif link_b in "back":
+            interface_b.ligacao_back = interface_a
+        interface_b.save()
 
     def remove_connection(self, front=None, back=None):
         if front:

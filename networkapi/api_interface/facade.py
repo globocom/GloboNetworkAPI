@@ -47,6 +47,34 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 
+def link_interface(interfaces):
+
+    interface_list = list()
+
+    for i in interfaces:
+        try:
+            interface_obj = Interface.objects.get(id=int(i.get('id')))
+            interface_dict = dict(interface=interface_obj, link=i.get('link'))
+            interface_list.append(interface_dict)
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e.detail)
+        except Exception, e:
+            raise NetworkAPIException(str(e))
+
+    try:
+        link = Interface()
+        link.connecting_interfaces(interface_list)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
 
 def get_interfaces_environments_by_ids(ids):
     try:

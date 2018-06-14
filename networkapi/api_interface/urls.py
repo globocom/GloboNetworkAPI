@@ -21,16 +21,20 @@ from networkapi.api_interface.views import DeployInterfaceConfV3View
 from networkapi.api_interface.views import DisconnectView
 from networkapi.api_interface.views import InterfaceEnvironmentsV3View
 from networkapi.api_interface.views import InterfaceTypeV3View
+from networkapi.api_interface.views import InterfaceV3ConnectionsView
 from networkapi.api_interface.views import InterfaceV3View
 
 
 urlpatterns = patterns(
     'networkapi.api_interface.views',
+
     url(r'^interface/disconnect/(?P<id_interface_1>\d+)/(?P<id_interface_2>\d+)/$',
         DisconnectView.as_view()),
     url(r'^interface/(?P<interface_id>\d+)/deploy_config_sync/$',
         DeployInterfaceConfV3View.as_view()),
 
+    url(r'^v3/connections/(?P<interface_a>[;\w]+)/((?P<interface_b>[;\w]+)[/])$',
+        InterfaceV3ConnectionsView.as_view()),
     url(r'^v3/interface/environments/((?P<obj_ids>[;\w]+)[/])?$',
         InterfaceEnvironmentsV3View.as_view()),
     url(r'^v3/interface/environments[/]?$',
