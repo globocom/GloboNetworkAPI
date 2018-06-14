@@ -8,6 +8,4 @@ EXPOSE 8000
 
 WORKDIR /netapi
 
-RUN pip install -r requirements.txt
-RUN pip install -r requirements_test.txt
 RUN pip install -r requirements_debug.txt
