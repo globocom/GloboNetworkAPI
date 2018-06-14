@@ -12,12 +12,14 @@ help:
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
 	@echo "  test       to execute all tests"
-	@echo "  tests      to execute tests using containers. Use app variable"
 	@echo "  build      to build without installing"
 	@echo "  install    to install"
 	@echo "  dist       to create egg for distribution"
 	@echo "  publish    to publish the package to PyPI"
-	@echo "  fixture    to generate fixtures from given model variable"
+	@echo "  start      to run project through docker compose"
+	@echo "  stop       to stop all containers from docker composition"
+	@echo "  fixture    to generate fixtures from a given model"
+	@echo "  tests      to execute tests using containers. Use app variable"
 	@echo
 
 
@@ -64,20 +66,6 @@ test: compile
 	@python manage.py test --traceback $(filter-out $@,$(MAKECMDGOALS))
 
 
-# Runs tests inside container
-tests:
-	@clear
-	@echo "Running NetAPI tests.."
-	time docker exec -it netapi_app ./fast_start_test_reusedb.sh ${app}
-
-
-fixture:
-ifeq (${model},)
-	$(error Missing model. Usage: make fixture model=interface.PortChannel)
-endif
-	docker exec -it netapi_app django-admin.py dumpdata ${model}
-
-
 install:
 	@python setup.py install
 
@@ -93,3 +81,32 @@ dist: clean
 publish: clean
 	@python setup.py sdist upload
 
+
+
+#
+# Containers based target rules
+#
+
+start: docker-compose.yml
+	@docker-compose up --detach
+
+
+stop: docker-compose.yml
+	@docker-compose down --remove-orphans
+
+
+logs:
+	@docker logs --tail 100 --follow netapi_app
+
+
+tests:
+	@clear
+	@echo "Running NetAPI tests.."
+	time docker exec -it netapi_app ./fast_start_test_reusedb.sh ${app}
+
+
+fixture:
+ifeq (${model},)
+	$(error Missing model. Usage: make fixture model=interface.PortChannel)
+endif
+	docker exec -it netapi_app django-admin.py dumpdata ${model}
