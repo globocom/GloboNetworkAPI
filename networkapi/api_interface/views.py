@@ -300,6 +300,24 @@ class InterfaceV3ConnectionsView(CustomAPIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Remove link between interfaces."""
+
+        interface_a = kwargs.get('interface_a')
+        interface_b = kwargs.get('interface_b')
+
+        locks_list = create_lock(interface_a, LOCK_INTERFACE)
+
+        try:
+            facade.remove_link([interface_a, interface_b])
+        finally:
+            destroy_lock(locks_list)
+
+        return Response({}, status=status.HTTP_200_OK)
+
 
 class InterfaceV3View(CustomAPIView):
 
