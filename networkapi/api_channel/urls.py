@@ -27,7 +27,7 @@ urlpatterns = patterns(
     'networkapi.api_channel.views',
 
     # Basic CRUD routes
-    url(r'^v3/interface/channel/(?P<channel_id>\d+)/?$',
+    url(r'^v3/interface/channel/(?P<channel_id>\w+)/?$',
        ChannelV3View.as_view()),
 
     # Channel deploy operation

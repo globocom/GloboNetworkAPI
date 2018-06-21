@@ -1,2 +1,5 @@
+--requirement requirements.txt
+--requirement requirements_test.txt
+
 django-pdb==0.5.1
 virtualenv==15.1.0

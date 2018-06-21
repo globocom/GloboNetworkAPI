@@ -34,9 +34,9 @@ from networkapi.api_channel.facade import ChannelV3
 
 from networkapi.api_interface import facade
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
-from networkapi.api_interface.exceptions import InterfaceTemplateException
 from networkapi.api_interface.exceptions import UnsupportedEquipmentException
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
+from networkapi.api_interface.exceptions import InterfaceException
 
 from networkapi.interface.models import InterfaceNotFoundError
 
@@ -53,12 +53,19 @@ class ChannelV3View(APIView):
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelRead))
     def get(self, request, *args, **kwargs):
-        """ Http handler to route v3/interface/channel for GET method """
+        """ Http handler to route v3/interface/channel/ for GET method """
 
-        channel_name = kwargs.get('channel_name')
+        data = None
+        channel_name = kwargs.get('channel_id')
+        try:
+            channel_id = int(channel_name)
+            channel = ChannelV3()
+            data = channel.retrieve_by_id(channel_id)
 
-        channel = ChannelV3()
-        data = channel.retrieve(channel_name)
+        except ValueError:  # In case we have a name instead of a ID
+
+            channel = ChannelV3()
+            data = channel.retrieve(channel_name)
 
         if data is None:
             error = {"error": "Channel not found: '%s'" % channel_name}
@@ -74,13 +81,17 @@ class ChannelV3View(APIView):
         """ Http handler to route v3/interface/channel for POST method """
 
         channels = request.DATA
-        #json_validate(SPECS.get('channel_post')).validate(channels)
+        json_validate(SPECS.get('channel_post')).validate(channels)
 
         response = []
         for channel_data in channels:
 
             channel = ChannelV3()
-            channel.create(channel_data)
+            data = channel.create(channel_data)
+
+            if "error" in data:
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
             response.append({'id': channel.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -89,13 +100,46 @@ class ChannelV3View(APIView):
     @permission_classes((IsAuthenticated, ChannelWrite))
     def put(self, request, *args, **kwargs):
         """ Http handler to route v3/interface/channel for PUT method """
-        return Response(status=status.HTTP_200_OK)
+
+        channels = request.DATA
+        json_validate(SPECS.get('channel_put')).validate(channels)
+
+        response = []
+        for channel_data in channels:
+
+            channel = ChannelV3(request.user)
+            data = channel.update(channel_data)
+
+            if "error" in data:
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+            response.append({'id': channel.id})
+
+        return Response(response, status=status.HTTP_200_OK)
 
     @logs_method_apiview
     @permission_classes((IsAuthenticated, ChannelWrite))
     def delete(self, request, *args, **kwargs):
-        """ Http handler to route v3/interface/channel for DELETE method """
-        return Response(status=status.HTTP_200_OK)
+        """ Http handler to route v3/interface/channel/id for DELETE method """
+
+        channel_id = kwargs.get('channel_id')
+
+        channel = ChannelV3(request.user)
+
+        deletion = {}
+        try:
+            deletion = channel.delete(channel_id)
+
+        except InterfaceNotFoundError:
+            return Response(
+                {"error": "Could not find channel '%s'" % channel_id},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if "error" in deletion:
+            return Response(deletion, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(deletion, status=status.HTTP_200_OK)
 
 
 class DeployChannelConfV3View(APIView):
@@ -110,8 +154,6 @@ class DeployChannelConfV3View(APIView):
     @permission_classes((IsAuthenticated, ChannelDeploy))
     def put(self, request, *args, **kwargs):
         """ Tries to configure interface channel using facade method """
-
-        self.log.info('Deploy Channel Conf')
 
         interface_id = kwargs.get('channel_id')
         if not interface_id:
