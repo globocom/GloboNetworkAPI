@@ -47,6 +47,7 @@ from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 
+log = logging.getLogger(__name__)
 
 class AmbienteError(Exception):
 
@@ -1049,6 +1050,7 @@ class Ambiente(BaseModel):
 
         @raise FilterNotFoundError: Não existe o filtro para a pk pesquisada.
         """
+        log.debug("create environment")
 
         self.ambiente_logico = AmbienteLogico.get_by_pk(
             self.ambiente_logico.id)
@@ -1071,8 +1073,8 @@ class Ambiente(BaseModel):
                 except Filter.DoesNotExist:
                     raise FilterNotFoundError(
                         None, u'There is no Filter with pk = %s.' % self.filter.id)
-
-            if self.father_environment is not None:
+            log.debug("father_environment")
+            if self.father_environment:
                 self.father_environment = Ambiente.get_by_pk(
                     self.father_environment.pk)
 
