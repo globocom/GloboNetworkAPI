@@ -161,6 +161,19 @@ def autoprovision_splf(rack, equips):
     CIDRBEipv4 = None
     CIDRBEipv6 = None
 
+    CIDRBO_DSRipv4interno = ""
+    prefixInternoBO_DSRV4 = ""
+    CIDRBO_DSRipv6interno = ""
+    prefixInternoBO_DSRV6 = ""
+    CIDRBOCAAipv4interno = ""
+    prefixInternoBOCAAV4 = ""
+    CIDRBOCAAipv6interno = ""
+    prefixInternoBOCAAV6 = ""
+    CIDRBOCABipv4interno = ""
+    prefixInternoBOCABV4 = ""
+    CIDRBOCABipv6interno = ""
+    prefixInternoBOCABV6 = ""
+
     try:
         path_to_guide = get_variable("path_to_guide")
         path_to_add_config = get_variable("path_to_add_config")
@@ -381,14 +394,17 @@ def autoprovision_splf(rack, equips):
     subnetsRackFEipv4[numero_rack] = splitnetworkbyrack(CIDRFEipv4interno, prefixInternoFEV4, numero_rack)
     subnetsRackFEipv6[numero_rack] = splitnetworkbyrack(CIDRFEipv6interno, prefixInternoFEV6, numero_rack)
     #
-    subnetsRackBO_DSRipv4[numero_rack] = splitnetworkbyrack(CIDRBO_DSRipv4interno, prefixInternoBO_DSRV4, numero_rack)
-    subnetsRackBO_DSRipv6[numero_rack] = splitnetworkbyrack(CIDRBO_DSRipv6interno, prefixInternoBO_DSRV6, numero_rack)
+    if CIDRBO_DSRipv4interno:
+        subnetsRackBO_DSRipv4[numero_rack] = splitnetworkbyrack(CIDRBO_DSRipv4interno, prefixInternoBO_DSRV4, numero_rack)
+        subnetsRackBO_DSRipv6[numero_rack] = splitnetworkbyrack(CIDRBO_DSRipv6interno, prefixInternoBO_DSRV6, numero_rack)
     #
-    subnetsRackBOCAAipv4[numero_rack] = splitnetworkbyrack(CIDRBOCAAipv4interno, prefixInternoBOCAAV4, numero_rack)
-    subnetsRackBOCAAipv6[numero_rack] = splitnetworkbyrack(CIDRBOCAAipv6interno, prefixInternoBOCAAV6, numero_rack)
+    if CIDRBOCAAipv4interno:
+        subnetsRackBOCAAipv4[numero_rack] = splitnetworkbyrack(CIDRBOCAAipv4interno, prefixInternoBOCAAV4, numero_rack)
+        subnetsRackBOCAAipv6[numero_rack] = splitnetworkbyrack(CIDRBOCAAipv6interno, prefixInternoBOCAAV6, numero_rack)
     #
-    subnetsRackBOCABipv4[numero_rack] = splitnetworkbyrack(CIDRBOCABipv4interno, prefixInternoBOCABV4, numero_rack)
-    subnetsRackBOCABipv6[numero_rack] = splitnetworkbyrack(CIDRBOCABipv6interno, prefixInternoBOCABV6, numero_rack)
+    if CIDRBOCABipv4interno:
+        subnetsRackBOCABipv4[numero_rack] = splitnetworkbyrack(CIDRBOCABipv4interno, prefixInternoBOCABV4, numero_rack)
+        subnetsRackBOCABipv6[numero_rack] = splitnetworkbyrack(CIDRBOCABipv6interno, prefixInternoBOCABV6, numero_rack)
     #          ::::::: SUBNETING EACH RACK NETWORK:::::::
     # PODS FE => 128 redes /28 ; 128 redes /64
     #redesPODSBEipv4[numero_rack] = list(subnetsRackFEipv4[numero_rack].subnet(28))
@@ -435,17 +451,23 @@ def autoprovision_splf(rack, equips):
 
         variablestochangeleaf1["NET_HOST_BE_IPV4"] = str(subnetsRackBEipv4[numero_rack])
         variablestochangeleaf1["NET_HOST_FE_IPV4"] = str(subnetsRackFEipv4[numero_rack])
-        variablestochangeleaf1["NET_HOST_BO_DSR_IPV4"] = str(subnetsRackBO_DSRipv4[numero_rack])
-        variablestochangeleaf1["NET_HOST_BOCAA_IPV4"] = str(subnetsRackBOCAAipv4[numero_rack])
-        variablestochangeleaf1["NET_HOST_BOCAB_IPV4"] = str(subnetsRackBOCABipv4[numero_rack])
+        if CIDRBO_DSRipv4interno:
+            variablestochangeleaf1["NET_HOST_BO_DSR_IPV4"] = str(subnetsRackBO_DSRipv4[numero_rack])
+        if CIDRBOCAAipv4interno:
+            variablestochangeleaf1["NET_HOST_BOCAA_IPV4"] = str(subnetsRackBOCAAipv4[numero_rack])
+        if CIDRBOCABipv4interno:
+            variablestochangeleaf1["NET_HOST_BOCAB_IPV4"] = str(subnetsRackBOCABipv4[numero_rack])
         variablestochangeleaf1["NET_SPINE1_LF_IPV4"] = str(subSPINE1ipv4[numero_rack])
         variablestochangeleaf1["NET_SPINE2_LF_IPV4"] = str(subSPINE2ipv4[numero_rack])
         variablestochangeleaf1["NET_LF_LF_IPV4"] = str(subIBGPToRLxLipv4[numero_rack])
         variablestochangeleaf1["NET_HOST_BE_IPV6"] = str(subnetsRackBEipv6[numero_rack])
         variablestochangeleaf1["NET_HOST_FE_IPV6"] = str(subnetsRackFEipv6[numero_rack])
-        variablestochangeleaf1["NET_HOST_BO_DSR_IPV6"] = str(subnetsRackBO_DSRipv6[numero_rack])
-        variablestochangeleaf1["NET_HOST_BOCAA_IPV6"] = str(subnetsRackBOCAAipv6[numero_rack])
-        variablestochangeleaf1["NET_HOST_BOCAB_IPV6"] = str(subnetsRackBOCABipv6[numero_rack])
+        if CIDRBO_DSRipv6interno:
+            variablestochangeleaf1["NET_HOST_BO_DSR_IPV6"] = str(subnetsRackBO_DSRipv6[numero_rack])
+        if CIDRBOCAAipv6interno:
+            variablestochangeleaf1["NET_HOST_BOCAA_IPV6"] = str(subnetsRackBOCAAipv6[numero_rack])
+        if CIDRBOCABipv6interno:
+            variablestochangeleaf1["NET_HOST_BOCAB_IPV6"] = str(subnetsRackBOCABipv6[numero_rack])
         variablestochangeleaf1["NET_SPINE1_LF_IPV6"] = str(subSPINE1ipv6[numero_rack])
         variablestochangeleaf1["NET_SPINE2_LF_IPV6"] = str(subSPINE2ipv6[numero_rack])
         variablestochangeleaf1["NET_LF_LF_IPV6"] = str(subIBGPToRLxLipv6[numero_rack])
