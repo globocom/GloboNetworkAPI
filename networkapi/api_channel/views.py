@@ -37,6 +37,7 @@ from networkapi.api_interface.exceptions import InvalidIdInterfaceException
 from networkapi.api_interface.exceptions import UnsupportedEquipmentException
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
 from networkapi.api_interface.exceptions import InterfaceException
+from networkapi.api_interface.exceptions import InterfaceTemplateException
 
 from networkapi.interface.models import InterfaceNotFoundError
 
