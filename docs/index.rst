@@ -19,7 +19,6 @@ Contents:
    code_doc
    api-v3
    api-v4
-   modules
 
 E-mail lists (Forums)
 =====================
