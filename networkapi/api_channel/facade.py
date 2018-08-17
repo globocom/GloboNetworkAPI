@@ -97,7 +97,8 @@ class ChannelV3(object):
                     self._create_ifaces_on_trunks(iface, envs_vlans)
 
         except Exception as err:
-            return {"error": str(err)}
+            log.error(str(err))
+            raise Exception({"error": str(err)})
 
         return {'channels': self.channel.id}
 

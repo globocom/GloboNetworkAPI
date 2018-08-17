@@ -88,15 +88,16 @@ class ChannelV3View(APIView):
         #json_validate(SPECS.get('channel_post_v3')).validate(channels)
 
         response = []
-        for channel_data in channels.get('channels'):
+        try:
+            for channel_data in channels.get('channels'):
 
-            channel = ChannelV3()
-            data = channel.create(channel_data)
+                channel = ChannelV3()
+                data = channel.create(channel_data)
 
-            if "error" in data:
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                response.append({'channel_id': data.get('channels')})
 
-            response.append({'channel_id': data.get('channels')})
+        except Exception as err:
+            return Response({"error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(response, status=status.HTTP_201_CREATED)
 
