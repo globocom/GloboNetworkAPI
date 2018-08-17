@@ -94,7 +94,7 @@ class ChannelV3View(APIView):
                 channel = ChannelV3()
                 data = channel.create(channel_data)
 
-                response.append({'channel_id': data.get('channels')})
+                response.append({'id': data.get('channels')})
 
         except Exception as err:
             return Response({"error": str(err)}, status=status.HTTP_400_BAD_REQUEST)

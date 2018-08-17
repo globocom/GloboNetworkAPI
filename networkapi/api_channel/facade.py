@@ -93,7 +93,7 @@ class ChannelV3(object):
 
                 log.debug("interface updated %s" % iface.id)
 
-                if 'trunk' in int_type:
+                if 'trunk' in int_type.lower():
                     self._create_ifaces_on_trunks(iface, envs_vlans)
 
         except Exception as err:
