@@ -158,8 +158,9 @@ class PortChannel(BaseModel):
         db_table = u'port_channel'
         managed = True
 
-    def create(self, authenticated_user):
+    def create(self, authenticated_user=None):
         """Add new port channel"""
+        log.info("save channel")
 
         # Checks if name is valid
         try:

@@ -15,13 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 
 from django.forms.models import model_to_dict
 
 from networkapi.interface.models import PortChannel
+from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import InterfaceNotFoundError
 from networkapi.interface.models import Interface
 from networkapi.interface.models import InterfaceError
+from networkapi.interface.models import InvalidValueError
 from networkapi.interface.models import TipoInterface
 from networkapi.ambiente.models import Ambiente
 
@@ -30,10 +33,10 @@ from networkapi.api_interface.exceptions import InvalidKeyException
 from networkapi.api_interface.exceptions import InterfaceTemplateException
 from networkapi.api_interface import facade as api_interface_facade
 
-from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
-
 from networkapi.util import convert_string_or_int_to_boolean
 from networkapi.util import is_valid_int_greater_zero_param
+
+log = logging.getLogger(__name__)
 
 
 class ChannelV3(object):
@@ -47,86 +50,80 @@ class ChannelV3(object):
     def create(self, data):
         """ Creates a new Port Channel """
 
+        log.info("Create Channel")
+
         try:
+            log.debug(data)
             interfaces = data.get('interfaces')
-            nome = data.get('nome')
+            nome = data.get('name')
             lacp = data.get('lacp')
             int_type = data.get('int_type')
             vlan_nativa = data.get('vlan')
-            envs_vlans = data.get('envs')
-
+            envs_vlans = data.get('envs_vlans')
 
             api_interface_facade.verificar_vlan_nativa(vlan_nativa)
 
             # Checks if Port Channel name already exists on equipment
-            interfaces = str(interfaces).split('-')
-            api_interface_facade.check_channel_name_on_equipment(nome,
-                interfaces)
+            api_interface_facade.check_channel_name_on_equipment(nome, interfaces)
 
             self.channel = PortChannel()
             self.channel.nome = str(nome)
             self.channel.lacp = convert_string_or_int_to_boolean(lacp)
-            self.channel.create(user)
-
-            int_type = TipoInterface.get_by_name(str(int_type))
+            self.channel.create()
 
             ifaces_on_channel = []
             for interface in interfaces:
 
-                if interface:
-                    iface = Interface.get_by_pk(int(interface))
+                iface = Interface.objects.get(id=interface)
+                type_obj = TipoInterface.objects.get(tipo=int_type)
 
-                    self._update_interfaces_from_a_channel(
-                        iface, vlan_nativa, ifaces_on_channel, int_type)
+                if iface.channel:
+                    raise InterfaceError('Interface %s is already a Channel' % iface.interface)
 
-                    if 'trunk' in int_type.tipo:
-                        self._create_ifaces_on_trunks(sw_router, envs_vlans)
+                if iface.equipamento.id not in ifaces_on_channel:
+                    ifaces_on_channel.append(int(iface.equipamento.id))
+
+                    if len(ifaces_on_channel) > 2:
+                        raise InterfaceError('More than one equipment selected')
+
+                iface.channel = self.channel
+                iface.int_type = type_obj
+                iface.vlan_nativa = vlan_nativa
+                iface.save()
+
+                log.debug("interface updated %s" % iface.id)
+
+                if 'trunk' in int_type:
+                    self._create_ifaces_on_trunks(iface, envs_vlans)
 
         except Exception as err:
             return {"error": str(err)}
 
-        return {'port_channel': self.channel}
+        return {'channels': self.channel.id}
 
-    def _update_interfaces_from_a_channel(self, iface, vlan_nativa,
-            ifaces_on_channel, int_type):
+    def _update_interfaces_from_a_channel(self, iface, vlan_nativa, ifaces_on_channel, int_type):
+        log.info("_update_interfaces_from_a_channel")
 
-        try:
-            sw_router = iface.get_switch_and_router_interface_from_host_interface(
-                iface.protegida)
-        except:
-            raise InterfaceError('Interface not connected')
+        if iface.channel:
+            raise InterfaceError('Interface %s is already a Channel' % iface.interface)
 
-        if sw_router.channel is not None:
-            raise InterfaceError(
-                'Interface %s is already a Channel' % sw_router.interface)
-
-        if not sw_router.equipamento.id in ifaces_on_channel:
-            ifaces_on_channel.append(int(sw_router.equipamento.id))
+        if not iface.equipamento.id in ifaces_on_channel:
+            ifaces_on_channel.append(int(iface.equipamento.id))
 
             if len(ifaces_on_channel) > 2:
-                raise InterfaceError(
-                    'More than one equipment selected')
+                raise InterfaceError('More than one equipment selected')
 
-        ligacao_front_id = None
-        if sw_router.ligacao_front is not None:
-            ligacao_front_id = sw_router.ligacao_front.id
+        interface_obj = dict(native_vlan=vlan_nativa,
+                             type=int_type,
+                             channel=self.channel,
+                             interface=iface.interface,
+                             equipment=iface.equipamento,
+                             description=iface.descricao,
+                             protected=iface.protegida,
+                             front_interface=iface.ligacao_front,
+                             back_interface=iface.ligacao_back)
 
-        ligacao_back_id = None
-        if sw_router.ligacao_back is not None:
-            ligacao_back_id = sw_router.ligacao_back.id
-
-        Interface.update(
-            user,
-            sw_router.id,
-            interface=sw_router.interface,
-            protegida=sw_router.protegida,
-            descricao=sw_router.descricao,
-            ligacao_front_id=ligacao_front_id,
-            ligacao_back_id=ligacao_back_id,
-            tipo=int_type,
-            vlan_nativa=vlan_nativa,
-            channel=self.channel
-        )
+        iface.update_V3(interface_obj)
 
     def _create_ifaces_on_trunks(self, sw_router, envs_vlans):
 
@@ -153,7 +150,7 @@ class ChannelV3(object):
 
                 env_iface.vlans = range_vlans
 
-            env_iface.create(user)
+            env_iface.create()
 
 
     def retrieve(self, channel_name):

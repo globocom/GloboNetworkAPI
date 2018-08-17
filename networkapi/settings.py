@@ -325,11 +325,13 @@ PROJECT_APPS = (
     'networkapi.ambiente',
     'networkapi.api_asn',
     'networkapi.api_aws',
+    'networkapi.api_channel',
     'networkapi.api_environment',
     'networkapi.api_environment_vip',
     'networkapi.api_equipment',
     'networkapi.api_filter',
     'networkapi.api_group',
+    'networkapi.api_interface',
     'networkapi.api_ip',
     'networkapi.api_neighbor',
     'networkapi.api_network',
@@ -416,6 +418,14 @@ MAX_OCT4 = 250
 # SPECS #
 #########
 SPECS = {
+    'channel_post_v3': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_channel/specs/channel_post.json'
+    ),
+    'channel_put_v3': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_channel/specs/channel_put.json'
+    ),
     'environment_post': os.path.join(
         PROJECT_ROOT_PATH,
         'api_environment/specs/env_post.json'

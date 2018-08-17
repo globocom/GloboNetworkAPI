@@ -33,10 +33,8 @@ from networkapi.api_channel.permissions import ChannelWrite
 from networkapi.api_channel.facade import ChannelV3
 
 from networkapi.api_interface import facade
-from networkapi.api_interface.exceptions import InvalidIdInterfaceException
 from networkapi.api_interface.exceptions import UnsupportedEquipmentException
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
-from networkapi.api_interface.exceptions import InterfaceException
 from networkapi.api_interface.exceptions import InterfaceTemplateException
 
 from networkapi.interface.models import InterfaceNotFoundError
@@ -44,6 +42,9 @@ from networkapi.interface.models import InterfaceNotFoundError
 from networkapi.util.decorators import logs_method_apiview
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
+
+
+log = getLogger(__name__)
 
 
 class ChannelV3View(APIView):
@@ -64,7 +65,6 @@ class ChannelV3View(APIView):
             data = channel.retrieve_by_id(channel_id)
 
         except ValueError:  # In case we have a name instead of a ID
-
             channel = ChannelV3()
             data = channel.retrieve(channel_name)
 
@@ -79,13 +79,16 @@ class ChannelV3View(APIView):
     @raise_json_validate('channel_post_v3')
     @commit_on_success
     def post(self, request, *args, **kwargs):
-        """ Http handler to route v3/interface/channel for POST method """
+        """ Http handler to route v3/channel for POST method """
+
+        log.info("POST - api_channel")
 
         channels = request.DATA
-        json_validate(SPECS.get('channel_post')).validate(channels)
+
+        #json_validate(SPECS.get('channel_post_v3')).validate(channels)
 
         response = []
-        for channel_data in channels:
+        for channel_data in channels.get('channels'):
 
             channel = ChannelV3()
             data = channel.create(channel_data)
@@ -93,7 +96,7 @@ class ChannelV3View(APIView):
             if "error" in data:
                 return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-            response.append({'id': channel.id})
+            response.append({'channel_id': data.get('channels')})
 
         return Response(response, status=status.HTTP_201_CREATED)
 
