@@ -27,7 +27,7 @@ It is possible to specify in several ways fields desired to be retrieved in Equi
         * :ref:`environment <url-api-v4-environment-get>`
         * :ref:`equipment <url-api-v4-equipment-get>`
     * **groups**
-    * :ref:`id_as <url-api-v4-as-get>`
+    * :ref:`asn <url-api-v4-as-get>`
 
 Obtaining list of Equipments through some Optional GET Parameters
 =================================================================
@@ -362,7 +362,7 @@ Response body with *details* kind:
                         "name": <string>
                     }, ...
                 ],
-                "id_as": {
+                "asn": {
                     "id": <integer>,
                     "name": <string>,
                     "description": <string>

@@ -64,7 +64,7 @@ Request body:
                 "maintenance": <boolean>,
                 "model": <integer>,
                 "name": <string>,
-                "id_as": <integer>
+                "asn": <integer>
             }, ...
         ]
     }
@@ -78,7 +78,7 @@ Request body:
 * **maintenance** - You must assign to the new Equipment a flag saying if the Equipment is or not in maintenance mode.
 * **model** - You must assign to the Equipment some model (Cisco, Dell, HP, F5, ...).
 * **name** - You must assign to the Equipment any name.
-* **id_as** - You can associate the Equipment with one ASN.
+* **asn** - You can associate the Equipment with one ASN.
 
 Remember that if you don't provide the not mandatory fields, actual information (e.g. associations between Equipment and Environments) will be deleted. The effect of PUT Request is always to replace actual data by what you provide into fields in this type of request.
 
