@@ -451,20 +451,6 @@ def _create_spnlfenv(user, rack):
                 'configs': config,
                 'fabric_id': rack.dcroom.id
             }
-            try:
-                environment_spn_lf = facade_env.create_environment(obj)
-                environment_spn_lf_list.append(environment_spn_lf)
-                for switch in [rack.id_sw1, rack.id_sw2]:
-                    try:
-                        equipamento_ambiente = EquipamentoAmbiente()
-                        equipamento_ambiente.ambiente = environment_spn_lf
-                        equipamento_ambiente.equipamento = switch
-                        equipamento_ambiente.is_router = True
-                        equipamento_ambiente.create(user)
-                    except EquipamentoAmbienteDuplicatedError:
-                        pass
-            except:
-                log.debug("Environment object: %s" % str(environment_spn_lf))
 
     return environment_spn_lf_list
 

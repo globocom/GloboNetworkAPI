@@ -47,6 +47,7 @@ from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 
+log = logging.getLogger(__name__)
 
 class AmbienteError(Exception):
 
@@ -881,6 +882,11 @@ class Ambiente(BaseModel):
         null=True,
         db_column='id_dcroom'
     )
+    aws_vpc = models.ForeignKey(
+        'api_aws.VPC',
+        null=True,
+        db_column='id_aws_vpc'
+    )
 
     log = logging.getLogger('Ambiente')
 
@@ -1044,6 +1050,7 @@ class Ambiente(BaseModel):
 
         @raise FilterNotFoundError: Não existe o filtro para a pk pesquisada.
         """
+        log.debug("create environment")
 
         self.ambiente_logico = AmbienteLogico.get_by_pk(
             self.ambiente_logico.id)
@@ -1066,8 +1073,8 @@ class Ambiente(BaseModel):
                 except Filter.DoesNotExist:
                     raise FilterNotFoundError(
                         None, u'There is no Filter with pk = %s.' % self.filter.id)
-
-            if self.father_environment is not None:
+            log.debug("father_environment")
+            if self.father_environment:
                 self.father_environment = Ambiente.get_by_pk(
                     self.father_environment.pk)
 
@@ -1297,6 +1304,13 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
+
+            if env_map.get('aws_vpc'):
+                aws_vpc = get_model('api_aws', 'VPC')
+                self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
+            else:
+                self.aws_vpc = None
+
             if env_map.get('fabric_id'):
                 fabric = env_map.get('fabric_id')
             elif env_map.get('dcroom'):
@@ -1305,6 +1319,7 @@ class Ambiente(BaseModel):
                 fabric = None
             if fabric:
                 self.dcroom = DatacenterRooms().get_dcrooms(idt=fabric)
+
             self.validate_v3()
             self.save()
 
@@ -1346,6 +1361,12 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
+
+            if env_map.get('aws_vpc'):
+                aws_vpc = get_model('api_aws', 'VPC')
+                self.aws_vpc = aws_vpc.get_by_pk(env_map.get('aws_vpc'))
+            else:
+                self.aws_vpc = None
 
         except Exception, e:
             raise EnvironmentErrorV3(e)

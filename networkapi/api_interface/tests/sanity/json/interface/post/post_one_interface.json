@@ -1,0 +1,11 @@
+{
+  "interfaces": [
+    {
+      "interface": "Eth2",
+      "type": 1,
+      "protected": false,
+      "equipment": 1,
+      "description": ""
+    }
+  ]
+}

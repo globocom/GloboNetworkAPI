@@ -25,6 +25,7 @@ from django.template import Template
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.api_interface import exceptions
 from networkapi.api_rest.exceptions import NetworkAPIException
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.distributedlock import LOCK_EQUIPMENT
 from networkapi.distributedlock import LOCK_INTERFACE_DEPLOY_CONFIG
@@ -37,6 +38,8 @@ from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface
 from networkapi.interface.models import PortChannel
+from networkapi.interface.models import TipoInterface
+from networkapi.interface import models
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.util import is_valid_int_greater_zero_param
@@ -44,11 +47,217 @@ from networkapi.util import is_valid_int_greater_zero_param
 
 log = logging.getLogger(__name__)
 
-# register = template.Library()
+def remove_link(interfaces):
 
-# @register.filter
-# def get(dictionary, key):
-#    return dictionary.get(key)
+    interface_list = list()
+
+    for i in interfaces:
+        try:
+            interface_obj = Interface.objects.get(id=int(i))
+            interface_list.append(interface_obj)
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e.detail)
+        except Exception, e:
+            raise NetworkAPIException(str(e))
+
+    try:
+        link = Interface()
+        link.disconnecting_interfaces(interface_list)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+
+def link_interface(interfaces):
+
+    interface_list = list()
+
+    for i in interfaces:
+        try:
+            interface_obj = Interface.objects.get(id=int(i.get('id')))
+            interface_dict = dict(interface=interface_obj, link=i.get('link'))
+            interface_list.append(interface_dict)
+        except ObjectDoesNotExistException, e:
+            raise ObjectDoesNotExistException(e.detail)
+        except Exception, e:
+            raise NetworkAPIException(str(e))
+
+    try:
+        link = Interface()
+        link.connecting_interfaces(interface_list)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+
+def get_interfaces_environments_by_ids(ids):
+    try:
+        interfaces_envs_obj = list()
+        for i in ids:
+            interfaces_envs = EnvironmentInterface.objects.get(id=int(i))
+            interfaces_envs_obj.append(interfaces_envs)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(u'There is no interface with id = %s. %s' % (id, e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interfaces_envs_obj
+
+
+def get_interfaces_environments_by_search(search=dict()):
+    """Return a list of interface by dict."""
+
+    try:
+        interfaces_envs = EnvironmentInterface.objects.filter()
+        interfaces_envs_map = build_query_to_datatable_v3(interfaces_envs, search)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interfaces_envs_map
+
+
+def delete_interface_environments(int_env_id):
+    """Delete association between interface and environments by id"""
+
+    log.debug("delete_interface_environments")
+
+    try:
+        interfaces_envs = EnvironmentInterface.objects.get(id=int(int_env_id))
+        interfaces_envs.remove_v3()
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except ValidationAPIException, e:
+        raise NetworkAPIException(e.detail)
+    except models.InterfaceUsedByOtherInterfaceError, e:
+        raise NetworkAPIException(e)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+
+def create_interface_environments(interface_environment):
+
+    try:
+        interface_envs_obj = EnvironmentInterface()
+        interface_envs_obj.create_v3(interface_environment)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return interface_envs_obj
+
+
+def get_interface_type_by_search(search=dict()):
+    """Return a list of interface by dict."""
+
+    try:
+        interfaces = TipoInterface.objects.filter()
+        interface_map = build_query_to_datatable_v3(interfaces, search)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interface_map
+
+
+def get_interface_type_by_ids(types_ids):
+    try:
+        interfaces_obj = list()
+        for i in types_ids:
+            interface = TipoInterface.objects.get(id=int(i))
+            interfaces_obj.append(interface)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(u'There is no interface with id = %s. %s' % (id, e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return interfaces_obj
+
+
+def create_interface(interface):
+
+    try:
+        interface_obj = Interface()
+        interface_obj.create_v3(interface)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return interface_obj
+
+
+def update_interface(interface):
+
+    try:
+        interface_obj = Interface.objects.get(id=interface.get('id'))
+        interface_obj.update_v3(interface)
+    except models.InterfaceError, e:
+        raise ValidationAPIException(e.message)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except InvalidValueError, e:
+        raise ValidationAPIException(e)
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return interface_obj
+
+
+def delete_interface(interface):
+    """Delete interface by id"""
+
+    log.debug("delete_interface")
+
+    try:
+        interface_obj = Interface.objects.get(id=int(interface))
+        interface_obj.remove_v3()
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+    except ValidationAPIException, e:
+        raise NetworkAPIException(e.detail)
+    except models.InterfaceUsedByOtherInterfaceError, e:
+        raise NetworkAPIException(e)
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
 
 def get_interface_by_search(search=dict()):
     """Return a list of interface by dict."""
@@ -62,6 +271,7 @@ def get_interface_by_search(search=dict()):
         raise NetworkAPIException(str(e))
     else:
         return interface_map
+
 
 def get_interface_by_ids(interface_ids):
     try:
@@ -77,6 +287,7 @@ def get_interface_by_ids(interface_ids):
         raise NetworkAPIException(str(e))
     else:
         return interfaces_obj
+
 
 def generate_delete_file(user, equip_id, interface_list, channel):
     try:
@@ -428,52 +639,66 @@ def verificar_vlan_range(amb, vlans):
                 i = int(i)
             except:
                 raise InvalidValueError(None, None, 'Numero da Vlan')
-            if amb.min_num_vlan_1:
-                if not (i >= amb.min_num_vlan_1 and i <= amb.max_num_vlan_1):
-                    if not (i >= amb.min_num_vlan_2 and i <= amb.max_num_vlan_2):
-                        raise exceptions.InterfaceException(
-                            u'Numero de vlan fora do range '
-                            'definido para o ambiente')
+            if amb.min_num_vlan_1 and not (amb.min_num_vlan_1 <= i <= amb.max_num_vlan_1) and not (
+                    amb.min_num_vlan_2 <= i <= amb.max_num_vlan_2):
+                raise exceptions.InterfaceException(
+                    u'Numero de vlan fora do range '
+                    'definido para o ambiente')
 
 
 def verificar_vlan_nativa(vlan_nativa):
     log.info("verificar_vlan_nativa")
 
     if vlan_nativa is not None:
-        if int(vlan_nativa) < 1 or int(vlan_nativa) > 4096:
-            raise InvalidValueError(
-                None, 'Vlan Nativa', 'Range valido: 1 - 4096.')
-        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) == 4096:
-            raise InvalidValueError(
-                None, 'Vlan Nativa', 'Range reservado: 3968-4047;4094.')
+        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) >= 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Range valido: 1-3967, 4048-4095.')
 
 
-def verificar_nome_channel(nome, interfaces):
-    log.info("verificar_nome_channel")
+def check_channel_name_on_equipment(nome, interfaces):
+    log.info("check_channel_name_on_equipment")
 
-    interface = Interface()
+    for i in interfaces:
 
-    channels = PortChannel.objects.filter(nome=nome)
-    channels_id = []
-    for ch in channels:
-        channels_id.append(int(ch.id))
-    if channels_id:
-        for var in interfaces:
-            if not var == '' and var is not None:
-                interface_id = int(var)
-        interface_id = interface.get_by_pk(interface_id)
-        equip_id = interface_id.equipamento.id
-        equip_interfaces = interface.search(equip_id)
-        for i in equip_interfaces:
-            try:
-                sw = i.get_switch_and_router_interface_from_host_interface(
-                    i.protegida)
-            except:
-                sw = None
-                pass
-            if sw is not None:
-                if sw.channel is not None:
-                    if sw.channel.id in channels_id:
-                        raise exceptions.InterfaceException(
-                            u'O nome do port channel ja foi '
-                            'utilizado no equipamento')
+        interface = Interface.objects.get(id=int(i))
+
+        interface_obj = Interface.objects.filter(
+            channel__nome=nome,
+            equipamento__id=interface.equipamento.id)
+
+        if interface_obj:
+            raise Exception("Channel name %s already exist on the equipment %s" % (nome, interface.equipamento.nome))
+
+        front_interface_obj = Interface.objects.filter(
+            channel__nome=nome,
+            equipamento__id=interface.ligacao_front.equipamento.id)
+
+        if front_interface_obj:
+            raise Exception("Channel name %s already exist on the equipment %s" %
+                            (nome, interface.ligacao_front.equipamento.nome))
+
+    log.info("passei")
+
+
+def available_channel_number(channel_name, interface_ids):
+    log.info("available channel")
+
+    interface_obj = Interface()
+
+    for interface_id in interface_ids:
+
+        interface = interface_obj.get_by_pk(interface_id)
+
+        if not interface:
+            raise Exception("Do not exist interface with id: %s" % interface_id)
+
+        equipment_id = interface.equipamento.id
+
+        if not interface.ligacao_front:
+            raise Exception("Interface is not connected.")
+
+        front_equipment_id = interface.ligacao_front.equipamento.id
+
+        if Interface.objects.filter(equipamento=equipment_id, channel__nome=channel_name):
+            raise Exception("Channel name already exist on the equipment: %s" % channel_name)
+        if Interface.objects.filter(equipamento=front_equipment_id, channel__nome=channel_name):
+            raise Exception("Channel name already exist on the equipment: %s" % channel_name)

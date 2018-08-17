@@ -24,7 +24,7 @@
       "ligacao_front": null,
       "ligacao_back": null,
       "vlan_nativa": "1",
-      "tipo": "1",
+      "tipo": 1,
       "channel": null
     }
   }

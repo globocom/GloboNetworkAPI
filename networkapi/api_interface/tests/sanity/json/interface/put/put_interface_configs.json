@@ -1,0 +1,15 @@
+{
+  "interfaces": [
+    {
+      "id": 2,
+      "interface": "Eth300",
+      "protected": true,
+      "description": "descricao",
+      "equipment": 1,
+      "native_vlan": "10",
+      "type": 1,
+      "front_interface": null,
+      "back_interface": null
+    }
+  ]
+}

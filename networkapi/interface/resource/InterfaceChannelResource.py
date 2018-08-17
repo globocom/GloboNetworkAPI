@@ -141,7 +141,7 @@ class InterfaceChannelResource(RestResource):
 
             # verifica se o nome do port channel já existe no equipamento
             interfaces = str(interfaces).split('-')
-            api_interface_facade.verificar_nome_channel(nome, interfaces)
+            api_interface_facade.check_channel_name_on_equipment(nome, interfaces)
 
             # cria o port channel
             port_channel.nome = str(nome)
@@ -229,6 +229,8 @@ class InterfaceChannelResource(RestResource):
         except InterfaceError, e:
             return self.response_error(405, e)
         except api_interface_exceptions.InterfaceException, e:
+            return self.response_error(405, e)
+        except Exception, e:
             return self.response_error(405, e)
 
     def handle_get(self, request, user, *args, **kwargs):

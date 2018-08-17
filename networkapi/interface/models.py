@@ -26,6 +26,11 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util import is_valid_regex
 
+from networkapi.api_equipment import facade
+
+
+log = logging.getLogger(__name__)
+
 
 class InterfaceError(Exception):
 
@@ -116,12 +121,12 @@ class TipoInterface(BaseModel):
         managed = True
 
     @classmethod
-    def get_by_pk(cls, id):
+    def get_by_pk(cls, ids):
         try:
-            return TipoInterface.objects.filter(id=id).uniqueResult()
+            return TipoInterface.objects.get(id=ids)
         except ObjectDoesNotExist, e:
             raise InterfaceNotFoundError(
-                e, u'Can not find a TipoInterface with id = %s.' % id)
+                e, u'Can not find a TipoInterface with id = %s.' % ids)
         except Exception, e:
             cls.log.error(u'Falha ao pesquisar o tipo de interface.')
             raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
@@ -341,7 +346,8 @@ class Interface(BaseModel):
         from_interface = self
         interface = self.ligacao_front
         try:
-            while (interface is not None) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) \
+            while (interface is not None) \
+                    and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) \
                     and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_ROUTER)\
                     and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SERVIDOR):
                 interface_ids.append(interface.id)
@@ -357,8 +363,9 @@ class Interface(BaseModel):
 
                 if interface is not None:
                     if interface.id in interface_ids:
-                        raise InterfaceNotFoundError(
-                            None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+                        raise InterfaceNotFoundError(None,
+                                                     u'Interface do tipo switch não encontrada a partir do front da '
+                                                     u'interface %d.' % self.id)
         except InterfaceNotFoundError, e:
             raise e
         except Exception, e:
@@ -366,11 +373,11 @@ class Interface(BaseModel):
             raise InterfaceError(
                 e, u'Falha ao pesquisar a interface do switch.')
 
-        if (interface is None):
+        if interface is None:
             raise InterfaceNotFoundError(
                 None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
 
-        if ((protegida is not None) and (interface.protegida != protegida)):
+        if (protegida is not None) and (interface.protegida != protegida):
             raise InterfaceProtectedError(
                 None, u'Interface do switch com o campo protegida diferente de %s.' % protegida)
 
@@ -394,7 +401,9 @@ class Interface(BaseModel):
         from_interface = self
         interface = self.ligacao_front
         try:
-            while (interface is not None) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_ROUTER):
+            while (interface is not None) and (
+                        interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH) \
+                    and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_ROUTER):
                 interface_ids.append(interface.id)
 
                 if (interface.ligacao_back is not None) and (from_interface.id != interface.ligacao_back_id):
@@ -409,7 +418,8 @@ class Interface(BaseModel):
                 if interface is not None:
                     if interface.id in interface_ids:
                         raise InterfaceNotFoundError(
-                            None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+                            None,
+                            u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
         except InterfaceNotFoundError, e:
             raise e
         except Exception, e:
@@ -421,7 +431,7 @@ class Interface(BaseModel):
             raise InterfaceNotFoundError(
                 None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
 
-        if ((protegida is not None) and (interface.protegida != protegida)):
+        if (protegida is not None) and (interface.protegida != protegida):
             raise InterfaceProtectedError(
                 None, u'Interface do switch com o campo protegida diferente de %s.' % protegida)
 
@@ -439,7 +449,8 @@ class Interface(BaseModel):
         from_interface = self
         interface = self.ligacao_front
         try:
-            while (interface is not None) and (interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH):
+            while (interface is not None) and (
+                        interface.equipamento.tipo_equipamento_id != TipoEquipamento.TIPO_EQUIPAMENTO_SWITCH):
                 interface_ids.append(interface.id)
 
                 if (interface.ligacao_back is not None) and (from_interface.id != interface.ligacao_back_id):
@@ -454,7 +465,8 @@ class Interface(BaseModel):
                 if interface is not None:
                     if interface.id in interface_ids:
                         raise InterfaceNotFoundError(
-                            None, u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
+                            None,
+                            u'Interface do tipo switch não encontrada a partir do front da interface %d.' % self.id)
         except InterfaceNotFoundError, e:
             raise e
         except Exception, e:
@@ -487,13 +499,15 @@ class Interface(BaseModel):
     def create(self, authenticated_user):
         """Add new interface
 
+        @param authenticated_user: User Authentication
         @return: Interface instance
 
         @raise EquipamentoNotFoundError: Equipment doesn't exist
         @raise EquipamentoError: Failed to find equipment
         @raise FrontLinkNotFoundError: FrontEnd interface doesn't exist
         @raise BackLinkNotFoundError: BackEnd interface doesn't exist
-        @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same equipment already exists
+        @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same
+        equipment already exists
         @raise InterfaceError: Failed to add new interface
         """
 
@@ -559,6 +573,7 @@ class Interface(BaseModel):
         """Update interface according to arguments
 
         @param id_interface: Interface identifier
+        @param authenticated_user: User identifier
 
         @return: Interface instance
 
@@ -702,6 +717,198 @@ class Interface(BaseModel):
 
         super(Interface, self).delete()
 
+    def create_v3(self, interface):
+        """
+        Add new interface
+
+        @return: Interface instance
+        @raise EquipamentoNotFoundError: Equipment doesn't exist
+        @raise EquipamentoError: Failed to find equipment
+        @raise FrontLinkNotFoundError: FrontEnd interface doesn't exist
+        @raise BackLinkNotFoundError: BackEnd interface doesn't exist
+        @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same
+        equipment already exists
+        @raise InterfaceError: Failed to add new interface
+        """
+
+        if Interface.objects.filter(equipamento__id=interface.get('equipment'),
+                                    interface__iexact=interface.get('interface')):
+            raise InterfaceForEquipmentDuplicatedError(None, u'Duplicate interface name for the device.')
+
+        self.interface = interface.get('interface')
+        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
+        self.equipamento = facade.get_equipment_by_id(interface.get('equipment'))
+        self.descricao = interface.get('description')
+        self.protegida = interface.get('protected')
+
+        try:
+            self.ligacao_front = Interface.get_by_pk(interface.get('front_interface')) \
+                if interface.get('front_interface') else None
+        except InterfaceNotFoundError, e:
+            raise FrontLinkNotFoundError(e, u'Frontend interface does not exist')
+
+        try:
+            self.ligacao_back = Interface.get_by_pk(interface.get('back_interface')) \
+                if interface.get('back_interface') else None
+        except InterfaceNotFoundError, e:
+            raise BackLinkNotFoundError(e, u'Backend interface does not exist')
+
+        self.vlan_nativa = interface.get('native_vlan') if interface.get('native_vlan') else 1
+
+        if int(self.vlan_nativa) < 1 or 3967 < int(self.vlan_nativa) < 4048 or int(self.vlan_nativa) == 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
+
+        return self.save()
+
+    def remove_v3(self):
+        """Before removing it eliminates all your relationships.
+        """
+        log.debug("remove v3")
+
+        if Interface.objects.filter(models.Q(ligacao_front__id=self.id) | models.Q(ligacao_back__id=self.id)):
+            raise Exception('Interface connected.')
+
+        self.delete()
+
+    def update_v3(self, interface):
+        """
+        Update an interface
+
+        @return: Interface instance
+        @raise EquipamentoNotFoundError: Equipment doesn't exist
+        @raise EquipamentoError: Failed to find equipment
+        @raise FrontLinkNotFoundError: FrontEnd interface doesn't exist
+        @raise BackLinkNotFoundError: BackEnd interface doesn't exist
+        @raise InterfaceForEquipmentDuplicatedError: An interface with the same name on the same
+        equipment already exists
+        @raise InterfaceError: Failed to add new interface
+        """
+
+        if not self.interface == interface.get('interface') \
+                and Interface.objects.filter(equipamento__id=interface.get('equipment_id'),
+                                             interface__iexact=interface.get('interface')):
+            raise InterfaceForEquipmentDuplicatedError(None, u'Duplicate interface name for the device.')
+
+        self.interface = interface.get('interface')
+
+        self.vlan_nativa = int(interface.get('native_vlan')) if interface.get('native_vlan') else 1
+
+        if self.vlan_nativa and 3967 < self.vlan_nativa < 4048 or self.vlan_nativa == 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Intervalo reservado: 3968-4047 e 4094')
+
+        self.tipo = TipoInterface.get_by_pk(interface.get('type'))
+        self.equipamento = facade.get_equipment_by_id(interface.get('equipment'))
+        self.descricao = interface.get('description')
+        self.protegida = interface.get('protected')
+
+        if self.ligacao_front:
+            if interface.get('front_interface'):
+                if not self.ligacao_front.id == interface.get('front_interface'):
+                    new_front_connection = Interface.objects.get(id=interface.get('front_interface'))
+                    if new_front_connection.ligacao_front:
+                        raise Exception('The interface %s from equipment %s is already connected.'
+                                        % (new_front_connection.interface, new_front_connection.equipamento.nome))
+                    if not self.ligacao_front.id == new_front_connection.id:
+                        self.remove_connection(front=True)
+                        self.create_connection(front=new_front_connection)
+            else:
+                self.remove_connection(front=True)
+        elif interface.get('front_interface'):
+            new_front_connection = Interface.objects.get(id=interface.get('front_interface'))
+            if new_front_connection.ligacao_front:
+                raise Exception('The interface %s from equipment %s is already connected.'
+                                 % (new_front_connection.interface, new_front_connection.equipamento.nome))
+            self.create_connection(front=new_front_connection)
+
+        if self.ligacao_back:
+            if interface.get('back_interface'):
+                if not self.ligacao_back.id == interface.get('back_interface'):
+                    new_back_connection = Interface.objects.get(id=interface.get('back_interface'))
+                    if new_back_connection.ligacao_back:
+                        raise Exception('The interface %s from equipment %s is already connected.'
+                                        % (new_back_connection.interface, new_back_connection.equipamento.nome))
+                    if not self.ligacao_back.id == new_back_connection.id:
+                        self.remove_connection(back=True)
+                        self.create_connection(back=new_back_connection)
+            else:
+                self.remove_connection(back=True)
+        elif interface.get('back_interface'):
+            new_back_connection = Interface.objects.get(id=interface.get('back_interface'))
+            if new_back_connection.ligacao_back:
+                raise Exception('The interface %s from equipment %s is already connected.'
+                                 % (new_back_connection.interface, new_back_connection.equipamento.nome))
+            self.create_connection(back=new_back_connection)
+
+        return self.save()
+
+    def connecting_interfaces(self, interfaces):
+
+        for i in interfaces:
+            if i.get('link') in "front" and i.get('interface').ligacao_front \
+                    or i.get('link') in "back" and i.get('interface').ligacao_back:
+                raise Exception('The interface %s from equipment %s is already connected.')
+
+        interface_a = interfaces[0].get('interface')
+        link_a = interfaces[0].get('link')
+        interface_b = interfaces[1].get('interface')
+        link_b = interfaces[1].get('link')
+
+        if link_a in "front":
+            interface_a.ligacao_front = interface_b
+        elif link_a in "back":
+            interface_a.ligacao_back = interface_b
+        interface_a.save()
+
+        if link_b in "front":
+            interface_b.ligacao_front = interface_a
+        elif link_b in "back":
+            interface_b.ligacao_back = interface_a
+        interface_b.save()
+
+    def disconnecting_interfaces(self, interfaces):
+
+        interface_a = interfaces[0]
+        interface_b = interfaces[1]
+
+        if interface_a.ligacao_front:
+            if interface_a.ligacao_front.id == interface_b.id:
+                interface_a.ligacao_front = None
+        if interface_a.ligacao_back:
+            if interface_a.ligacao_back.id == interface_b.id:
+                interface_a.ligacao_back = None
+        interface_a.save()
+
+        if interface_b.ligacao_front:
+            if interface_b.ligacao_front.id == interface_a.id:
+                interface_b.ligacao_front = None
+        if interface_b.ligacao_back:
+            if interface_b.ligacao_back.id == interface_a.id:
+                interface_b.ligacao_back = None
+        interface_b.save()
+
+    def remove_connection(self, front=None, back=None):
+        if front:
+            self.ligacao_front.ligacao_front = None
+            interface = self.ligacao_front
+            interface.save()
+            self.ligacao_front = None
+        if back:
+            self.ligacao_back.ligacao_back = None
+            interface = self.ligacao_back
+            interface.save()
+            self.ligacao_back = None
+
+    def create_connection(self, front=None, back=None):
+        if front:
+            self.ligacao_front = front
+            front.ligacao_front = self
+            interface = self.ligacao_front
+            interface.save()
+        if back:
+            self.ligacao_back = back
+            back.ligacao_back = self
+            interface = self.ligacao_back
+            interface.save()
 
 class EnvironmentInterface(BaseModel):
 
@@ -737,3 +944,17 @@ class EnvironmentInterface(BaseModel):
             cls.log.error(u'Falha ao pesquisar interfaces neste ambiente.')
             raise InterfaceError(
                 e, u'Falha ao pesquisar interfaces neste ambiente.')
+
+    def remove_v3(self):
+        log.debug("remove v3")
+
+        self.delete()
+
+    def create_v3(self, interface_environments):
+        """Set new relationship between an interface and an environment."""
+
+        self.interface = Interface.objects.get(id=int(interface_environments.get('interface')))
+        self.ambiente = Ambiente.objects.get(id=int(interface_environments.get('environment')))
+        self.vlans = interface_environments.get('range_vlans')
+
+        return self.save()
