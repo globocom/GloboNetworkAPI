@@ -197,14 +197,14 @@ class PortChannel(BaseModel):
             cls.log.error(u'Failure to search the Group L3.')
             raise InterfaceError(e, u'Failure to search the Group L3.')
 
-    def delete(self, user):
+    def delete(self, user=None):
         """Override Django method to remove port channel.
         """
-        id = self.id
-        interfaces = Interface.objects.all().filter(channel=id)
+
+        interfaces = Interface.objects.filter(channel=self.id)
         for interface in interfaces:
             interface.channel = None
-            interface.save(user)
+            interface.save()
         super(PortChannel, self).delete()
 
     def list_interfaces(self):

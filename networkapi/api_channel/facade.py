@@ -303,33 +303,12 @@ class ChannelV3(object):
                 vlan_nativa=int(vlan_nativa)
             )
 
-
     def delete(self, channel_id):
         """ tries to delete a channel and update equipments interfaces """
 
         try:
-            interface = Interface.get_by_pk(int(channel_id))
 
-            try:
-                interface.channel.id
-                channel = interface.channel
-            except AtributeError:
-                channel = interface.ligacao_front.channel
-
-            try:
-                interfaces = Interface.objects.all().filter(
-                    channel__id=channel.id)
-            except Exception as err:
-                return {"error": str(err)}
-
-
-            iface_type = TipoInterface.get_by_name('access')
-            equip_dict = self._get_equipment_dict(interfaces)
-
-            self._update_equipments(equip_dict, iface_type, self.user, channel)
-            channel.delete(self.user)
-
-            return {"channel": channel.id}
+            PortChannel.objects.get(id=int(channel_id)).delete()
 
         except (InterfaceException, InvalidKeyException,
                 InterfaceTemplateException) as err:
