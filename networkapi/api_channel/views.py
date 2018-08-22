@@ -106,19 +106,19 @@ class ChannelV3View(APIView):
     def put(self, request, *args, **kwargs):
         """ Http handler to route v3/interface/channel for PUT method """
 
-        channels = request.DATA
-        json_validate(SPECS.get('channel_put')).validate(channels)
+        channels = request.DATA.get('channels')
+        #json_validate(SPECS.get('channel_put_v3')).validate(channels)
 
         response = []
-        for channel_data in channels:
+        try:
+            for channel_data in channels:
 
-            channel = ChannelV3(request.user)
-            data = channel.update(channel_data)
+                channel = ChannelV3(request.user)
+                data = channel.update(channel_data)
 
-            if "error" in data:
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
-            response.append({'id': channel.id})
+                response.append({'id': data.get('channels')})
+        except Exception as err:
+            return Response({"error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(response, status=status.HTTP_200_OK)
 

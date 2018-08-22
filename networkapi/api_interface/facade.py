@@ -676,8 +676,6 @@ def check_channel_name_on_equipment(nome, interfaces):
             raise Exception("Channel name %s already exist on the equipment %s" %
                             (nome, interface.ligacao_front.equipamento.nome))
 
-    log.info("passei")
-
 
 def available_channel_number(channel_name, interface_ids):
     log.info("available channel")

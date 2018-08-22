@@ -153,7 +153,6 @@ class ChannelV3(object):
 
             env_iface.create()
 
-
     def retrieve(self, channel_name):
         """ Tries to retrieve a Port Channel based on its name """
 
@@ -181,86 +180,90 @@ class ChannelV3(object):
     def update(self, data):
 
         try:
-            id_channel = data.get('id_channel')
-            nome = data.get('nome')
+            id_channel = data.get('id')
+            name = data.get('name')
 
-            if not is_valid_int_greater_zero_param(nome):
-                raise InvalidValueError(
-                    None, 'Channel number', 'must be integer.')
+            if not is_valid_int_greater_zero_param(name):
+                raise InvalidValueError(None, 'Channel number', 'must be integer.')
 
             lacp = data.get('lacp')
             int_type = data.get('int_type')
             vlan_nativa = data.get('vlan')
-            envs_vlans = data.get('envs')
-            ids_interface = data.get('ids_interface')
+            envs_vlans = data.get('envs_vlans')
+            interfaces = data.get('interfaces')
 
-            if ids_interface is None:
+            if not interfaces:
                 raise InterfaceError('No interfaces selected')
-
-            if type(ids_interface) == list:
-                interfaces_list = ids_interface
-            else:
-                interfaces_list = str(ids_interface).split('-')
 
             api_interface_facade.verificar_vlan_nativa(vlan_nativa)
 
-            # verifica se o nome do port channel já existe no equipamento
+            # Checks if Port Channel name already exists on equipment
             self.channel = PortChannel.get_by_pk(int(id_channel))
 
-            if not nome == self.channel.nome:
-                api_interface_facade.verificar_nome_channel(
-                    nome, interfaces_list)
+            if not int(name) == int(self.channel.nome):
+                api_interface_facade.check_channel_name_on_equipment(name, interfaces)
 
-            # buscar interfaces do channel
-            interfaces = Interface.objects.all().filter(channel__id=id_channel)
-            ids_list = []
-            for i in interfaces:
-                ids_list.append(i.id)
+            # Dissociate old interfaces
+            interfaces_old = Interface.objects.filter(channel__id=int(id_channel))
+            for i in interfaces_old:
+                i.channel = None
+                i.save()
 
-            self._dissociate_interfaces_from_channel(ids_list, ids_interface)
+            # Checks if Port Channel name already exists on equipment
+            api_interface_facade.check_channel_name_on_equipment(name, interfaces)
 
             # update channel
-            self.channel.nome = str(nome)
+            self.channel.nome = str(name)
             self.channel.lacp = convert_string_or_int_to_boolean(lacp)
             self.channel.save()
 
-            int_type = TipoInterface.get_by_name(str(int_type))
+            type_obj = TipoInterface.objects.get(tipo=int_type)
 
-            self._update_interfaces_from_http_put(
-                ids_interface, int_type, vlan_nativa, envs_vlans)
+            ifaces_on_channel = []
+
+            for interface in interfaces:
+
+                iface = Interface.objects.get(id=int(interface))
+
+                if iface.channel:
+                    raise InterfaceError('Interface %s is already in a Channel' % iface.interface)
+
+                if iface.equipamento.id not in ifaces_on_channel:
+
+                    ifaces_on_channel.append(int(iface.equipamento.id))
+
+                    if len(ifaces_on_channel) > 2:
+                        raise InterfaceError('More than one equipment selected')
+
+                iface.channel = self.channel
+
+                iface.int_type = type_obj
+
+                iface.vlan_nativa = vlan_nativa
+
+                iface.save()
+
+                log.debug("interface updated %s" % iface.id)
+
+                # dissociate olds envs
+
+                # associate the new envs
+                if 'trunk' in int_type.lower():
+                    self._create_ifaces_on_trunks(iface, envs_vlans)
 
         except Exception as err:
-            return {"error": str(err)}
+            log.error(str(err))
+            raise Exception({"error": str(err)})
 
-        return {"port_channel": self.channel}
+        return {'channels': self.channel.id}
 
     def _dissociate_interfaces_from_channel(self, ids_list, ids_interface):
-
-        ids_list = [int(y) for y in ids_list]
-
-        if type(ids_interface) is list:
-
-            ids_interface = [int(x) for x in ids_interface]
-            dissociate = set(ids_list) - set(ids_interface)
-            for item in dissociate:
-                item = Interface.get_by_pk(int(item))
-                item.channel = None
-                item.save()
-        else:
-            if ids_interface is not None:
-                ids_interface = int(ids_interface)
-
-                if ids_interface is not None:
-                    for item in ids_list:
-                        item = Interface.get_by_pk(int(item))
-                        item.channel = None
-                        item.save()
-                else:
-                    for item in ids_list:
-                        if not item == ids_interface:
-                            item = Interface.get_by_pk(int(item))
-                            item.channel = None
-                            item.save()
+        ids_interface = [int(x) for x in ids_interface]
+        dissociate = set(ids_list) - set(ids_interface)
+        for item in dissociate:
+            item = Interface.get_by_pk(int(item))
+            item.channel = None
+            item.save()
 
     def _update_interfaces_from_http_put(self, ids_interface, int_type,
             vlan_nativa, envs_vlans):
