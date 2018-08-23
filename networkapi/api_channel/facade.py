@@ -68,7 +68,7 @@ class ChannelV3(object):
 
             self.channel = PortChannel()
             self.channel.nome = str(nome)
-            self.channel.lacp = convert_string_or_int_to_boolean(lacp)
+            self.channel.lacp = convert_string_or_int_to_boolean(lacp, True)
             self.channel.create()
 
             ifaces_on_channel = []
@@ -186,6 +186,7 @@ class ChannelV3(object):
             vlan_nativa = data.get('vlan')
             envs_vlans = data.get('envs_vlans')
             interfaces = data.get('interfaces')
+            protected = data.get('protected')
 
             self.channel = PortChannel.get_by_pk(int(id_channel))
 
@@ -209,7 +210,7 @@ class ChannelV3(object):
 
             # update channel
             self.channel.nome = str(name)
-            self.channel.lacp = convert_string_or_int_to_boolean(lacp)
+            self.channel.lacp = convert_string_or_int_to_boolean(lacp, True)
             self.channel.save()
 
             type_obj = TipoInterface.objects.get(tipo=int_type)
@@ -231,6 +232,7 @@ class ChannelV3(object):
                 iface.channel = self.channel
                 iface.tipo = type_obj
                 iface.vlan_nativa = vlan_nativa
+                iface.protegida = convert_string_or_int_to_boolean(protected, True)
                 iface.save()
 
                 log.debug("interface updated %s" % iface.id)
