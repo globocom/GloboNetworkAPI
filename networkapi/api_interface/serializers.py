@@ -66,6 +66,7 @@ class PortChannelSerializer(DynamicFieldsModelSerializer):
         basic_fields = (
             'id',
             'name',
+            'lacp'
         )
 
         details_fields = fields

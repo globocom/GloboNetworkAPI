@@ -102,6 +102,8 @@ class ChannelV3View(APIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
+    @commit_on_success
+    @raise_json_validate('channel_put_v3')
     @permission_classes((IsAuthenticated, ChannelWrite))
     def put(self, request, *args, **kwargs):
         """ Http handler to route v3/interface/channel for PUT method """

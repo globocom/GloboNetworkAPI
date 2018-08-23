@@ -425,8 +425,7 @@ def convert_string_or_int_to_boolean(param):
 
     if param == '1' or param == int(1) or param == 'True' or param == 'true':
         return True
-
-    elif param == '0' or int(0) or param == 'False' or param == 'false':
+    elif param == '0' or param == int(0) or param == 'False' or param == 'false':
         return False
 
 

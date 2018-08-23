@@ -82,7 +82,6 @@ class ChannelV3(object):
 
                 if iface.equipamento.id not in ifaces_on_channel:
                     ifaces_on_channel.append(int(iface.equipamento.id))
-
                     if len(ifaces_on_channel) > 2:
                         raise InterfaceError('More than one equipment selected')
 
@@ -182,34 +181,30 @@ class ChannelV3(object):
         try:
             id_channel = data.get('id')
             name = data.get('name')
-
-            if not is_valid_int_greater_zero_param(name):
-                raise InvalidValueError(None, 'Channel number', 'must be integer.')
-
             lacp = data.get('lacp')
             int_type = data.get('int_type')
             vlan_nativa = data.get('vlan')
             envs_vlans = data.get('envs_vlans')
             interfaces = data.get('interfaces')
 
+            self.channel = PortChannel.get_by_pk(int(id_channel))
+
             if not interfaces:
                 raise InterfaceError('No interfaces selected')
 
+            if not is_valid_int_greater_zero_param(name):
+                raise InvalidValueError(None, 'Channel number', 'must be integer.')
+
             api_interface_facade.verificar_vlan_nativa(vlan_nativa)
-
-            # Checks if Port Channel name already exists on equipment
-            self.channel = PortChannel.get_by_pk(int(id_channel))
-
-            if not int(name) == int(self.channel.nome):
-                api_interface_facade.check_channel_name_on_equipment(name, interfaces)
 
             # Dissociate old interfaces
             interfaces_old = Interface.objects.filter(channel__id=int(id_channel))
+            log.debug(interfaces_old)
             for i in interfaces_old:
                 i.channel = None
                 i.save()
+                log.debug(i.id)
 
-            # Checks if Port Channel name already exists on equipment
             api_interface_facade.check_channel_name_on_equipment(name, interfaces)
 
             # update channel
@@ -220,7 +215,6 @@ class ChannelV3(object):
             type_obj = TipoInterface.objects.get(tipo=int_type)
 
             ifaces_on_channel = list()
-            servers = list()
 
             for interface in interfaces:
 
@@ -234,19 +228,9 @@ class ChannelV3(object):
                     if len(ifaces_on_channel) > 2:
                         raise InterfaceError('More than one equipment selected.')
 
-                if not iface.ligacao_front:
-                    raise InterfaceError('Interface is not connected.')
-                elif iface.ligacao_front.equipamento.id not in servers:
-                    servers.append(iface.ligacao_front.equipamento.id)
-                    if len(servers) > 1:
-                        raise InterfaceError('Switches interfaces are connected to more than one server.')
-
                 iface.channel = self.channel
-
                 iface.tipo = type_obj
-
                 iface.vlan_nativa = vlan_nativa
-
                 iface.save()
 
                 log.debug("interface updated %s" % iface.id)

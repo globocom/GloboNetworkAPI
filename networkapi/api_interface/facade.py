@@ -657,9 +657,17 @@ def verificar_vlan_nativa(vlan_nativa):
 def check_channel_name_on_equipment(nome, interfaces):
     log.info("check_channel_name_on_equipment")
 
+    servers = list()
     for i in interfaces:
 
         interface = Interface.objects.get(id=int(i))
+
+        if not interface.ligacao_front:
+            raise Exception('Interface is not connected.')
+        elif interface.ligacao_front.equipamento.id not in servers:
+            servers.append(interface.ligacao_front.equipamento.id)
+            if len(servers) > 1:
+                raise Exception('Switches interfaces are connected to more than one server.')
 
         interface_obj = Interface.objects.filter(
             channel__nome=nome,
