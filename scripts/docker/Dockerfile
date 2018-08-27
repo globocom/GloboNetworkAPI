@@ -8,4 +8,5 @@ EXPOSE 8000
 
 WORKDIR /netapi
 
-RUN pip install -r requirements_debug.txt
+RUN pip install --upgrade pip
+RUN pip install --no-build-isolation -r requirements_debug.txt
