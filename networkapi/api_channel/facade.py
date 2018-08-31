@@ -51,53 +51,48 @@ class ChannelV3(object):
         """ Creates a new Port Channel """
 
         log.info("Create Channel")
+        log.debug(data)
 
-        try:
-            log.debug(data)
-            interfaces = data.get('interfaces')
-            nome = data.get('name')
-            lacp = data.get('lacp')
-            int_type = data.get('int_type')
-            vlan_nativa = data.get('vlan')
-            envs_vlans = data.get('envs_vlans')
+        interfaces = data.get('interfaces')
+        nome = data.get('name')
+        lacp = data.get('lacp')
+        int_type = data.get('int_type')
+        vlan_nativa = data.get('vlan')
+        envs_vlans = data.get('envs_vlans')
 
-            api_interface_facade.verificar_vlan_nativa(vlan_nativa)
+        api_interface_facade.verificar_vlan_nativa(vlan_nativa)
 
-            # Checks if Port Channel name already exists on equipment
-            api_interface_facade.check_channel_name_on_equipment(nome, interfaces)
+        # Checks if Port Channel name already exists on equipment
+        api_interface_facade.check_channel_name_on_equipment(nome, interfaces)
 
-            self.channel = PortChannel()
-            self.channel.nome = str(nome)
-            self.channel.lacp = convert_string_or_int_to_boolean(lacp, True)
-            self.channel.create()
+        self.channel = PortChannel()
+        self.channel.nome = str(nome)
+        self.channel.lacp = convert_string_or_int_to_boolean(lacp, True)
+        self.channel.create()
 
-            ifaces_on_channel = []
-            for interface in interfaces:
+        ifaces_on_channel = []
+        for interface in interfaces:
 
-                iface = Interface.objects.get(id=interface)
-                type_obj = TipoInterface.objects.get(tipo=int_type)
+            iface = Interface.objects.get(id=interface)
+            type_obj = TipoInterface.objects.get(tipo=int_type)
 
-                if iface.channel:
-                    raise InterfaceError('Interface %s is already a Channel' % iface.interface)
+            if iface.channel:
+                raise InterfaceError('Interface %s is already a Channel' % iface.interface)
 
-                if iface.equipamento.id not in ifaces_on_channel:
-                    ifaces_on_channel.append(int(iface.equipamento.id))
-                    if len(ifaces_on_channel) > 2:
-                        raise InterfaceError('More than one equipment selected')
+            if iface.equipamento.id not in ifaces_on_channel:
+                ifaces_on_channel.append(int(iface.equipamento.id))
+                if len(ifaces_on_channel) > 2:
+                    raise InterfaceError('More than one equipment selected')
 
-                iface.channel = self.channel
-                iface.int_type = type_obj
-                iface.vlan_nativa = vlan_nativa
-                iface.save()
+            iface.channel = self.channel
+            iface.int_type = type_obj
+            iface.vlan_nativa = vlan_nativa
+            iface.save()
 
-                log.debug("interface updated %s" % iface.id)
+            log.debug("interface updated %s" % iface.id)
 
-                if 'trunk' in int_type.lower():
-                    self._create_ifaces_on_trunks(iface, envs_vlans)
-
-        except Exception as err:
-            log.error(str(err))
-            raise Exception({"error": str(err)})
+            if 'trunk' in int_type.lower():
+                self._create_ifaces_on_trunks(iface, envs_vlans)
 
         return {'channels': self.channel.id}
 

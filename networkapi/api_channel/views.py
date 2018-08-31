@@ -37,6 +37,8 @@ from networkapi.api_interface.exceptions import UnsupportedEquipmentException
 from networkapi.api_interface.exceptions import InvalidIdInterfaceException
 from networkapi.api_interface.exceptions import InterfaceTemplateException
 
+from networkapi.api_rest import exceptions as api_exceptions
+
 from networkapi.interface.models import InterfaceNotFoundError
 
 from networkapi.util.decorators import logs_method_apiview
@@ -89,6 +91,7 @@ class ChannelV3View(APIView):
 
         response = []
         try:
+
             for channel_data in channels.get('channels'):
 
                 channel = ChannelV3()
@@ -96,8 +99,12 @@ class ChannelV3View(APIView):
 
                 response.append({'id': data.get('channels')})
 
-        except Exception as err:
-            return Response({"error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+        except api_exceptions.ObjectDoesNotExistException, e:
+            raise api_exceptions.ObjectDoesNotExistException(e.detail)
+        except api_exceptions.ValidationAPIException, e:
+            raise api_exceptions.NetworkAPIException(e.detail)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(str(e))
 
         return Response(response, status=status.HTTP_201_CREATED)
 
