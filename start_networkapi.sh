@@ -39,4 +39,4 @@ echo "cleaning up .pyc"
 python /vagrant/manage.py clean_pyc --path /vagrant/networkapi/
 
 echo "starting gunicorn"
-/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application
+/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py wsgi:application
