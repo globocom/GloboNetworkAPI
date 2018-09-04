@@ -120,31 +120,22 @@ class ChannelV3(object):
 
         iface.update_V3(interface_obj)
 
-    def _create_ifaces_on_trunks(self, sw_router, envs_vlans):
+    def _create_ifaces_on_trunks(self, iface, envs_vlans):
+        log.debug("_create_ifaces_on_trunks")
 
         interface_list = EnvironmentInterface.objects.all().filter(
-            interface=sw_router.id)
+            interface=iface.id)
 
         for int_env in interface_list:
             int_env.delete()
-
-        if type(envs_vlans) is not list:
-            envs_vlans = [envs_vlans]
 
         for i in envs_vlans:
 
             environment = Ambiente.get_by_pk(int(i.get('env')))
             env_iface = EnvironmentInterface()
-            env_iface.interface = sw_router
+            env_iface.interface = iface
             env_iface.ambiente = environment
-
-            range_vlans = i.get('vlans')
-            if range_vlans:
-                api_interface_facade.verificar_vlan_range(
-                    environment, range_vlans)
-
-                env_iface.vlans = range_vlans
-
+            env_iface.vlans = i.get('vlans')
             env_iface.create()
 
     def retrieve(self, channel_name):
