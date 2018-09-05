@@ -223,8 +223,6 @@ class ChannelV3(object):
 
                 log.debug("interface updated %s" % iface.id)
 
-                # dissociate olds envs
-
                 # associate the new envs
                 if 'trunk' in int_type.lower():
                     self._create_ifaces_on_trunks(iface, envs_vlans)
