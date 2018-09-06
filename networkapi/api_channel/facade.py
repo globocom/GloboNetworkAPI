@@ -91,6 +91,8 @@ class ChannelV3(object):
 
             log.debug("interface updated %s" % iface.id)
 
+            self._dissociate_ifaces_envs(iface)
+
             if 'trunk' in int_type.lower():
                 self._create_ifaces_on_trunks(iface, envs_vlans)
 
@@ -123,12 +125,6 @@ class ChannelV3(object):
     def _create_ifaces_on_trunks(self, iface, envs_vlans):
         log.debug("_create_ifaces_on_trunks")
 
-        interface_list = EnvironmentInterface.objects.all().filter(
-            interface=iface.id)
-
-        for int_env in interface_list:
-            int_env.delete()
-
         for i in envs_vlans:
 
             environment = Ambiente.get_by_pk(int(i.get('env')))
@@ -137,6 +133,12 @@ class ChannelV3(object):
             env_iface.ambiente = environment
             env_iface.vlans = i.get('vlans')
             env_iface.create()
+
+    def _dissociate_ifaces_envs(self, iface):
+        interface_list = EnvironmentInterface.objects.all().filter(interface=iface.id)
+
+        for int_env in interface_list:
+            int_env.delete()
 
     def retrieve(self, channel_name):
         """ Tries to retrieve a Port Channel based on its name """
@@ -222,6 +224,8 @@ class ChannelV3(object):
                 iface.save()
 
                 log.debug("interface updated %s" % iface.id)
+
+                self._dissociate_ifaces_envs(iface)
 
                 # associate the new envs
                 if 'trunk' in int_type.lower():
