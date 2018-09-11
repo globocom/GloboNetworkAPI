@@ -189,7 +189,9 @@ class ChannelV3(object):
             # Dissociate old interfaces
             interfaces_old = Interface.objects.filter(channel__id=int(id_channel))
             log.debug(interfaces_old)
+            server = None
             for i in interfaces_old:
+                server = i.ligacao_front.equipamento.id
                 i.channel = None
                 i.save()
                 log.debug(i.id)
@@ -208,6 +210,11 @@ class ChannelV3(object):
             for interface in interfaces:
 
                 iface = Interface.objects.get(id=int(interface))
+
+                if server:
+                    if not int(iface.ligacao_front.equipamento.id) == int(server):
+                        raise Exception('Interface is connected to another server. Ids: %s %s ' %
+                                        (iface.ligacao_front.equipamento.id, server))
 
                 if iface.channel:
                     raise InterfaceError('Interface %s is already in a Channel' % iface.interface)

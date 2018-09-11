@@ -72,7 +72,7 @@ class ChannelV3View(APIView):
 
         if data is None:
             error = {"error": "Channel not found: '%s'" % channel_name}
-            return Response(error, status=status.HTTP_404_NOT_FOUND)
+            raise api_exceptions.NetworkAPIException(str(error))
 
         return Response(data, status=status.HTTP_200_OK)
 
@@ -127,7 +127,7 @@ class ChannelV3View(APIView):
 
                 response.append({'id': data.get('channels')})
         except Exception as err:
-            return Response({"error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+            raise api_exceptions.NetworkAPIException(str(err))
 
         return Response(response, status=status.HTTP_200_OK)
 
@@ -148,7 +148,7 @@ class ChannelV3View(APIView):
                 deletion = channel_obj.delete(channel)
         except Exception as err:
             log.error(err)
-            return Response({"error": str(err)}, status=status.HTTP_400_BAD_REQUEST)
+            raise api_exceptions.NetworkAPIException(str(err))
 
         return Response(deletion, status=status.HTTP_200_OK)
 
