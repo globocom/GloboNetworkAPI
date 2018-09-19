@@ -158,7 +158,7 @@ There is no need to install a nginx or apache to proxy pass the requests, once t
 Edit ``$NETWORKAPI_FOLDER/gunicorn.conf.py`` to use your log files location and `user preferentes <http://gunicorn-docs.readthedocs.org/en/latest/settings.html#config-file>`_ and run gunicorn::
 
 	cd $NETWORKAPI_FOLDER
-	gunicorn networkapi_wsgi:application
+	gunicorn wsgi:application
 
 Test installation
 *****************

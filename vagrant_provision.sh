@@ -38,7 +38,7 @@ cat > /etc/init.d/gunicorn_networkapi <<- EOM
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 
-/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py networkapi_wsgi:application
+/usr/local/bin/gunicorn -c /vagrant/gunicorn.conf.py wsgi:application
 EOM
 
 chmod 777 /etc/init.d/gunicorn_networkapi
