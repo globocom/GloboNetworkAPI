@@ -476,10 +476,11 @@ def _create_spnlfvlans(rack, user):
         network_type.save()
         id_network_type = network_type.id
         pass
-    for env in spn_lf_envs:
+
+    for idx, env in enumerate(spn_lf_envs):
         env_id = env.id
         vlan_base = env.min_num_vlan_1
-        vlan_number = int(vlan_base) + int(rack_number)
+        vlan_number = int(vlan_base) + int(rack_number) + idx*rack.dcroom.racks
         vlan_name = "VLAN_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + rack.nome
 
         for net in env.configs:
@@ -957,4 +958,3 @@ def available_rack_number():
             return Response(data, status=status.HTTP_200_OK)
 
     return Response(data, status=status.HTTP_200_OK)
-
