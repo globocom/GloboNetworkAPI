@@ -56,6 +56,7 @@ def save_dc(dc_dict):
     dc.save_dc()
     return dc
 
+
 def listdc():
 
     dc_list = list()
@@ -73,6 +74,7 @@ def listdc():
 
     return dc_sorted
 
+
 def save_dcrooms(dcrooms_dict):
 
     dcrooms = DatacenterRooms()
@@ -86,6 +88,7 @@ def save_dcrooms(dcrooms_dict):
 
     dcrooms.save_dcrooms()
     return dcrooms
+
 
 def edit_dcrooms(dcroom_id, dcrooms_dict):
 
@@ -105,6 +108,7 @@ def edit_dcrooms(dcroom_id, dcrooms_dict):
     dcrooms.save_dcrooms()
     return dcrooms
 
+
 def get_fabric(idt=None, name=None, id_dc=None):
 
     fabric_list = list()
@@ -114,17 +118,16 @@ def get_fabric(idt=None, name=None, id_dc=None):
         fabric = [fabric_obj.get_dcrooms(idt=idt)]
     elif name:
         fabric = fabric_obj.get_dcrooms(name=name)
-
     elif id_dc:
         fabric = fabric_obj.get_dcrooms(id_dc=id_dc)
     else:
         fabric = fabric_obj.get_dcrooms()
 
-
     for i in fabric:
         fabric_list.append(rack_serializers.DCRoomSerializer(i).data)
 
     return fabric_list
+
 
 def update_fabric_config(fabric_id, fabric_dict):
 
@@ -161,6 +164,7 @@ def update_fabric_config(fabric_id, fabric_dict):
 
     return fabric
 
+
 def save_rack_dc(rack_dict):
 
     rack = Rack()
@@ -180,6 +184,7 @@ def save_rack_dc(rack_dict):
 
     rack.save_rack()
     return rack
+
 
 def update_rack(rack_id, rack):
 
@@ -211,6 +216,7 @@ def update_rack(rack_id, rack):
         log.exception(e)
         raise Exception(e)
 
+
 def get_rack(fabric_id=None, rack_id=None):
 
     rack_obj = Rack()
@@ -230,6 +236,7 @@ def get_rack(fabric_id=None, rack_id=None):
 
     except (ObjectDoesNotExist, Exception), e:
         raise Exception(e)
+
 
 def delete_rack(rack_id):
 
@@ -277,6 +284,7 @@ def delete_rack(rack_id):
 
     rack.del_rack()
 
+
 def _buscar_roteiro(id_sw, tipo):
 
     roteiro_eq = None
@@ -289,6 +297,7 @@ def _buscar_roteiro(id_sw, tipo):
         roteiro_eq = roteiro_eq + ".txt"
 
     return roteiro_eq
+
 
 def _buscar_ip(id_sw):
     """
@@ -305,6 +314,7 @@ def _buscar_ip(id_sw):
                 return str(ip_sw.oct1) + '.' + str(ip_sw.oct2) + '.' + str(ip_sw.oct3) + '.' + str(ip_sw.oct4)
 
     return ""
+
 
 def gerar_arquivo_config(ids):
     log.debug("gerar_arquivo_config")
@@ -379,6 +389,7 @@ def gerar_arquivo_config(ids):
 
     return True
 
+
 def _create_spnlfenv(user, rack):
     log.debug("_create_spnlfenv")
 
@@ -388,7 +399,6 @@ def _create_spnlfenv(user, rack):
                                                     ambiente_logico__nome="SPINES")
     log.debug("SPN environments"+str(envfathers))
 
-    environment_spn_lf = None
     environment_spn_lf_list = list()
     spines = int(rack.dcroom.spines)
     fabric = rack.dcroom.name
@@ -454,6 +464,7 @@ def _create_spnlfenv(user, rack):
 
     return environment_spn_lf_list
 
+
 def _create_spnlfvlans(rack, user):
     log.debug("_create_spnlfvlans")
 
@@ -498,14 +509,15 @@ def _create_spnlfvlans(rack, user):
             'num_vlan': vlan_number,
             'environment': env_id,
             'default_vrf': env.default_vrf.id,
-            'vrf': env.vrf,
             'create_networkv4': create_networkv4 if create_networkv4 else None,
-            'create_networkv6': create_networkv6 if create_networkv6 else None
+            'create_networkv6': create_networkv6 if create_networkv6 else None,
+            'vrf': env.vrf
         }
         try:
             facade_vlan_v3.create_vlan(obj, user)
         except:
             log.debug("Vlan object: %s" % str(obj))
+
 
 def _create_prod_envs(rack, user):
     log.debug("_create_prod_envs")
@@ -550,7 +562,7 @@ def _create_prod_envs(rack, user):
         father_id = env.id
 
         for fab in fabricconfig.get("Ambiente"):
-            if int(fab.get("id"))==int(father_id):
+            if int(fab.get("id")) == int(father_id):
                 details = fab.get("details")
 
         config_subnet = list()
@@ -561,7 +573,7 @@ def _create_prod_envs(rack, user):
             if details[0].get(str(net.ip_config.type)):
                 new_prefix = details[0].get(str(net.ip_config.type)).get("new_prefix")
             else:
-                new_prefix = 31 if net.ip_config.type=="v4" else 127
+                new_prefix = 31 if net.ip_config.type == "v4" else 127
             network = {
                 'subnet': str(bloco),
                 'type': net.ip_config.type,
@@ -603,6 +615,7 @@ def _create_prod_envs(rack, user):
                 pass
 
     return environment
+
 
 def _create_prod_vlans(rack, user):
     log.debug("_create_prod_vlans")
@@ -711,6 +724,7 @@ def _create_prod_vlans(rack, user):
 
     return environment
 
+
 def _create_lflf_vlans(rack, user):
     log.debug("_create_lflf_vlans")
 
@@ -803,10 +817,11 @@ def _create_oobvlans(rack, user):
             network = dict(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, prefix=prefix, mask_oct1=mask1, mask_oct2=mask2,
                            mask_oct3=mask3, mask_oct4=mask4, cluster_unit=None, vlan=vlan.id,
                            network_type=config.ip_config.network_type.id, environmentvip=None)
-            log.debug("Network allocated: "+ str(network))
+            log.debug("Network allocated: " + str(network))
         facade_redev4_v3.create_networkipv4(network, user)
 
     return vlan
+
 
 def rack_environments_vlans(rack_id, user):
     log.info("Rack Environments")
@@ -834,8 +849,8 @@ def rack_environments_vlans(rack_id, user):
 
     return rack
 
-def api_foreman(rack):
 
+def api_foreman(rack):
 
     try:
         NETWORKAPI_FOREMAN_URL = get_variable("foreman_url")
@@ -867,11 +882,11 @@ def api_foreman(rack):
             # check if switches ip network is the same as subnet['subnet']['network'] e subnet['subnet']['mask']
             if network.__str__() == subnet['network']:
                 subnet_id = subnet['id']
-                hosts = foreman.hosts.index(search = switch.nome)['results']
+                hosts = foreman.hosts.index(search=switch.nome)['results']
                 if len(hosts) == 1:
-                    foreman.hosts.destroy(id = hosts[0]['id'])
+                    foreman.hosts.destroy(id=hosts[0]['id'])
                 elif len(hosts) > 1:
-                    raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There are multiple entries "
+                    raise RackConfigError(None, rack.nome, ("Could not create entry for %s. There are multiple entries"
                                                             "with the sam name." % switch.nome))
 
                 # Lookup foreman hostgroup
@@ -879,23 +894,24 @@ def api_foreman(rack):
                 hostgroup_name = switch.modelo.marca.nome + "_" + switch.modelo.nome
                 hostgroups = foreman.hostgroups.index(search = hostgroup_name)
                 if len(hostgroups['results']) == 0:
-                    raise RackConfigError(None, rack.nome, "Could not create entry for %s. Could not find hostgroup %s "
+                    raise RackConfigError(None, rack.nome, "Could not create entry for %s. Could not find hostgroup %s"
                                                            "in foreman." % (switch.nome, hostgroup_name))
-                elif len(hostgroups['results'])>1:
+                elif len(hostgroups['results']) > 1:
                     raise RackConfigError(None, rack.nome, "Could not create entry for %s. Multiple hostgroups %s found"
                                                            " in Foreman." % (switch.nome, hostgroup_name))
                 else:
                     hostgroup_id = hostgroups['results'][0]['id']
 
-                foreman.hosts.create(host = {'name': switch.nome, 'ip': ip, 'mac': mac,
-                                            'environment_id': FOREMAN_HOSTS_ENVIRONMENT_ID,
-                                            'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id,
-                                            'build': 'true', 'overwrite': 'true'})
+                foreman.hosts.create(host={'name': switch.nome, 'ip': ip, 'mac': mac,
+                                           'environment_id': FOREMAN_HOSTS_ENVIRONMENT_ID,
+                                           'hostgroup_id': hostgroup_id, 'subnet_id': subnet_id,
+                                           'build': 'true', 'overwrite': 'true'})
                 switch_cadastrado = 1
 
         if not switch_cadastrado:
             raise RackConfigError(None, rack.nome, "Unknown error. Could not create entry for %s in foreman." %
                                   switch.nome)
+
 
 # ################################################### old
 def save_rack(rack_dict):
@@ -932,6 +948,7 @@ def save_rack(rack_dict):
     rack.save()
     return rack
 
+
 def get_by_pk(idt):
 
     try:
@@ -941,6 +958,7 @@ def get_by_pk(idt):
     except Exception, e:
         log.error(u'Failure to search the Rack.')
         raise exceptions.RackError("Failure to search the Rack. %s" % e)
+
 
 @api_view(['GET'])
 def available_rack_number():
