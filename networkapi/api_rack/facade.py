@@ -19,6 +19,7 @@ import json
 import logging
 import operator
 import re
+import ipaddress
 from django.core.exceptions import ObjectDoesNotExist
 from netaddr import IPNetwork
 from rest_framework.decorators import api_view
@@ -39,6 +40,7 @@ from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, NetworkAPIException
 from networkapi.api_network.facade.v3 import networkv4 as facade_redev4_v3
+from networkapi.api_network.facade.v3 import networkv6 as facade_redev6_v3
 
 if int(get_variable('use_foreman')):
     from foreman.client import Foreman
@@ -474,7 +476,7 @@ def _create_spnlfvlans(rack, user):
                                                      ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                 "SPINE02LEAF",
                                                                                 "SPINE03LEAF",
-                                                                                "SPINE04LEAF"])
+                                                                                "SPINE04LEAF"]).order_by('divisao_dc')
     log.debug("SPN environments"+str(spn_lf_envs))
 
     rack_number = int(rack.numero)
@@ -491,32 +493,53 @@ def _create_spnlfvlans(rack, user):
     for idx, env in enumerate(spn_lf_envs):
         env_id = env.id
         vlan_base = env.min_num_vlan_1
-        vlan_number = int(vlan_base) + int(rack_number) + idx*rack.dcroom.racks
+        vlan_number = int(vlan_base) + int(rack_number) + (int(idx) % 4)*rack.dcroom.racks
         vlan_name = "VLAN_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + rack.nome
 
-        for net in env.configs:
-            prefix = int(net.ip_config.new_prefix)
-            network = {
-                'prefix': prefix,  # str(list(cidr.subnet(prefix))[rack_number]),
-                'network_type': id_network_type
-            }
-            if str(net.ip_config.type)[-1] is "4":
-                create_networkv4 = network
-            elif str(net.ip_config.type)[-1] is "6":
-                create_networkv6 = network
         obj = {
             'name': vlan_name,
             'num_vlan': vlan_number,
             'environment': env_id,
             'default_vrf': env.default_vrf.id,
-            'create_networkv4': create_networkv4 if create_networkv4 else None,
-            'create_networkv6': create_networkv6 if create_networkv6 else None,
-            'vrf': env.vrf
+            'vrf': env.vrf,
+            'active': True,
         }
+
         try:
-            facade_vlan_v3.create_vlan(obj, user)
-        except:
+            vlan = facade_vlan_v3.create_vlan(obj, user)
+        except Exception:
             log.debug("Vlan object: %s" % str(obj))
+
+        for net in env.configs:
+            prefix = int(net.ip_config.new_prefix)
+            spnNet = IPNetwork(net.ip_config.subnet)
+            spnSub = list(spnNet.subnet(prefix))[rack_number]
+            spnSubNet, block = str(spnSub).split('/')
+            spnSubMask = str(spnSub.netmask)
+            if str(net.ip_config.type)[-1] is "4":
+                oct1, oct2, oct3, oct4 = spnSubNet.split('.')
+                mask1, mask2, mask3, mask4 = spnSubMask.split('.')
+                networkv4 = dict(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4,
+                                 network_type=id_network_type, vlan=vlan.id, prefix=block,
+                                 mask_oct1=mask1, mask_oct2=mask2, mask_oct3=mask3, mask_oct4=mask4)
+
+                try:
+                    facade_redev4_v3.create_networkipv4(networkv4, user)
+                except Exception:
+                    log.debug("NetworkV4 object: %s" % str(networkv4))
+
+            elif str(net.ip_config.type)[-1] is "6":
+                spnSubNetLongForm = ipaddress.ip_address(unicode(spnSubNet)).exploded
+                oct1, oct2, oct3, oct4, oct5, oct6, oct7, oct8 = spnSubNetLongForm.split(':')
+                mask1, mask2, mask3, mask4, mask5, mask6, mask7, mask8 = spnSubMask.split(':')
+                networkv6 = dict(block1=oct1, block2=oct2, block3=oct3, block4=oct4, block5=oct5, block6=oct6,
+                                 block7=oct7, block8=oct8, mask1=mask1, mask2=mask2, mask3=mask3, mask4=mask4,
+                                 mask5=mask5, mask6=mask6, mask7=mask7, mask8=mask8, prefix=block,
+                                 network_type=id_network_type, vlan=vlan.id)
+                try:
+                    facade_redev6_v3.create_networkipv6(networkv6, user)
+                except Exception:
+                    log.debug("NetworkV6 object: %s" % str(networkv6))
 
 
 def _create_prod_envs(rack, user):
