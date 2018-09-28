@@ -493,7 +493,8 @@ def _create_spnlfvlans(rack, user):
     for idx, env in enumerate(spn_lf_envs):
         env_id = env.id
         vlan_base = env.min_num_vlan_1
-        vlan_number = int(vlan_base) + int(rack_number) + (int(idx) % 4)*rack.dcroom.racks
+        spine = env.ambiente_logico.nome.split('0')[1][0]
+        vlan_number = int(vlan_base) + int(rack_number) + (int(spine)-1)*rack.dcroom.racks
         vlan_name = "VLAN_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + rack.nome
 
         obj = {
