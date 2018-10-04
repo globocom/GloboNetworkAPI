@@ -10,9 +10,6 @@ from django.http import HttpResponse
 from networkapi.check.CheckAction import CheckAction
 # from django.conf.urls.defaults import *
 
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-admin.autodiscover()
 
 api_prefix = r'^api/'
 
@@ -141,8 +138,6 @@ urlpatterns = patterns(
     # eventlog
     url(r'^eventlog/', include('networkapi.eventlog.urls')),
 
-    # django admin
-    url(r'^admin/', include(admin.site.urls)),
 )
 
 if settings.DEBUG:
