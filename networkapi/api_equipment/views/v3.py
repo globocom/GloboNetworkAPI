@@ -145,9 +145,6 @@ class EquipmentView(CustomAPIView):
         force = request.GET.get('force')
         obj_ids = kwargs['obj_id'].split(';')
 
-        if force is not None:
-            facade.force_delete_equipment(obj_ids)
-        else:
-            facade.delete_equipment(obj_ids)
+        facade.delete_equipment(obj_ids, force)
 
         return Response({}, status=status.HTTP_200_OK)

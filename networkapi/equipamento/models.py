@@ -30,7 +30,6 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.roteiro.models import Roteiro
 from networkapi.tipoacesso.models import TipoAcesso
 
-
 class EquipamentoError(Exception):
 
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com Equipamento."""
@@ -1276,6 +1275,27 @@ class Equipamento(BaseModel):
             raise EquipmentInvalidValueException(e.detail)
         except Exception, e:
             raise EquipamentoError(None, e)
+
+    def delete_equipment_relationship(self):
+        self.log.debug("Forced delete of equipment.")
+
+        # remove the equipment-pool relationship
+        for ip in self.ipequipamento_set.all():
+            self.log.debug('ip: %s' % ip.ip.id)
+            for poolmember in ip.ip.serverpoolmember_set.all():
+                self.log.debug('pool: %s' % poolmember.server_pool.id)
+                poolmember.delete_v3()
+
+        # todo
+        # se tiver apenas um 'server_pool_member' no pool:
+        #   busca os vips relacionados a este pool
+        #   desassocia o vip do pool
+        #   se não tiver nenhum pool associado a este vip:
+        #       remove o vip
+        #   desassocia a vm
+        #   remove o pool
+        # senão:
+        #   apenas desassocia a vm
 
 
 class EquipamentoAmbiente(BaseModel):
