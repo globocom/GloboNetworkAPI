@@ -142,7 +142,12 @@ class EquipmentView(CustomAPIView):
     def delete(self, request, *args, **kwargs):
         """Deletes list of equipments."""
 
+        force = request.GET.get('force')
         obj_ids = kwargs['obj_id'].split(';')
-        facade.delete_equipment(obj_ids)
+
+        if force is not None:
+            facade.force_delete_equipment(obj_ids)
+        else:
+            facade.delete_equipment(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)
