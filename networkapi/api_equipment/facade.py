@@ -232,7 +232,7 @@ def create_equipment(equipments, user):
     return response
 
 
-def delete_equipment(equipments, force=None):
+def delete_equipment(equipments, force=None, user=None):
     """Delete equipment by ids"""
 
     locks_list = create_lock(equipments, LOCK_EQUIPMENT)
@@ -241,7 +241,7 @@ def delete_equipment(equipments, force=None):
         for equipment in equipments:
             equipment_obj = get_equipment_by_id(equipment)
             if force is not None:
-                equipment_obj.delete_equipment_relationship()
+                equipment_obj.delete_equipment_relationship(user)
             equipment_obj.delete_v3()
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
