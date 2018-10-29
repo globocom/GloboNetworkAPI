@@ -630,7 +630,7 @@ def _create_prod_vlans(rack, user):
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
     else:
-        log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
+        log.debug("No frabric configurations %s" % str(rack.dcroom.id))
         fabricconfig = list()
 
     try:
@@ -649,14 +649,16 @@ def _create_prod_vlans(rack, user):
     fabenv = None
 
     for fab in fabricconfig.get("Ambiente"):
-        if int(fab.get("id"))==int(env.father_environment.id):
+        if int(fab.get("id")) == int(env.father_environment.id):
             fabenv = fab.get("details")
     if not fabenv:
-        log.debug("Sem configuracoes para os ambientes filhos - BE, BEFE, BEBO, BECA do ambiente id=%s" %str())
+        log.debug("No configurations for child environment of env id=%s" % (
+            str(env.id)
+        )
         return 0
 
     fabenv.sort(key=operator.itemgetter('min_num_vlan_1'))
-    log.debug("Order by min_num_vlan: "+str(fabenv))
+    log.debug("Order by min_num_vlan: %s" % str(fabenv))
 
     for idx, amb in enumerate(fabenv):
         try:
@@ -668,11 +670,13 @@ def _create_prod_vlans(rack, user):
             id_div = div_dict.id
             pass
 
-        config_subnet = list()
+        config_subnet = []
         for net in env.configs:
             for net_dict in amb.get("config"):
-                if net_dict.get("type")==net.ip_config.type:
+
+                if net_dict.get("type") == net.ip_config.type:
                     cidr = IPNetwork(net.ip_config.subnet)
+
                     prefixo_inicial = 18 if net.ip_config.type=="v4" else 57
                     prefixo = net_dict.get("mask")
                     if not idx:
