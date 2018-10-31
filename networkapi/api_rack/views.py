@@ -149,7 +149,7 @@ class RackDeployView(APIView):
             log.info('RACK deploy.')
 
             rack_id = kwargs.get('rack_id')
-            rack = facade.get_by_pk(self.request.user, rack_id)
+            rack = facade.get_by_pk(rack_id)
 
             try:
                 PATH_TO_ADD_CONFIG = get_variable('path_to_add_config')
