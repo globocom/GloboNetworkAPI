@@ -184,9 +184,10 @@ class EnvFlowView(CustomAPIView):
 
     @logs_method_apiview
     def delete(self, request, *args, **kwargs):
-        """"""
+        """ Deletes a single flow by id or all flows if no id was given """
+
         environment_id = kwargs.get('environment_id')
-        flow_id = None if not kwargs.get('flow_id') else kwargs.get('flow_id')
+        flow_id = kwargs.get('flow_id', None)
 
         if flow_id:
             facade.delete_flow(environment_id, flow_id)
