@@ -10,6 +10,7 @@ from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
 from networkapi.ambiente.models import EnvironmentErrorV3
 from networkapi.api_environment.tasks.flows import async_add_flow
+from networkapi.api_environment.tasks.flows import async_delete_flow
 from networkapi.api_environment.tasks.flows import async_flush_environment
 from networkapi.api_environment_vip.facade import get_environmentvip_by_id
 from networkapi.api_pools import exceptions
@@ -204,16 +205,21 @@ def insert_flow(env_id, data, user_id):
 
 
 def delete_flow(env_id, flow_id):
+    """ Deletes one flow by id using the async task """
+
     eqpts = get_controller_by_envid(env_id)
 
+    plugins = []
     for eqpt in eqpts:
-        plugin = PluginFactory.factory(eqpt, env_id=env_id)
-        try:
-            plugin.del_flow(flow_id=flow_id)
-        except Exception as e:
-            log.error(e)
-            raise NetworkAPIException('Failed to delete flow '
-                                      'plugin. %s' % e)
+        plugins.append(PluginFactory.factory(eqpt, env_id=env_id))
+
+    try:
+        return async_delete_flow.apply_async(
+            args=[plugins, user_id, flow_id], queue='napi.odl_flow'
+        )
+    except Exception as err:
+        log.error(err)
+        raise NetworkAPIException('Failed to delete flow with error: %s' % err)
 
 
 def flush_flows(env_id):
