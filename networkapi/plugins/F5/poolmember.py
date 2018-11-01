@@ -70,6 +70,8 @@ class PoolMember(F5Base):
                     session = '1'
                 elif sessions[p][s] == 'SESSION_STATUS_DISABLED':
                     session = '0'
+                elif sessions[p][s] == 'SESSION_STATUS_FORCED_DISABLED':
+                    session = '0'
                 else:
                     session = '1'
 
@@ -142,6 +144,17 @@ class PoolMember(F5Base):
             kwargs['names'],
             kwargs['members'],
             kwargs['description'])
+
+    @logger
+    def set_ratio(self, **kwargs):
+        for k, v in kwargs.items():
+            if v == []:
+                return
+
+        self._lb._channel.LocalLB.Pool.set_member_ratio(
+            kwargs['names'],
+            kwargs['members'],
+            kwargs['ratio'])
 
     def __repr__(self):
         log.info('%s' % (self._lb))

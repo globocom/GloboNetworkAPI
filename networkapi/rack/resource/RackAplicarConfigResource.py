@@ -56,6 +56,8 @@ from networkapi.util import destroy_cache_function
 from networkapi.vlan.models import TipoRede
 from networkapi.vlan.models import Vlan
 
+log = logging.getLogger(__name__)
+
 
 def get_core_name(rack):
 
@@ -311,6 +313,7 @@ def ambiente_spn_lf(user, rack, environment_list):
 
             env = criar_ambiente(user, ambientes, ranges, None, None, vrf)
             environment_list.append(env)
+            log.debug(environment_list)
             vlan = dict()
             vlan['VLAN_NUM'] = vlans.get(vlan_name)[rack.numero][int(i[1]) - 1]
             vlan['VLAN_NAME'] = 'VLAN_' + 'SPN' + i[1] + 'LF' + '_' + divisaodc

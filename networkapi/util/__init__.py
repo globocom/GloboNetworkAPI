@@ -417,17 +417,17 @@ def convert_boolean_to_int(param):
         return int(0)
 
 
-def convert_string_or_int_to_boolean(param):
+def convert_string_or_int_to_boolean(param, force=None):
     """Convert the parameter of string or int to boolean.
-
-    @param param: parameter to be converted.
-
-    @return Parameter converted.
+        @param param: parameter to be converted.
+        @return Parameter converted.
     """
-    if param == '1' or param == int(1) or param == 'True':
-        return True
 
-    elif param == '0' or int(0) or param == 'False':
+    if param == '1' or param == int(1) or param == 'True' or param == 'true':
+        return True
+    elif param == '0' or param == int(0) or param == 'False' or param == 'false':
+        return False
+    elif force:
         return False
 
 

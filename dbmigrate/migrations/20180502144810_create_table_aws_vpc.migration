@@ -1,0 +1,31 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+CREATE TABLE `aws_vpc` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `vpc_id` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `ambiente` 
+ADD COLUMN `id_aws_vpc` INT NULL AFTER `id_dcroom`,
+ADD INDEX `fk_ambiente_id_aws_vpc_idx` (`id_aws_vpc` ASC);
+
+ALTER TABLE `ambiente` 
+ADD CONSTRAINT `fk_ambiente_id_aws_vpc`
+  FOREIGN KEY (`id_aws_vpc`)
+  REFERENCES `aws_vpc` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `ambiente` 
+DROP FOREIGN KEY `fk_ambiente_id_aws_vpc`;
+
+ALTER TABLE `ambiente`
+DROP COLUMN `id_aws_vpc`,
+DROP INDEX `fk_ambiente_id_aws_vpc_idx` ;
+
+DROP TABLE `aws_vpc`;
+"""

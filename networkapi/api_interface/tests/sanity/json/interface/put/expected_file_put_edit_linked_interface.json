@@ -1,0 +1,28 @@
+{
+  "interfaces": [
+    {
+      "id": 6,
+      "interface": "Eth600",
+      "protected": true,
+      "description": "descricao",
+      "equipment": 2,
+      "native_vlan": "1",
+      "type": 1,
+      "front_interface": 7,
+      "back_interface": null,
+      "channel": null
+    },
+    {
+      "id": 7,
+      "interface": "Eth7",
+      "protected": false,
+      "description": "",
+      "equipment": 2,
+      "native_vlan": "1",
+      "type": 1,
+      "front_interface": 6,
+      "back_interface": null,
+      "channel": null
+    }
+  ]
+}

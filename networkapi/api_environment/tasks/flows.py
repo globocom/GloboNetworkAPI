@@ -10,7 +10,8 @@ def async_add_flow(self, plugins, user_id, data):
     """ Asynchronous flows insertion into environment equipment """
 
     for plugin in plugins:
-        plugin.add_flow(data=data)
+        if plugin is not None:
+            plugin.add_flow(data=data)
 
 
 @celery_app.task(bind=True, base=BaseTask, serializer='pickle')

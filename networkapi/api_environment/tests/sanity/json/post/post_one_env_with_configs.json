@@ -3,7 +3,7 @@
     {
       "acl_path": "",
       "ambiente_logico": 2,
-      "dcroom": 1,
+      "aws_vpc": null,
       "configs": [
         {
           "network_type": 2,
@@ -12,6 +12,7 @@
           "type": "v4"
         }
       ],
+      "dcroom": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
       "father_environment": null,

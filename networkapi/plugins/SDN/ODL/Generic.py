@@ -299,6 +299,8 @@ class ODLPlugin(BaseSdnPlugin):
             try:
                 return json.loads(request.text)
             except Exception as exception:
+                log.error("Response received from uri '%s': \n%s",
+			  uri, request.text)
                 log.error("Can't serialize as Json: %s" % exception)
                 return
 

@@ -324,11 +324,14 @@ TEMPLATE_DIRS = (
 PROJECT_APPS = (
     'networkapi.ambiente',
     'networkapi.api_asn',
+    'networkapi.api_aws',
+    'networkapi.api_channel',
     'networkapi.api_environment',
     'networkapi.api_environment_vip',
     'networkapi.api_equipment',
     'networkapi.api_filter',
     'networkapi.api_group',
+    'networkapi.api_interface',
     'networkapi.api_ip',
     'networkapi.api_neighbor',
     'networkapi.api_network',
@@ -415,6 +418,14 @@ MAX_OCT4 = 250
 # SPECS #
 #########
 SPECS = {
+    'channel_post_v3': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_channel/specs/channel_post.json'
+    ),
+    'channel_put_v3': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_channel/specs/channel_put.json'
+    ),
     'environment_post': os.path.join(
         PROJECT_ROOT_PATH,
         'api_environment/specs/env_post.json'
@@ -558,6 +569,14 @@ SPECS = {
     'ipv6_put_v4': os.path.join(
         PROJECT_ROOT_PATH,
         'api_ip/v4/specs/ipv6_put.json'
+    ),
+    'interface_post': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_interface/specs/interface_post.json'
+    ),
+    'interface_put': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_interface/specs/interface_put.json'
     ),
     'neighbor_v4_post_v4': os.path.join(
         PROJECT_ROOT_PATH,

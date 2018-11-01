@@ -1,0 +1,16 @@
+{
+  "interfaces": [
+    {
+      "id": 2,
+      "interface": "Eth2",
+      "protected": true,
+      "description": "descricao",
+      "equipment": 2,
+      "native_vlan": "10",
+      "type": 1,
+      "front_interface": null,
+      "back_interface": null,
+      "channel": null
+    }
+  ]
+}
