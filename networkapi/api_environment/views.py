@@ -188,9 +188,10 @@ class EnvFlowView(CustomAPIView):
 
         environment_id = kwargs.get('environment_id')
         flow_id = kwargs.get('flow_id', None)
+        user = request.user
 
         if flow_id:
-            facade.delete_flow(environment_id, flow_id)
+            facade.delete_flow(environment_id, flow_id, user.id)
         else:
             # Flush all the flows
             facade.flush_flows(environment_id)
