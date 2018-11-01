@@ -214,7 +214,7 @@ def insert_flow(env_id, data, user_id):
                                   'plugin. %s' % e)
 
 
-def delete_flow(env_id, flow_id):
+def delete_flow(env_id, flow_id, user_id):
     """ Deletes one flow by id using the async task """
 
     eqpts = get_controller_by_envid(env_id)
