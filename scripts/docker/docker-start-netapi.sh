@@ -28,7 +28,7 @@ echo "Starting netapi_app ..."
 # Waits for database container to be ready
 for i in $(seq 1  ${MAX_RETRIES}); do
 
-  mysql -u root -h netapi_db -e 'DROP DATABASE IF EXISTS networkapi;'
+  mysql -u root -h ${NETWORKAPI_DATABASE_HOST} -e 'DROP DATABASE IF EXISTS networkapi;'
 
   if [ "$?" -eq "0" ]; then
     echo "Dropping old networkapi database"
@@ -51,7 +51,7 @@ fi
 
 
 echo "Creating networkapi database"
-mysql -u root -h netapi_db -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
+mysql -u root -h ${NETWORKAPI_DATABASE_HOST} -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
 
 
 # Running database migrations if exists
