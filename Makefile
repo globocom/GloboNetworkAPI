@@ -122,3 +122,7 @@ ifeq (${model},)
 	$(error Missing model. Usage: make fixture model=interface.PortChannel)
 endif
 	docker exec -it netapi_app django-admin.py dumpdata ${model}
+
+build_img: scripts/docker/Dockerfile
+	docker build -t networkapi:latest --file scripts/docker/Dockerfile .
+	docker build -t networkapi:$(NETAPI_IMAGE_VERSION) --file scripts/docker/Dockerfile .
