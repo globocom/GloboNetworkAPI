@@ -1,17 +1,6 @@
-#!/bin/bash
-if [ ! -d test_venv ]; then
-    virtualenv test_venv
-
-    source test_venv/bin/activate
-    pip install -r requirements.txt
-    pip install -r requirements_test.txt
-    pip install -r requirements_debug.txt
-fi
-
-source test_venv/bin/activate
+#!/bin/sh
 
 echo "exporting NETWORKAPI_DEBUG"
-export NETWORKAPI_DEBUG='1'
 export NETWORKAPI_LOG_QUEUE=0
 
 echo "exporting DJANGO_SETTINGS_MODULE"
