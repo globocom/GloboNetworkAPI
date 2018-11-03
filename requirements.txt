@@ -34,3 +34,4 @@ six==1.9.0
 stompest==2.1.6
 suds==0.4
 schema==0.6.6
+supervisor==3.3.4
