@@ -3,23 +3,35 @@
 #
 
 
+# Docker image version
+NETAPI_IMAGE_VERSION := 2.0.0
+
+
 help:
 	@echo
 	@echo "Network API"
 	@echo
-	@echo "Available target rules:"
-	@echo "  docs       to create documentation files"
+	@echo "Available target rules"
+	@echo
+	@echo "Local:"
+	@echo "  start      to run project through docker compose"
+	@echo "  stop       to stop all containers from docker composition"
+	@echo "  logs       to follow logs on application container"
+	@echo "  tests      to execute tests using containers. Use app variable"
 	@echo "  clean      to clean garbage left by builds and installation"
+	@echo "  fixture    to generate fixtures from a given model"
+	@echo "  test       to execute all tests locally"
+	@echo
+	@echo "Build:"
+	@echo "  build_img  to build docker images"
+	@echo "  docs       to create documentation files"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
-	@echo "  test       to execute all tests"
 	@echo "  build      to build without installing"
 	@echo "  install    to install"
 	@echo "  dist       to create egg for distribution"
+	@echo
+	@echo "Remote:"
 	@echo "  publish    to publish the package to PyPI"
-	@echo "  start      to run project through docker compose"
-	@echo "  stop       to stop all containers from docker composition"
-	@echo "  fixture    to generate fixtures from a given model"
-	@echo "  tests      to execute tests using containers. Use app variable"
 	@echo
 
 
