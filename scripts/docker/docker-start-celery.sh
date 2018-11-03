@@ -9,5 +9,5 @@ export NETWORKAPI_BROKER_URL=netapi_queue
 
 echo "Starting Celery through supervisord"
 touch /tmp/celeryd.log
-/venv/bin/supervisord -c scripts/docker/supervisord.conf
+/venv/bin/supervisord -c scripts/docker/celery_supervisord.conf
 /venv/bin/supervisorctl tail -f celeryd
