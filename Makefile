@@ -32,6 +32,7 @@ help:
 	@echo
 	@echo "Remote:"
 	@echo "  publish    to publish the package to PyPI"
+	@echo "  push_img   to push image to docker hub"
 	@echo
 
 
@@ -123,6 +124,11 @@ ifeq (${model},)
 endif
 	docker exec -it netapi_app django-admin.py dumpdata ${model}
 
+
 build_img: scripts/docker/Dockerfile
 	docker build -t networkapi:latest --file scripts/docker/Dockerfile .
 	docker build -t networkapi:$(NETAPI_IMAGE_VERSION) --file scripts/docker/Dockerfile .
+
+
+push_img: scripts/docker/push_image.sh
+	./$^
