@@ -71,4 +71,9 @@ echo "Found SDN controller: ${REMOTE_CTRL}"
 
 echo "Starting gunicorn using supervisord"
 /venv/bin/supervisord -c /netapi/scripts/docker/netapi_supervisord.conf
+echo "SupervisorD logs"
+tail -50 /tmp/supervisord.log
+echo "Gunicorn logs"
+tail -50 /tmp/gunicorn-networkapi_error.log
+echo "Network API logs"
 /venv/bin/supervisorctl tail -f netapi stdout
