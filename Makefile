@@ -17,10 +17,9 @@ help:
 	@echo "  start      to run project through docker compose"
 	@echo "  stop       to stop all containers from docker composition"
 	@echo "  logs       to follow logs on application container"
-	@echo "  tests      to execute tests using containers. Use app variable"
+	@echo "  test       to execute tests using containers. Use app variable"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  fixture    to generate fixtures from a given model"
-	@echo "  test       to execute all tests locally"
 	@echo
 	@echo "Build:"
 	@echo "  build_img  to build docker images"
@@ -33,6 +32,7 @@ help:
 	@echo "Remote:"
 	@echo "  publish    to publish the package to PyPI"
 	@echo "  push_img   to push image to docker hub"
+	@echo "  test_ci    Used by Travis CI to run tests on django applications"
 	@echo
 
 
@@ -73,12 +73,6 @@ compile: clean
 	#@pep8 --format=pylint --statistics networkapiclient setup.py
 
 
-test: compile
-	@[ ! -z $(NETWORKAPI_DATABASE_PASSWORD) ] && [ ! -z $(NETWORKAPI_DATABASE_USER) ] && [ ! -z $(NETWORKAPI_DATABASE_HOST) ] && mysqladmin -h $(NETWORKAPI_DATABASE_HOST) -u $(NETWORKAPI_DATABASE_USER) -p $(NETWORKAPI_DATABASE_PASSWORD) -f drop if exists test_networkapi; true
-	@[ -z $(NETWORKAPI_DATABASE_PASSWORD) ] && [ -z $(NETWORKAPI_DATABASE_USER) ] && [ -z $(NETWORKAPI_DATABASE_HOST) ] && mysql -u root -e "DROP DATABASE IF EXISTS test_networkapi;"; true
-	@python manage.py test --traceback $(filter-out $@,$(MAKECMDGOALS))
-
-
 install:
 	@python setup.py install
 
@@ -112,10 +106,15 @@ logs:
 	@docker logs --tail 100 --follow netapi_app
 
 
-tests:
+test:
 	@clear
-	@echo "Running NetAPI tests.."
+	@echo "Running NetAPI tests for app '${app}'"
 	time docker exec -it netapi_app ./fast_start_test_reusedb.sh ${app}
+
+
+test_ci:
+	@echo "Running NetAPI tests for app '${app}'"
+	time docker exec -it netapi_app ./fast_start_test.sh ${app}
 
 
 fixture:
