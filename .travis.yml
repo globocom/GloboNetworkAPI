@@ -20,25 +20,20 @@ services:
 
 
 before_install:
-  # Disable services enabled by default
-  # http://docs.travis-ci.com/user/database-setup/#MySQL
-  # - sudo /etc/init.d/mysql stop
+  - docker network create globonetworkapi_netapi_net
+  - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
+  - sudo docker-compose up -d
+  - ./scripts/travis/wait_for_containers.sh
+  - docker ps --all
 
 
 stages:
-  - start  # Starts containers and services for tests running
   - test   # Runs tests in parallel for each django application
 
 
 # Parallel execution
 jobs:
   include:
-    - stage: start
-      script: docker network create globonetworkapi_netapi_net
-    - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
-    - sudo docker-compose up -d
-    - ./scripts/travis/wait_for_containers.sh
-
     - stage: test
       script: docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/api_environment
     - script: docker exec -it netapi_app ./scripts/travis/test_runner.sh networkapi/plugins/SDN
