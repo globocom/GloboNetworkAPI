@@ -49,6 +49,11 @@ jobs:
       script: make test_ci app=networkapi/api_environment
     - script: make test_ci app=networkapi/plugins/SDN
     - script: make test_ci app=networkapi/api_ip
+    - script: make test_ci app=networkapi/api_network
+    - script: make test_ci app=networkapi/api_environment_vip
+    - script: make test_ci app=networkapi/api_asn
+    - script: make test_ci app=networkapi/api_interface
+    - script: make test_ci app=networkapi/api_list_config_bgp
 
 
 # If any job fail run the following commands to help debug
