@@ -5,6 +5,10 @@ notifications:
   email: false
 
 
+git:
+  submodules: false
+
+
 branches:
   only:
     - master
@@ -35,8 +39,8 @@ stages:
 jobs:
   include:
     - stage: test
-      script: ls && docker exec -it netapi_app ./fast_start_test.sh networkapi/api_environment
-    - script: ls && docker exec -it netapi_app scripts/travis/test_runner.sh networkapi/plugins/SDN
+      script: docker exec -it netapi_app ./fast_start_test.sh networkapi/api_environment
+    - script: docker exec -it netapi_app ./fast_start_test.sh networkapi/plugins/SDN
 
 
 after_failure:
