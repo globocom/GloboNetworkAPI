@@ -1,12 +1,8 @@
-language: python
+language: bash
 
 
 notifications:
   email: false
-
-
-python:
-  - "2.7"
 
 
 branches:
