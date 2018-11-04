@@ -18,6 +18,7 @@ help:
 	@echo "  stop       to stop all containers from docker composition"
 	@echo "  logs       to follow logs on application container"
 	@echo "  test       to execute tests using containers. Use app variable"
+	@echo "  status     to show containers status"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  fixture    to generate fixtures from a given model"
 	@echo
@@ -104,6 +105,10 @@ stop: docker-compose.yml
 
 logs:
 	@docker logs --tail 100 --follow netapi_app
+
+
+status:
+	docker ps --all --format "{{.ID}}\t{{.Names}}\t{{.Status}}"
 
 
 test:
