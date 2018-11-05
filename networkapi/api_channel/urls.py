@@ -28,9 +28,9 @@ urlpatterns = patterns(
 
     # Basic CRUD routes
     url(r'^v3/channel/(?P<channel_id>\w+|)/?$',
-       ChannelV3View.as_view()),
+        ChannelV3View.as_view()),
 
     # Channel deploy operation
     url(r'^v3/channel/(?P<channel_id>\d+)/deploy/?$',
-       DeployChannelConfV3View.as_view()),
+        DeployChannelConfV3View.as_view()),
 )
