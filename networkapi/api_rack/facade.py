@@ -677,13 +677,13 @@ def _create_prod_vlans(rack, user):
                 if net_dict.get("type") == net.ip_config.type:
                     cidr = IPNetwork(net.ip_config.subnet)
 
-                    prefixo_inicial = 20 if net.ip_config.type=="v4" else 56
+                    initial_prefix  = 20 if net.ip_config.type=="v4" else 56
                     prefixo = net_dict.get("mask")
                     if not idx:
                         bloco = list(cidr.subnet(int(prefixo)))[0]
                         log.debug(str(bloco))
                     else:
-                        bloco1 = list(cidr.subnet(prefixo_inicial))[1]
+                        bloco1 = list(cidr.subnet(initial_prefix))[1]
                         bloco = list(bloco1.subnet(int(prefixo)))[idx-1]
                         log.debug(str(bloco))
                     network = {
