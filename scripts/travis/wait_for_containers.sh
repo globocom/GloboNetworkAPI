@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APP_PIDFILE=/var/run/netapi_main.pid
+APP_PIDFILE=/var/run/netapi.pid
 APP_READY=0
 ODL_READY=0
 
@@ -22,7 +22,7 @@ for i in $(seq 1  ${MAX_RETRY}); do
 
     # -- APP
     if [ "$APP_READY" -eq "0" ]; then
-        docker exec netapi_app bash -c "ls $APP_PIDFILE" >/dev/null 2>&1
+        docker exec netapi_app sh -c "ls $APP_PIDFILE" >/dev/null 2>&1
         if [ "$?" -eq "0" ]; then
             echo "App is ready";
             APP_READY=1;

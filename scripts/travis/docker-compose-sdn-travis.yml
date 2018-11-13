@@ -3,7 +3,7 @@ services:
 
     odl:
         container_name: netapi_odl
-        image: globocom/odl:4.4.0
+        image: globocom/odl:6.1.0
         command: "/opt/opendaylight/bin/karaf server"
         ports:
             - "6653:6653"

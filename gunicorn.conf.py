@@ -40,7 +40,7 @@ errorlog = "%s/gunicorn-networkapi_error.log" % LOGDIR
 loglevel = "debug"
 
 # Choose user/group to run the server if daemon=true
-daemon = True
+daemon = bool(int(os.environ.get("GUNICORN_DAEMONIZED", True)))
 
 # IP and Port to listen
 bind = "0.0.0.0:8000"
