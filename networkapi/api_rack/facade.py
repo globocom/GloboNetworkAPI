@@ -653,7 +653,7 @@ def _create_prod_vlans(rack, user):
             fabenv = fab.get("details")
     if not fabenv:
         log.debug("No configurations for child environment of env id=%s" % (
-            str(env.id)
+            str(env.id))
         )
         return 0
 
