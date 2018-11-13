@@ -3,23 +3,37 @@
 #
 
 
+# Docker image version
+NETAPI_IMAGE_VERSION := 2.0.0
+
+
 help:
 	@echo
 	@echo "Network API"
 	@echo
-	@echo "Available target rules:"
-	@echo "  docs       to create documentation files"
+	@echo "Available target rules"
+	@echo
+	@echo "Local:"
+	@echo "  start      to run project through docker compose"
+	@echo "  stop       to stop all containers from docker composition"
+	@echo "  logs       to follow logs on application container"
+	@echo "  test       to execute tests using containers. Use app variable"
+	@echo "  status     to show containers status"
 	@echo "  clean      to clean garbage left by builds and installation"
+	@echo "  fixture    to generate fixtures from a given model"
+	@echo
+	@echo "Build:"
+	@echo "  build_img  to build docker images"
+	@echo "  docs       to create documentation files"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
-	@echo "  test       to execute all tests"
 	@echo "  build      to build without installing"
 	@echo "  install    to install"
 	@echo "  dist       to create egg for distribution"
+	@echo
+	@echo "Remote:"
 	@echo "  publish    to publish the package to PyPI"
-	@echo "  start      to run project through docker compose"
-	@echo "  stop       to stop all containers from docker composition"
-	@echo "  fixture    to generate fixtures from a given model"
-	@echo "  tests      to execute tests using containers. Use app variable"
+	@echo "  push_img   to push image to docker hub"
+	@echo "  test_ci    Used by Travis CI to run tests on django applications"
 	@echo
 
 
@@ -60,12 +74,6 @@ compile: clean
 	#@pep8 --format=pylint --statistics networkapiclient setup.py
 
 
-test: compile
-	@[ ! -z $(NETWORKAPI_DATABASE_PASSWORD) ] && [ ! -z $(NETWORKAPI_DATABASE_USER) ] && [ ! -z $(NETWORKAPI_DATABASE_HOST) ] && mysqladmin -h $(NETWORKAPI_DATABASE_HOST) -u $(NETWORKAPI_DATABASE_USER) -p $(NETWORKAPI_DATABASE_PASSWORD) -f drop if exists test_networkapi; true
-	@[ -z $(NETWORKAPI_DATABASE_PASSWORD) ] && [ -z $(NETWORKAPI_DATABASE_USER) ] && [ -z $(NETWORKAPI_DATABASE_HOST) ] && mysql -u root -e "DROP DATABASE IF EXISTS test_networkapi;"; true
-	@python manage.py test --traceback $(filter-out $@,$(MAKECMDGOALS))
-
-
 install:
 	@python setup.py install
 
@@ -99,10 +107,19 @@ logs:
 	@docker logs --tail 100 --follow netapi_app
 
 
-tests:
+status:
+	docker ps --all --format "{{.ID}}\t{{.Names}}\t{{.Status}}"
+
+
+test:
 	@clear
-	@echo "Running NetAPI tests.."
+	@echo "Running NetAPI tests for app '${app}'"
 	time docker exec -it netapi_app ./fast_start_test_reusedb.sh ${app}
+
+
+test_ci:
+	@echo "Running NetAPI tests for app '${app}'"
+	time docker exec -it netapi_app ./fast_start_test.sh ${app}
 
 
 fixture:
@@ -110,3 +127,12 @@ ifeq (${model},)
 	$(error Missing model. Usage: make fixture model=interface.PortChannel)
 endif
 	docker exec -it netapi_app django-admin.py dumpdata ${model}
+
+
+build_img: scripts/docker/Dockerfile
+	docker build -t networkapi:latest --file scripts/docker/Dockerfile .
+	docker build -t networkapi:$(NETAPI_IMAGE_VERSION) --file scripts/docker/Dockerfile .
+
+
+push_img: scripts/docker/push_image.sh
+	./$^

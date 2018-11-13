@@ -36,9 +36,7 @@ services:
 
     celery:
         container_name: netapi_celery
-        build:
-          context: .
-          dockerfile: scripts/docker/Dockerfile
+        image: globocom/networkapi:latest
         command: sh scripts/docker/docker-start-celery.sh
         env_file:
             - scripts/docker/netapi.env
@@ -55,13 +53,10 @@ services:
 
     netapi:
         container_name: netapi_app
-        build:
-          context: .
-          dockerfile: scripts/docker/Dockerfile
+        image: globocom/networkapi:latest
         ports:
             - "127.0.0.1:8000:8000"
             - "127.0.0.1:8001:8001"
-        command: sh scripts/docker/docker-start-netapi.sh
         env_file:
             - scripts/docker/netapi.env
         volumes:
