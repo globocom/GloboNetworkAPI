@@ -64,6 +64,8 @@ from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 
 
+log = logging.getLogger(__name__)
+
 class NetworkIPv4Error(Exception):
 
     """Generic exception for everything related to NetworkIPv4."""
@@ -745,7 +747,6 @@ class NetworkIPv4(BaseModel):
         try:
             if self.oct1 is None and self.oct2 is None and \
                     self.oct3 is None and self.oct4 is None:
-
                 # Allocate network for vlan with prefix(optional)
                 try:
                     self.allocate_network_v3(networkv4.get('vlan'),
