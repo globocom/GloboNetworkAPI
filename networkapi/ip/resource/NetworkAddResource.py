@@ -262,7 +262,7 @@ class NetworkAddResource(RestResource):
                 network_ip.mask_oct1, network_ip.mask_oct2, network_ip.mask_oct3, network_ip.mask_oct4 = str(
                     net.netmask).split('.')
                 # Set broadcast by network generated
-                network_ip.broadcast = net.broadcast
+                network_ip.broadcast = net.broadcast.compressed
 
             else:
                 # Find all networks ralated to environment

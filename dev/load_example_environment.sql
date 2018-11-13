@@ -1848,4 +1848,17 @@ VALUES
    )
 ;
 
+
+--
+-- Dumped data of the Interface types table
+--
+INSERT INTO `tipo_interface` (`tipo`)
+VALUES ("access"), ("trunk");
+
+
+
+
+--
+-- Global commit!
+--
 COMMIT;

@@ -128,8 +128,8 @@ class InterfaceGetResource(RestResource):
 
             if channel:
                 if equip_name:
-                    get_channel = Interface.objects.get(equipamento__nome=equip_name,channel__nome=channel)
-                    channel_id = get_channel.channel.id if get_channel else ""
+                    get_channel = Interface.objects.filter(channel__id=channel)
+                    channel_id = get_channel[0].channel.id if get_channel else ""
                     interfaces = Interface.objects.filter(channel__id=channel_id) if channel_id else []
                     for i in interfaces:
                         equipInterface_list.append(get_new_interface_map(i))

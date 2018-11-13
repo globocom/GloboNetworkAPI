@@ -1,158 +1,164 @@
-[    {
-        "fields": {
-            "ambiente_logico": 1,
-            "default_vrf": 1,
-            "divisao_dc": 1,
-            "filter": 1,
-            "grupo_l3": 1,
-            "father_environment": 4,
-            "dcroom": 1
-        },
-        "model": "ambiente.ambiente",
-        "pk": 1
+[
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "aws_vpc": null,
+      "dcroom": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "father_environment": 4,
+      "filter": 1,
+      "grupo_l3": 1
     },
-    {
-        "fields": {
-            "ambiente_logico": 1,
-            "default_vrf": 1,
-            "divisao_dc": 1,
-            "filter": 1,
-            "grupo_l3": 2,
-            "father_environment": 4,
-            "dcroom": 1
-        },
-        "model": "ambiente.ambiente",
-        "pk": 2
+    "model": "ambiente.ambiente",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "aws_vpc": null,
+      "dcroom": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "father_environment": 4,
+      "filter": 1,
+      "grupo_l3": 2
     },
-    {
-        "fields": {
-            "ambiente_logico": 1,
-            "default_vrf": 1,
-            "divisao_dc": 1,
-            "filter": 1,
-            "grupo_l3": 3,
-            "dcroom": 1
-        },
-        "model": "ambiente.ambiente",
-        "pk": 3
+    "model": "ambiente.ambiente",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "aws_vpc": null,
+      "dcroom": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "filter": 1,
+      "grupo_l3": 3
     },
-    {
-        "fields": {
-            "ambiente_logico": 1,
-            "default_vrf": 1,
-            "divisao_dc": 1,
-            "filter": 1,
-            "grupo_l3": 4,
-            "dcroom": 1
-        },
-        "model": "ambiente.ambiente",
-        "pk": 4
+    "model": "ambiente.ambiente",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "ambiente_logico": 1,
+      "aws_vpc": null,
+      "dcroom": 1,
+      "default_vrf": 1,
+      "divisao_dc": 1,
+      "filter": 1,
+      "grupo_l3": 4
     },
-    {
-        "fields": {
-            "network_type": 1,
-            "new_prefix": 24,
-            "subnet": "192.168.0.0/8",
-            "type": "v4"
-        },
-        "model": "ambiente.ipconfig",
-        "pk": 1
+    "model": "ambiente.ambiente",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 24,
+      "subnet": "192.168.0.0/8",
+      "type": "v4"
     },
-    {
-        "fields": {
-            "network_type": 1,
-            "new_prefix": 64,
-            "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
-            "type": "v6"
-        },
-        "model": "ambiente.ipconfig",
-        "pk": 2
+    "model": "ambiente.ipconfig",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 64,
+      "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+      "type": "v6"
     },
-    {
-        "fields": {
-            "network_type": 1,
-            "new_prefix": 24,
-            "subnet": "192.168.0.0/8",
-            "type": "v4"
-        },
-        "model": "ambiente.ipconfig",
-        "pk": 3
+    "model": "ambiente.ipconfig",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 24,
+      "subnet": "192.168.0.0/8",
+      "type": "v4"
     },
-    {
-        "fields": {
-            "network_type": 1,
-            "new_prefix": 64,
-            "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
-            "type": "v6"
-        },
-        "model": "ambiente.ipconfig",
-        "pk": 4
+    "model": "ambiente.ipconfig",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "network_type": 1,
+      "new_prefix": 64,
+      "subnet": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+      "type": "v6"
     },
-    {
-        "fields": {
-            "network_type": 2,
-            "new_prefix": 24,
-            "subnet": "192.162.0.0/16",
-            "type": "v4"
-        },
-        "model": "ambiente.ipconfig",
-        "pk": 5
+    "model": "ambiente.ipconfig",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "network_type": 2,
+      "new_prefix": 24,
+      "subnet": "192.162.0.0/16",
+      "type": "v4"
     },
-    {
-        "fields": {
-            "network_type": 2,
-            "new_prefix": 64,
-            "subnet": "fdbe:bebe:bebe:1800:0:0:0:0/58",
-            "type": "v6"
-        },
-        "model": "ambiente.ipconfig",
-        "pk": 6
+    "model": "ambiente.ipconfig",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "network_type": 2,
+      "new_prefix": 64,
+      "subnet": "fdbe:bebe:bebe:1800:0:0:0:0/58",
+      "type": "v6"
     },
-    {
-        "fields": {
-            "environment": 1,
-            "ip_config": 1
-        },
-        "model": "ambiente.configenvironment",
-        "pk": 1
+    "model": "ambiente.ipconfig",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "environment": 1,
+      "ip_config": 1
     },
-    {
-        "fields": {
-            "environment": 1,
-            "ip_config": 2
-        },
-        "model": "ambiente.configenvironment",
-        "pk": 2
+    "model": "ambiente.configenvironment",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "environment": 1,
+      "ip_config": 2
     },
-    {
-        "fields": {
-            "environment": 2,
-            "ip_config": 3
-        },
-        "model": "ambiente.configenvironment",
-        "pk": 3
+    "model": "ambiente.configenvironment",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "environment": 2,
+      "ip_config": 3
     },
-    {
-        "fields": {
-            "environment": 2,
-            "ip_config": 4
-        },
-        "model": "ambiente.configenvironment",
-        "pk": 4
+    "model": "ambiente.configenvironment",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "environment": 2,
+      "ip_config": 4
     },
-    {
-        "fields": {
-            "environment": 3,
-            "ip_config": 5
-        },
-        "model": "ambiente.configenvironment",
-        "pk": 5
+    "model": "ambiente.configenvironment",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "environment": 3,
+      "ip_config": 5
     },
-    {
-        "fields": {
-            "environment": 3,
-            "ip_config": 6
-        },
-        "model": "ambiente.configenvironment",
-        "pk": 6
-    }]
+    "model": "ambiente.configenvironment",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "environment": 3,
+      "ip_config": 6
+    },
+    "model": "ambiente.configenvironment",
+    "pk": 6
+  }
+]

@@ -18,6 +18,8 @@ from networkapi.plugins.factory import PluginFactory
 from networkapi.util.decorators import cached_property
 from networkapi.util.geral import get_app
 
+log = logging.getLogger(__name__)
+
 
 class VipRequest(BaseModel):
 
@@ -199,6 +201,8 @@ class VipRequest(BaseModel):
 
     def _delete_pools_related(self):
 
+        ogp_models = get_app('api_ogp', 'models')
+
         # Pools related with vip and was not created
         pools = self.get_pool_related(
             self.id
@@ -210,7 +214,14 @@ class VipRequest(BaseModel):
         # Remove pool not created and not assoc with others vips
         for pool in pools:
             if pool not in pools_assoc:
+                pool_id = pool.id
                 pool.delete()
+                # Deletes Permissions
+                ogp_models.ObjectGroupPermission.objects.filter(
+                    object_type__name=AdminPermission.OBJ_TYPE_POOL,
+                    object_value=pool_id
+                ).delete()
+                log.info("Deletes Pool Permissions")
 
     def get_dscp(self):
         reqvip_models = get_app('requisicaovips', 'models')
@@ -700,7 +711,6 @@ class VipRequest(BaseModel):
             raise exceptions.VipConstraintCreated(id_vip)
 
         self._delete_pools_related()
-
         self.delete()
 
         # Deletes Permissions

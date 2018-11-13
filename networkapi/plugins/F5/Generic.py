@@ -71,8 +71,8 @@ class Generic(BasePlugin):
                 vps_names = [vp['name'] for vp in tratado.get('vips_cache')]
                 vts.delete(vps_names=vps_names)
         except Exception, e:
-            log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
+            log.error(e)
             raise e
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -133,10 +133,10 @@ class Generic(BasePlugin):
             if tratado.get('vips'):
                 vts.create(vips=tratado.get('vips'))
         except Exception, e:
-            log.error(e)
 
             if tratado.get('pool'):
                 self._delete_pool({'pools': tratado.get('pool')})
+            log.error(e)
             raise base_exceptions.CommandErrorException(e)
 
         else:
@@ -146,7 +146,6 @@ class Generic(BasePlugin):
                 if tratado.get('vips_cache'):
                     vts.create(vips=tratado.get('vips_cache'))
             except Exception, e:
-                log.error(e)
 
                 # rollback vip create
                 try:
@@ -160,6 +159,7 @@ class Generic(BasePlugin):
                     if tratado.get('pool'):
                         self._delete_pool({'pools': tratado.get('pool')})
 
+                log.error(e)
                 raise base_exceptions.CommandErrorException(e)
         return pools_ins
 
@@ -193,13 +193,12 @@ class Generic(BasePlugin):
 
         except Exception, e:
 
-            log.error('error to delete ports')
-            log.error(e)
-
             # rollback delete of ports
             log.info('rollback delete of ports')
             pools_del = self._delete_vip(dict_create_vip)
 
+            log.error('error to delete ports')
+            log.error(e)
             raise base_exceptions.CommandErrorException(e)
 
         else:
@@ -232,9 +231,6 @@ class Generic(BasePlugin):
 
         except Exception, e:
 
-            log.info('error update vips')
-            log.error(e)
-
             # rollback create port
             log.info('rollback create port')
             self._create_vip(dict_delete_vip)
@@ -243,6 +239,8 @@ class Generic(BasePlugin):
             log.info('rollback delete port')
             self._delete_vip(dict_create_vip)
 
+            log.info('error update vips')
+            log.error(e)
             raise base_exceptions.CommandErrorException(e)
 
         else:
@@ -299,6 +297,7 @@ class Generic(BasePlugin):
                     'Pool cannot be deleted because is referenced by one or more rules')
                 pass
             else:
+                log.error(e)
                 raise e
 
             return False
@@ -445,7 +444,6 @@ class Generic(BasePlugin):
                 session_state=pls['pools_members']['session'])
 
         except Exception, e:
-            log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
             template_names = [m for m in list(itertools.chain(
                 *[m['monitor_rule']['monitor_templates'] for m in monitor_associations])) if 'MONITOR' in m]
@@ -453,6 +451,7 @@ class Generic(BasePlugin):
                 mon.delete_template(
                     template_names=template_names
                 )
+            log.error(e)
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -527,6 +526,11 @@ class Generic(BasePlugin):
                 members=pls['pools_members']['members'],
                 priority=pls['pools_members']['priority'])
 
+            plm.set_ratio(
+                names=pls['pools_names'],
+                members=pls['pools_members']['members'],
+                ratio=pls['pools_members']['weight'])
+
             # plm.set_member_description(
             #     names=pls['pools_names'],
             #     members=pls['pools_members']['members'],
@@ -539,7 +543,6 @@ class Generic(BasePlugin):
                 session_state=pls['pools_members']['session'])
 
         except Exception, e:
-            log.error(e)
             self._lb._channel.System.Session.rollback_transaction()
 
             # delete templates created
@@ -551,6 +554,7 @@ class Generic(BasePlugin):
                 mon.delete_template(
                     template_names=template_names
                 )
+            log.error(e)
             raise base_exceptions.CommandErrorException(e)
         else:
             self._lb._channel.System.Session.submit_transaction()
@@ -608,8 +612,8 @@ class Generic(BasePlugin):
                 self._lb._channel.System.Session.start_transaction()
                 pl.delete(names=pls['pools_names'])
             except Exception, e:
-                log.error(e)
                 self._lb._channel.System.Session.rollback_transaction()
+                log.error(e)
                 raise base_exceptions.CommandErrorException(e)
             else:
                 self._lb._channel.System.Session.submit_transaction()
@@ -662,6 +666,7 @@ class Generic(BasePlugin):
                     can_delete = True
                     pass
                 else:
+                    log.error(e)
                     raise e
 
             if can_delete:

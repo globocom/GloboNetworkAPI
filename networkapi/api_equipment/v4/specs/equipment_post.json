@@ -10,7 +10,7 @@
           "environments": {
             "items": {
               "properties": {
-                "id": {
+                "environment": {
                   "type": "integer"
                 },
                 "is_router": {

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import copy
 import logging
 from functools import wraps
 
 import bigsuds
+import ipaddress
 
 from networkapi.plugins import exceptions as base_exceptions
 from networkapi.plugins.F5 import lb
@@ -191,7 +194,10 @@ def trata_param_pool(pools):
                 member_description.append(pool_member['identifier'])
 
             if pool_member.get('weight') is not None:
-                member_weight.append(pool_member['weight'])
+                if p.get('lb_method') == 'weighted' and int(pool_member['weight']) > 0:
+                    member_weight.append(pool_member['weight'])
+                else:
+                    member_weight.append('1')
 
             if not pool_member.get('remove'):
                 member.append({
@@ -257,6 +263,7 @@ def trata_param_vip(vips):
                 if vip_request['ipv4'] else vip_request['ipv6']['ip_formated']
 
             vip_filter['name'] = port['identifier']
+            address = str(ipaddress.ip_address(unicode(address)))
             vip_filter['address'] = address
             vip_filter['port'] = port['port']
             vip_filter['optionsvip'] = vip_request['options']
@@ -280,7 +287,7 @@ def trata_param_vip(vips):
                             cluster_unit is None:
                         cluster_unit = None
                         break
-            except:
+            except Exception:
                 cluster_unit = None
                 pass
 
@@ -416,6 +423,7 @@ def trata_param_vip(vips):
 
                     vip_cache_filter['pool'] = None
                     vip_cache_filter['name'] = port['identifier']
+                    address = str(ipaddress.ip_address(unicode(address)))
                     vip_cache_filter['address'] = address
                     vip_cache_filter['port'] = port['port']
 

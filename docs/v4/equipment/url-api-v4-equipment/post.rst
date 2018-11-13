@@ -51,7 +51,7 @@ Request body:
                 "maintenance": <boolean>,
                 "model": <integer>,
                 "name": <string>,
-                "id_as": <integer>
+                "asn": <integer>
             }, ...
         ]
     }

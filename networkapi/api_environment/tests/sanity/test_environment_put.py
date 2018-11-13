@@ -150,7 +150,6 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['name']
         del data['environments'][0]['sdn_controllers']
-
         self.compare_json(name_file, data)
 
 

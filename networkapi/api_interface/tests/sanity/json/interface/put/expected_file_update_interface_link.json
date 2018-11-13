@@ -1,0 +1,40 @@
+{
+  "interfaces": [
+    {
+      "id": 9,
+      "interface": "Eth9",
+      "protected": false,
+      "description": "",
+      "equipment": 2,
+      "native_vlan": "1",
+      "type": 1,
+      "front_interface": 10,
+      "back_interface": null,
+      "channel": null
+    },
+    {
+      "id": 10,
+      "interface": "Eth10",
+      "protected": false,
+      "description": "",
+      "equipment": 2,
+      "native_vlan": "1",
+      "type": 1,
+      "front_interface": 9,
+      "back_interface": null,
+      "channel": null
+    },
+    {
+      "id": 8,
+      "interface": "Eth8",
+      "protected": false,
+      "description": "",
+      "equipment": 2,
+      "native_vlan": "1",
+      "type": 1,
+      "front_interface": null,
+      "back_interface": null,
+      "channel": null
+    }
+  ]
+}

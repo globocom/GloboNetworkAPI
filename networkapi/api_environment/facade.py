@@ -10,6 +10,7 @@ from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
 from networkapi.ambiente.models import EnvironmentErrorV3
 from networkapi.api_environment.tasks.flows import async_add_flow
+from networkapi.api_environment.tasks.flows import async_delete_flow
 from networkapi.api_environment.tasks.flows import async_flush_environment
 from networkapi.api_environment_vip.facade import get_environmentvip_by_id
 from networkapi.api_pools import exceptions
@@ -19,6 +20,8 @@ from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.equipamento.models import Equipamento
 from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.plugins.factory import PluginFactory
+from networkapi.api_equipment import exceptions as exceptions_eqpt
+from networkapi.api_equipment import facade as facade_eqpt
 
 
 log = logging.getLogger(__name__)
@@ -161,11 +164,19 @@ def delete_environment(env_ids):
 
 
 def get_controller_by_envid(env_id):
+    """ Get all controllers from a given environment """
+
     q_filter_environment = {
-        'equipmentcontrollerenvironment': env_id
+        'equipmentcontrollerenvironment__environment': env_id,
+        'maintenance': 0
     }
 
-    return Equipamento.objects.filter(Q(**q_filter_environment))
+    equips = Equipamento.objects.filter(Q(**q_filter_environment))
+
+    if facade_eqpt.all_equipments_are_in_maintenance(equips):
+        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+
+    return equips
 
 
 def list_flows_by_envid(env_id, flow_id=0):
@@ -203,17 +214,22 @@ def insert_flow(env_id, data, user_id):
                                   'plugin. %s' % e)
 
 
-def delete_flow(env_id, flow_id):
+def delete_flow(env_id, flow_id, user_id):
+    """ Deletes one flow by id using the async task """
+
     eqpts = get_controller_by_envid(env_id)
 
+    plugins = []
     for eqpt in eqpts:
-        plugin = PluginFactory.factory(eqpt, env_id=env_id)
-        try:
-            plugin.del_flow(flow_id=flow_id)
-        except Exception as e:
-            log.error(e)
-            raise NetworkAPIException('Failed to delete flow '
-                                      'plugin. %s' % e)
+        plugins.append(PluginFactory.factory(eqpt, env_id=env_id))
+
+    try:
+        return async_delete_flow.apply_async(
+            args=[plugins, user_id, flow_id], queue='napi.odl_flow'
+        )
+    except Exception as err:
+        log.error(err)
+        raise NetworkAPIException('Failed to delete flow with error: %s' % err)
 
 
 def flush_flows(env_id):
