@@ -72,7 +72,7 @@ class ChannelV3View(APIView):
 
         if data is None:
             error = {"error": "Channel not found: '%s'" % channel_name}
-            return Response(error, status=status.HTTP_404_NOT_FOUND)
+            raise api_exceptions.NetworkAPIException(str(error))
 
         return Response(data, status=status.HTTP_200_OK)
 

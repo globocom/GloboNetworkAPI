@@ -93,6 +93,8 @@ class ChannelV3(object):
 
             log.debug("interface updated %s" % iface.id)
 
+            self._dissociate_ifaces_envs(iface)
+
             if 'trunk' in int_type.lower():
                 self._create_ifaces_on_trunks(iface, envs_vlans)
 
@@ -125,32 +127,23 @@ class ChannelV3(object):
 
         iface.update_V3(interface_obj)
 
-    def _create_ifaces_on_trunks(self, sw_router, envs_vlans):
-
-        interface_list = EnvironmentInterface.objects.all().filter(
-            interface=sw_router.id)
-
-        for int_env in interface_list:
-            int_env.delete()
-
-        if type(envs_vlans) is not list:
-            envs_vlans = [envs_vlans]
+    def _create_ifaces_on_trunks(self, iface, envs_vlans):
+        log.debug("_create_ifaces_on_trunks")
 
         for i in envs_vlans:
 
             environment = Ambiente.get_by_pk(int(i.get('env')))
             env_iface = EnvironmentInterface()
-            env_iface.interface = sw_router
+            env_iface.interface = iface
             env_iface.ambiente = environment
-
-            range_vlans = i.get('vlans')
-            if range_vlans:
-                api_interface_facade.verificar_vlan_range(
-                    environment, range_vlans)
-
-                env_iface.vlans = range_vlans
-
+            env_iface.vlans = i.get('vlans')
             env_iface.create()
+
+    def _dissociate_ifaces_envs(self, iface):
+        interface_list = EnvironmentInterface.objects.all().filter(interface=iface.id)
+
+        for int_env in interface_list:
+            int_env.delete()
 
     def retrieve(self, channel_name):
         """ Tries to retrieve a Port Channel based on its name """
@@ -204,7 +197,9 @@ class ChannelV3(object):
                 channel__id=int(id_channel)
                 )
             log.debug(interfaces_old)
+            server = None
             for i in interfaces_old:
+                server = i.ligacao_front.equipamento.id
                 i.channel = None
                 i.save()
                 log.debug(i.id)
@@ -224,6 +219,11 @@ class ChannelV3(object):
             for interface in interfaces:
 
                 iface = Interface.objects.get(id=int(interface))
+
+                if server:
+                    if not int(iface.ligacao_front.equipamento.id) == int(server):
+                        raise Exception('Interface is connected to another server. Ids: %s %s ' %
+                                        (iface.ligacao_front.equipamento.id, server))
 
                 if iface.channel:
                     raise InterfaceError(
@@ -247,7 +247,7 @@ class ChannelV3(object):
 
                 log.debug("interface updated %s" % iface.id)
 
-                # dissociate olds envs
+                self._dissociate_ifaces_envs(iface)
 
                 # associate the new envs
                 if 'trunk' in int_type.lower():

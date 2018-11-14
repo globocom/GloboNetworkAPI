@@ -1066,7 +1066,6 @@ class Vlan(BaseModel):
 
                 netv6_obj.create_v3(dict_net, locks_used=locks_name)
         except Exception, e:
-
             raise VlanErrorV3(e)
         finally:
             # Destroy locks
