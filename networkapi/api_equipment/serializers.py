@@ -205,6 +205,7 @@ class EquipmentV3Serializer(DynamicFieldsModelSerializer):
                 'model__details': {
                     'serializer': ModelV3Serializer,
                     'kwargs': {
+                        'kind': 'details'
                     },
                     'obj': 'modelo'
                 },
