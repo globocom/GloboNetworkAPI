@@ -28,10 +28,11 @@ python-foreman==0.3.1
 python-ldap==2.3.13
 python-memcached==1.48
 pytz==2017.2
-requests==2.20.1
+requests==2.10.0
 simple-db-migrate==2.2.0
 six==1.9.0
 stompest==2.1.6
 suds==0.4
 schema==0.6.6
 supervisor==3.3.4
+
