@@ -38,7 +38,9 @@ RUN apk add --update --no-cache python2-dev \
                                 ncurses-dev \
                                 linux-headers \
                                 gcc \
-                                musl-dev
+                                musl-dev \
+                                libffi-dev \
+                                make
 
 RUN virtualenv /venv && \
     source /venv/bin/activate && \
