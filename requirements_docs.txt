@@ -2,7 +2,7 @@ celery==3.1.24
 Django==1.5
 graypy==0.2.14
 
-Sphinx==1.2.2
+Sphinx==1.8.2
 sphinx-rtd-theme==0.1.6
 
 
@@ -62,7 +62,7 @@ pyflakes==1.2.3
 pycodestyle==2.0.0
 clonedigger==1.1.0
 shortuuid==0.5.0
-Pygments==1.6
+Pygments==2.3.0
 PyHamcrest==1.9.0
 pytest==2.2.4
 pytest-cov==1.6
