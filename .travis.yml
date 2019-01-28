@@ -1,43 +1,63 @@
-language: python
+# Use bash as the language to avoid extra time during VM boot
+language: bash
 
+
+# Do not use any notification by email
 notifications:
   email: false
 
-python:
-  - "2.7"
 
+# Travis by default try to run git submodules. Avoid this to reduce boot time
+git:
+  submodules: false
+
+
+# Only starts CI on branches master and develop. For others run it manually
 branches:
   only:
     - master
     - develop
 
+
 sudo: required
-
-# When adding a new module, please check what of the builds bellow are running faster, and use it to add your new path
-env:
-  - TESTFOLDERS='networkapi/api_network'
-  - TESTFOLDERS='networkapi/api_pools'
-  - TESTFOLDERS='networkapi/ip networkapi/plugins'
-  - TESTFOLDERS='networkapi/api_environment_vip networkapi/api_equipment networkapi/api_ip'
-  - TESTFOLDERS='networkapi/api_environment networkapi/api_rack networkapi/api_vip_request networkapi/api_vlan networkapi/equipamento networkapi/requisicaovips networkapi/system networkapi/usuario'
-
 dist: trusty
 
+
+# Run docker service. Necessary to start services containers
 services:
   - docker
 
-before_install:
-  # Disable services enabled by default
-  # http://docs.travis-ci.com/user/database-setup/#MySQL
-  - sudo /etc/init.d/mysql stop
 
-script:
+# Before every task start containers using docker-compose
+before_install:
   - docker network create globonetworkapi_netapi_net
   - sudo docker-compose --file scripts/travis/docker-compose-sdn-travis.yml up -d
   - sudo docker-compose up -d
   - ./scripts/travis/wait_for_containers.sh
-  - docker exec -it netapi_app ./scripts/travis/test_runner.sh $TESTFOLDERS
-  
+  - docker ps --all
+
+
+# Define CI stages and its order
+stages:
+  - test   # Runs tests in parallel for each django application
+
+
+# Parallel execution of each job of each stage
+jobs:
+  include:
+    - stage: test
+      script: make test_ci app=networkapi/api_environment
+    - script: make test_ci app=networkapi/plugins/SDN
+    - script: make test_ci app=networkapi/api_ip
+    - script: make test_ci app=networkapi/api_network
+    - script: make test_ci app=networkapi/api_environment_vip
+    - script: make test_ci app=networkapi/api_asn
+    - script: make test_ci app=networkapi/api_interface
+    - script: make test_ci app=networkapi/api_list_config_bgp
+    - script: make test_ci app=networkapi/api_rack
+
+
+# If any job fail run the following commands to help debug
 after_failure:
   - docker exec ovs1 ovs-vsctl show
   - docker ps --all

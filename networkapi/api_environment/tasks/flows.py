@@ -21,3 +21,12 @@ def async_flush_environment(self, plugins, user_id, data):
     for plugin in plugins:
         if plugin is not None:
             plugin.update_all_flows(data=data)
+
+
+@celery_app.task(bind=True, base=BaseTask, serializer='pickle')
+def async_delete_flow(self, plugins, user_id, flow_id):
+    """ Asynchronous delete one flow by id """
+
+    for plugin in plugins:
+        if plugin is not None:
+            plugin.del_flow(flow_id=flow_id)
