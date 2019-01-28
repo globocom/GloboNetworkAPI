@@ -924,7 +924,7 @@ class EnvironmentInterface(BaseModel):
         db_table = u'interface_do_ambiente'
         managed = True
 
-    def create(self, authenticated_user):
+    def create(self, authenticated_user=None):
         """Add new interface_do_ambiente"""
 
         try:

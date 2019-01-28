@@ -54,6 +54,7 @@ services:
     netapi:
         container_name: netapi_app
         image: globocom/networkapi:latest
+        restart: always
         ports:
             - "127.0.0.1:8000:8000"
             - "127.0.0.1:8001:8001"

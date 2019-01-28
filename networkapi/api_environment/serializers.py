@@ -69,9 +69,7 @@ class DivisaoDcV3Serializer(DynamicFieldsModelSerializer):
 class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
     configs = IpConfigV3Serializer(source='configs', many=True)
-
-    father_environment = serializers.SerializerMethodField(
-        'get_father_environment')
+    father_environment = serializers.SerializerMethodField('get_father_environment')
     grupo_l3 = serializers.SerializerMethodField('get_grupo_l3')
     ambiente_logico = serializers.SerializerMethodField('get_ambiente_logico')
     divisao_dc = serializers.SerializerMethodField('get_divisao_dc')
@@ -81,36 +79,18 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     routers = serializers.SerializerMethodField('get_routers')
     equipments = serializers.SerializerMethodField('get_equipments')
     name = serializers.SerializerMethodField('get_name')
-    sdn_controllers = serializers.SerializerMethodField('get_sdn_controllers')
     dcroom = serializers.SerializerMethodField('get_dcroom')
     aws_vpc = serializers.SerializerMethodField('get_aws_vpc')
+    sdn_controllers = serializers.SerializerMethodField('get_sdn_controllers')
+
+    def get_sdn_controllers(self, obj):
+        return self.extends_serializer(obj, 'sdn_controllers')
 
     def get_dcroom(self, obj):
         return self.extends_serializer(obj, 'dcroom')
 
     def get_aws_vpc(self, obj):
         return self.extends_serializer(obj, 'aws_vpc')
-
-    def get_sdn_controllers(self, obj):
-        from django.forms.models import model_to_dict
-
-        controllers = []
-        for i, ctrl in enumerate(obj.sdn_controllers):
-            controllers.insert(i, model_to_dict(ctrl))
-
-            controllers[i]['ipv4'] = []
-            controllers[i]['ipv6'] = []
-
-            for ipv4 in ctrl.ipv4:
-                controllers[i]['ipv4'].append(
-                    '%s/%d' % (str(ipv4), ipv4.networkipv4.block)
-                )
-            for ipv6 in ctrl.ipv6:
-                controllers[i]['ipv6'].append(
-                    '%s/%d' % (str(ipv6), ipv6.networkipv6.block)
-                )
-
-        return self.extends_serializer(controllers, 'sdn_controllers')
 
     def get_name(self, obj):
         return self.extends_serializer(obj, 'name')
@@ -207,10 +187,9 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         filter_slz = get_app('api_filter', module_label='serializers')
         eqpt_slz = get_app('api_equipment', module_label='serializers')
         vrf_slz = get_app('api_vrf', module_label='serializers')
-        datacenter_serializers = get_app(
-            'api_rack', module_label='serializers')
-        aws_vpc_serializers = get_app(
-            'api_aws', module_label='serializers')
+        datacenter_serializers = get_app('api_rack', module_label='serializers')
+        aws_vpc_serializers = get_app('api_aws', module_label='serializers')
+        sdn_controllers_slz = get_app('api_equipment', module_label='serializers')
 
         if not self.mapping:
             self.mapping = {
@@ -285,7 +264,6 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'default_vrf',
                     'eager_loading': self.setup_eager_loading_default_vrf
                 },
-
                 'father_environment': {
                     'obj': 'father_environment_id'
                 },
@@ -406,6 +384,33 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     'obj': 'aws_vpc',
                     'eager_loading': self.setup_eager_loading_aws_vpc
                 },
+                'sdn_controllers': {
+                    'serializer': sdn_controllers_slz.EquipmentV3Serializer,
+                    'obj': 'sdn_controllers',
+                    'kwargs': {
+                        'many': True,
+                        'fields': ('id',)
+                    },
+                    'eager_loading': self.setup_eager_loading_sdn_controllers
+                },
+                'sdn_controllers__basic': {
+                    'serializer': sdn_controllers_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'basic'
+                    },
+                    'obj': 'sdn_controllers',
+                    'eager_loading': self.setup_eager_loading_sdn_controllers
+                },
+                'sdn_controllers__details': {
+                    'serializer': sdn_controllers_slz.EquipmentV3Serializer,
+                    'kwargs': {
+                        'many': True,
+                        'kind': 'details'
+                    },
+                    'obj': 'sdn_controllers',
+                    'eager_loading': self.setup_eager_loading_sdn_controllers
+                },
             }
 
     @staticmethod
@@ -487,5 +492,13 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
         log.info('Using setup_eager_loading_default_vrf')
         queryset = queryset.select_related(
             'default_vrf',
+        )
+        return queryset
+
+    @staticmethod
+    def setup_eager_loading_sdn_controllers(queryset):
+        log.info('Using setup_eager_loading_sdn_controllers')
+        queryset = queryset.prefetch_related(
+            'equipmentcontrollerenvironment_set',
         )
         return queryset

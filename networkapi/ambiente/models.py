@@ -903,8 +903,13 @@ class Ambiente(BaseModel):
     def _get_peer_groups_id(self):
         return self.environmentpeergroup_set.all().values_list('id',
                                                                flat=True)
-
     peer_groups_id = property(_get_peer_groups_id)
+
+    def _get_sdn_controllers(self):
+        equip_sdn_controllers = self.equipmentcontrollerenvironment_set.all()
+        return equip_sdn_controllers
+
+    equip_sdn_controllers = property(_get_sdn_controllers)
 
     def __str__(self):
         return self.name

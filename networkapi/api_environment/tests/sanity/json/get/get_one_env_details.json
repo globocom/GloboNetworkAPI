@@ -36,7 +36,7 @@
         "min_num_vlan_1": null,
         "min_num_vlan_2": null,
         "name": "BE - SANITY-TEST-1 - GENERAL",
-        "sdn_controllers": null
+        "sdn_controllers": []
       },
       "filter": null,
       "grupo_l3": {
@@ -54,19 +54,72 @@
       "name": "BE - SANITY-TEST-1 - RACK-1",
       "sdn_controllers": [
         {
-          "grupos": [
-            3
+          "environments": [
+            {
+              "environment": {
+                "acl_path": null,
+                "ambiente_logico": 1,
+                "aws_vpc": null,
+                "dcroom": 1,
+                "default_vrf": 1,
+                "divisao_dc": 1,
+                "father_environment": 4,
+                "filter": 1,
+                "grupo_l3": 2,
+                "id": 2,
+                "ipv4_template": null,
+                "ipv6_template": null,
+                "link": "",
+                "max_num_vlan_1": null,
+                "max_num_vlan_2": null,
+                "min_num_vlan_1": null,
+                "min_num_vlan_2": null,
+                "name": "BE - SANITY-TEST-1 - RACK-2",
+                "sdn_controllers": [
+                ]
+              },
+              "is_router": false
+            }
+          ],
+          "equipment_type": {
+            "equipment_type": "Switch",
+            "id": 1
+          },
+          "groups": [
+            {
+              "id": 3,
+              "name": "Group of VM"
+            }
           ],
           "id": 10,
           "ipv4": [
-            "10.0.0.42/24",
-            "192.168.2.3/24"
+            {
+              "description": "IP of SDN Controller",
+              "id": 1,
+              "networkipv4": 1,
+              "oct1": 10,
+              "oct2": 0,
+              "oct3": 0,
+              "oct4": 42
+            },
+            {
+              "description": null,
+              "id": 10,
+              "networkipv4": 2,
+              "oct1": 192,
+              "oct2": 168,
+              "oct3": 2,
+              "oct4": 3
+            }
           ],
-          "ipv6": [],
+          "ipv6": [
+          ],
           "maintenance": false,
-          "modelo": 1,
-          "nome": "OVS Controller 1",
-          "tipo_equipamento": 1
+          "model": {
+            "id": 1,
+            "name": "Carbon"
+          },
+          "name": "OVS Controller 1"
         }
       ]
     }

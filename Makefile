@@ -4,7 +4,7 @@
 
 
 # Docker image version
-NETAPI_IMAGE_VERSION := 2.0.0
+NETAPI_IMAGE_VERSION := 2.1.0
 
 
 help:

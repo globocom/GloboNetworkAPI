@@ -543,31 +543,44 @@ def _create_prod_envs(rack, user):
     except:
         pass
 
-    environment = list()
+    environment = []
     for env in prod_envs:
 
         father_id = env.id
 
+        details = None
         for fab in fabricconfig.get("Ambiente"):
             if int(fab.get("id"))==int(father_id):
                 details = fab.get("details")
 
-        config_subnet = list()
+        config_subnet = []
         for net in env.configs:
             cidr = IPNetwork(str(net.ip_config.subnet))
             prefix = int(net.ip_config.new_prefix)
-            bloco = list(cidr.subnet(int(prefix)))[int(rack.numero)]
-            if details[0].get(str(net.ip_config.type)):
-                new_prefix = details[0].get(str(net.ip_config.type)).get("new_prefix")
-            else:
-                new_prefix = 31 if net.ip_config.type=="v4" else 127
-            network = {
-                'subnet': str(bloco),
-                'type': net.ip_config.type,
-                'network_type': net.ip_config.network_type.id,
-                'new_prefix': new_prefix
-            }
-            config_subnet.append(network)
+            subnet_list = list(cidr.subnet(int(prefix)))
+
+            try:
+                bloco = subnet_list[int(rack.numero)]
+            except IndexError as err:
+                msg = "Rack number %d is greater than the maximum number of " \
+                      "subnets available with prefix %d from %s subnet" % (
+                    rack.numero, prefix, cidr
+                )
+                raise Exception(msg)
+
+            if isinstance(details, list) and len(details) > 0:
+
+                if details[0].get(str(net.ip_config.type)):
+                    new_prefix = details[0].get(str(net.ip_config.type)).get("new_prefix")
+                else:
+                    new_prefix = 31 if net.ip_config.type=="v4" else 127
+                network = {
+                    'subnet': str(bloco),
+                    'type': net.ip_config.type,
+                    'network_type': net.ip_config.network_type.id,
+                    'new_prefix': new_prefix
+                }
+                config_subnet.append(network)
 
         obj = {
             'grupo_l3': id_grupo_l3,
@@ -617,7 +630,7 @@ def _create_prod_vlans(rack, user):
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
     else:
-        log.debug("sem configuracoes do fabric %s" % str(rack.dcroom.id))
+        log.debug("No frabric configurations %s" % str(rack.dcroom.id))
         fabricconfig = list()
 
     try:
@@ -636,14 +649,16 @@ def _create_prod_vlans(rack, user):
     fabenv = None
 
     for fab in fabricconfig.get("Ambiente"):
-        if int(fab.get("id"))==int(env.father_environment.id):
+        if int(fab.get("id")) == int(env.father_environment.id):
             fabenv = fab.get("details")
     if not fabenv:
-        log.debug("Sem configuracoes para os ambientes filhos - BE, BEFE, BEBO, BECA do ambiente id=%s" %str())
+        log.debug("No configurations for child environment of env id=%s" % (
+            str(env.id))
+        )
         return 0
 
     fabenv.sort(key=operator.itemgetter('min_num_vlan_1'))
-    log.debug("Order by min_num_vlan: "+str(fabenv))
+    log.debug("Order by min_num_vlan: %s" % str(fabenv))
 
     for idx, amb in enumerate(fabenv):
         try:
@@ -655,18 +670,20 @@ def _create_prod_vlans(rack, user):
             id_div = div_dict.id
             pass
 
-        config_subnet = list()
+        config_subnet = []
         for net in env.configs:
             for net_dict in amb.get("config"):
-                if net_dict.get("type")==net.ip_config.type:
+
+                if net_dict.get("type") == net.ip_config.type:
                     cidr = IPNetwork(net.ip_config.subnet)
-                    prefixo_inicial = 18 if net.ip_config.type=="v4" else 57
+
+                    initial_prefix  = 20 if net.ip_config.type=="v4" else 56
                     prefixo = net_dict.get("mask")
                     if not idx:
                         bloco = list(cidr.subnet(int(prefixo)))[0]
                         log.debug(str(bloco))
                     else:
-                        bloco1 = list(cidr.subnet(prefixo_inicial))[1]
+                        bloco1 = list(cidr.subnet(initial_prefix))[1]
                         bloco = list(bloco1.subnet(int(prefixo)))[idx-1]
                         log.debug(str(bloco))
                     network = {
