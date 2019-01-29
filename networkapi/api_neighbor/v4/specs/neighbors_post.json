@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "neighbors": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "neighbor_local": {
+              "type": "object",
+              "properties": {
+                "asn": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "ip": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "ipv4": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "equipment": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "asn",
+                "ip",
+                "equipment"
+              ]
+            },
+            "neighbor_remote": {
+              "type": "object",
+              "properties": {
+                "asn": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "ip": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "ipv4": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "equipment": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "asn",
+                "ip",
+                "equipment"
+              ]
+            },
+            "peer_group": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "route-map": {
+                  "type": "object",
+                  "properties": {
+                    "route-map-in": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "route-map-out": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "route-map-in",
+                    "route-map-out"
+                  ]
+                },
+                "environment": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "route-map",
+                "environment"
+              ]
+            },
+            "community": {
+              "type": "boolean"
+            },
+            "soft_reconfiguration": {
+              "type": "boolean"
+            },
+            "remove_private_as": {
+              "type": "boolean"
+            },
+            "next_hop_self": {
+              "type": "boolean"
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "neighbor_local",
+            "neighbor_remote",
+            "peer_group",
+            "community",
+            "soft_reconfiguration",
+            "remove_private_as",
+            "next_hop_self",
+            "kind"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "neighbors"
+  ]
+}

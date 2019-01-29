@@ -33,7 +33,7 @@ class NeighborDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, **kwargs):
-        """Returns a list of NeighborV4's by ids ou dict."""
+        """Returns a list of Neighbors by ids ou dict."""
 
         if not kwargs.get('obj_ids'):
             obj_model = facade.get_neighbor_v4_by_search(self.search)
@@ -65,14 +65,14 @@ class NeighborDBView(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('neighbor_v4_post_v4')
+    @raise_json_validate('neighbor_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request):
-        """Create new NeighborV4."""
+        """Create new Neighbor."""
 
         objects = request.DATA
-        json_validate(SPECS.get('neighbor_v4_post_v4')).validate(objects)
+        json_validate(SPECS.get('neighbor_post')).validate(objects)
         response = list()
         for obj in objects['neighbors']:
 
@@ -86,7 +86,7 @@ class NeighborDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request):
-        """Update NeighborV4."""
+        """Update Neighbors."""
 
         objects = request.DATA
         json_validate(SPECS.get('neighbor_v4_put_v4')).validate(objects)
@@ -105,7 +105,7 @@ class NeighborDBView(CustomAPIView):
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def delete(self, **kwargs):
-        """Delete NeighborV4."""
+        """Delete Neighbors."""
 
         obj_ids = kwargs['obj_ids'].split(';')
         facade.delete_neighbor_v4(obj_ids)
