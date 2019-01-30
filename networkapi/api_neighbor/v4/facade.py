@@ -125,6 +125,48 @@ def update_neighbor_v4(obj, user):
     return obj_to_update
 
 
+def check_obj(obj, user):
+    neighbor = dict()
+    neighbor['community'] = obj.get('community')
+    neighbor['soft_reconfiguration'] = obj.get('soft_reconfiguration')
+    neighbor['remove_private_as'] = obj.get('remove_private_as')
+    neighbor['next_hop_self'] = obj.get('next_hop_self')
+    neighbor['kind'] = obj.get('kind')
+
+    obj.get('neighbor_local').get('')
+
+    return neighbor
+
+
+def create_neighbor(obj, user):
+    """Create NeighborV4."""
+
+    try:
+        neighbor = check_obj(obj, user)
+        obj_to_create = NeighborV4()
+        obj_to_create.create_v4(neighbor, user)
+    except NeighborV4Error as e:
+        raise ValidationAPIException(str(e))
+    except DontHavePermissionForPeerGroupException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndRemoteIpAreInDifferentVrfsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndLocalAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except RemoteIpAndRemoteAsnAtDifferentEquipmentsException as e:
+        raise ValidationAPIException(str(e))
+    except LocalIpAndPeerGroupAtDifferentEnvironmentsException as e:
+        raise ValidationAPIException(str(e))
+    except NeighborDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return obj_to_create
+
+
 def create_neighbor_v4(obj, user):
     """Create NeighborV4."""
 
