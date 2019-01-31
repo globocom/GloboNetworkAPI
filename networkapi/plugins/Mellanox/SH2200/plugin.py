@@ -27,6 +27,7 @@ class SH2200(BasePlugin):
     log.info('Mellanox SH2200 plugin.')
 
     VALID_TFTP_GET_MESSAGE = '#'
+    VALID_TFTP_GET_MESSAGE_APPLY_FAIL_CONTINUE = 'End'
 
     @mock_return('')
     def ensure_privilege_level(self, privilege_level=None):
@@ -54,12 +55,12 @@ class SH2200(BasePlugin):
             log.info('Error while sending command to equipment: %s' % fetch_file)
             return recv
 
-        apply_config = 'configuration text file %s apply\n\n' % filename.split('/')[-1]
+        apply_config = 'configuration text file %s apply fail-continue\n\n' % filename.split('/')[-1]
 
         try:
             log.info('try: %s - sending command: %s' % (0, apply_config))
             self.channel.send('%s\n' % apply_config)
-            recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+            recv = self.waitString(self.VALID_TFTP_GET_MESSAGE_APPLY_FAIL_CONTINUE)
         except exceptions.CurrentlyBusyErrorException:
             log.info('Error while sending command to equipment: %s' % apply_config)
             return recv
