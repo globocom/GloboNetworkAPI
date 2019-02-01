@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 class SH2200(BasePlugin):
     log.info('Mellanox SH2200 plugin.')
 
-    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|\%|utility is occupied'
+    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]'
     VALID_TFTP_GET_MESSAGE = '#'
     VALID_TFTP_GET_MESSAGE_APPLY_FAIL_CONTINUE = 'End'
 
