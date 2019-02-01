@@ -49,7 +49,7 @@ class SH2200(BasePlugin):
         try:
             log.info('try: %s - sending command: %s' % (0, conf_t))
             self.channel.send('%s\n' % conf_t)
-            recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+            recv = self.waitString(self.VALID_TFTP_GET_MESSAGE)
         except exceptions.CurrentlyBusyErrorException:
             log.info('Error while sending command to equipment: %s' % conf_t)
             return recv
@@ -60,7 +60,7 @@ class SH2200(BasePlugin):
         try:
             log.info('try: %s - sending command: %s' % (0, fetch_file))
             self.channel.send('%s\n' % fetch_file)
-            recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+            recv = self.waitString(self.VALID_TFTP_GET_MESSAGE)
         except exceptions.CurrentlyBusyErrorException:
             log.info('Error while sending command to equipment: %s' % fetch_file)
             return recv
@@ -80,7 +80,7 @@ class SH2200(BasePlugin):
         try:
             log.info('try: %s - sending command: %s' % (0, delete_file))
             self.channel.send('%s\n' % delete_file)
-            recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+            recv = self.waitString(self.VALID_TFTP_GET_MESSAGE)
         except exceptions.CurrentlyBusyErrorException:
             log.info('Error while sending command to equipment: %s' % delete_file)
             return recv
@@ -90,7 +90,7 @@ class SH2200(BasePlugin):
         try:
             log.info('try: %s - sending command: %s' % (0, write_mem))
             self.channel.send('%s\n' % delete_file)
-            recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+            recv = self.waitString(self.VALID_TFTP_GET_MESSAGE)
         except exceptions.CurrentlyBusyErrorException:
             log.info('Error while sending command to equipment: %s' % write_mem)
             return recv
