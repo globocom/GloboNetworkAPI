@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import logging
+from time import sleep
 
 from networkapi.plugins import exceptions
 from networkapi.plugins.base import BasePlugin
@@ -26,6 +28,7 @@ log = logging.getLogger(__name__)
 class SH2200(BasePlugin):
     log.info('Mellanox SH2200 plugin.')
 
+    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|\%|utility is occupied'
     VALID_TFTP_GET_MESSAGE = '#'
     VALID_TFTP_GET_MESSAGE_APPLY_FAIL_CONTINUE = 'End'
 
@@ -96,3 +99,27 @@ class SH2200(BasePlugin):
             return recv
 
         return recv
+
+    def waitString(self, wait_str_ok_regex='', wait_str_invalid_regex=None, wait_str_failed_regex=None):
+
+        if wait_str_invalid_regex is None:
+            wait_str_invalid_regex = self.INVALID_REGEX
+
+        if wait_str_failed_regex is None:
+            wait_str_failed_regex = self.ERROR_REGEX
+
+        string_ok = 0
+        recv_string = ''
+        while not string_ok:
+            while not self.channel.recv_ready():
+                sleep(1)
+            recv_string = self.channel.recv(9999)
+            file_name_string = self.removeDisallowedChars(recv_string)
+            if re.search(wait_str_invalid_regex, recv_string, re.DOTALL):
+                raise exceptions.CommandErrorException(file_name_string)
+            elif re.search(wait_str_failed_regex, recv_string, re.DOTALL):
+                raise exceptions.InvalidCommandException(file_name_string)
+            elif re.search(wait_str_ok_regex, recv_string, re.DOTALL):
+                string_ok = 1
+
+        return recv_string
