@@ -44,6 +44,16 @@ class SH2200(BasePlugin):
         if use_vrf is None:
             use_vrf = self.management_vrf
 
+        conf_t = 'conf t'
+
+        try:
+            log.info('try: %s - sending command: %s' % (0, conf_t))
+            self.channel.send('%s\n' % conf_t)
+            recv = self.waitString(self.VALID_TFTP_PUT_MESSAGE)
+        except exceptions.CurrentlyBusyErrorException:
+            log.info('Error while sending command to equipment: %s' % conf_t)
+            return recv
+
         fetch_file = 'configuration text fetch tftp://%s/%s %s %s\n\n' % (
             self.tftpserver, filename, destination, use_vrf)
 
