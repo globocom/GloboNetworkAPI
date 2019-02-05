@@ -57,7 +57,7 @@ def get_ipv4_by_ids(ip_ids):
     return ipv4s
 
 
-def create_ipv4(ipv4, user):
+def create_ipv4(ipv4, user=None):
     """Creates a Ipv4."""
 
     try:
