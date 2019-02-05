@@ -38,9 +38,6 @@
                   "properties": {
                     "id": {
                       "type": "integer"
-                    },
-                    "name": {
-                      "type": "string"
                     }
                   }
                 }
@@ -81,9 +78,6 @@
                   "properties": {
                     "id": {
                       "type": "integer"
-                    },
-                    "name": {
-                      "type": "string"
                     }
                   }
                 }
@@ -134,9 +128,12 @@
                     "route-map-out"
                   ]
                 },
-                "environment": {
-                  "type": "integer"
-                }
+                "environments": {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                },
               },
               "required": [
                 "id",
