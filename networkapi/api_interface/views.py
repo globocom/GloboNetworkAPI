@@ -309,7 +309,7 @@ class InterfaceV3ConnectionsView(CustomAPIView):
         interface_a = kwargs.get('interface_a')
         interface_b = kwargs.get('interface_b')
 
-        locks_list = create_lock(interface_a, LOCK_INTERFACE)
+        locks_list = create_lock([interface_a], LOCK_INTERFACE)
 
         try:
             facade.remove_link([interface_a, interface_b])
