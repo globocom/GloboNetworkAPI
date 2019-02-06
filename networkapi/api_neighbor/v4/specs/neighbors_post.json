@@ -30,6 +30,9 @@
                     },
                     "ipv4": {
                       "type": "string"
+                    },
+                    "networkv4": {
+                      "type": "integer"
                     }
                   }
                 },
@@ -70,6 +73,9 @@
                     },
                     "ipv4": {
                       "type": "string"
+                    },
+                    "networkv4": {
+                      "type": "integer"
                     }
                   }
                 },
@@ -133,14 +139,8 @@
                     "type": "integer"
                   },
                   "type": "array"
-                },
-              },
-              "required": [
-                "id",
-                "name",
-                "route-map",
-                "environment"
-              ]
+                }
+              }
             },
             "community": {
               "type": "boolean"
