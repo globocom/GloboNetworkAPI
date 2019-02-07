@@ -152,17 +152,107 @@ class RouteMapEntryDBView(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('route_map_entry_post_v4')
+    @raise_json_validate('routemap_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Create new RouteMapEntry."""
 
         objects = request.DATA
-        json_validate(SPECS.get('route_map_entry_post_v4')).validate(objects)
+        json_validate(SPECS.get('routemap_post')).validate(objects)
+        response = list()
+        for obj in objects['route_map_entries']:
+            created_obj = facade.create_route_map_entry(obj)
+            response.append({'id': created_obj.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @raise_json_validate('route_map_entry_put_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Update RouteMapEntry."""
+
+        objects = request.DATA
+        json_validate(SPECS.get('route_map_entry_put_v4')).validate(objects)
         response = list()
         for obj in objects['route_map_entries']:
 
+            created_obj = facade.update_route_map_entry(obj)
+            response.append({
+                'id': created_obj.id
+            })
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Delete RouteMapEntry."""
+
+        obj_ids = kwargs['obj_ids'].split(';')
+        facade.delete_route_map_entry(obj_ids)
+
+        return Response({}, status=status.HTTP_200_OK)
+
+
+class RouteMapView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of RouteMapEntries by ids ou dict."""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_route_map_entry_by_search(self.search)
+            objects = obj_model['query_set']
+            only_main_property = False
+        else:
+            ids = kwargs.get('obj_ids').split(';')
+            objects = facade.get_route_map_entry_by_ids(ids)
+            only_main_property = True
+            obj_model = None
+
+        # serializer
+        serializer = serializers.RouteMapEntryV4Serializer(
+            objects,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        # prepare serializer with customized properties
+        data = render_to_json(
+            serializer,
+            main_property='route_map_entries',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('routemap_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new RouteMapEntry."""
+
+        objects = request.DATA
+
+        json_validate(SPECS.get('routemap_post')).validate(objects)
+
+        response = list()
+
+        for obj in objects['route_map']:
             created_obj = facade.create_route_map_entry(obj)
             response.append({'id': created_obj.id})
 

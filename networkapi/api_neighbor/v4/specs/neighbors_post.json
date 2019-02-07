@@ -39,25 +39,10 @@
                   "properties": {
                     "id": {
                       "type": "integer"
-                    },
-                    "ipv4": {
-                      "type": "string"
-                    },
-                    "networkv4": {
-                      "type": "integer"
                     }
                   },
-                  "oneOf": [
-                    {
-                      "required": [
-                        "id"
-                      ]
-                    },
-                    {
-                      "required": [
-                        "networkv4"
-                      ]
-                    }
+                  "required": [
+                    "id"
                   ]
                 },
                 "equipment": {
@@ -109,25 +94,10 @@
                   "properties": {
                     "id": {
                       "type": "integer"
-                    },
-                    "ipv4": {
-                      "type": "string"
-                    },
-                    "networkv4": {
-                      "type": "integer"
                     }
                   },
-                  "oneOf": [
-                    {
-                      "required": [
-                        "id"
-                      ]
-                    },
-                    {
-                      "required": [
-                        "networkv4"
-                      ]
-                    }
+                  "required": [
+                    "id"
                   ]
                 },
                 "equipment": {
@@ -165,22 +135,10 @@
                       "properties": {
                         "id": {
                           "type": "integer"
-                        },
-                        "name": {
-                          "type": "string"
                         }
                       },
-                      "oneOf": [
-                        {
-                          "required": [
-                            "id"
-                          ]
-                        },
-                        {
-                          "required": [
-                            "name"
-                          ]
-                        }
+                      "required": [
+                        "id"
                       ]
                     },
                     "route-map-out": {
@@ -188,22 +146,10 @@
                       "properties": {
                         "id": {
                           "type": "integer"
-                        },
-                        "name": {
-                          "type": "string"
                         }
                       },
-                      "oneOf": [
-                        {
-                          "required": [
-                            "id"
-                          ]
-                        },
-                        {
-                          "required": [
-                            "name"
-                          ]
-                        }
+                      "required": [
+                        "id"
                       ]
                     }
                   },

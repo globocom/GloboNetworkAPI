@@ -614,6 +614,10 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_route_map/v4/specs/route_map_put.json'
     ),
+    'routemap_post': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_route_map/v4/specs/routemap_post.json'
+    ),
     'route_map_entry_post_v4': os.path.join(
         PROJECT_ROOT_PATH,
         'api_route_map/v4/specs/route_map_entry_post.json'
