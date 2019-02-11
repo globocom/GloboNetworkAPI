@@ -203,10 +203,10 @@ def update_route_map_entry(obj):
 
 
 def check_dict(obj):
+    from networkapi.api_list_config_bgp.v4 import facade
 
     obj_to_create = dict(action=obj.get('action'),
                          action_reconfig=obj.get('action_reconfig'),
-                         list_config_bgp=obj.get('list_config_bgp'),
                          order=obj.get('order'))
 
     if obj.get('route_map').get('id'):
@@ -215,16 +215,30 @@ def check_dict(obj):
         route_map_name = create_route_map(obj.get('route_map'))
         obj_to_create['route_map'] = route_map_name.id
 
+    if obj.get('list_config_bgp').get('id'):
+        obj_to_create['list_config_bgp'] = obj.get('list_config_bgp').get('id')
+    else:
+        list_config_bgp = facade.create_list_config_bgp(obj.get('list_config_bgp'))
+        obj_to_create['list_config_bgp'] = list_config_bgp.id
+
     return obj_to_create
 
 
 def create_route_map_entry(obj):
     """Create RouteMapEntry."""
 
-    check_dict(obj)
-    obj_to_create = RouteMapEntry()
-    obj_to_create.create_v4(obj)
+    try:
+        checked_obj = check_dict(obj)
+        obj_to_create = RouteMapEntry()
+        obj_to_create.create_v4(checked_obj)
+    except RouteMapError as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
 
+    return obj_to_create
 
 
 def delete_route_map_entry(obj_ids):

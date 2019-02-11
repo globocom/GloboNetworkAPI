@@ -15,7 +15,40 @@
             "type": "string"
           },
           "list_config_bgp": {
-            "type": "integer"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "config": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "P",
+                  "A",
+                  "C"
+                ],
+                "type": "string"
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "id"
+                ]
+              },
+              {
+                "required": [
+                  "name",
+                  "type",
+                  "config"
+                ]
+              }
+            ]
           },
           "order": {
             "type": "integer"
