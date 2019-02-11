@@ -27,7 +27,7 @@ def get_neighbor_v4_by_search(search=None):
 
     try:
         objects = NeighborV4.objects.filter()
-        search_dict = search if search else search
+        search_dict = search if search else dict()
         object_map = build_query_to_datatable_v3(objects, search_dict)
     except FieldError as e:
         raise api_rest_exceptions.ValidationAPIException(str(e))

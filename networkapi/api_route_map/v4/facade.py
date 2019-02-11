@@ -231,7 +231,11 @@ def create_route_map_entry(obj):
         checked_obj = check_dict(obj)
         obj_to_create = RouteMapEntry()
         obj_to_create.create_v4(checked_obj)
-    except RouteMapError as e:
+    except RouteMapEntryError as e:
+        raise ValidationAPIException(str(e))
+    except RouteMapEntryDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except RouteMapEntryWithDeployedRouteMapException as e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
