@@ -167,12 +167,13 @@ def save_new_peer_group(user, peer_group=None):
 def check_obj(obj, user):
     log.info('check_obj')
 
-    neighbor = dict()
-    neighbor['community'] = obj.get('community')
-    neighbor['soft_reconfiguration'] = obj.get('soft_reconfiguration')
-    neighbor['remove_private_as'] = obj.get('remove_private_as')
-    neighbor['next_hop_self'] = obj.get('next_hop_self')
-    neighbor['kind'] = obj.get('kind')
+    neighbor = dict(community=obj.get('community'),
+                    soft_reconfiguration=obj.get('soft_reconfiguration'),
+                    remove_private_as=obj.get('remove_private_as'),
+                    next_hop_self=obj.get('next_hop_self'),
+                    kind=obj.get('kind'),
+                    remote_ip=obj.get('neighbor_remote').get('ip').get('id'),
+                    local_ip=obj.get('neighbor_local').get('ip').get('id'))
 
     local_equipment = obj.get('neighbor_local').get('equipment').get('id')
     remote_equipment = obj.get('neighbor_remote').get('equipment').get('id')
@@ -185,13 +186,6 @@ def check_obj(obj, user):
 
     log.debug('local asn %s' % neighbor['local_asn'])
 
-    if obj.get('neighbor_local').get('ip').get('id'):
-        neighbor['local_ip'] = obj.get('neighbor_local').get('ip').get('id')
-    else:
-        neighbor['local_ip'] = allocate_ipv4(local_equipment, obj.get('neighbor_local').get('ip'))
-
-    log.debug('local_ip %s' % neighbor['local_ip'])
-
     if obj.get('neighbor_remote').get('asn').get('id'):
         neighbor['remote_asn'] = obj.get('neighbor_remote').get('asn').get('id')
     else:
@@ -199,13 +193,6 @@ def check_obj(obj, user):
         link_asn_equipment(neighbor['remote_asn'], remote_equipment)
 
     log.debug('remote_asn %s' % neighbor['remote_asn'])
-
-    if obj.get('neighbor_remote').get('ip').get('id'):
-        neighbor['remote_ip'] = obj.get('neighbor_remote').get('ip').get('id')
-    else:
-        neighbor['remote_ip'] = allocate_ipv4(remote_equipment, obj.get('neighbor_remote').get('ip'))
-
-    log.debug('remote_ip %s' % neighbor['remote_ip'])
 
     if obj.get('peer_group').get('id'):
         neighbor['peer_group'] = obj.get('peer_group').get('id')
