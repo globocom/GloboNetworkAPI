@@ -79,6 +79,10 @@ class PluginFactory(object):
             if re.search('HP', marca.upper(), re.DOTALL):
                 from .HP.plugin import HPE
                 return HPE
+            if re.search('MELLANOX', marca.upper(), re.DOTALL):
+                if re.search('SH2200', modelo.upper(), re.DOTALL):
+                    from .Mellanox.SH2200.plugin import SH2200
+                    return SH2200
         raise NotImplementedError('plugin not implemented')
 
     @classmethod
