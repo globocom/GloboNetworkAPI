@@ -417,8 +417,3 @@ class ODLPlugin(BaseSdnPlugin):
                             log.debug ("%s differs: %s - %s"%(k, d1[k], d2[k]))
                             return False
         return True
-
-
-
-
-
