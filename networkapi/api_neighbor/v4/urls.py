@@ -14,4 +14,6 @@ urlpatterns = patterns(
         views.NeighborV6DeployView.as_view()),
     url(r'^neighborv6/((?P<obj_ids>[;\w]+)/)?$',
         views.NeighborV6DBView.as_view()),
+    url(r'^neighbor/((?P<obj_ids>[;\w]+)/)?$',
+        views.NeighborDBView.as_view())
 )

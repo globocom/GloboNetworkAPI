@@ -25,6 +25,11 @@ from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
+class NeighborDBView(CustomAPIView):
+    log.info("Creates neighbors using just one call")
+    pass
+
+
 class NeighborV4DBView(CustomAPIView):
 
     @logs_method_apiview

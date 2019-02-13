@@ -101,7 +101,7 @@ class BasePlugin(object):
         try:
             retries = 0
             connected = 0
-            while(not connected and retries < self.connect_max_retries):
+            while not connected and (retries < self.connect_max_retries):
                 try:
                     self.remote_conn.connect(
                         device, port=self.connect_port, username=username, password=password)
