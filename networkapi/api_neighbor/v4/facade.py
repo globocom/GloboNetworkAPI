@@ -147,19 +147,21 @@ def save_new_peer_group(user, peer_group=None):
     if peer_group.get('route-map').get('route-map-in').get('id'):
         route_map_in = peer_group.get('route-map').get('route-map-in').get('id')
     else:
-        route_map_in = facade_route_map.create_route_map(dict(
+        route_mao_obj = facade_route_map.create_route_map(dict(
             name=peer_group.get('route-map').get('route-map-in').get('name')))
+        route_map_in = route_mao_obj.id
 
     if peer_group.get('route-map').get('route-map-out').get('id'):
         route_map_out = peer_group.get('route-map').get('route-map-out').get('id')
     else:
-        route_map_out = facade_route_map.create_route_map(dict(
+        route_mao_obj = facade_route_map.create_route_map(dict(
             name=peer_group.get('route-map').get('route-map-out').get('name')))
+        route_map_out = route_mao_obj.id
 
-    idt = facade_peer_group.create_peer_group(dict(route_map_in=route_map_in.id,
-                                                   route_map_out=route_map_out.id,
+    idt = facade_peer_group.create_peer_group(dict(route_map_in=route_map_in,
+                                                   route_map_out=route_map_out,
                                                    name=peer_group.get('name'),
-                                                   environments=peer_group.get('environment')),
+                                                   environments=peer_group.get('environments')),
                                               user)
     return idt.id
 
@@ -406,6 +408,7 @@ def delete_neighbor_v6(obj_ids):
 
 @commit_on_success
 def deploy_neighbor_v4(neighbor_id):
+    log.info("deploy_neighbor_v4")
 
     neighbor = NeighborV4.objects.get(id=neighbor_id)
 
@@ -422,7 +425,6 @@ def deploy_neighbor_v4(neighbor_id):
 
         plugin = PluginFactory.factory(eqpt)
         plugin.bgp().deploy_neighbor(neighbor)
-
         neighbor.deploy()
 
     except Exception as e:
@@ -590,6 +592,7 @@ def lock_resources_used_by_neighbor_v6(neighbor):
 
 
 def get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor):
+    log.info("get_created_neighbors_v4_shares_same_eqpt_and_peer")
 
     return NeighborV4.objects.filter(created=True,
                                      peer_group=neighbor.peer_group_id,
@@ -598,6 +601,7 @@ def get_created_neighbors_v4_shares_same_eqpt_and_peer(neighbor):
 
 
 def get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor):
+    log.info("get_created_neighbors_v6_shares_same_eqpt_and_peer")
 
     return NeighborV6.objects.filter(created=True,
                                      peer_group=neighbor.peer_group_id,
@@ -606,6 +610,8 @@ def get_created_neighbors_v6_shares_same_eqpt_and_peer(neighbor):
 
 
 def get_v4_equipment(neighbor):
+    log.info("get_v4_equipment")
+
     from networkapi.equipamento.models import Equipamento
 
     eqpts_of_local_ip = set(neighbor.local_ip.ipequipamento_set.all().
