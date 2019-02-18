@@ -85,7 +85,8 @@ Creating a new bgp neighbor
           "neighbor_local": {
             "asn": {
               "id": <integer>,
-              "name": <string>
+              "name": <string>,
+              "description": <string>
             },
             "ip": {
               "id": <integer>
@@ -97,7 +98,8 @@ Creating a new bgp neighbor
           "neighbor_remote": {
             "asn": {
               "id": <integer>,
-              "name": <string>
+              "name": <string>,
+              "description": <string>
             },
             "ip": {
               "id": <integer>
@@ -132,9 +134,10 @@ Creating a new bgp neighbor
 
 
    * **neighbor_local:** Basic neighbor local object. It must receive the variables 'asn', 'ip' and 'equipment'.
-        * **asn** - The local AS number. It must receive the id of an existing AS or the name to create a new AS.
+        * **asn** - The local AS number. It must receive the id of an existing AS or the name and description to create a new AS.
             * **id** - Id of an existing AS.
             * **name** - Name of the new AS.
+            * **description** - Description of the new AS.
         * **ip** - The ip of the local neighbor.
             * **id** - Id of the existing ip of the local neighbor.
         * **equipment** - The local equipment.
@@ -170,7 +173,8 @@ Creating a new bgp neighbor
         {
           "neighbor_local": {
             "asn": {
-              "name": "13"
+              "name": "13",
+              "description": "ASNAME13"
             },
             "ip": {
               "id": 135491
@@ -181,7 +185,8 @@ Creating a new bgp neighbor
           },
           "neighbor_remote": {
             "asn": {
-              "name": "14"
+              "name": "14",
+              "description": "ASNAME14"
             },
             "ip": {
               "id": 135492

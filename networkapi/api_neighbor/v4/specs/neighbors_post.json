@@ -19,6 +19,9 @@
                     },
                     "name": {
                       "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
                     }
                   },
                   "oneOf": [
@@ -29,7 +32,8 @@
                     },
                     {
                       "required": [
-                        "name"
+                        "name",
+                        "description"
                       ]
                     }
                   ]
@@ -74,6 +78,9 @@
                     },
                     "name": {
                       "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
                     }
                   },
                   "oneOf": [
@@ -84,7 +91,8 @@
                     },
                     {
                       "required": [
-                        "name"
+                        "name",
+                        "description"
                       ]
                     }
                   ]
