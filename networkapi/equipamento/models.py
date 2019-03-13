@@ -1277,6 +1277,34 @@ class Equipamento(BaseModel):
         except Exception, e:
             raise EquipamentoError(None, e)
 
+    def delete_equipment_relationship(self, user):
+        self.log.debug("Forced delete of equipment.")
+
+        from networkapi.api_pools.facade.v3 import deploy as facade_pool_deploy
+        from networkapi.api_pools.facade.v3 import base as facade_pool
+        from networkapi.api_pools.serializers import v3 as serializers_pool
+        pools_created = list()
+
+        # remove the equipment-pool relationship
+        for ip in self.ipequipamento_set.all():
+            for poolmember in ip.ip.serverpoolmember_set.all():
+                poolmember.delete_v3()
+                if poolmember.server_pool.pool_created:
+                    pool = facade_pool.get_pool_by_ids([poolmember.server_pool.id])
+                    pool_ser = serializers_pool.PoolV3Serializer(pool, many=True, kind='details')
+                    pool_obj = dict(id=pool_ser.data[0].get('id'),
+                                    identifier=pool_ser.data[0].get('identifier'),
+                                    default_port=pool_ser.data[0].get('default_port'),
+                                    servicedownaction=pool_ser.data[0].get('servicedownaction'),
+                                    environment=pool_ser.data[0].get('environment').get('id'),
+                                    lb_method=pool_ser.data[0].get('lb_method'),
+                                    healthcheck=pool_ser.data[0].get('healthcheck'),
+                                    default_limit=pool_ser.data[0].get('default_limit'),
+                                    server_pool_members=pool_ser.data[0].get('server_pool_members'))
+                    pools_created.append(pool_obj)
+            if pools_created:
+                facade_pool_deploy.update_real_pool(pools_created, user)
+
 
 class EquipamentoAmbiente(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_equip_do_ambiente')

@@ -202,12 +202,35 @@ def update_route_map_entry(obj):
     return obj_to_update
 
 
+def check_dict(obj):
+    from networkapi.api_list_config_bgp.v4 import facade
+
+    obj_to_create = dict(action=obj.get('action'),
+                         action_reconfig=obj.get('action_reconfig'),
+                         order=obj.get('order'))
+
+    if obj.get('route_map').get('id'):
+        obj_to_create['route_map'] = RouteMap.get_by_pk(obj.get('route_map').get('id'))
+    else:
+        route_map_name = create_route_map(obj.get('route_map'))
+        obj_to_create['route_map'] = route_map_name.id
+
+    if obj.get('list_config_bgp').get('id'):
+        obj_to_create['list_config_bgp'] = obj.get('list_config_bgp').get('id')
+    else:
+        list_config_bgp = facade.create_list_config_bgp(obj.get('list_config_bgp'))
+        obj_to_create['list_config_bgp'] = list_config_bgp.id
+
+    return obj_to_create
+
+
 def create_route_map_entry(obj):
     """Create RouteMapEntry."""
 
     try:
+        checked_obj = check_dict(obj)
         obj_to_create = RouteMapEntry()
-        obj_to_create.create_v4(obj)
+        obj_to_create.create_v4(checked_obj)
     except RouteMapEntryError as e:
         raise ValidationAPIException(str(e))
     except RouteMapEntryDuplicatedException as e:

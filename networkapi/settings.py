@@ -578,6 +578,10 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_interface/specs/interface_put.json'
     ),
+    'neighbor_post': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_neighbor/v4/specs/neighbors_post.json'
+    ),
     'neighbor_v4_post_v4': os.path.join(
         PROJECT_ROOT_PATH,
         'api_neighbor/v4/specs/neighbor_post.json'
@@ -609,6 +613,10 @@ SPECS = {
     'route_map_put_v4': os.path.join(
         PROJECT_ROOT_PATH,
         'api_route_map/v4/specs/route_map_put.json'
+    ),
+    'routemap_post': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_route_map/v4/specs/routemap_post.json'
     ),
     'route_map_entry_post_v4': os.path.join(
         PROJECT_ROOT_PATH,

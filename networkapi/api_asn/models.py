@@ -165,6 +165,8 @@ class AsnEquipment(BaseModel):
 
         self.save()
 
+        return self
+
     def delete_v4(self):
         """Delete AsnEquipment relationship."""
 

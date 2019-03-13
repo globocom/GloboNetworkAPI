@@ -27,7 +27,89 @@ log = logging.getLogger(__name__)
 
 class NeighborDBView(CustomAPIView):
     log.info("Creates neighbors using just one call")
-    pass
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, **kwargs):
+        """Returns a list of Neighbors by ids ou dict."""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_neighbor_v4_by_search(self.search)
+            objects = obj_model['query_set']
+            only_main_property = False
+        else:
+            ids = kwargs.get('obj_ids').split(';')
+            objects = facade.get_neighbor_v4_by_ids(ids)
+            only_main_property = True
+            obj_model = None
+
+        serializer = serializers.NeighborV4V4Serializer(
+            objects,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer,
+            main_property='neighbors',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('neighbor_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new Neighbor."""
+
+        objects = request.DATA
+        json_validate(SPECS.get('neighbor_post')).validate(objects)
+        response = list()
+        for obj in objects.get('neighbors'):
+            created_obj = facade.create_neighbor(obj, request.user)
+            response.append({'id': created_obj.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @raise_json_validate('neighbor_v4_put_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def put(self, request):
+        """Update Neighbors."""
+
+        objects = request.DATA
+        json_validate(SPECS.get('neighbor_v4_put_v4')).validate(objects)
+        response = list()
+        for obj in objects['neighbors']:
+
+            created_obj = facade.update_neighbor_v4(obj, request.user)
+            response.append({
+                'id': created_obj.id
+            })
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, **kwargs):
+        """Delete Neighbors."""
+
+        obj_ids = kwargs['obj_ids'].split(';')
+        facade.delete_neighbor_v4(obj_ids)
+
+        return Response({}, status=status.HTTP_200_OK)
 
 
 class NeighborV4DBView(CustomAPIView):

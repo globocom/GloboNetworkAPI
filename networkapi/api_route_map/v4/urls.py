@@ -10,5 +10,6 @@ urlpatterns = patterns(
         views.RouteMapEntryDBView.as_view()),
     url(r'^route-map/((?P<obj_ids>[;\w]+)/)?$',
         views.RouteMapDBView.as_view()),
-
+    url(r'^bgp/routemap/((?P<obj_ids>[;\w]+)/)?$',
+        views.RouteMapView.as_view()),
 )

@@ -1948,8 +1948,7 @@ class Ip(BaseModel):
                         ipv4_network = int(ip4_object)
 
                         # First and last ip are reserved in network
-                        if ipv4_network >= (first_ip_network) and \
-                                ipv4_network < (bcast_ip_network):
+                        if first_ip_network <= ipv4_network < bcast_ip_network:
                             flag = True
 
                 if flag is False:

@@ -2869,6 +2869,9 @@ class ServerPoolMember(BaseModel):
                     )
                 )
 
+    def delete_v3(self):
+        self.delete()
+
 
 class VipPortToPool(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_vip_port_to_pool')
