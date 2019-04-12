@@ -6,6 +6,19 @@
 # Docker image version
 NETAPI_IMAGE_VERSION := 2.1.0
 
+# Gets git current branch
+curr_branch := $(shell git symbolic-ref --short -q HEAD)
+
+# Gets git current branch
+curr_version := $(shell cat version.txt);
+
+# Sed binary depends on Operating system
+ifeq ($(shell uname -s),Darwin)
+	SED_TYPE := gsed
+else
+	SED_TYPE := sed
+endif
+
 
 help:
 	@echo
@@ -21,6 +34,7 @@ help:
 	@echo "  status     to show containers status"
 	@echo "  clean      to clean garbage left by builds and installation"
 	@echo "  fixture    to generate fixtures from a given model"
+	@echo "  tag        to create a new tag based on the current versioni"
 	@echo
 	@echo "Build:"
 	@echo "  build_img  to build docker images"
@@ -136,3 +150,22 @@ build_img: scripts/docker/Dockerfile
 
 push_img: scripts/docker/push_image.sh
 	./$^
+	
+tag:
+ifneq ($(curr_branch),master)
+	$(error Branch must be master to generate a new tag)
+endif
+ifeq ($(shell which $(SED_TYPE)),)
+	$(error Missing GNU sed. Install it with 'brew install gnu-sed')
+endif
+	@echo "Current version is: $(curr_version)"
+	@read -p "Enter new tag/version: " tag; \
+		echo "Bumping to tag: $$tag"; \
+		echo $$tag > version.txt; \
+		$(SED_TYPE) -i "s,Version: .*$$,Version: $$tag,1" gsdn.spec; \
+		git diff; \
+		git add version.txt gsdn.spec; \
+		git commit --message "Update version to $$tag"; \
+		git tag --annotate $$tag --message "Bump version to $$tag"; \
+		git push origin master --tags;
+
