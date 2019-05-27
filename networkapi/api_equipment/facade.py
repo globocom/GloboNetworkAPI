@@ -96,13 +96,8 @@ def get_equipments(**kwargs):
 
         q_filter = dict()
 
-        # if kwargs.get('user', None) is not None:
-        #     q_filter_user = {
-        #         'equipamentogrupo__egrupo__direitosgrupoequipamento'
-        #         '__ugrupo__usuario': kwargs.get('user')
-        #     }
-        #     eqpts = eqpts.filter(Q(**q_filter_user))
-
+        if kwargs.get('user', None) is not None:
+            q_filter.update(equipamentogrupo__egrupo__direitosgrupoequipamento__ugrupo__usuario=kwargs.get('user'))
         if kwargs.get('name', None) is not None:
             q_filter.update(nome=kwargs.get('name'))
         if kwargs.get('environment', None) is not None:
