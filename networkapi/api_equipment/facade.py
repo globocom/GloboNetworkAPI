@@ -116,7 +116,7 @@ def get_equipments(**kwargs):
         if kwargs.get('environment_sdn_controller', None) is not None:
             q_filter.update(equipmentcontrollerenvironment=kwargs.get('environment_sdn_controller'))
 
-        eqpts = eqpts.filter(Q(**q_filter))
+        eqpts = eqpts.filter(Q(**q_filter)).distinct()
         eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
     except FieldError as e:
         raise ValidationAPIException(str(e))
