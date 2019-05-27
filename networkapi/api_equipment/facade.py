@@ -96,13 +96,8 @@ def get_equipments(**kwargs):
 
         q_filter = dict()
 
-        # if kwargs.get('user', None) is not None:
-        #     q_filter_user = {
-        #         'equipamentogrupo__egrupo__direitosgrupoequipamento'
-        #         '__ugrupo__usuario': kwargs.get('user')
-        #     }
-        #     eqpts = eqpts.filter(Q(**q_filter_user))
-
+        if kwargs.get('user', None) is not None:
+            q_filter.update(equipamentogrupo__egrupo__direitosgrupoequipamento__ugrupo__usuario=kwargs.get('user'))
         if kwargs.get('name', None) is not None:
             q_filter.update(nome=kwargs.get('name'))
         if kwargs.get('environment', None) is not None:
@@ -116,7 +111,7 @@ def get_equipments(**kwargs):
         if kwargs.get('environment_sdn_controller', None) is not None:
             q_filter.update(equipmentcontrollerenvironment=kwargs.get('environment_sdn_controller'))
 
-        eqpts = eqpts.filter(Q(**q_filter))
+        eqpts = eqpts.filter(Q(**q_filter)).distinct()
         eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
     except FieldError as e:
         raise ValidationAPIException(str(e))
