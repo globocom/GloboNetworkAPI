@@ -1,0 +1,10 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+INSERT INTO `variables` VALUES (214,'use_ldap','0','Do not use LDAP authentication')
+
+"""
+
+SQL_DOWN = u"""
+DELETE FROM `variables` WHERE `name`='use_ldap' AND `value`='0' AND `description`='Do not use LDAP authentication';
+
+"""
