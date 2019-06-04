@@ -1249,6 +1249,10 @@ VALUES
    )
 ,
    (
+      'testeapi', MD5('testeapi'), 114, 'Test user to be used by the development database', 1, 'testeapi@globo.com', NULL
+   )
+,
+   (
       'cadvlan', MD5('12345678'), 2, 'Cadvlan - user of authentication', 1, 'suptel@corp.globo.com', NULL
    )
 ;
@@ -1270,6 +1274,10 @@ INSERT INTO
 VALUES
    (
       1, 1, 1
+   )
+,
+   (
+      3, 114, 1
    )
 ,
    (
