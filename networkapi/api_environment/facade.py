@@ -8,6 +8,7 @@ from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteError
 from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
+from networkapi.ambiente.models import DivisaoDc
 from networkapi.ambiente.models import EnvironmentErrorV3
 from networkapi.api_environment.tasks.flows import async_add_flow
 from networkapi.api_environment.tasks.flows import async_delete_flow
@@ -25,6 +26,20 @@ from networkapi.api_equipment import facade as facade_eqpt
 
 
 log = logging.getLogger(__name__)
+
+
+def get_dc_environment_by_search(search=dict()):
+    """Return a list of dc environments by dict."""
+
+    try:
+        environments = DivisaoDc.objects.filter()
+        env_map = build_query_to_datatable_v3(environments, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return env_map
 
 
 def get_environment_by_search(search=dict()):
