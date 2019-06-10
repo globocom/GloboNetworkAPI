@@ -22,6 +22,80 @@ from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
+class EnvironmentLogicDBView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of environment by ids ou dict."""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_logic_environment_by_search(self.search)
+            environments = obj_model['query_set']
+            only_main_property = False
+        else:
+            return Response(dict(), status=status.HTTP_400_BAD_REQUEST)
+
+        # serializer environments
+        serializer_env = serializers.AmbienteLogicoV3Serializer(
+            environments,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_env,
+            main_property='logic_environments',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class EnvironmentL3DBView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of environment by ids ou dict."""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_l3_environment_by_search(self.search)
+            environments = obj_model['query_set']
+            only_main_property = False
+        else:
+            return Response(dict(), status=status.HTTP_400_BAD_REQUEST)
+
+        # serializer environments
+        serializer_env = serializers.GrupoL3Serializer(
+            environments,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_env,
+            main_property='l3_environments',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
 class EnvironmentDCDBView(CustomAPIView):
 
     @logs_method_apiview
