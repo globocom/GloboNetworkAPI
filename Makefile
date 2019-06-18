@@ -162,9 +162,8 @@ endif
 	@read -p "Enter new tag/version: " tag; \
 		echo "Bumping to tag: $$tag"; \
 		echo $$tag > version.txt; \
-		$(SED_TYPE) -i "s,Version: .*$$,Version: $$tag,1" gsdn.spec; \
 		git diff; \
-		git add version.txt gsdn.spec; \
+		git add version.txt ; \
 		git commit --message "Update version to $$tag"; \
 		git tag --annotate $$tag --message "Bump version to $$tag"; \
 		git push origin master --tags;
