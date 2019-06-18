@@ -34,7 +34,7 @@ def get_l3_environment_by_search(search=dict()):
     """Return a list of dc environments by dict."""
 
     try:
-        environments = GrupoL3.objects.filter().order_by("nome")
+        environments = GrupoL3.objects.filter()
         env_map = build_query_to_datatable_v3(environments, search)
     except FieldError as e:
         raise ValidationAPIException(str(e))
@@ -48,7 +48,7 @@ def get_logic_environment_by_search(search=dict()):
     """Return a list of dc environments by dict."""
 
     try:
-        environments = AmbienteLogico.objects.filter().order_by("nome")
+        environments = AmbienteLogico.objects.filter()
         env_map = build_query_to_datatable_v3(environments, search)
     except FieldError as e:
         raise ValidationAPIException(str(e))
@@ -62,7 +62,7 @@ def get_dc_environment_by_search(search=dict()):
     """Return a list of dc environments by dict."""
 
     try:
-        environments = DivisaoDc.objects.filter().order_by("nome")
+        environments = DivisaoDc.objects.filter()
         env_map = build_query_to_datatable_v3(environments, search)
     except FieldError as e:
         raise ValidationAPIException(str(e))
