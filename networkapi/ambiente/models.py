@@ -888,6 +888,12 @@ class Ambiente(BaseModel):
         db_column='id_aws_vpc'
     )
 
+    vxlan = models.BooleanField(
+        db_column='vxlan',
+        default=False,
+        null=True
+    )
+
     log = logging.getLogger('Ambiente')
 
     class Meta(BaseModel.Meta):
