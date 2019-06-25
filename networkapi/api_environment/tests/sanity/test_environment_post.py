@@ -28,6 +28,7 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
     ]
 
     json_path = 'api_environment/tests/sanity/json/post/%s'
+    get_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
         self.client = Client()
@@ -39,6 +40,7 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
         """Test of success to post 1 environment."""
 
         name_file = self.json_path % 'post_one_env.json'
+        get_file = self.get_path % 'post_one_env.json'
 
         # Does post request
         response = self.client.post(
@@ -65,12 +67,13 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
         del data['environments'][0]['name']
         del data['environments'][0]['sdn_controllers']
 
-        self.compare_json(name_file, data)
+        self.compare_json(get_file, data)
 
     def test_post_one_env_with_father_environment(self):
         """Test of success to post 1 environment with father environment."""
 
         name_file = self.json_path % 'post_one_env_with_father.json'
+        get_file = self.get_path % 'post_one_env_with_father.json'
 
         # Does post request
         response = self.client.post(
@@ -97,12 +100,13 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
         del data['environments'][0]['name']
         del data['environments'][0]['sdn_controllers']
 
-        self.compare_json(name_file, data)
+        self.compare_json(get_file, data)
 
     def test_post_one_env_with_configs(self):
         """Test of success to post 1 environment with configs."""
 
         name_file = self.json_path % 'post_one_env_with_configs.json'
+        get_file = self.get_path % 'post_one_env_with_configs.json'
 
         # Does post request
         response = self.client.post(
@@ -130,7 +134,7 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
         del data['environments'][0]['name']
         del data['environments'][0]['sdn_controllers']
 
-        self.compare_json(name_file, data)
+        self.compare_json(get_file, data)
 
 
 class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
@@ -152,6 +156,7 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
     ]
 
     json_path = 'api_environment/tests/sanity/json/post/%s'
+    comp_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
         self.client = Client()
@@ -163,6 +168,7 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
         """Test of success to post 2 environments."""
 
         name_file = self.json_path % 'post_two_env.json'
+        com_file = self.comp_path % 'post_two_env.json'
 
         # Does post request
         response = self.client.post(
@@ -194,12 +200,13 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
         del data['environments'][1]['name']
         del data['environments'][1]['sdn_controllers']
 
-        self.compare_json(name_file, data)
+        self.compare_json(com_file, data)
 
     def test_post_two_env_with_father_environment(self):
         """Test of success to post 2 environments with father environment."""
 
         name_file = self.json_path % 'post_two_env_with_father.json'
+        com_file = self.comp_path % 'post_two_env_with_father.json'
 
         # Does post request
         response = self.client.post(
@@ -230,12 +237,13 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
         del data['environments'][1]['name']
         del data['environments'][1]['sdn_controllers']
 
-        self.compare_json(name_file, data)
+        self.compare_json(com_file, data)
 
     def test_post_two_env_with_configs(self):
         """Test of success to post 2 environments with configs."""
 
         name_file = self.json_path % 'post_two_env_with_configs.json'
+        com_file = self.comp_path % 'post_two_env_with_configs.json'
 
         # Does post request
         response = self.client.post(
@@ -269,8 +277,7 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
         del data['environments'][1]['name']
         del data['environments'][1]['sdn_controllers']
 
-
-        self.compare_json(name_file, data)
+        self.compare_json(com_file, data)
 
 
 class EnvironmentPostErrorTestCase(NetworkApiTestCase):

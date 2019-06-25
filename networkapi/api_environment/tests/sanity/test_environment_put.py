@@ -30,6 +30,8 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
 
     json_path = 'api_environment/tests/sanity/json/put/%s'
 
+    comp_path = 'api_environment/tests/sanity/json/get/%s'
+
     def setUp(self):
         self.client = Client()
 
@@ -40,6 +42,7 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         """Test of success to put 1 environment."""
 
         name_file = self.json_path % 'put_one_env.json'
+        comp_file = self.comp_path % 'put_one_env.json'
 
         # Does put request
         response = self.client.put(
@@ -62,12 +65,13 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['name']
 
-        self.compare_json(name_file, data)
+        self.compare_json(comp_file, data)
 
     def test_put_one_env_new_configs(self):
         """Test of success to put 1 environment with new configs."""
 
         name_file = self.json_path % 'put_one_env_new_configs.json'
+        get_file = self.comp_path % 'put_one_env_new_configs.json'
 
         # Does put request
         response = self.client.put(
@@ -92,12 +96,13 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         del data['environments'][0]['configs'][0]['id']
         del data['environments'][0]['sdn_controllers']
 
-        self.compare_json(name_file, data)
+        self.compare_json(get_file, data)
 
     def test_put_one_env_add_configs(self):
         """Test of success to put 1 environment with add configs."""
 
         name_file = self.json_path % 'put_one_env_add_configs.json'
+        get_file = self.comp_path % 'put_one_env_add_configs.json'
 
         # Does put request
         response = self.client.put(
@@ -122,12 +127,13 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         del data['environments'][0]['configs'][1]['id']
         del data['environments'][0]['sdn_controllers']
 
-        self.compare_json(name_file, data)
+        self.compare_json(get_file, data)
 
     def test_put_one_env_update_configs(self):
         """Test of success to put 1 environment with update configs."""
 
         name_file = self.json_path % 'put_one_env_update_configs.json'
+        get_file = self.comp_path % 'put_one_env_update_configs.json'
 
         # Does put request
         response = self.client.put(
@@ -150,7 +156,7 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['name']
         del data['environments'][0]['sdn_controllers']
-        self.compare_json(name_file, data)
+        self.compare_json(get_file, data)
 
 
 class EnvironmentPutTwoSuccessTestCase(NetworkApiTestCase):

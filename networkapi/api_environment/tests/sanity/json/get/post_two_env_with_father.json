@@ -7,7 +7,7 @@
       "dcroom": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
-      "father_environment": null,
+      "father_environment": 1,
       "filter": 1,
       "grupo_l3": 2,
       "ipv4_template": null,
@@ -17,7 +17,7 @@
       "max_num_vlan_2": null,
       "min_num_vlan_1": 2,
       "min_num_vlan_2": null,
-      "vxlan": false
+      "vxlan": null
     },
     {
       "acl_path": "",
@@ -26,7 +26,7 @@
       "dcroom": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
-      "father_environment": null,
+      "father_environment": 1,
       "filter": 1,
       "grupo_l3": 3,
       "ipv4_template": null,
@@ -36,7 +36,7 @@
       "max_num_vlan_2": null,
       "min_num_vlan_1": 2,
       "min_num_vlan_2": null,
-      "vxlan": false
+      "vxlan": null
     }
   ]
 }

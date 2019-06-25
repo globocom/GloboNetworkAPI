@@ -888,10 +888,11 @@ class Ambiente(BaseModel):
         db_column='id_aws_vpc'
     )
 
-    vxlan = models.BooleanField(
+    vxlan = models.NullBooleanField(
         db_column='vxlan',
         default=False,
-        null=True
+        null=True,
+        blank=True
     )
 
     log = logging.getLogger('Ambiente')
@@ -1373,6 +1374,7 @@ class Ambiente(BaseModel):
             self.max_num_vlan_2 = env_map.get('max_num_vlan_2')
             self.default_vrf = Vrf.get_by_pk(env_map.get('default_vrf'))
             self.vrf = self.default_vrf.internal_name
+            self.vxlan = env_map.get('vxlan', self.vxlan)
 
             if env_map.get('aws_vpc'):
                 aws_vpc = get_model('api_aws', 'VPC')

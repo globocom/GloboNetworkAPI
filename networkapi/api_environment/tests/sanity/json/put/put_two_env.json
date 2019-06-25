@@ -34,7 +34,8 @@
       "max_num_vlan_1": 20,
       "max_num_vlan_2": 60,
       "min_num_vlan_1": 2,
-      "min_num_vlan_2": 40
+      "min_num_vlan_2": 40,
+      "vxlan": false
     }
   ]
 }
