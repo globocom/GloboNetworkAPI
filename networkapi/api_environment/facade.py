@@ -44,6 +44,22 @@ def get_l3_environment_by_search(search=dict()):
         return env_map
 
 
+def create_l3_environment(env):
+    """Create environment."""
+
+    try:
+        env_obj = GrupoL3()
+        env_obj.create_v3(env)
+    except EnvironmentErrorV3, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return env_obj
+
+
 def get_logic_environment_by_search(search=dict()):
     """Return a list of dc environments by dict."""
 
@@ -58,6 +74,22 @@ def get_logic_environment_by_search(search=dict()):
         return env_map
 
 
+def create_logic_environment(env):
+    """Create environment."""
+
+    try:
+        env_obj = AmbienteLogico()
+        env_obj.create_v3(env)
+    except EnvironmentErrorV3, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return env_obj
+
+
 def get_dc_environment_by_search(search=dict()):
     """Return a list of dc environments by dict."""
 
@@ -70,6 +102,22 @@ def get_dc_environment_by_search(search=dict()):
         raise NetworkAPIException(str(e))
     else:
         return env_map
+
+
+def create_dc_environment(env):
+    """Create environment."""
+
+    try:
+        env_obj = DivisaoDc()
+        env_obj.create_v3(env)
+    except EnvironmentErrorV3, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return env_obj
 
 
 def get_environment_by_search(search=dict()):

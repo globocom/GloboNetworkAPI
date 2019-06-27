@@ -278,6 +278,27 @@ class GrupoL3(BaseModel):
             cls.log.error(u'Failure to search the Group L3.')
             raise AmbienteError(e, u'Failure to search the Group L3.')
 
+    def create_v3(self, env):
+        """Efetua a inclusão de um novo o Ambiente.
+        """
+        log.debug("create L3 environment")
+
+        try:
+
+            try:
+                GrupoL3.objects.get(nome__iexact=env.get('name'))
+                raise AmbienteDuplicatedError(None, u'Ambiente L3 duplicado.')
+            except Exception:
+                self.log.debug('Ambiente L3 não duplicado.')
+
+            self.nome = env.get('name')
+
+            return self.save()
+
+        except Exception, e:
+            self.log.error(u'Falha ao inserir um Ambiente L3. Error: %s' % e)
+            raise AmbienteError('Falha ao inserir um Ambiente L3. Error: %s' % e)
+
 
 class DivisaoDc(BaseModel):
     BE = 'BE'
@@ -327,6 +348,27 @@ class DivisaoDc(BaseModel):
         except Exception, e:
             cls.log.error(u'Failure to search the Division Dc.')
             raise AmbienteError(e, u'Failure to search the Division Dc.')
+
+    def create_v3(self, env):
+        """Efetua a inclusão de um novo o Ambiente.
+        """
+        log.debug("create DC environment")
+
+        try:
+
+            try:
+                DivisaoDc.objects.get(nome__iexact=env.get('name'))
+                raise AmbienteDuplicatedError(None, u'Ambiente DC duplicado.')
+            except Exception:
+                self.log.debug('Ambiente DC não duplicado.')
+
+            self.nome = env.get('name')
+
+            return self.save()
+
+        except Exception, e:
+            self.log.error(u'Falha ao inserir um Ambiente DC. Error: %s' % e)
+            raise AmbienteError('Falha ao inserir um Ambiente DC. Error: %s' % e)
 
 
 class AmbienteLogico(BaseModel):
@@ -378,6 +420,27 @@ class AmbienteLogico(BaseModel):
             cls.log.error(u'Failure to search the Logical Environment.')
             raise AmbienteError(
                 e, u'Failure to search the Logical Environment.')
+
+    def create_v3(self, env):
+        """Efetua a inclusão de um novo o Ambiente.
+        """
+        log.debug("create Logic environment")
+
+        try:
+
+            try:
+                AmbienteLogico.objects.get(nome__iexact=env.get('name'))
+                raise AmbienteDuplicatedError(None, u'Ambiente Logico duplicado.')
+            except Exception:
+                self.log.debug('Ambiente Logico não duplicado.')
+
+            self.nome = env.get('name')
+
+            return self.save()
+
+        except Exception, e:
+            self.log.error(u'Falha ao inserir um Ambiente Logico. Error: %s' % e)
+            raise AmbienteError('Falha ao inserir um Ambiente Logico. Error: %s' % e)
 
 
 class EnvironmentVip(BaseModel):

@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "dc": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "l3": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "logic": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "oneOf": [{
+    "required": [
+      "logic"
+    ]
+  },{
+    "required": [
+      "l3"
+    ]
+  },{
+    "required": [
+      "dc"
+    ]
+  }],
+  "title": "Simple Environment Post",
+  "type": "object"
+}

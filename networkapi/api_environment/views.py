@@ -58,6 +58,22 @@ class EnvironmentLogicDBView(CustomAPIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+    @logs_method_apiview
+    @raise_json_validate('environment_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new environment."""
+
+        envs = request.DATA
+        json_validate(SPECS.get('simple_env_post')).validate(envs)
+        response = list()
+        for env in envs['logic']:
+            env_obj = facade.create_logic_environment(env)
+            response.append(dict(id=env_obj.id))
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
 
 class EnvironmentL3DBView(CustomAPIView):
 
@@ -95,6 +111,22 @@ class EnvironmentL3DBView(CustomAPIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+    @logs_method_apiview
+    @raise_json_validate('environment_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new environment."""
+
+        envs = request.DATA
+        json_validate(SPECS.get('simple_env_post')).validate(envs)
+        response = list()
+        for env in envs['l3']:
+            env_obj = facade.create_l3_environment(env)
+            response.append(dict(id=env_obj.id))
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
 
 class EnvironmentDCDBView(CustomAPIView):
 
@@ -131,6 +163,22 @@ class EnvironmentDCDBView(CustomAPIView):
         )
 
         return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('environment_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new environment."""
+
+        envs = request.DATA
+        json_validate(SPECS.get('simple_env_post')).validate(envs)
+        response = list()
+        for env in envs['dc']:
+            env_obj = facade.create_dc_environment(env)
+            response.append(dict(id=env_obj.id))
+
+        return Response(response, status=status.HTTP_201_CREATED)
 
 
 class EnvironmentDBView(CustomAPIView):
