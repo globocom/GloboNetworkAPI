@@ -77,7 +77,8 @@
               "id": 1,
               "name": "model"
             },
-            "name": "EQUIPMENT-1"
+            "name": "EQUIPMENT-1",
+            "sdn_controlled_environment": []
           }
         }
       ],
@@ -106,7 +107,8 @@
               "id": 1,
               "name": "model"
             },
-            "name": "EQUIPMENT-1"
+            "name": "EQUIPMENT-1",
+            "sdn_controlled_environment": []
           },
           "id": 1
         }
@@ -165,6 +167,7 @@
               "id": 1,
               "name": "AMBLOG-1"
             },
+            "aws_vpc": null,
             "dcroom": null,
             "default_vrf": {
               "id": 1,
@@ -190,7 +193,8 @@
             "min_num_vlan_1": null,
             "min_num_vlan_2": null,
             "name": "DC-1 - AMBLOG-1 - GL-1",
-            "sdn_controllers": null
+            "sdn_controllers": [],
+            "vxlan": null
           },
           "id": 1
         }
@@ -333,7 +337,8 @@
               "id": 1,
               "name": "model"
             },
-            "name": "EQUIPMENT-2"
+            "name": "EQUIPMENT-2",
+            "sdn_controlled_environment": []
           }
         }
       ],
@@ -362,7 +367,8 @@
               "id": 1,
               "name": "model"
             },
-            "name": "EQUIPMENT-2"
+            "name": "EQUIPMENT-2",
+            "sdn_controlled_environment": []
           },
           "id": 2
         }

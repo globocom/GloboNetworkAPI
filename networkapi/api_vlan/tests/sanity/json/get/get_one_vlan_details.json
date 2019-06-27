@@ -15,6 +15,7 @@
           "id": 1,
           "name": "SANITY-TEST-1"
         },
+        "aws_vpc": null,
         "dcroom": null,
         "default_vrf": {
           "id": 1,
@@ -28,6 +29,7 @@
         "father_environment": {
           "acl_path": null,
           "ambiente_logico": 1,
+          "aws_vpc": null,
           "dcroom": null,
           "default_vrf": 1,
           "divisao_dc": 1,
@@ -43,7 +45,8 @@
           "min_num_vlan_1": null,
           "min_num_vlan_2": null,
           "name": "BE - SANITY-TEST-1 - GENERAL",
-          "sdn_controllers": null
+          "sdn_controllers": [],
+          "vxlan": null
         },
         "filter": {
           "description": "Servidores",
@@ -63,7 +66,8 @@
         "min_num_vlan_1": null,
         "min_num_vlan_2": null,
         "name": "BE - SANITY-TEST-1 - RACK-1",
-        "sdn_controllers": null
+        "sdn_controllers": [],
+        "vxlan": null
       },
       "id": 1,
       "name": "VLAN NUM 2 - RACK-1",
