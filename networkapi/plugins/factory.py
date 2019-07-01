@@ -83,6 +83,10 @@ class PluginFactory(object):
                 if re.search('SH2200', modelo.upper(), re.DOTALL):
                     from .Mellanox.SH2200.plugin import SH2200
                     return SH2200
+            if re.search('CUMULUS', marca.upper(), re.DOTALL):
+                if re.search('CUMULUS', modelo.upper(), re.DOTALL):
+                    from .Cumulus.plugin import Cumulus
+                    return Cumulus
         raise NotImplementedError('plugin not implemented')
 
     @classmethod
