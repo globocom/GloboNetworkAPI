@@ -19,9 +19,9 @@ from json import dumps
 from time import sleep
 import re
 import socket
+from CumulusExceptions import *
 from networkapi.equipamento.models import EquipamentoAcesso
 from.. import exceptions
-from CumulusExceptions import *
 
 
 log = logging.getLogger(__name__)
@@ -29,13 +29,12 @@ log = logging.getLogger(__name__)
 
 class Cumulus(object):
     """Cumulus Plugin"""
-    
+
     # httplib2 configurations
     HTTP = httplib2.Http('.cache', disable_ssl_certificate_validation=True)
     httplib2.RETRIES = 3
     # class variables
-    _command_list = ['add interface swp11 mtu 9000',
-                    'add loopback lo ip address 10.99.2.2/32']
+    _command_list = []
     COMMIT = {'cmd': 'commit'}
     ABORT_CHANGES = {'cmd': 'abort'}
     PENDING = {'cmd': 'pending'}
@@ -46,11 +45,10 @@ class Cumulus(object):
     ALREADY_EXISTS = 'configuration already has'
     MAX_WAIT = 5
     MAX_RETRIES = 3
-    # Connection imports 
+    # Connection imports
     equipment_access = None
     equipment = None
-    
-    
+
     def __init__(self, **kwargs):
         if 'equipment' in kwargs:
             self.equipment = kwargs.get('equipment')
@@ -58,7 +56,7 @@ class Cumulus(object):
             self.equipment_access = kwargs.get('equipment_access')
         if 'connect_port' in kwargs:
             self.connect_port = kwargs.get('connect_port')
-        
+
     def _getInfo(self):
         """Get info from database for access the device"""
         if self.equipment_access is None:
@@ -75,7 +73,7 @@ class Cumulus(object):
         password = self.equipment_access.password
 
         return device, username, password
-    
+
     def _getConfFromFile(self, filename):
         """Get the configurations needed to be applyed
             and insert into a list"""

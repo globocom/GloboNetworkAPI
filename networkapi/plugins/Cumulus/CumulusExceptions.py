@@ -14,17 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class MaxRetryAchieved(Exception):
     """Exceeded the max retry times to connect to the server"""
     pass
+
 
 class MaxTimeWaitExceeded(Exception):
     """Exceeded the max time for waiting the pending be resolved"""
     pass
 
+
 class ConfigurationError(Exception):
-    """Raise this expection every time that cumulus cli displays an error message when applying configurations"""
+    """Raise this expection every time that cumulus
+     cli displays an error message when applying configurations"""
     pass
+
 
 class ConfigurationWarning(Exception):
     """Raise this expection when cumulus shows an warning message in staging"""
