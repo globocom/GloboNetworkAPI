@@ -21,44 +21,55 @@ import re
 import socket
 from CumulusExceptions import *
 from networkapi.equipamento.models import EquipamentoAcesso
-from.. import exceptions
+from ..base import BasePlugin
+from .. import exceptions
+from networkapi.api_rest import exceptions as api_exceptions
 
 
 log = logging.getLogger(__name__)
 
 
-class Cumulus(object):
+class Cumulus(BasePlugin):
     """Cumulus Plugin"""
-
     # httplib2 configurations
     HTTP = httplib2.Http('.cache', disable_ssl_certificate_validation=True)
+    HEADERS = {'Content-Type': 'application/json; charset=UTF-8'}
     httplib2.RETRIES = 3
-    # class variables
-    _command_list = []
+    # Cumulus commands to control the staging area
     COMMIT = {'cmd': 'commit'}
     ABORT_CHANGES = {'cmd': 'abort'}
     PENDING = {'cmd': 'pending'}
-    HEADERS = {'Content-Type': 'application/json; charset=UTF-8'}
+    # Expected strings when something bad occurs
     WARNINGS = 'WARNING: Committing these changes will cause problems'
     COMMIT_CONCURRENCY = 'Multiple users are currently'
     CONF_ALREADY_IN = 'net add'
     ALREADY_EXISTS = 'configuration already has'
+    # Variables needed in the configuration files below
     MAX_WAIT = 5
     MAX_RETRIES = 3
-    # Connection imports
+    _command_list = []
     equipment_access = None
     equipment = None
 
-    def __init__(self, **kwargs):
-        if 'equipment' in kwargs:
-            self.equipment = kwargs.get('equipment')
-        if 'equipment_access' in kwargs:
-            self.equipment_access = kwargs.get('equipment_access')
-        if 'connect_port' in kwargs:
-            self.connect_port = kwargs.get('connect_port')
+    def ensure_privilege_level(self, privilege_level=None):
+        """Cumulus don't use the concept of privilege level"""
+        pass
 
-    def _getInfo(self):
-        """Get info from database for access the device"""
+    def close(self):
+        """This configuration file won't use ssh connections"""
+        pass
+
+    def exec_command(
+            self,
+            command,
+            success_regex='',
+            invalid_regex=None,
+            error_regex=None):
+        """The exec command will not be needed here"""
+        pass
+
+    def connect(self):
+        """Get info from database to access the device"""
         if self.equipment_access is None:
             try:
                 self.equipment_access = EquipamentoAcesso.search(
@@ -95,7 +106,9 @@ class Cumulus(object):
         self.HTTP.add_credentials(username, password)
         try:
             count = 0
-            while True:
+            # repeat this while loop if the response status isn't equal to 200
+            # and while the count variable is below the max.retries
+            while count < self.MAX_RETRIES:
                 resp, content = self.HTTP.request(
                     device, method="POST",
                     headers=self.HEADERS, body=dumps(data))
@@ -143,14 +156,15 @@ class Cumulus(object):
             raise error
         return True
 
-    # raise exceptions.PluginNotConnected()
-
     def _check_pending(self):
         """Verify if exists any configuration in the staging area
            made by another user"""
         try:
             count = 0
-            while True:
+            # repeat this while loop if the equipment
+            # is been configured by another user
+            # and while the count variable is below the max.wait
+            while count < self.MAX_WAIT:
                 content = self._send_request(self.PENDING)
                 check_users = re.search(
                     self.COMMIT_CONCURRENCY, content, flags=re.IGNORECASE)
@@ -201,3 +215,15 @@ class Cumulus(object):
         check_warnings = self._search_pending_warnings()
         if check_warnings:
             content = self._send_request(self.COMMIT)
+        return content
+
+    def copyScriptFileToConfig(self, filename, use_vrf=None, destination=None):
+        """Get the configurations needed for configure the equipment
+              from the file generated
+
+              The use_vrf and destination variables won't be used
+              """
+        success = self._getConfFromFile(filename)
+        if success:
+            output = self.configurations()
+        return output
