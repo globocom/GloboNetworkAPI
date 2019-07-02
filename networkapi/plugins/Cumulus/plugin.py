@@ -42,14 +42,17 @@ class Cumulus(BasePlugin):
     # Expected strings when something bad occurs
     WARNINGS = 'WARNING: Committing these changes will cause problems'
     COMMIT_CONCURRENCY = 'Multiple users are currently'
-    CONF_ALREADY_IN = 'net add'
+    COMMON_USERS = 'cumulus|root'
     ALREADY_EXISTS = 'configuration already has'
-    # Variables needed in the configuration files below
+    # Variables needed in the configuration below
     MAX_WAIT = 5
     MAX_RETRIES = 3
     _command_list = []
     equipment_access = None
     equipment = None
+    device = None
+    username = None
+    password = None
 
     def ensure_privilege_level(self, privilege_level=None):
         """Cumulus don't use the concept of privilege level"""
@@ -62,13 +65,13 @@ class Cumulus(BasePlugin):
     def exec_command(
             self,
             command,
-            success_regex='',
+            success_regex=None,
             invalid_regex=None,
             error_regex=None):
         """The exec command will not be needed here"""
         pass
 
-    def connect(self):
+    def _get_info(self):
         """Get info from database to access the device"""
         if self.equipment_access is None:
             try:
@@ -79,14 +82,19 @@ class Cumulus(BasePlugin):
                           ('https', self.equipment.nome))
                 raise exceptions.InvalidEquipmentAccessException()
 
-        device = self.equipment_access.fqdn
-        username = self.equipment_access.user
-        password = self.equipment_access.password
+        self.device = self.equipment_access.fqdn
+        self.username = self.equipment_access.user
+        self.password = self.equipment_access.password
 
-        return device, username, password
+        self.HTTP.add_credentials(self.username, self.password)
 
+    def connect(self):
+        """Use the connect function of the superclass to get
+        the informations for access the device"""
+        self._get_info()        
+        
     def _getConfFromFile(self, filename):
-        """Get the configurations needed to be applyed
+        """Get the configurations needed to be applied
             and insert into a list"""
         try:
             with open(filename, 'r+') as lines:
@@ -102,21 +110,19 @@ class Cumulus(BasePlugin):
 
     def _send_request(self, data):
         """Send requests for the equipment"""
-        device, username, password = self._getInfo()
-        self.HTTP.add_credentials(username, password)
         try:
             count = 0
             # repeat this while loop if the response status isn't equal to 200
             # and while the count variable is below the max.retries
             while count < self.MAX_RETRIES:
                 resp, content = self.HTTP.request(
-                    device, method="POST",
+                    self.device, method="POST",
                     headers=self.HEADERS, body=dumps(data))
                 if resp.status != 200:
                     count += 1
                     if count >= self.MAX_RETRIES:
                         log.error('Wasn\'t possible to reach the equipment %s\
-                                  Validate if the server has the\
+                                  Validate if it has the\
                                   correct access\
                                   and if nginx and restserver\
                                   are running' % self.equipment.nome)
@@ -146,7 +152,8 @@ class Cumulus(BasePlugin):
             check_warning = re.search(
                 self.WARNINGS, content, flags=re.IGNORECASE)
             if check_warning:
-                print(self.WARNINGS)
+                log.error('There are warnings in the configuration.\
+                          Aborting changes.')
                 self._send_request(self.ABORT_CHANGES)
                 raise ConfigurationWarning(
                     'The abort was needed to be done\
@@ -166,11 +173,11 @@ class Cumulus(BasePlugin):
             # and while the count variable is below the max.wait
             while count < self.MAX_WAIT:
                 content = self._send_request(self.PENDING)
-                check_users = re.search(
+                check_concurrency = re.search(
                     self.COMMIT_CONCURRENCY, content, flags=re.IGNORECASE)
-                check_commands_in = re.search(
-                    self.CONF_ALREADY_IN, content, flags=re.IGNORECASE)
-                if check_users or check_commands_in:
+                check_users = re.search(
+                    self.COMMON_USERS, content)
+                if check_users or check_concurrency:
                     log.warning(
                         'The configuration staging for %s is been used' %
                         self.equipment.nome)
