@@ -39,7 +39,7 @@ class Cumulus(BasePlugin):
     COMMIT = {'cmd': 'commit'}
     ABORT_CHANGES = {'cmd': 'abort'}
     PENDING = {'cmd': 'pending'}
-    # Expected strings when something bad occurs
+    # Expected strings when something occurs not expected occurs
     WARNINGS = 'WARNING: Committing these changes will cause problems'
     COMMIT_CONCURRENCY = 'Multiple users are currently'
     COMMON_USERS = 'cumulus|root'
@@ -48,28 +48,9 @@ class Cumulus(BasePlugin):
     MAX_WAIT = 5
     MAX_RETRIES = 3
     _command_list = []
-    equipment_access = None
-    equipment = None
     device = None
     username = None
     password = None
-
-    def ensure_privilege_level(self, privilege_level=None):
-        """Cumulus don't use the concept of privilege level"""
-        pass
-
-    def close(self):
-        """This configuration file won't use ssh connections"""
-        pass
-
-    def exec_command(
-            self,
-            command,
-            success_regex=None,
-            invalid_regex=None,
-            error_regex=None):
-        """The exec command will not be needed here"""
-        pass
 
     def _get_info(self):
         """Get info from database to access the device"""
@@ -91,8 +72,8 @@ class Cumulus(BasePlugin):
     def connect(self):
         """Use the connect function of the superclass to get
         the informations for access the device"""
-        self._get_info()        
-        
+        self._get_info()
+
     def _getConfFromFile(self, filename):
         """Get the configurations needed to be applied
             and insert into a list"""
@@ -104,7 +85,8 @@ class Cumulus(BasePlugin):
             log.error('Error opening the file: %s' % filename)
             raise e
         except Exception as e:
-            log.error('Error %s when trying to read the file %s' % e, filename)
+            log.error('Error %s when trying to\
+                      read the file %s' % (e, filename))
             raise e
         return True
 
@@ -112,9 +94,8 @@ class Cumulus(BasePlugin):
         """Send requests for the equipment"""
         try:
             count = 0
-            # repeat this while loop if the response status isn't equal to 200
-            # and while the count variable is below the max.retries
-            while count < self.MAX_RETRIES:
+            validResponse = False
+            while (count < self.MAX_RETRIES and not validResponse):
                 resp, content = self.HTTP.request(
                     self.device, method="POST",
                     headers=self.HEADERS, body=dumps(data))
@@ -131,14 +112,14 @@ class Cumulus(BasePlugin):
                             to connect to the server was exceeded.\
                             Verify if the server is up and running.')
                 else:
-                    break
+                    validResponse = True
         except socket.error as error:
             log.error('Error in socket connection: %s' % error)
             raise error
         except httplib2.ServerNotFoundError as error:
             log.error(
                 'Error: %s. Check if the restserver is enabled in %s' %
-                error, self.equipment.nome)
+                (error, self.equipment.nome))
             raise error
         except Exception as error:
             log.error('Error: %s' % error)
@@ -168,10 +149,8 @@ class Cumulus(BasePlugin):
            made by another user"""
         try:
             count = 0
-            # repeat this while loop if the equipment
-            # is been configured by another user
-            # and while the count variable is below the max.wait
-            while count < self.MAX_WAIT:
+            validResponse = False
+            while (count < self.MAX_WAIT and not validResponse):
                 content = self._send_request(self.PENDING)
                 check_concurrency = re.search(
                     self.COMMIT_CONCURRENCY, content, flags=re.IGNORECASE)
@@ -193,35 +172,41 @@ class Cumulus(BasePlugin):
                             'Time waiting the configuration\
                              be available exceeded')
                 else:
-                    break
+                    validResponse = True
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
         return True
 
     def configurations(self):
-        """Apply the configurations in equipment"""
-        self._check_pending()
-        for cmd in self._command_list:
-            content = self._send_request({'cmd': cmd})
-            check_error = re.search('ERROR:', content, flags=re.IGNORECASE)
-            check_existence = re.search(
-                self.ALREADY_EXISTS, content, flags=re.IGNORECASE)
-            if check_error:
-                log.error(
-                    'Command "%s" not found!\
-                    Verify the Syntax. Aborting configurations.' %
-                    cmd)
-                self._send_request(self.ABORT_CHANGES)
-                raise ConfigurationError(
-                    'Applying Rollback of the configuration')
-            elif check_existence:
-                log.info(
-                    'The command "%s" already exists in %s' %
-                    cmd, self.equipment.nome)
-        check_warnings = self._search_pending_warnings()
-        if check_warnings:
-            content = self._send_request(self.COMMIT)
+        """Apply the configurations in equipment
+        and search for errors syntax, and if the configurations
+        will cause problems in the equipment"""
+        try:
+            self._check_pending()
+            for cmd in self._command_list:
+                content = self._send_request({'cmd': cmd})
+                check_error = re.search('ERROR:', content, flags=re.IGNORECASE)
+                check_existence = re.search(
+                    self.ALREADY_EXISTS, content, flags=re.IGNORECASE)
+                if check_error:
+                    log.error(
+                        'Command "%s" not found!\
+                        Verify the Syntax. Aborting configurations.' %
+                        cmd)
+                    self._send_request(self.ABORT_CHANGES)
+                    raise ConfigurationError(
+                        'Applying Rollback of the configuration')
+                elif check_existence:
+                    log.info(
+                        'The command "%s" already exists in %s' %
+                        (cmd, self.equipment.nome))
+            check_warnings = self._search_pending_warnings()
+            if check_warnings:
+                content = self._send_request(self.COMMIT)
+        except Exception as error:
+            log.error('Error: ' % error)
+            raise error
         return content
 
     def copyScriptFileToConfig(self, filename, use_vrf=None, destination=None):
@@ -230,7 +215,53 @@ class Cumulus(BasePlugin):
 
               The use_vrf and destination variables won't be used
               """
-        success = self._getConfFromFile(filename)
-        if success:
-            output = self.configurations()
+        try:
+            success = self._getConfFromFile(filename)
+            if success:
+                output = self.configurations()
+        except Exception as error:
+            log.error('Error: %s' % error)
+            raise error
         return output
+
+    def create_svi(self, svi_number, svi_description):
+        """Create SVI in switch."""
+        try:
+            proceed = self._check_pending()
+            if proceed:
+                command = 'net add vlan %s alias\
+                 %s' % (svi_number, svi_description)
+                content = self._send_request({'cmd': command})
+        except Exception as error:
+            log.error('Error: %s' % error)
+            raise error
+        return content
+
+    def remove_svi(self, svi_number):
+        """Delete SVI from switch."""
+        try:
+            proceed = self._check_pending()
+            if proceed:
+                command = 'net del vlan %s' % svi_number
+                content = self._send_request({'cmd': command})
+        except Exception as error:
+            log.error('Error: %s' % error)
+            raise error
+        return content
+
+    def ensure_privilege_level(self, privilege_level=None):
+        """Cumulus don't use the concept of privilege level"""
+        pass
+
+    def close(self):
+        """This configuration file won't use ssh connections"""
+        pass
+
+    def exec_command(
+            self,
+            command,
+            success_regex=None,
+            invalid_regex=None,
+            error_regex=None):
+        """The exec command will not be needed here"""
+        pass
