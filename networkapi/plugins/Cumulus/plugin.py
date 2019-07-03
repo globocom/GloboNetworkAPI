@@ -140,7 +140,7 @@ class Cumulus(BasePlugin):
                           Aborting changes.')
                 self._send_request(self.ABORT_CHANGES)
                 raise ConfigurationWarning(
-                    'The equipment is rising warnings\
+                    'The equipment is raising warnings\
                     because of problems in the configuration.\
                     Aborting changes.')
         except Exception as error:
@@ -169,7 +169,7 @@ class Cumulus(BasePlugin):
                         log.error(
                             'The equipment %s has configuration\
                              pendings for too long.\
-                             The process needed to be aborted.' %
+                             The process was aborted.' %
                             self.equipment.nome)
                         raise MaxTimeWaitExceeded(
                             'Time waiting the configuration\
