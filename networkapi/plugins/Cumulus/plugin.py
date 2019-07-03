@@ -231,7 +231,10 @@ class Cumulus(BasePlugin):
             if proceed:
                 command = 'net add vlan %s alias\
                  %s' % (svi_number, svi_description)
-                content = self._send_request({'cmd': command})
+                self._send_request({'cmd': command})
+                check_warnings = self._search_pending_warnings()
+                if check_warnings:
+                    content = self._send_request(self.COMMIT)
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
@@ -244,6 +247,9 @@ class Cumulus(BasePlugin):
             if proceed:
                 command = 'net del vlan %s' % svi_number
                 content = self._send_request({'cmd': command})
+                check_warnings = self._search_pending_warnings()
+                if check_warnings:
+                    content = self._send_request(self.COMMIT)
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
