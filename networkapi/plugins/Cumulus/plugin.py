@@ -47,6 +47,7 @@ class Cumulus(BasePlugin):
     # Variables needed in the configuration below
     MAX_WAIT = 5
     MAX_RETRIES = 3
+    SLEEP_WAIT_TIME = 5
     _command_list = []
     device = None
     username = None
@@ -108,9 +109,11 @@ class Cumulus(BasePlugin):
                                   and if nginx and restserver\
                                   are running' % self.equipment.nome)
                         raise MaxRetryAchieved(
-                            'The amount of time trying\
-                            to connect to the server was exceeded.\
-                            Verify if the server is up and running.')
+                            'Wasn\'t possible to reach the equipment %s\
+                                  Validate if it has the\
+                                  correct access\
+                                  and if nginx and restserver\
+                                  are running' % self.equipment.nome)
                 else:
                     validResponse = True
         except socket.error as error:
@@ -137,8 +140,9 @@ class Cumulus(BasePlugin):
                           Aborting changes.')
                 self._send_request(self.ABORT_CHANGES)
                 raise ConfigurationWarning(
-                    'The abort was needed to be done\
-                    because of errors in the configuration')
+                    'The equipment is rising warnings\
+                    because of problems in the configuration.\
+                    Aborting changes.')
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
@@ -160,17 +164,17 @@ class Cumulus(BasePlugin):
                     log.warning(
                         'The configuration staging for %s is been used' %
                         self.equipment.nome)
-                    sleep(5)
                     count += 1
                     if count >= self.MAX_WAIT:
                         log.error(
                             'The equipment %s has configuration\
                              pendings for too long.\
-                             The process needed to be abort.' %
+                             The process needed to be aborted.' %
                             self.equipment.nome)
                         raise MaxTimeWaitExceeded(
                             'Time waiting the configuration\
-                             be available exceeded')
+                             staging be available exceeded')
+                    sleep(self.SLEEP_WAIT_TIME)
                 else:
                     validResponse = True
         except Exception as error:
@@ -196,7 +200,8 @@ class Cumulus(BasePlugin):
                         cmd)
                     self._send_request(self.ABORT_CHANGES)
                     raise ConfigurationError(
-                        'Applying Rollback of the configuration')
+                        'Applying Rollback of the configuration\
+                        because of errors when applying the commands.')
                 elif check_existence:
                     log.info(
                         'The command "%s" already exists in %s' %
