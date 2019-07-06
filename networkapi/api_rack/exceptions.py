@@ -34,8 +34,8 @@ class RackError(APIException):
 
 
 class RackAplError(APIException):
-    status_code = status.HTTP_404_NOT_FOUND
-    default_detail = 'Erro aplicando a configuracao no Rack.'
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = 'Erro aplicando a configuracao do rack.'
 
 
 class RackNumberNotFoundError(APIException):
