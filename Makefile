@@ -27,6 +27,8 @@ help:
 	@echo "Available target rules"
 	@echo
 	@echo "Local:"
+	@echo "  api	    To get a shell of network_app container"
+	@echo "  db	    To get a shell of network_db container"
 	@echo "  start      to run project through docker compose"
 	@echo "  stop       to stop all containers from docker composition"
 	@echo "  logs       to follow logs on application container"
@@ -92,8 +94,16 @@ install:
 	@python setup.py install
 
 
+api:
+	@docker exec -it netapi_app sh
+
+
+db: 
+	@docker exec -it netapi_db bash
+
+
 build:
-	@python setup.py build
+	@docker-compose up --build -d
 
 
 dist: clean
