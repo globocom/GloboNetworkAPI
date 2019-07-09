@@ -17,20 +17,52 @@
 
 class MaxRetryAchieved(Exception):
     """Exceeded the max retry times to connect to the server"""
-    pass
+
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(
+            self,
+            "Wasn't possible to reach the equipment %s "
+            "Validate if it has the correct access and "
+            "if nginx and restserver "
+            "are running" % args)
 
 
 class MaxTimeWaitExceeded(Exception):
     """Exceeded the max time for waiting the pending be resolved"""
-    pass
+
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(
+            self,
+            "Time waiting the configuration "
+            "staging for the equipment %s be available exceeded" % args)
 
 
 class ConfigurationError(Exception):
-    """Raise this expection every time that cumulus
+    """Raise this exception every time that cumulus
      cli displays an error message when applying configurations"""
-    pass
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(
+            self,
+            "Applying Rollback of the configuration "
+            "because of errors when applying the command '%s'." % args)
 
 
 class ConfigurationWarning(Exception):
-    """Raise this expection when cumulus shows an warning message in staging"""
-    pass
+    """Raise this exception when cumulus shows an warning message in staging"""
+
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self,
+                           "The equipment is raising warnings "
+                           "because of problems in the configuration. "
+                           "Aborting changes.")
+
+
+class CommitError(Exception):
+    """Raise this exception when cumulus shows errors
+       when trying to commit configurations"""
+
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self,
+                           "The equipment is raising errors "
+                           "when commiting configurations. "
+                           "Aborting changes.")
