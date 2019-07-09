@@ -9,6 +9,7 @@
 - Avner Gonçalves
 - [Ederson Brilhante](https://github.com/edersonbrilhante)
 - [Gustavo Pantuza](https://github.com/pantuza)
+- [Leopoldo Mauricio](https://github.com/leopoldomauricio)
 - [Laura Panzariello](https://github.com/laurapanzariello)
 - Lucas Borges
 - Mauricio Leoncio dos Santos

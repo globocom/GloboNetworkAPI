@@ -3,6 +3,10 @@
 from networkapi import settings
 from networkapi import celery_app
 from networkapi.api_task.classes import BaseTask
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 @celery_app.task(bind=True, base=BaseTask, serializer='pickle')
@@ -10,8 +14,13 @@ def async_add_flow(self, plugins, user_id, data):
     """ Asynchronous flows insertion into environment equipment """
 
     for plugin in plugins:
-        if plugin is not None:
-            plugin.add_flow(data=data)
+        try:
+            if plugin is not None:
+                plugin.add_flow(data=data)
+
+        except Exception as err:
+            log.error(err)
+            continue
 
 
 @celery_app.task(bind=True, base=BaseTask, serializer='pickle')
