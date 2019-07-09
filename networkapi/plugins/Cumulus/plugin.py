@@ -15,6 +15,11 @@
 # limitations under the License.
 import logging
 import httplib2
+
+import request
+from requests.auth import HTTPBasicAuth
+from requests.exceptions import HTTPError
+
 from json import dumps
 from time import sleep
 import re
@@ -29,8 +34,10 @@ from networkapi.api_rest import exceptions as api_exceptions
 log = logging.getLogger(__name__)
 
 
-class Cumulus(BasePlugin):
-    """Cumulus Plugin"""
+class CumulusPlugin(BasePlugin):
+    """
+    Base plugin to  interact with Cumulus API
+    """
     # httplib2 configurations
     HTTP = httplib2.Http('.cache', disable_ssl_certificate_validation=True)
     HEADERS = {'Content-Type': 'application/json; charset=UTF-8'}
@@ -49,26 +56,150 @@ class Cumulus(BasePlugin):
     MAX_RETRIES = 3
     SLEEP_WAIT_TIME = 5
     _command_list = []
-    device = None
-    username = None
-    password = None
+    #device = None
+    #username = None
+    #password = None
+    protocol = 'http'
+    
+    def __init__(self, **kwargs):
 
-    def _get_info(self):
-        """Get info from database to access the device"""
-        if self.equipment_access is None:
+        try:
+            if not isinstance(self.equipment_access, EquipamentoAcesso):
+               info = 'equipment_access is None'
+               log.info(info)
+               raise TypeError(info)
+        except (AttributeError, TypeError):
+            self.equipment_access = self._get_equipment_access()
+
+    def _get_equipment_access(self):
+
+        try:
+            access = None
             try:
-                self.equipment_access = EquipamentoAcesso.search(
+                access = EquipamentoAcesso.search(
                     None, self.equipment, 'https').uniqueResult()
-            except Exception:
-                log.error('Access type %s not found for equipment %s.' %
-                          ('https', self.equipment.nome))
+            except ObjectDoesNotExist:
+                access = EquipamentoAcesso.search(
+                    None, self.equipment, 'http').uniqueResult()
+            return access
+
+        except Exception:
+
+            log.error('Access type %s not found for equipment %s.' %
+                      ('https', self.equipment.nome))
+            raise exceptions.InvalidEquipmentAccessException()
+
+       # self.device = self.equipment_access.fqdn
+       # self.HTTP.add_credentials(self.__get_auth())
+
+    def _request(self, **kwargs):
+        """ """
+        values = {
+            'method': 'post,'
+            'path': '', 
+            'data': None,
+            'contentType': 'json',
+            'verify': False
+        }
+
+        for value in values:
+            if value in kwargs:
+                values[value] = kwargs.get(value)
+        
+        headers = self._header(contentType=values['contentType'])
+        uri = self._get_uri(path=values['path']
+
+        log.debug(
+            "Starting %s request to Cumulus switch  %s at %s. Data to be sent: %s" %
+            (params["method"], self.equipment.nome, uri, params["data"])
+        )
+
+        try:
+            # Raises AttributeError if method is not valid
+            func = getattr(requests, values["method"])
+            request = func(
+                uri,
+                auth=self._get_auth(),
+                headers=headers,
+                verify=values["verify"],
+                data=values["data"]
+            )
+
+            request.raise_for_status()
+
+            if request.status_code==200 and request.content=='':
+                return
+
+            try:
+                return json.loads(request.text)
+            except Exception as exception:
+                log.error("Response received from uri '%s': \n%s",
+                          uri, request.text)
+                log.error("Can't serialize as Json: %s" % exception)
+                return
+
+        except AttributeError:
+            log.error('Request method must be valid HTTP request. '
+                      'ie: GET, POST, PUT, DELETE')
+
+
+    def _get_uri(self, host=None, path=""):
+
+        if host is None:
+            host = self._get_host()
+
+        host = host.strip()
+        path = path.strip()
+
+        if host[len(host) - 1] == '/':
+            host = host[0:len(host) - 1]
+        if path[0] == '/':
+            path = path[1:len(path)]
+        self.uri = host + '/' + path
+
+        return self.uri
+
+
+    def _get_host(self):
+
+        if not hasattr(self, 'host') or self.host is None:
+
+            if not isinstance(self.equipment_access, EquipamentoAcesso):
+
+                log.error('No fqdn could be found for equipment %s .' %
+                          (self.equipment.nome))
                 raise exceptions.InvalidEquipmentAccessException()
 
-        self.device = self.equipment_access.fqdn
-        self.username = self.equipment_access.user
-        self.password = self.equipment_access.password
+            self.host = self.equipment_access.fqdn.strip()
+            if self.host.find('://') < 0:
+                self.host = self.protocol + '://' + self.host
 
-        self.HTTP.add_credentials(self.username, self.password)
+        return self.host
+
+
+
+    def _get_auth(self):
+        return self._auth()
+
+
+    def _auth(self):
+        """
+        Authentication method
+        """
+        return HTTPBasicAuth(
+                self.equipment_access.user,
+                self.equipment_access.password
+        )
+  
+    
+    def _header(self, contentType):
+        """
+        Get header to be used into HTTP requests
+        """
+        types = {'json':'application/json; charset=UTF-8'}
+
+        return {'content-type': types[contentType]}
+
 
     def connect(self):
         """Use the connect function of the superclass to get
@@ -91,15 +222,28 @@ class Cumulus(BasePlugin):
             raise e
         return True
 
-    def _send_request(self, data):
-        """Send requests for the equipment"""
+
+    def _send_request(self, method='', data=None):
+        """Implement the pulgin communication with Cumulus switches"""
+
+        allowed_methods = ["post"]
+        
+        if method not in allowed_methods:
+            log.error('Invalid method sent to Cumulus switch')
+            raise exceptions.ValueInvalid()
+        
+        path = '/nclu/v1/rpc'
+        
         try:
             count = 0
             validResponse = False
             while (count < self.MAX_RETRIES and not validResponse):
-                resp, content = self.HTTP.request(
-                    self.device, method="POST",
-                    headers=self.HEADERS, body=dumps(data))
+                #resp, content = self.HTTP.request(
+                #    self.device, method="POST",
+                #    headers=self.HEADERS, body=dumps(data))
+                resp, content = self._request(
+                    method="post", path=path, data=json.dumps(data), contentType='json'
+                    )
                 if resp.status != 200:
                     count += 1
                     if count >= self.MAX_RETRIES:
