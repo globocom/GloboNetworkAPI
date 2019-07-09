@@ -38,7 +38,7 @@ class MaxTimeWaitExceeded(Exception):
 
 
 class ConfigurationError(Exception):
-    """Raise this expection every time that cumulus
+    """Raise this exception every time that cumulus
      cli displays an error message when applying configurations"""
     def __init__(self, *args, **kwargs):
         Exception.__init__(
@@ -48,11 +48,21 @@ class ConfigurationError(Exception):
 
 
 class ConfigurationWarning(Exception):
-    """Raise this expection when cumulus shows an warning message in staging"""
-     
+    """Raise this exception when cumulus shows an warning message in staging"""
+
     def __init__(self, *args, **kwargs):
-            Exception.__init__(
-            self,
-            "The equipment is raising warnings "
-            "because of problems in the configuration. "
-            "Aborting changes.")
+        Exception.__init__(self,
+                           "The equipment is raising warnings "
+                           "because of problems in the configuration. "
+                           "Aborting changes.")
+
+
+class CommitError(Exception):
+    """Raise this exception when cumulus shows errors
+       when trying to commit configurations"""
+
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self,
+                           "The equipment is raising errors "
+                           "when commiting configurations. "
+                           "Aborting changes.")

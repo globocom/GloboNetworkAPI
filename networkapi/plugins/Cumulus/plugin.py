@@ -46,7 +46,7 @@ class Cumulus(BasePlugin):
     WARNINGS = 'WARNING: Committing these changes will cause problems'
     COMMIT_CONCURRENCY = 'Multiple users are currently'
     COMMON_USERS = 'cumulus|root'
-    STAGING_ERRORS = 'error:|returned non-zero exit status'
+    COMMIT_ERRORS = 'error:|returned non-zero exit status'
     ALREADY_EXISTS = 'configuration already has'
     CLI_ERROR = 'ERROR:'
     # Variables needed in the configuration below
@@ -129,16 +129,10 @@ class Cumulus(BasePlugin):
         """Validate if exists any warnings in the staging configuration"""
         try:
             content = self._send_request(self.PENDING)
-            check_staging_errors = re.search(self.STAGING_ERRORS,
-                                             content,
-                                             flags=re.IGNORECASE)
             check_warning = re.search(self.WARNINGS,
                                       content,
                                       flags=re.IGNORECASE)
             if check_warning:
-                self._send_request(self.ABORT_CHANGES)
-                raise ConfigurationWarning()
-            elif check_staging_errors:
                 self._send_request(self.ABORT_CHANGES)
                 raise ConfigurationWarning()
         except ConfigurationWarning as error:
@@ -148,6 +142,25 @@ class Cumulus(BasePlugin):
             log.error('Error: %s' % error)
             raise error
         return True
+
+    def _search_commit_errors(self):
+        """Look for errors fired when
+        trying to commit configurations"""
+        try:
+            content = self._send_request(self.COMMIT)
+            check_error = re.search(self.COMMIT_ERRORS,
+                                    content,
+                                    flags=re.IGNORECASE)
+            if check_error:
+                self._send_request(self.ABORT_CHANGES)
+                raise CommitError()
+            return content
+        except CommitError as error:
+            log.error(error)
+            raise error
+        except Exception as error:
+            log.error(error)
+            raise error
 
     def _check_pending(self):
         """Verify if exists any configuration in the staging area
@@ -204,7 +217,7 @@ class Cumulus(BasePlugin):
                         (cmd, self.equipment.nome))
             check_warnings = self._search_pending_warnings()
             if check_warnings:
-                content = self._send_request(self.COMMIT)
+                content = self._search_commit_errors()
                 return content
         except ConfigurationError as error:
             log.error(error)
@@ -233,12 +246,12 @@ class Cumulus(BasePlugin):
         try:
             proceed = self._check_pending()
             if proceed:
-                command = 'net add vlan %s alias\
-                 %s' % (svi_number, svi_description)
+                command = "add vlan %s alias %s" % (svi_number,
+                                                    svi_description)
                 self._send_request({'cmd': command})
                 check_warnings = self._search_pending_warnings()
                 if check_warnings:
-                    content = self._send_request(self.COMMIT)
+                    content = self._search_commit_errors()
                     return content
         except Exception as error:
             log.error('Error: %s' % error)
@@ -249,11 +262,11 @@ class Cumulus(BasePlugin):
         try:
             proceed = self._check_pending()
             if proceed:
-                command = 'net del vlan %s' % svi_number
+                command = "del vlan %s" % svi_number
                 content = self._send_request({'cmd': command})
                 check_warnings = self._search_pending_warnings()
                 if check_warnings:
-                    content = self._send_request(self.COMMIT)
+                    content = self._search_commit_errors()
                     return content
         except Exception as error:
             log.error('Error: %s' % error)
