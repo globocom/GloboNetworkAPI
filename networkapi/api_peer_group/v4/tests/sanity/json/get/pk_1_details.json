@@ -8,6 +8,7 @@
             "id": 1,
             "name": "AMBLOG-1"
           },
+          "aws_vpc": null,
           "dcroom": null,
           "default_vrf": {
             "id": 1,
@@ -33,7 +34,8 @@
           "min_num_vlan_1": null,
           "min_num_vlan_2": null,
           "name": "DC-1 - AMBLOG-1 - GL-1",
-          "sdn_controllers": null
+          "sdn_controllers": [],
+          "vxlan": null
         },
         "id": 1
       },
@@ -44,6 +46,7 @@
             "id": 2,
             "name": "AMBLOG-2"
           },
+          "aws_vpc": null,
           "dcroom": null,
           "default_vrf": {
             "id": 1,
@@ -69,7 +72,8 @@
           "min_num_vlan_1": null,
           "min_num_vlan_2": null,
           "name": "DC-2 - AMBLOG-2 - GL-2",
-          "sdn_controllers": null
+          "sdn_controllers": [],
+          "vxlan": null
         },
         "id": 2
       }

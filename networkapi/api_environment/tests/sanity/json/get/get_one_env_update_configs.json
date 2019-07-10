@@ -2,14 +2,24 @@
   "environments": [
     {
       "acl_path": "",
-      "ambiente_logico": 2,
+      "ambiente_logico": 1,
       "aws_vpc": null,
+      "configs": [
+        {
+          "id": 1,
+          "network_type": 1,
+          "new_prefix": "25",
+          "subnet": "192.168.0.0/8",
+          "type": "v4"
+        }
+      ],
       "dcroom": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
-      "father_environment": 10,
+      "father_environment": null,
       "filter": 1,
-      "grupo_l3": 2,
+      "grupo_l3": 1,
+      "id": 1,
       "ipv4_template": null,
       "ipv6_template": null,
       "link": "",
@@ -17,7 +27,7 @@
       "max_num_vlan_2": null,
       "min_num_vlan_1": 2,
       "min_num_vlan_2": null,
-      "vxlan": false
+      "vxlan": null
     }
   ]
 }

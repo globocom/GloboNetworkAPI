@@ -118,6 +118,12 @@
               "string",
               "null"
             ]
+          },
+          "vxlan": {
+            "type": [
+              "boolean",
+              "null"
+            ]
           }
         },
         "required": [

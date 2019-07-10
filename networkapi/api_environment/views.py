@@ -22,6 +22,165 @@ from networkapi.util.json_validate import raise_json_validate
 log = logging.getLogger(__name__)
 
 
+class EnvironmentLogicDBView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of environment by ids ou dict."""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_logic_environment_by_search(self.search)
+            environments = obj_model['query_set']
+            only_main_property = False
+        else:
+            return Response(dict(), status=status.HTTP_400_BAD_REQUEST)
+
+        # serializer environments
+        serializer_env = serializers.AmbienteLogicoV3Serializer(
+            environments,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_env,
+            main_property='logic_environments',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('environment_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new environment."""
+
+        envs = request.DATA
+        json_validate(SPECS.get('simple_env_post')).validate(envs)
+        response = list()
+        for env in envs['logic']:
+            env_obj = facade.create_logic_environment(env)
+            response.append(dict(id=env_obj.id))
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+
+class EnvironmentL3DBView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of environment by ids ou dict."""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_l3_environment_by_search(self.search)
+            environments = obj_model['query_set']
+            only_main_property = False
+        else:
+            return Response(dict(), status=status.HTTP_400_BAD_REQUEST)
+
+        # serializer environments
+        serializer_env = serializers.GrupoL3Serializer(
+            environments,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_env,
+            main_property='l3_environments',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('environment_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new environment."""
+
+        envs = request.DATA
+        json_validate(SPECS.get('simple_env_post')).validate(envs)
+        response = list()
+        for env in envs['l3']:
+            env_obj = facade.create_l3_environment(env)
+            response.append(dict(id=env_obj.id))
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+
+class EnvironmentDCDBView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of environment by ids ou dict."""
+
+        if not kwargs.get('obj_ids'):
+            obj_model = facade.get_dc_environment_by_search(self.search)
+            environments = obj_model['query_set']
+            only_main_property = False
+        else:
+            return Response(dict(), status=status.HTTP_400_BAD_REQUEST)
+
+        # serializer environments
+        serializer_env = serializers.DivisaoDcV3Serializer(
+            environments,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_env,
+            main_property='environments_dc',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('environment_post')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new environment."""
+
+        envs = request.DATA
+        json_validate(SPECS.get('simple_env_post')).validate(envs)
+        response = list()
+        for env in envs['dc']:
+            env_obj = facade.create_dc_environment(env)
+            response.append(dict(id=env_obj.id))
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+
 class EnvironmentDBView(CustomAPIView):
 
     @logs_method_apiview
@@ -166,6 +325,7 @@ class EnvFlowView(CustomAPIView):
         return Response(flows, status=status.HTTP_200_OK)
 
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
     def post(self, request, *args, **kwargs):
         """ Inserts new SDN flows on the remote Controller """
         environment_id = kwargs.get('environment_id')
@@ -183,6 +343,7 @@ class EnvFlowView(CustomAPIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
     def delete(self, request, *args, **kwargs):
         """ Deletes a single flow by id or all flows if no id was given """
 
@@ -199,6 +360,7 @@ class EnvFlowView(CustomAPIView):
         return Response({}, status=status.HTTP_200_OK)
 
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
     def put(self, request, *args, **kwargs):
         """ Updates an Environment by flushing it and then inserting flows """
         environment_id = kwargs.get('environment_id')

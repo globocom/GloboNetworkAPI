@@ -82,6 +82,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     dcroom = serializers.SerializerMethodField('get_dcroom')
     aws_vpc = serializers.SerializerMethodField('get_aws_vpc')
     sdn_controllers = serializers.SerializerMethodField('get_sdn_controllers')
+    vxlan = serializers.SerializerMethodField('get_vxlan')
 
     def get_sdn_controllers(self, obj):
         return self.extends_serializer(obj, 'sdn_controllers')
@@ -122,6 +123,9 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
     def get_equipments(self, obj):
         return self.extends_serializer(obj, 'equipments')
 
+    def get_vxlan(self, obj):
+        return self.extends_serializer(obj, 'vxlan')
+
     class Meta:
         Ambiente = get_model('ambiente', 'Ambiente')
         depth = 1
@@ -151,6 +155,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'sdn_controllers',
             'dcroom',
             'aws_vpc',
+            'vxlan',
         )
         default_fields = (
             'id',
@@ -172,6 +177,7 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
             'sdn_controllers',
             'dcroom',
             'aws_vpc',
+            'vxlan',
         )
 
         basic_fields = (
@@ -410,6 +416,9 @@ class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
                     },
                     'obj': 'sdn_controllers',
                     'eager_loading': self.setup_eager_loading_sdn_controllers
+                },
+                'vxlan': {
+                    'obj': 'vxlan'
                 },
             }
 

@@ -94,48 +94,24 @@ def get_equipments(**kwargs):
     try:
         eqpts = Equipamento.objects.all()
 
+        q_filter = dict()
+
         if kwargs.get('user', None) is not None:
-            q_filter_user = {
-                'equipamentogrupo__egrupo__direitosgrupoequipamento'
-                '__ugrupo__usuario': kwargs.get('user')
-            }
-            eqpts = eqpts.filter(Q(**q_filter_user))
+            q_filter.update(equipamentogrupo__egrupo__direitosgrupoequipamento__ugrupo__usuario=kwargs.get('user'))
         if kwargs.get('name', None) is not None:
-            q_filter_name = {
-                'nome': kwargs.get('name')
-            }
-            eqpts = eqpts.filter(Q(**q_filter_name))
-
+            q_filter.update(nome=kwargs.get('name'))
         if kwargs.get('environment', None) is not None:
-            q_filter_environment = {
-                'equipamentoambiente__ambiente': kwargs.get('environment')
-            }
-            eqpts = eqpts.filter(Q(**q_filter_environment))
-
+            q_filter.update(equipamentoambiente__ambiente=kwargs.get('environment'))
         if kwargs.get('rights_write', None) is not None:
-            q_filter_rights = {
-                'equipamentogrupo__egrupo__direitosgrupoequipamento__escrita': 1
-            }
-            eqpts = eqpts.filter(Q(**q_filter_rights))
-
+            q_filter.update(equipamentogrupo__egrupo__direitosgrupoequipamento__escrita=1)
         if kwargs.get('rights_read', None) is not None:
-            q_filter_rights = {
-                'equipamentogrupo__egrupo__direitosgrupoequipamento__leitura': 1
-            }
-            eqpts = eqpts.filter(Q(**q_filter_rights))
-
+            q_filter.update(equipamentogrupo__egrupo__direitosgrupoequipamento__leitura=1)
         if kwargs.get('is_router', None) is not None:
-            q_filter_router = {
-                'equipamentoambiente__is_router': kwargs.get('is_router')
-            }
-            eqpts = eqpts.filter(Q(**q_filter_router))
-
+            q_filter.update(equipamentoambiente__is_router=kwargs.get('is_router'))
         if kwargs.get('environment_sdn_controller', None) is not None:
-            q_filter_controller = {
-                'equipmentcontrollerenvironment': kwargs.get('environment_sdn_controller')
-            }
-            eqpts = eqpts.filter(Q(**q_filter_controller))
+            q_filter.update(equipmentcontrollerenvironment=kwargs.get('environment_sdn_controller'))
 
+        eqpts = eqpts.filter(Q(**q_filter)).distinct()
         eqpts = build_query_to_datatable_v3(eqpts, kwargs.get('search', {}))
     except FieldError as e:
         raise ValidationAPIException(str(e))

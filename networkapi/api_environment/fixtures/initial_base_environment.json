@@ -53,7 +53,8 @@
       "ambiente_logico": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
-      "grupo_l3": 1
+      "grupo_l3": 1,
+      "vxlan": false
     },
     "model": "ambiente.ambiente",
     "pk": 1
@@ -63,7 +64,8 @@
       "ambiente_logico": 1,
       "default_vrf": 1,
       "divisao_dc": 1,
-      "grupo_l3": 2
+      "grupo_l3": 2,
+      "vxlan": false
     },
     "model": "ambiente.ambiente",
     "pk": 2

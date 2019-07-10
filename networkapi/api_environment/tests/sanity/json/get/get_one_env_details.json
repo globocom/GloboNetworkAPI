@@ -36,7 +36,8 @@
         "min_num_vlan_1": null,
         "min_num_vlan_2": null,
         "name": "BE - SANITY-TEST-1 - GENERAL",
-        "sdn_controllers": []
+        "sdn_controllers": [],
+        "vxlan": null
       },
       "filter": null,
       "grupo_l3": {
@@ -76,7 +77,8 @@
                 "min_num_vlan_2": null,
                 "name": "BE - SANITY-TEST-1 - RACK-2",
                 "sdn_controllers": [
-                ]
+                ],
+                "vxlan": null
               },
               "is_router": false
             }
@@ -121,7 +123,8 @@
           },
           "name": "OVS Controller 1"
         }
-      ]
+      ],
+      "vxlan": null
     }
   ]
 }

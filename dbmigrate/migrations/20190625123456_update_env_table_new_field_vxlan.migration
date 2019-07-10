@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `ambiente`
+ADD COLUMN `vxlan` bool DEFAULT 0;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `ambiente`
+DROP COLUMN `vxlan`;
+
+"""

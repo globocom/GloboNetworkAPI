@@ -8,6 +8,9 @@ from networkapi.ambiente.models import Ambiente
 from networkapi.ambiente.models import AmbienteError
 from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
+from networkapi.ambiente.models import AmbienteLogico
+from networkapi.ambiente.models import DivisaoDc
+from networkapi.ambiente.models import GrupoL3
 from networkapi.ambiente.models import EnvironmentErrorV3
 from networkapi.api_environment.tasks.flows import async_add_flow
 from networkapi.api_environment.tasks.flows import async_delete_flow
@@ -25,6 +28,96 @@ from networkapi.api_equipment import facade as facade_eqpt
 
 
 log = logging.getLogger(__name__)
+
+
+def get_l3_environment_by_search(search=dict()):
+    """Return a list of dc environments by dict."""
+
+    try:
+        environments = GrupoL3.objects.filter()
+        env_map = build_query_to_datatable_v3(environments, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return env_map
+
+
+def create_l3_environment(env):
+    """Create environment."""
+
+    try:
+        env_obj = GrupoL3()
+        env_obj.create_v3(env)
+    except EnvironmentErrorV3, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return env_obj
+
+
+def get_logic_environment_by_search(search=dict()):
+    """Return a list of dc environments by dict."""
+
+    try:
+        environments = AmbienteLogico.objects.filter()
+        env_map = build_query_to_datatable_v3(environments, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return env_map
+
+
+def create_logic_environment(env):
+    """Create environment."""
+
+    try:
+        env_obj = AmbienteLogico()
+        env_obj.create_v3(env)
+    except EnvironmentErrorV3, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return env_obj
+
+
+def get_dc_environment_by_search(search=dict()):
+    """Return a list of dc environments by dict."""
+
+    try:
+        environments = DivisaoDc.objects.filter()
+        env_map = build_query_to_datatable_v3(environments, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return env_map
+
+
+def create_dc_environment(env):
+    """Create environment."""
+
+    try:
+        env_obj = DivisaoDc()
+        env_obj.create_v3(env)
+    except EnvironmentErrorV3, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return env_obj
 
 
 def get_environment_by_search(search=dict()):
