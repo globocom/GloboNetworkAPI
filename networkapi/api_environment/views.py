@@ -325,6 +325,7 @@ class EnvFlowView(CustomAPIView):
         return Response(flows, status=status.HTTP_200_OK)
 
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
     def post(self, request, *args, **kwargs):
         """ Inserts new SDN flows on the remote Controller """
         environment_id = kwargs.get('environment_id')
@@ -342,6 +343,7 @@ class EnvFlowView(CustomAPIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
     def delete(self, request, *args, **kwargs):
         """ Deletes a single flow by id or all flows if no id was given """
 
@@ -358,6 +360,7 @@ class EnvFlowView(CustomAPIView):
         return Response({}, status=status.HTTP_200_OK)
 
     @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
     def put(self, request, *args, **kwargs):
         """ Updates an Environment by flushing it and then inserting flows """
         environment_id = kwargs.get('environment_id')
