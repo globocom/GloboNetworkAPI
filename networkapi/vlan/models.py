@@ -210,21 +210,34 @@ class Vlan(BaseModel):
 
     log = logging.getLogger('Vlan')
 
-    id = models.AutoField(primary_key=True, db_column='id_vlan')
+    id = models.AutoField(primary_key=True,
+                          db_column='id_vlan')
     nome = models.CharField(max_length=50)
     num_vlan = models.IntegerField()
-    ambiente = models.ForeignKey('ambiente.Ambiente', db_column='id_ambiente')
-    descricao = models.CharField(max_length=200, blank=True)
-    acl_file_name = models.CharField(max_length=200, blank=True)
+    ambiente = models.ForeignKey('ambiente.Ambiente',
+                                 db_column='id_ambiente')
+    descricao = models.CharField(max_length=200,
+                                 blank=True)
+    acl_file_name = models.CharField(max_length=200,
+                                     blank=True)
     acl_valida = models.BooleanField()
-    acl_file_name_v6 = models.CharField(max_length=200, blank=True)
+    acl_file_name_v6 = models.CharField(max_length=200,
+                                        blank=True)
     acl_valida_v6 = models.BooleanField()
     ativada = models.BooleanField()
-    vrf = models.CharField(max_length=100, null=True, db_column='vrf')
-
-    acl_draft = models.TextField(blank=True, null=True, db_column='acl_draft')
-    acl_draft_v6 = models.TextField(
-        blank=True, null=True, db_column='acl_draft_v6')
+    vrf = models.CharField(max_length=100,
+                           null=True,
+                           db_column='vrf')
+    acl_draft = models.TextField(blank=True,
+                                 null=True,
+                                 db_column='acl_draft')
+    acl_draft_v6 = models.TextField(blank=True,
+                                    null=True,
+                                    db_column='acl_draft_v6')
+    vxlan = models.BooleanField(db_column='vxlan',
+                                default=False,
+                                null=True,
+                                blank=True)
 
     def _get_networks_ipv4(self):
         """Returns networks v4."""
