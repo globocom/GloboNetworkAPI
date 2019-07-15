@@ -26,7 +26,6 @@ from CumulusExceptions import *
 from networkapi.equipamento.models import EquipamentoAcesso
 from ..base import BasePlugin
 from .. import exceptions
-from networkapi.api_rest import exceptions as api_exceptions
 
 
 log = logging.getLogger(__name__)
@@ -80,7 +79,7 @@ class Cumulus(BasePlugin):
         the informations for access the device"""
         self._get_info()
 
-    def _getConfFromFile(self, filename):
+    def _getconffromfile(self, filename):
         """Get the configurations needed to be applied
             and insert into a list"""
         try:
@@ -96,12 +95,12 @@ class Cumulus(BasePlugin):
             raise e
         return True
 
-    def _send_request(self, data):
+    def _send_request(self, data, uri):
         """Send requests for the equipment"""
         try:
             count = 0
             while count < self.MAX_RETRIES:
-                resp, content = self.HTTP.request(self.device,
+                resp, content = self.HTTP.request(uri,
                                                   method="POST",
                                                   headers=self.HEADERS,
                                                   body=dumps(data))
@@ -125,15 +124,25 @@ class Cumulus(BasePlugin):
             log.error('Error: %s' % error)
             raise error
 
+    def _send_nclu_request(self, data):
+        """Send requests to equipment using nclu route"""
+        schema = 'https://'
+        path = ':8080/nclu/v1/rpc'
+        uri = schema + self.device + path
+
+        output = self._send_request(data, uri)
+
+        return output
+
     def _search_pending_warnings(self):
         """Validate if exists any warnings in the staging configuration"""
         try:
-            content = self._send_request(self.PENDING)
+            content = self._send_nclu_request(self.PENDING)
             check_warning = re.search(self.WARNINGS,
                                       content,
                                       flags=re.IGNORECASE)
             if check_warning:
-                self._send_request(self.ABORT_CHANGES)
+                self._send_nclu_request(self.ABORT_CHANGES)
                 raise ConfigurationWarning()
         except ConfigurationWarning as error:
             log.error(error)
@@ -147,12 +156,12 @@ class Cumulus(BasePlugin):
         """Look for errors fired when
         trying to commit configurations"""
         try:
-            content = self._send_request(self.COMMIT)
+            content = self._send_nclu_request(self.COMMIT)
             check_error = re.search(self.COMMIT_ERRORS,
                                     content,
                                     flags=re.IGNORECASE)
             if check_error:
-                self._send_request(self.ABORT_CHANGES)
+                self._send_nclu_request(self.ABORT_CHANGES)
                 raise CommitError()
             return content
         except CommitError as error:
@@ -168,7 +177,7 @@ class Cumulus(BasePlugin):
         try:
             count = 0
             while count < self.MAX_WAIT:
-                content = self._send_request(self.PENDING)
+                content = self._send_nclu_request(self.PENDING)
 
                 check_concurrency = re.search(self.COMMIT_CONCURRENCY,
                                               content,
@@ -201,7 +210,7 @@ class Cumulus(BasePlugin):
         try:
             self._check_pending()
             for cmd in self._command_list:
-                content = self._send_request({'cmd': cmd})
+                content = self._send_nclu_request({'cmd': cmd})
                 check_error = re.search(self.CLI_ERROR,
                                         content,
                                         flags=re.IGNORECASE)
@@ -209,7 +218,7 @@ class Cumulus(BasePlugin):
                                             content,
                                             flags=re.IGNORECASE)
                 if check_error:
-                    self._send_request(self.ABORT_CHANGES)
+                    self._send_nclu_request(self.ABORT_CHANGES)
                     raise ConfigurationError(cmd)
                 elif check_existence:
                     log.info(
@@ -241,18 +250,18 @@ class Cumulus(BasePlugin):
             log.error('Error: %s' % error)
             raise error
 
-    def create_svi(self, svi_number, svi_description):
+    def create_svi(self, svi_number, svi_description='no description'):
         """Create SVI in switch."""
         try:
             proceed = self._check_pending()
             if proceed:
                 command = "add vlan %s alias %s" % (svi_number,
                                                     svi_description)
-                self._send_request({'cmd': command})
+                self._send_nclu_request({'cmd': command})
                 check_warnings = self._search_pending_warnings()
                 if check_warnings:
-                    content = self._search_commit_errors()
-                    return content
+                    output = self._search_commit_errors()
+                    return output
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
@@ -263,11 +272,11 @@ class Cumulus(BasePlugin):
             proceed = self._check_pending()
             if proceed:
                 command = "del vlan %s" % svi_number
-                content = self._send_request({'cmd': command})
+                self._send_nclu_request({'cmd': command})
                 check_warnings = self._search_pending_warnings()
                 if check_warnings:
-                    content = self._search_commit_errors()
-                    return content
+                    output = self._search_commit_errors()
+                    return output
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
