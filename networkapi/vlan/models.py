@@ -1007,6 +1007,13 @@ class Vlan(BaseModel):
             self.vrf = vlan.get('vrf')
             self.acl_draft = vlan.get('acl_draft')
             self.acl_draft_v6 = vlan.get('acl_draft_v6')
+            self.vxlan = vlan.get('vxlan', False)
+
+            if self.vxlan and not self.ambiente.vxlan:
+                raise Exception("Error while creating Vxlan. "
+                                "Environment doesn't support Vxlan. "
+                                "Check environment configuration."
+                                "Env: %s" % self.ambiente.name)
 
             # Get environments related
             envs = self.get_environment_related(use_vrf=False)\
@@ -1105,6 +1112,13 @@ class Vlan(BaseModel):
             self.vrf = vlan.get('vrf')
             self.acl_draft = vlan.get('acl_draft')
             self.acl_draft_v6 = vlan.get('acl_draft_v6')
+            self.vxlan = vlan.get('vxlan', False)
+
+            if self.vxlan and not self.ambiente.vxlan:
+                raise Exception("Error while updating Vxlan. "
+                                "Environment doesn't support Vxlan. "
+                                "Check environment configuration."
+                                "Env: %s" % self.ambiente.name)
 
             old_vlan = self.get_by_pk(self.id)
         except Exception, e:
