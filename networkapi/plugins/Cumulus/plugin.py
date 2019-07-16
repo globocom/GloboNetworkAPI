@@ -26,7 +26,6 @@ from CumulusExceptions import *
 from networkapi.equipamento.models import EquipamentoAcesso
 from ..base import BasePlugin
 from .. import exceptions
-from networkapi.api_rest import exceptions as api_exceptions
 
 
 log = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ class Cumulus(BasePlugin):
     COMMIT = {'cmd': 'commit'}
     ABORT_CHANGES = {'cmd': 'abort'}
     PENDING = {'cmd': 'pending'}
-    # Expected strings when something occurs not expected occurs
+    # Expected strings when something not expected occurs
     WARNINGS = 'WARNING: Committing these changes will cause problems'
     COMMIT_CONCURRENCY = 'Multiple users are currently'
     COMMON_USERS = 'cumulus|root'
@@ -55,8 +54,6 @@ class Cumulus(BasePlugin):
     SLEEP_WAIT_TIME = 5
     _command_list = list()
     device = None
-    username = None
-    password = None
 
     def _get_info(self):
         """Get info from database to access the device"""
@@ -70,17 +67,17 @@ class Cumulus(BasePlugin):
                 raise exceptions.InvalidEquipmentAccessException()
 
         self.device = self.equipment_access.fqdn
-        self.username = self.equipment_access.user
-        self.password = self.equipment_access.password
+        username = self.equipment_access.user
+        password = self.equipment_access.password
 
-        self.HTTP.add_credentials(self.username, self.password)
+        self.HTTP.add_credentials(username, password)
 
     def connect(self):
         """Use the connect function of the superclass to get
         the informations for access the device"""
         self._get_info()
 
-    def _getConfFromFile(self, filename):
+    def _get_conf_from_file(self, filename):
         """Get the configurations needed to be applied
             and insert into a list"""
         try:
@@ -96,12 +93,12 @@ class Cumulus(BasePlugin):
             raise e
         return True
 
-    def _send_request(self, data):
+    def _send_request(self, data, uri):
         """Send requests for the equipment"""
         try:
             count = 0
             while count < self.MAX_RETRIES:
-                resp, content = self.HTTP.request(self.device,
+                resp, content = self.HTTP.request(uri,
                                                   method="POST",
                                                   headers=self.HEADERS,
                                                   body=dumps(data))
@@ -125,34 +122,45 @@ class Cumulus(BasePlugin):
             log.error('Error: %s' % error)
             raise error
 
+    def _send_nclu_request(self, data):
+        """Send requests to equipment using nclu route"""
+        schema = 'https://'
+        path = ':8080/nclu/v1/rpc'
+        uri = schema + self.device + path
+
+        output = self._send_request(data, uri)
+
+        return output
+
     def _search_pending_warnings(self):
         """Validate if exists any warnings in the staging configuration"""
         try:
-            content = self._send_request(self.PENDING)
+            content = self._send_nclu_request(self.PENDING)
             check_warning = re.search(self.WARNINGS,
                                       content,
                                       flags=re.IGNORECASE)
             if check_warning:
-                self._send_request(self.ABORT_CHANGES)
+                self._send_nclu_request(self.ABORT_CHANGES)
                 raise ConfigurationWarning()
+            else:
+                return True
         except ConfigurationWarning as error:
             log.error(error)
             raise error
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
-        return True
 
     def _search_commit_errors(self):
         """Look for errors fired when
         trying to commit configurations"""
         try:
-            content = self._send_request(self.COMMIT)
+            content = self._send_nclu_request(self.COMMIT)
             check_error = re.search(self.COMMIT_ERRORS,
                                     content,
                                     flags=re.IGNORECASE)
             if check_error:
-                self._send_request(self.ABORT_CHANGES)
+                self._send_nclu_request(self.ABORT_CHANGES)
                 raise CommitError()
             return content
         except CommitError as error:
@@ -168,7 +176,7 @@ class Cumulus(BasePlugin):
         try:
             count = 0
             while count < self.MAX_WAIT:
-                content = self._send_request(self.PENDING)
+                content = self._send_nclu_request(self.PENDING)
 
                 check_concurrency = re.search(self.COMMIT_CONCURRENCY,
                                               content,
@@ -199,26 +207,27 @@ class Cumulus(BasePlugin):
         and search for errors syntax, and if the configurations
         will cause problems in the equipment"""
         try:
-            self._check_pending()
-            for cmd in self._command_list:
-                content = self._send_request({'cmd': cmd})
-                check_error = re.search(self.CLI_ERROR,
-                                        content,
-                                        flags=re.IGNORECASE)
-                check_existence = re.search(self.ALREADY_EXISTS,
+            proceed = self._check_pending()
+            if proceed:
+                for cmd in self._command_list:
+                    content = self._send_nclu_request({'cmd': cmd})
+                    check_error = re.search(self.CLI_ERROR,
                                             content,
                                             flags=re.IGNORECASE)
-                if check_error:
-                    self._send_request(self.ABORT_CHANGES)
-                    raise ConfigurationError(cmd)
-                elif check_existence:
-                    log.info(
-                        'The command "%s" already exists in %s' %
-                        (cmd, self.equipment.nome))
-            check_warnings = self._search_pending_warnings()
-            if check_warnings:
-                content = self._search_commit_errors()
-                return content
+                    check_existence = re.search(self.ALREADY_EXISTS,
+                                                content,
+                                                flags=re.IGNORECASE)
+                    if check_error:
+                        self._send_nclu_request(self.ABORT_CHANGES)
+                        raise ConfigurationError(cmd)
+                    elif check_existence:
+                        log.info(
+                            'The command "%s" already exists in %s' %
+                            (cmd, self.equipment.nome))
+                check_warnings = self._search_pending_warnings()
+                if check_warnings:
+                    content = self._search_commit_errors()
+                    return content
         except ConfigurationError as error:
             log.error(error)
             raise error
@@ -226,14 +235,14 @@ class Cumulus(BasePlugin):
             log.error('Error: ' % error)
             raise error
 
-    def copyScriptFileToConfig(self, filename, use_vrf=None, destination=None):
+    def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
         """Get the configurations needed for configure the equipment
               from the file generated
 
               The use_vrf and destination variables won't be used
               """
         try:
-            success = self._getConfFromFile(filename)
+            success = self._get_conf_from_file(filename)
             if success:
                 output = self.configurations()
                 return output
@@ -241,18 +250,18 @@ class Cumulus(BasePlugin):
             log.error('Error: %s' % error)
             raise error
 
-    def create_svi(self, svi_number, svi_description):
+    def create_svi(self, svi_number, svi_description='no description'):
         """Create SVI in switch."""
         try:
             proceed = self._check_pending()
             if proceed:
                 command = "add vlan %s alias %s" % (svi_number,
                                                     svi_description)
-                self._send_request({'cmd': command})
+                self._send_nclu_request({'cmd': command})
                 check_warnings = self._search_pending_warnings()
                 if check_warnings:
-                    content = self._search_commit_errors()
-                    return content
+                    output = self._search_commit_errors()
+                    return output
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
@@ -263,11 +272,11 @@ class Cumulus(BasePlugin):
             proceed = self._check_pending()
             if proceed:
                 command = "del vlan %s" % svi_number
-                content = self._send_request({'cmd': command})
+                self._send_nclu_request({'cmd': command})
                 check_warnings = self._search_pending_warnings()
                 if check_warnings:
-                    content = self._search_commit_errors()
-                    return content
+                    output = self._search_commit_errors()
+                    return output
         except Exception as error:
             log.error('Error: %s' % error)
             raise error
@@ -283,7 +292,7 @@ class Cumulus(BasePlugin):
     def exec_command(
             self,
             command,
-            success_regex=None,
+            success_regex='',
             invalid_regex=None,
             error_regex=None):
         """The exec command will not be needed here"""
