@@ -37,6 +37,7 @@ class Cumulus(BasePlugin):
     HTTP = httplib2.Http('.cache', disable_ssl_certificate_validation=True)
     HEADERS = {'Content-Type': 'application/json; charset=UTF-8'}
     httplib2.RETRIES = 3
+
     # Cumulus commands to control the staging area
     COMMIT = {'cmd': 'commit'}
     ABORT_CHANGES = {'cmd': 'abort'}
