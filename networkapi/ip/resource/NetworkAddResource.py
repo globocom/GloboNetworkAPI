@@ -138,8 +138,7 @@ class NetworkAddResource(RestResource):
             if version == IP_VERSION.IPv4[0]:
 
                 # Find all networks related to environment
-                nets = NetworkIPv4.objects.filter(
-                    vlan__ambiente__id=vlan.ambiente.id)
+                nets = NetworkIPv4.objects.filter(vlan__ambiente__id=vlan.ambiente.id)
 
                 # Cast to API class
                 networks = set([IPv4Network('%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4,
@@ -175,8 +174,8 @@ class NetworkAddResource(RestResource):
 
                 # # Filter case 1 - Adding new network with same ip range to another network on other environment ##
                 # Get environments with networks with the same ip range
-                nets = NetworkIPv4.objects.filter(
-                    oct1=expl[0], oct2=expl[1], oct3=expl[2], oct4=expl[3], block=expl[4])
+                nets = NetworkIPv4.objects.filter(oct1=expl[0], oct2=expl[1], oct3=expl[2],
+                                                  oct4=expl[3], block=expl[4])
                 env_ids = list()
                 for net_ip in nets:
                     env_ids.append(net_ip.vlan.ambiente.id)
@@ -185,15 +184,13 @@ class NetworkAddResource(RestResource):
                 if len(env_ids) > 0:
 
                     # Get equipments related to this network's environment
-                    env_equips = EquipamentoAmbiente.objects.filter(
-                        ambiente=vlan.ambiente.id)
+                    env_equips = EquipamentoAmbiente.objects.filter(ambiente=vlan.ambiente.id)
 
                     # Verify equipments related with all other environments
                     # that contains networks with same ip range
                     for env_id in env_ids:
                         # Equipments related to other environments
-                        other_env_equips = EquipamentoAmbiente.objects.filter(
-                            ambiente=env_id)
+                        other_env_equips = EquipamentoAmbiente.objects.filter(ambiente=env_id)
                         # Adjust to equipments
                         equip_list = list()
                         for equip_env in other_env_equips:
@@ -233,23 +230,16 @@ class NetworkAddResource(RestResource):
                 # New NetworkIPv4
                 network_ip = NetworkIPv4()
 
-                # Set octs by network generated
-                network_ip.oct1, network_ip.oct2, network_ip.oct3, network_ip.oct4 = str(
-                    net.network).split('.')
-                # Set block by network generated
+                network_ip.oct1, network_ip.oct2, network_ip.oct3, network_ip.oct4 = str(net.network).split('.')
                 network_ip.block = net.prefixlen
-                # Set mask by network generated
-                network_ip.mask_oct1, network_ip.mask_oct2, network_ip.mask_oct3, network_ip.mask_oct4 = str(
-                    net.netmask).split('.')
-                # Set broadcast by network generated
+                network_ip.mask_oct1, network_ip.mask_oct2, network_ip.mask_oct3, network_ip.mask_oct4 = \
+                    str(net.netmask).split('.')
                 network_ip.broadcast = net.broadcast.compressed
 
             else:
                 # Find all networks ralated to environment
-                nets = NetworkIPv6.objects.filter(
-                    vlan__ambiente__id=vlan.ambiente.id)
+                nets = NetworkIPv6.objects.filter(vlan__ambiente__id=vlan.ambiente.id)
 
-                # Cast to API class
                 networks = set([IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net_ip.block1, net_ip.block2,
                                                                             net_ip.block3, net_ip.block4,
                                                                             net_ip.block5, net_ip.block6,
@@ -261,8 +251,8 @@ class NetworkAddResource(RestResource):
                     if net in network_aux or network_aux in net:
                         self.log.debug('Network %s cannot be allocated. It conflicts with %s already in use '
                                        'in this environment.' % (net, network))
-                        raise NetworkIPv4AddressNotAvailableError(
-                            None, u'Network cannot be allocated. %s already in use in this environment.' % network_aux)
+                        raise NetworkIPv4AddressNotAvailableError(None, u'Network cannot be allocated. %s already in '
+                                                                        u'use in this environment.' % network_aux)
 
                 if env_vip is not None:
 
@@ -270,7 +260,6 @@ class NetworkAddResource(RestResource):
                     nets = NetworkIPv6.objects.filter(
                         ambient_vip__id=env_vip.id)
 
-                    # Cast to API class
                     networks = set([IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%d' % (net_ip.block1, net_ip.block2,
                                                                                 net_ip.block3, net_ip.block4,
                                                                                 net_ip.block5, net_ip.block6,
@@ -300,15 +289,13 @@ class NetworkAddResource(RestResource):
                 if len(env_ids) > 0:
 
                     # Get equipments related to this network's environment
-                    env_equips = EquipamentoAmbiente.objects.filter(
-                        ambiente=vlan.ambiente.id)
+                    env_equips = EquipamentoAmbiente.objects.filter(ambiente=vlan.ambiente.id)
 
                     # Verify equipments related with all other environments
                     # that contains networks with same ip range
                     for env_id in env_ids:
                         # Equipments related to other environments
-                        other_env_equips = EquipamentoAmbiente.objects.filter(
-                            ambiente=env_id)
+                        other_env_equips = EquipamentoAmbiente.objects.filter(ambiente=env_id)
                         # Adjust to equipments
                         equip_list = list()
                         for equip_env in other_env_equips:
@@ -347,13 +334,9 @@ class NetworkAddResource(RestResource):
 
                 # New NetworkIPv6
                 network_ip = NetworkIPv6()
-
-                # Set block by network generated
                 network_ip.block1, network_ip.block2, network_ip.block3, network_ip.block4, network_ip.block5, \
                     network_ip.block6, network_ip.block7, network_ip.block8 = str(net.network.exploded).split(':')
-                # Set block by network generated
                 network_ip.block = net.prefixlen
-                # Set mask by network generated
                 network_ip.mask1, network_ip.mask2, network_ip.mask3, network_ip.mask4, network_ip.mask5, \
                     network_ip.mask6, network_ip.mask7, network_ip.mask8 = str(net.netmask.exploded).split(':')
 
@@ -377,13 +360,14 @@ class NetworkAddResource(RestResource):
                         envs.append(env.ambiente)
 
             network_ip_verify = IPNetwork(network)
+
             # For all vlans in all common environments,
             # check if any network is a subnetwork or supernetwork
             # of the desired network network_ip_verify
             for env in envs:
                 for vlan_obj in env.vlan_set.all():
-                    is_subnet = verify_subnet(
-                        vlan_obj, network_ip_verify, version)
+
+                    is_subnet = verify_subnet(vlan_obj, network_ip_verify, version)
 
                     if is_subnet:
                         if vlan_obj.ambiente == ambiente:
@@ -393,35 +377,24 @@ class NetworkAddResource(RestResource):
                                 int(vlan_obj.ambiente.filter_id) != int(ambiente.filter_id):
                             raise NetworkIPRangeEnvError(None)
 
-            # Set Vlan
             network_ip.vlan = vlan
-
-            # Set Network Type
             network_ip.network_type = net_type
-
-            # Set Environment VIP
             network_ip.ambient_vip = env_vip
-
-            # Set Cluster Unit
             network_ip.cluster_unit = cluster_unit
 
-            # Persist
             try:
 
-                # Delete vlan's cache
                 destroy_cache_function([id_vlan])
                 network_ip.save()
 
-                list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(
-                    ambiente=network_ip.vlan.ambiente.id, is_router=True)
+                list_equip_routers_ambient = EquipamentoAmbiente.objects.filter(ambiente=network_ip.vlan.ambiente.id,
+                                                                                is_router=True)
 
                 if list_equip_routers_ambient:
-
                     if version == IP_VERSION.IPv4[0]:
-
                         if network_ip.block < 31:
 
-                            # Add Adds the first available ipv4 on all equipment
+                            # Add the first available ipv4 on all equipment
                             # that is configured as a router for the environment
                             # related to network
                             ip = Ip.get_first_available_ip(network_ip.id)
@@ -442,27 +415,46 @@ class NetworkAddResource(RestResource):
                             else:
                                 multiple_ips = False
 
-                            for equip in list_equip_routers_ambient:
-                                IpEquipamento().create(
-                                    user, ip_model.id, equip.equipamento.id)
+                            logging.debug('vxlan: %s' % vlan.vxlan)
+
+                            if vlan.vxlan:
+
+                                logging.debug('vxlan ok')
+                                for equip in list_equip_routers_ambient:
+                                    IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
 
                                 if multiple_ips:
-                                    router_ip = Ip.get_first_available_ip(
-                                        network_ip.id, True)
-                                    router_ip = str(router_ip).split('.')
-                                    ip_model2 = Ip()
-                                    ip_model2.oct1 = router_ip[0]
-                                    ip_model2.oct2 = router_ip[1]
-                                    ip_model2.oct3 = router_ip[2]
-                                    ip_model2.oct4 = router_ip[3]
-                                    ip_model2.networkipv4_id = network_ip.id
-                                    ip_model2.save(user)
-                                    IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
+                                    debug_ip = Ip.get_first_available_ip(network_ip.id, True)
+
+                                    ips = Ip()
+                                    ips.oct1, ips.oct2, ips.oct3, ips.oct4 = str(debug_ip).split('.')
+                                    ips.networkipv4_id = network_ip.id
+                                    ips.descricao = "IP alocado para debug"
+                                    ips.save(user)
+
+                                    IpEquipamento().create(user, ips.id, list_equip_routers_ambient[0].equipamento.id)
+
+                            else:
+
+                                for equip in list_equip_routers_ambient:
+                                    IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
+
+                                    if multiple_ips:
+                                        router_ip = Ip.get_first_available_ip(network_ip.id, True)
+                                        router_ip = str(router_ip).split('.')
+                                        ip_model2 = Ip()
+                                        ip_model2.oct1 = router_ip[0]
+                                        ip_model2.oct2 = router_ip[1]
+                                        ip_model2.oct3 = router_ip[2]
+                                        ip_model2.oct4 = router_ip[3]
+                                        ip_model2.networkipv4_id = network_ip.id
+                                        ip_model2.save(user)
+                                        IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
                     else:
                         if network_ip.block < 127:
 
-                            # Add Adds the first available ipv6 on all equipment
+                            # Add the first available ipv6 on all equipment
                             # that is configured as a router for the environment
                             # related to network
                             ipv6 = Ipv6.get_first_available_ip6(network_ip.id)
@@ -487,26 +479,44 @@ class NetworkAddResource(RestResource):
                             else:
                                 multiple_ips = False
 
-                            for equip in list_equip_routers_ambient:
-                                Ipv6Equipament().create(
-                                    user, ipv6_model.id, equip.equipamento.id)
+                            if vlan.vxlan:
+
+                                for equip in list_equip_routers_ambient:
+                                    Ipv6Equipament().create(user, ipv6_model.id, equip.equipamento.id)
 
                                 if multiple_ips:
-                                    router_ip = Ipv6.get_first_available_ip6(
-                                        network_ip.id, True)
-                                    router_ip = str(router_ip).split(':')
-                                    ipv6_model2 = Ipv6()
-                                    ipv6_model2.block1 = router_ip[0]
-                                    ipv6_model2.block2 = router_ip[1]
-                                    ipv6_model2.block3 = router_ip[2]
-                                    ipv6_model2.block4 = router_ip[3]
-                                    ipv6_model2.block5 = router_ip[4]
-                                    ipv6_model2.block6 = router_ip[5]
-                                    ipv6_model2.block7 = router_ip[6]
-                                    ipv6_model2.block8 = router_ip[7]
-                                    ipv6_model2.networkipv6_id = network_ip.id
-                                    ipv6_model2.save(user)
-                                    Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
+                                    router_ip = Ipv6.get_first_available_ip6(network_ip.id, True)
+
+                                    ipv6s = Ipv6()
+                                    ipv6s.block1, ipv6s.block2, ipv6s.block3, ipv6s.block4, ipv6s.block5, \
+                                        ipv6s.block6, ipv6s.block7, ipv6s.block8 = str(router_ip).split(':')
+                                    ipv6s.networkipv6_id = network_ip.id
+                                    ipv6s.descricao = "IPv6 alocado para debug"
+                                    ipv6s.save(user)
+
+                                    Ipv6Equipament().create(user, ipv6s.id,
+                                                            list_equip_routers_ambient[0].equipamento.id)
+
+                            else:
+
+                                for equip in list_equip_routers_ambient:
+                                    Ipv6Equipament().create(user, ipv6_model.id, equip.equipamento.id)
+
+                                    if multiple_ips:
+                                        router_ip = Ipv6.get_first_available_ip6(network_ip.id, True)
+                                        router_ip = str(router_ip).split(':')
+                                        ipv6_model2 = Ipv6()
+                                        ipv6_model2.block1 = router_ip[0]
+                                        ipv6_model2.block2 = router_ip[1]
+                                        ipv6_model2.block3 = router_ip[2]
+                                        ipv6_model2.block4 = router_ip[3]
+                                        ipv6_model2.block5 = router_ip[4]
+                                        ipv6_model2.block6 = router_ip[5]
+                                        ipv6_model2.block7 = router_ip[6]
+                                        ipv6_model2.block8 = router_ip[7]
+                                        ipv6_model2.networkipv6_id = network_ip.id
+                                        ipv6_model2.save(user)
+                                        Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
 
             except Exception as e:
                 raise IpError(e, u'Error persisting Network.')
