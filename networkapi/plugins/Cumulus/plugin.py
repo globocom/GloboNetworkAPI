@@ -233,7 +233,7 @@ class Cumulus(BasePlugin):
             log.error(error)
             raise error
         except Exception as error:
-            log.error('Error: ' % error)
+            log.error('Error: %s ' % error)
             raise error
 
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
