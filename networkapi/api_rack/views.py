@@ -42,6 +42,8 @@ from networkapi.system.facade import get_value as get_variable
 from networkapi.system.facade import save_variable as save_variable
 from networkapi.system import exceptions as var_exceptions
 
+from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT
+from networkapi.api_deploy import facade as deploy_facade
 
 log = logging.getLogger(__name__)
 
@@ -164,7 +166,7 @@ class RackDeployView(APIView):
             # Get all files and search for equipments of the rack
             for var in arquivos:
                 filename_equipments = var.split('/')[-1]
-                rel_filename = "../../" + REL_PATH_TO_ADD_CONFIG + filename_equipments
+                rel_filename = REL_PATH_TO_ADD_CONFIG + filename_equipments
                 log.debug("rel_filename: %s" % rel_filename)
                 # Check if file is config relative to this rack
                 if rack.nome in filename_equipments:
@@ -176,16 +178,13 @@ class RackDeployView(APIView):
                         try:
                             equip = Equipamento.get_by_name(equipment_name)
                             if not equip.maintenance:
-                                (erro, result) = commands.getstatusoutput("/usr/bin/backuper -T acl -b %s -e -i %s -w "
-                                                                          "300" % (rel_filename, equipment_name))
-                                log.debug("erro: %s, result: %s" % (str(erro), str(result)))
-                                if erro:
-                                    raise exceptions.RackAplError()
-                        except exceptions.RackAplError, e:
-                            raise e
-                        except:
-                            # Error equipment not found, do nothing
-                            pass
+                                lockvar = LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT % (equip.id)
+                                output = deploy_facade.deploy_config_in_equipment_synchronous(rel_filename, equip, lockvar)
+
+                                log.debug("equipment output: %s" % (output))
+                        except Exception, e:
+                            log.exception(e)
+                            raise exceptions.RackAplError(e)
 
             # Create Foreman entries for rack switches
             facade.api_foreman(rack)
