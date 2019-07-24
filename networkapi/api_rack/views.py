@@ -231,7 +231,7 @@ class RackEnvironmentView(APIView):
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
-            log = logging.getLogger('Alocando ambientes e vlans do rack')
+            logging.getLogger('Alocando ambientes e vlans do rack')
 
             rack_id = kwargs.get("rack_id")
             facade.rack_environments_vlans(rack_id, request.user)

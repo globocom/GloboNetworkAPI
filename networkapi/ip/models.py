@@ -650,7 +650,7 @@ class NetworkIPv4(BaseModel):
         vlan_map['acl_valida_v6'] = self.vlan.acl_valida_v6
         vlan_map['ativada'] = self.vlan.ativada
         vlan_map['id_network'] = self.id
-        vlan_map['vxlan'] = self.vlan.vxlan
+        vlan_map['vxlan'] = self.vlan.ambiente.vxlan
 
         map = dict()
         map['vlan'] = vlan_map
@@ -2928,7 +2928,7 @@ class NetworkIPv6(BaseModel):
         vlan_map['acl_valida_v6'] = self.vlan.acl_valida_v6
         vlan_map['ativada'] = self.vlan.ativada
         vlan_map['id_network'] = self.id
-        vlan_map['vxlan'] = self.vlan.vxlan
+        vlan_map['vxlan'] = self.vlan.ambiente.vxlan
 
         map = dict()
         map['vlan'] = vlan_map
