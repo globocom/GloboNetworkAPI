@@ -103,7 +103,7 @@ class FTOS(BasePlugin):
 
         file_copied = 0
         retries = 0
-        while(not file_copied and retries < self.MAX_TRIES):
+        while not file_copied and retries < self.MAX_TRIES:
             if retries is not 0:
                 sleep(self.RETRY_WAIT_TIME)
 
