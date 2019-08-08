@@ -1,0 +1,18 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `peer_group`
+MODIFY `id_route_map_in` INT(10) UNSIGNED default NULL ,
+MODIFY `id_route_map_out` INT(10) UNSIGNED default NULL ;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `peer_group`
+MODIFY `id_route_map_in` INT(10) UNSIGNED NOT NULL COMMENT '',
+MODIFY `id_route_map_out` INT(10) UNSIGNED NOT NULL COMMENT '';
+
+"""
+
+
