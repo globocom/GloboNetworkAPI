@@ -90,7 +90,7 @@
     }
   },
   "required": [
-    "route_map"
+    "route_map_entries"
   ],
   "title": "RouteMapEntry Post",
   "type": "object"

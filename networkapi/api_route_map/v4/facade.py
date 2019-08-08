@@ -210,7 +210,7 @@ def check_dict(obj):
                          order=obj.get('order'))
 
     if obj.get('route_map').get('id'):
-        obj_to_create['route_map'] = RouteMap.get_by_pk(obj.get('route_map').get('id'))
+        obj_to_create['route_map'] = obj.get('route_map').get('id')
     else:
         route_map_name = create_route_map(obj.get('route_map'))
         obj_to_create['route_map'] = route_map_name.id
