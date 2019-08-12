@@ -36,13 +36,15 @@ class PeerGroup(BaseModel):
     route_map_in = models.ForeignKey(
         'api_route_map.RouteMap',
         db_column='id_route_map_in',
-        related_name='peergroup_route_map_in'
+        related_name='peergroup_route_map_in',
+        null=True
     )
 
     route_map_out = models.ForeignKey(
         'api_route_map.RouteMap',
         db_column='id_route_map_out',
-        related_name='peergroup_route_map_out'
+        related_name='peergroup_route_map_out',
+        null=True
     )
 
     def _get_environments(self):
@@ -105,13 +107,14 @@ class PeerGroup(BaseModel):
         route_map_in_id = peer_group.get('route_map_in')
         route_map_out_id = peer_group.get('route_map_out')
 
-        self.route_map_in = routemap_model.get_by_pk(route_map_in_id)
-        self.route_map_out = routemap_model.get_by_pk(route_map_out_id)
+        self.route_map_in = routemap_model.get_by_pk(route_map_in_id) if route_map_in_id else None
+        self.route_map_out = routemap_model.get_by_pk(route_map_out_id) if route_map_out_id else None
         self.name = peer_group.get('name')
 
         # Validation
-        self.check_route_map_in_and_out_are_equal()
-        self.check_route_maps_already_in_other_peer_groups()
+        if route_map_in_id and route_map_out_id:
+            self.check_route_map_in_and_out_are_equal()
+        # self.check_route_maps_already_in_other_peer_groups()
 
         self.save()
 
@@ -126,8 +129,10 @@ class PeerGroup(BaseModel):
 
         # Permissions
         object_group_perm_model = get_model('api_ogp', 'ObjectGroupPermission')
-        object_group_perm_model().create_perms(
-            peer_group, self.id, AdminPermission.OBJ_TYPE_PEER_GROUP, user)
+        object_group_perm_model().create_perms(peer_group,
+                                               self.id,
+                                               AdminPermission.OBJ_TYPE_PEER_GROUP,
+                                               user)
 
     def update_v4(self, peer_group, user):
         """Update PeerGroup."""
