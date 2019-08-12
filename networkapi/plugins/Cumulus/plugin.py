@@ -24,6 +24,7 @@ from time import sleep
 from rest_framework import status
 from CumulusExceptions import *
 from networkapi.equipamento.models import EquipamentoAcesso
+from networkapi.settings import TFTPBOOT_FILES_PATH
 from ..base import BasePlugin
 from .. import exceptions
 
@@ -80,9 +81,13 @@ class Cumulus(BasePlugin):
 
     def _get_conf_from_file(self, filename):
         """Get the configurations needed to be applied
-            and insert into a list"""
+            and insert into a list
+
+            TFTPBOOT_FILES_PATH is required so we can read
+            the generated config file
+            """
         try:
-            with open(filename, 'r+') as lines:
+            with open(TFTPBOOT_FILES_PATH + filename, 'r+') as lines:
                 for line in lines:
                     self._command_list.append(line)
         except IOError as e:
