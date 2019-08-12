@@ -94,8 +94,7 @@
         },
         "required": [
           "name",
-          "route_map_in",
-          "route_map_out"
+          "environments"
         ],
         "type": "object"
       },
