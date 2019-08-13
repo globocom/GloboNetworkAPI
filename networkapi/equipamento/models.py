@@ -29,6 +29,7 @@ from networkapi.grupo.models import EGrupoNotFoundError
 from networkapi.models.BaseModel import BaseModel
 from networkapi.roteiro.models import Roteiro
 from networkapi.tipoacesso.models import TipoAcesso
+from networkapi.api_vrf.models import Vrf
 
 
 class EquipamentoError(Exception):
@@ -1657,6 +1658,7 @@ class EquipamentoAcesso(BaseModel):
     password = models.CharField(max_length=20, db_column='pass')
     tipo_acesso = models.ForeignKey(TipoAcesso, db_column='id_tipo_acesso')
     enable_pass = models.CharField(max_length=20, blank=True)
+    vrf = models.ForeignKey(Vrf, blank=True, null=True, db_column='id_vrf')
 
     log = logging.getLogger('EquipamentoAcesso')
 

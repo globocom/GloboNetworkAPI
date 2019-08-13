@@ -37,6 +37,7 @@ from networkapi.tipoacesso.models import TipoAcesso
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util import is_valid_string_maxsize
 from networkapi.util import is_valid_string_minsize
+from networkapi.api_vrf.models import Vrf
 
 
 class EquipamentoAcessoResource(RestResource):
@@ -174,6 +175,18 @@ class EquipamentoAcessoResource(RestResource):
                 self.log.error(u'Parameter enable_pass is invalid.')
                 raise InvalidValueError(None, 'enable_pass', '****')
 
+            # Obtém o valor de "vrf"
+            vrf = equipamento_acesso_map.get('vrf')
+            vrf_obj = None
+            if vrf:
+                # Valid enable_pass
+                if not is_valid_int_greater_zero_param(vrf):
+                    self.log.error(
+                        u'The vrf parameter is not a valid value: %s.', vrf)
+                    raise InvalidValueError(None, 'vrf', vrf)
+                vrf_obj = Vrf(int(vrf))
+
+
             # Cria acesso ao equipamento conforme dados recebidos no XML
             equipamento_acesso = EquipamentoAcesso(
                 equipamento=Equipamento(id=id_equipamento),
@@ -181,7 +194,8 @@ class EquipamentoAcessoResource(RestResource):
                 user=username,
                 password=password,
                 tipo_acesso=TipoAcesso(id=id_tipo_acesso),
-                enable_pass=enable_pass
+                enable_pass=enable_pass,
+                vrf=vrf_obj
             )
             equipamento_acesso.create(user)
 
@@ -358,4 +372,8 @@ class EquipamentoAcessoResource(RestResource):
         map['id_tipo_acesso'] = equipamento_acesso.tipo_acesso.id
         map['enable_pass'] = equipamento_acesso.enable_pass
         map['protocolo_tipo_acesso'] = equipamento_acesso.tipo_acesso.protocolo
+        if equipamento_acesso.vrf:
+            map['vrf'] = equipamento_acesso.vrf.id
+        else:
+            map['vrf'] = ''
         return map

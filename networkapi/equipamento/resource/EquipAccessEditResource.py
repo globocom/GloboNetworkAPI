@@ -38,6 +38,7 @@ from networkapi.tipoacesso.models import TipoAcessoError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util import is_valid_string_maxsize
 from networkapi.util import is_valid_string_minsize
+from networkapi.api_vrf.models import Vrf
 
 
 class EquipAccessEditResource(RestResource):
@@ -80,6 +81,7 @@ class EquipAccessEditResource(RestResource):
             enable_pass = equipmentaccess_map.get('enable_pass')
             type_access = equipmentaccess_map.get('id_tipo_acesso')
             equip_access = equipmentaccess_map.get('id_equip_acesso')
+            vrf = equipamento_acesso_map.get('vrf')
 
             # Password must NOT be none and 20 is the maxsize and 3 is the
             # minsize
@@ -108,7 +110,17 @@ class EquipAccessEditResource(RestResource):
             if not is_valid_int_greater_zero_param(type_access):
                 self.log.error(
                     u'Parameter type_access_id is invalid. Value: %s.', type_access)
-                raise InvalidValueError(None, 'type_access_id', type_access)
+                raise InvalidValueError(None, 'type_access_id', type_access)            
+
+            # Valid vrf id
+            vrf_obj = None
+            if vrf:
+                if not is_valid_int_greater_zero_param(vrf):
+                    self.log.error(
+                        u'The vrf parameter is not a valid value: %s.', vrf)
+                    raise InvalidValueError(None, 'vrf', vrf)
+                vrf_obj = Vrf(int(vrf))
+
 
             type_access = TipoAcesso.get_by_pk(type_access)
 
@@ -130,8 +142,9 @@ class EquipAccessEditResource(RestResource):
                             None, u'Já existe esta associação de equipamento e tipo de acesso cadastrada.')
 
                 equip_access.__dict__.update(
-                    fqdn=fqdn, user=user, password=password, enable_pass=enable_pass)
+                    fqdn=fqdn, user=user, password=password, enable_pass=enable_pass, vrf=vrf)
                 equip_access.tipo_acesso = type_access
+                equip_access.vrf = vrf_obj
 
                 equip_access.save(auth)
 
