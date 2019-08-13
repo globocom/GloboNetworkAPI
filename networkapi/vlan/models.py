@@ -210,21 +210,34 @@ class Vlan(BaseModel):
 
     log = logging.getLogger('Vlan')
 
-    id = models.AutoField(primary_key=True, db_column='id_vlan')
+    id = models.AutoField(primary_key=True,
+                          db_column='id_vlan')
     nome = models.CharField(max_length=50)
     num_vlan = models.IntegerField()
-    ambiente = models.ForeignKey('ambiente.Ambiente', db_column='id_ambiente')
-    descricao = models.CharField(max_length=200, blank=True)
-    acl_file_name = models.CharField(max_length=200, blank=True)
+    ambiente = models.ForeignKey('ambiente.Ambiente',
+                                 db_column='id_ambiente')
+    descricao = models.CharField(max_length=200,
+                                 blank=True)
+    acl_file_name = models.CharField(max_length=200,
+                                     blank=True)
     acl_valida = models.BooleanField()
-    acl_file_name_v6 = models.CharField(max_length=200, blank=True)
+    acl_file_name_v6 = models.CharField(max_length=200,
+                                        blank=True)
     acl_valida_v6 = models.BooleanField()
     ativada = models.BooleanField()
-    vrf = models.CharField(max_length=100, null=True, db_column='vrf')
-
-    acl_draft = models.TextField(blank=True, null=True, db_column='acl_draft')
-    acl_draft_v6 = models.TextField(
-        blank=True, null=True, db_column='acl_draft_v6')
+    vrf = models.CharField(max_length=100,
+                           null=True,
+                           db_column='vrf')
+    acl_draft = models.TextField(blank=True,
+                                 null=True,
+                                 db_column='acl_draft')
+    acl_draft_v6 = models.TextField(blank=True,
+                                    null=True,
+                                    db_column='acl_draft_v6')
+    vxlan = models.BooleanField(db_column='vxlan',
+                                default=False,
+                                null=True,
+                                blank=True)
 
     def _get_networks_ipv4(self):
         """Returns networks v4."""
@@ -554,6 +567,7 @@ class Vlan(BaseModel):
         self.acl_file_name = self.nome
         self.acl_valida = 0
         self.ativada = 0
+        # self.ambiente.vxlan = self.ambiente.vxlan
 
         try:
             self.save()
@@ -616,7 +630,7 @@ class Vlan(BaseModel):
 
         # Calcular o Endereço de Rede da VLAN
         vlan_address = self.calculate_vlan_address()
-        if (len(vlan_address) == 0):
+        if len(vlan_address) == 0:
             raise VlanNetworkAddressNotAvailableError(
                 None, u'Não existe endereço de rede disponível para o cadastro da VLAN.')
 
@@ -633,6 +647,7 @@ class Vlan(BaseModel):
         self.acl_file_name = self.nome
         self.acl_valida = 0
         self.ativada = 0
+        # self.vxlan = self.ambiente.vxlan
 
         try:
             self.save()
@@ -761,7 +776,8 @@ class Vlan(BaseModel):
             for vlan in env.vlan_set.all():
                 if int(vlan.num_vlan) == int(self.num_vlan):
                     raise VlanNumberEnvironmentNotAvailableError(
-                        None, 'Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente' % (self.num_vlan))
+                        None, 'Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado '
+                              'nesse ambiente' % (self.num_vlan))
 
         # Name VLAN can not be duplicated in the environment
         if self.exist_vlan_name_in_environment():
@@ -815,9 +831,11 @@ class Vlan(BaseModel):
             for env in envs:
                 for vlan in env.vlan_set.all():
                     if int(vlan.num_vlan) == int(self.num_vlan) and int(vlan.id) != int(self.id):
-                        if self.ambiente.filter_id is None or vlan.ambiente.filter_id is None or int(vlan.ambiente.filter_id) != int(self.ambiente.filter_id):
+                        if self.ambiente.filter_id is None or vlan.ambiente.filter_id is None \
+                                or int(vlan.ambiente.filter_id) != int(self.ambiente.filter_id):
                             raise VlanNumberEnvironmentNotAvailableError(
-                                None, 'Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado nesse ambiente' % (self.num_vlan))
+                                None, 'Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado '
+                                      'nesse ambiente' % (self.num_vlan))
 
             old_vlan = self.get_by_pk(self.id)
             old_env = old_vlan.ambiente
@@ -827,7 +845,9 @@ class Vlan(BaseModel):
                 if self.check_env_shared_equipment(old_env):
                     if self.ambiente.filter_id != old_env.filter_id:
                         raise VlanNumberEnvironmentNotAvailableError(
-                            None, 'Um dos equipamentos associados com o ambiente desta Vlan também está associado com outro ambiente que tem uma rede com a mesma faixa, adicione filtros nos ambientes se necessário.')
+                            None, 'Um dos equipamentos associados com o ambiente desta Vlan também está associado '
+                                  'com outro ambiente que tem uma rede com a mesma faixa, adicione filtros nos '
+                                  'ambientes se necessário.')
 
         if change_name:
             # Name VLAN can not be duplicated in the environment
@@ -995,13 +1015,14 @@ class Vlan(BaseModel):
             self.acl_draft = vlan.get('acl_draft')
             self.acl_draft_v6 = vlan.get('acl_draft_v6')
 
+            self.vxlan = self.ambiente.vxlan
+
             # Get environments related
             envs = self.get_environment_related(use_vrf=False)\
                 .values_list('id', flat=True)
 
         except Exception, e:
             raise VlanErrorV3(e)
-
         else:
             # Create locks for environment
             locks_name = [LOCK_ENVIRONMENT_ALLOCATES % env for env in envs]
@@ -1024,7 +1045,6 @@ class Vlan(BaseModel):
             # Allocates networkv4
             netv4 = vlan.get('create_networkv4')
             if netv4:
-
                 network_type = vlan.get('create_networkv4').get(
                     'network_type', None)
                 prefix = vlan.get('create_networkv4').get('prefix', None)

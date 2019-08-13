@@ -148,19 +148,17 @@ class NetworkIPv4AddResource(RestResource):
 
             # Valid vlan ID
             if not is_valid_int_greater_zero_param(vlan_id):
-                self.log.error(
-                    u'Parameter id_vlan is invalid. Value: %s.', vlan_id)
+                self.log.error(u'Parameter id_vlan is invalid. Value: %s.', vlan_id)
                 raise InvalidValueError(None, 'id_vlan', vlan_id)
 
             # Network Type
 
             # Valid network_type ID
-            """
-            if not is_valid_int_greater_zero_param(network_type):
-                self.log.error(
-                    u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
-                raise InvalidValueError(None, 'id_tipo_rede', network_type)
-            """
+            # if not is_valid_int_greater_zero_param(network_type):
+            #     self.log.error(
+            #         u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
+            #     raise InvalidValueError(None, 'id_tipo_rede', network_type)
+
             # Find network_type by ID to check if it exist
             net = None
             if network_type:
@@ -187,15 +185,14 @@ class NetworkIPv4AddResource(RestResource):
 
             # New NetworkIPv4
             network_ipv4 = NetworkIPv4()
-            vlan_map = network_ipv4.add_network_ipv4(
-                user, vlan_id, net, evip, prefix)
+            vlan_map = network_ipv4.add_network_ipv4(user, vlan_id, net, evip, prefix)
 
             list_equip_routers_ambient = EquipamentoAmbiente.get_routers_by_environment(
                 vlan_map['vlan']['id_ambiente'])
 
             if list_equip_routers_ambient:
 
-                # Add Adds the first available ipv4 on all equipment
+                # Add the first available ipv4 on all equipment
                 # that is configured as a router for the environment related to
                 # network
                 ip = Ip.get_first_available_ip(vlan_map['vlan']['id_network'])
@@ -216,22 +213,39 @@ class NetworkIPv4AddResource(RestResource):
                 else:
                     multiple_ips = False
 
-                for equip in list_equip_routers_ambient:
-                    IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
+                if vlan_map.get('vlan').get('vxlan'):
+
+                    logging.debug('vxlan')
+                    for equip in list_equip_routers_ambient:
+                        IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ip.get_first_available_ip(
-                            vlan_map['vlan']['id_network'], True)
-                        router_ip = str(router_ip).split('.')
-                        ip_model2 = Ip()
-                        ip_model2.oct1 = router_ip[0]
-                        ip_model2.oct2 = router_ip[1]
-                        ip_model2.oct3 = router_ip[2]
-                        ip_model2.oct4 = router_ip[3]
-                        ip_model2.networkipv4_id = vlan_map[
-                            'vlan']['id_network']
-                        ip_model2.save()
-                        IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
+                        debug_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+
+                        ips = Ip()
+                        ips.oct1, ips.oct2, ips.oct3, ips.oct4 = str(debug_ip).split('.')
+                        ips.networkipv4_id = network_ipv4.id
+                        ips.descricao = "IP alocado para debug"
+                        ips.save(user)
+
+                        IpEquipamento().create(user, ips.id, list_equip_routers_ambient[0].equipamento.id)
+
+                else:
+
+                    for equip in list_equip_routers_ambient:
+                        IpEquipamento().create(user, ip_model.id, equip.equipamento.id)
+
+                        if multiple_ips:
+                            router_ip = Ip.get_first_available_ip(network_ipv4.id, True)
+                            router_ip = str(router_ip).split('.')
+                            ip_model2 = Ip()
+                            ip_model2.oct1 = router_ip[0]
+                            ip_model2.oct2 = router_ip[1]
+                            ip_model2.oct3 = router_ip[2]
+                            ip_model2.oct4 = router_ip[3]
+                            ip_model2.networkipv4_id = network_ipv4.id
+                            ip_model2.save(user)
+                            IpEquipamento().create(user, ip_model2.id, equip.equipamento.id)
 
             # Return XML
             return self.response(dumps_networkapi(vlan_map))
