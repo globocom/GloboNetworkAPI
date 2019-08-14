@@ -58,11 +58,19 @@ class NXOS(BasePlugin):
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
         """
+
+        #1.1 this should be removed in the future, we have to prepare db entries first
+        # use_vrf is not used when this method is called
         if use_vrf is None:
             use_vrf = self.management_vrf
 
-        command = 'copy tftp://%s/%s %s vrf %s\n\n' % (
-            self.tftpserver, filename, destination, use_vrf)
+        #1.2 only this check should be left - use_vrf must be used
+        if use_vrf:
+            command = 'copy tftp://%s/%s %s vrf %s\n\n' % (
+                self.tftpserver, filename, destination, use_vrf)
+        else:
+            command = 'copy tftp://%s/%s %s\n\n' % (
+                self.tftpserver, filename, destination)
 
         log.info('sending command: %s' % command)
 

@@ -28,8 +28,10 @@ from networkapi.grupo.models import EGrupo
 from networkapi.grupo.models import EGrupoNotFoundError
 from networkapi.models.BaseModel import BaseModel
 from networkapi.roteiro.models import Roteiro
-from networkapi.tipoacesso.models import TipoAcesso
+from networkapi.tipoacesso.models import TipoAcesso, AccessTypeNotFoundError
 from networkapi.api_vrf.models import Vrf
+from networkapi.api_vrf.exceptions import VrfNotFoundError
+
 
 
 class EquipamentoError(Exception):
@@ -1727,8 +1729,12 @@ class EquipamentoAcesso(BaseModel):
         # Valida a existência do equipamento
         self.equipamento = Equipamento.get_by_pk(self.equipamento.id)
         try:
-            # Valida a existência do tipo de acesso
-            self.tipo_acesso = TipoAcesso.objects.get(id=self.tipo_acesso.id)
+            #Validades tipo_acesso existence
+            self.tipo_acesso = TipoAcesso.get_by_pk(self.tipo_acesso.id)
+
+            #Validates vrf existence
+            if self.vrf:
+                self.vrf = Vrf.get_by_pk(self.vrf.id)
 
             # Verifica a existência de uma associação de equipamento e tipo de acesso igual à que está
             # sendo incluída
@@ -1740,6 +1746,8 @@ class EquipamentoAcesso(BaseModel):
             return self.save()
 
         except TipoAcesso.DoesNotExist, e:
+            raise e
+        except VrfNotFoundError, e:
             raise e
         except EquipamentoAccessDuplicatedError, e:
             raise e
