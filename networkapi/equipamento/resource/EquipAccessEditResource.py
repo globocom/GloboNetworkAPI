@@ -160,13 +160,13 @@ class EquipAccessEditResource(RestResource):
                 # Return XML
                 return self.response(dumps_networkapi(equipmentaccess_map))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
-        except EquipamentoAccessNotFoundError, e:
+        except EquipamentoAccessNotFoundError as e:
             return self.response_error(303)
-        except EquipamentoAccessDuplicatedError, e:
+        except EquipamentoAccessDuplicatedError as e:
             return self.response_error(242, equip_access.equipamento.id, type_access.id)
-        except AccessTypeNotFoundError, e:
+        except AccessTypeNotFoundError as e:
             return self.response_error(304)
         except (TipoAcessoError, EquipamentoError):
             return self.response_error(1)
