@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from networkapi.equipamento.models import EquipamentoAcesso
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ class MockPlugin(object):
 class MockPluginNetwork(object):
 
     _status = True
+    equipment_access = EquipamentoAcesso()
 
     @classmethod
     def status(cls, status=True):
@@ -108,12 +110,14 @@ class MockPluginBgpDell(object):
         else:
             raise Exception('Error')
 
+
 class MockPluginBgpGeneric(object):
 
     @classmethod
     def bgp(cls, neighbor, virtual_interface, asn, vrf):
 
         return MockPluginBgpDell()
+
 
 class MockPluginVip(object):
 

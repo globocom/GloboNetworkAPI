@@ -1449,9 +1449,9 @@ class Vlan(BaseModel):
             net_ip = [IPNetwork(net.networkv4)]
 
             if not network.verify_intersect(nts, net_ip)[0]:
-                msg = 'Network can not inserted in environment {} because ' \
-                    'network {} are in out of the range of allowed networks.'
-                msg = msg.format(self.ambiente.name, net.networkv4)
+                msg = 'Network {} cannot not inserted in environment {} because ' \
+                    'it is not within environment network range.'
+                msg = msg.format(net.networkv4, self.ambiente.name)
                 self.log.error(msg)
 
                 raise VlanErrorV3(msg)
@@ -1466,9 +1466,9 @@ class Vlan(BaseModel):
             net_ip = [IPNetwork(net.networkv6)]
 
             if not network.verify_intersect(nts, net_ip)[0]:
-                msg = 'Network can not inserted in environment {} because ' \
-                    'network {} are in out of the range of allowed networks.'
-                msg = msg.format(self.ambiente.name, net.networkv6)
+                msg = 'Network {} cannot not inserted in environment {} because ' \
+                    'it is not within environment network range.'
+                msg = msg.format(net.networkv6, self.ambiente.name)
                 self.log.error(msg)
                 raise VlanErrorV3(msg)
 
