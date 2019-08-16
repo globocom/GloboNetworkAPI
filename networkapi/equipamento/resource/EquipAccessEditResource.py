@@ -142,9 +142,14 @@ class EquipAccessEditResource(RestResource):
                             None, u'Já existe esta associação de equipamento e tipo de acesso cadastrada.')
 
                 equip_access.__dict__.update(
-                    fqdn=fqdn, user=user, password=password, enable_pass=enable_pass, vrf=vrf)
+                    fqdn=fqdn, user=user, password=password, enable_pass=enable_pass)
                 equip_access.tipo_acesso = type_access
-                equip_access.vrf = vrf_obj
+
+                # Compatibility
+                # If there is no 'vrf' field in equipmentaccess_map, keep the actual
+                # cleans (insert null) if vrf = '' 
+                if vrf is not None:
+                    equip_access.vrf = vrf_obj
 
                 equip_access.save(auth)
 
