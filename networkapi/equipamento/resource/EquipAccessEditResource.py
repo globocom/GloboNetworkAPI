@@ -110,7 +110,7 @@ class EquipAccessEditResource(RestResource):
             if not is_valid_int_greater_zero_param(type_access):
                 self.log.error(
                     u'Parameter type_access_id is invalid. Value: %s.', type_access)
-                raise InvalidValueError(None, 'type_access_id', type_access)            
+                raise InvalidValueError(None, 'type_access_id', type_access)
 
             # Valid vrf id
             vrf_obj = None
@@ -120,7 +120,6 @@ class EquipAccessEditResource(RestResource):
                         u'The vrf parameter is not a valid value: %s.', vrf)
                     raise InvalidValueError(None, 'vrf', vrf)
                 vrf_obj = Vrf(int(vrf))
-
 
             type_access = TipoAcesso.get_by_pk(type_access)
 
@@ -147,7 +146,7 @@ class EquipAccessEditResource(RestResource):
 
                 # Compatibility
                 # If there is no 'vrf' field in equipmentaccess_map, keep the actual
-                # cleans (insert null) if vrf = '' 
+                # cleans (insert null) if vrf = ''
                 if vrf is not None:
                     equip_access.vrf = vrf_obj
 
