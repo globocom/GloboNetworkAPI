@@ -348,9 +348,9 @@ class NetworkIPv4PostErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
 
-        msg = 'Network can not inserted in environment BE-TESTE-2 - TESTE - ' \
-            'BALANCEAMENTO-POOL because network 172.10.6.0/24 are in out of ' \
-            'the range of allowed networks.'
+        msg = 'Network 172.10.6.0/24 cannot not inserted in environment ' \
+            'BE-TESTE-2 - TESTE - BALANCEAMENTO-POOL because it is not ' \
+            'within environment network range.'
 
         self.compare_values(msg, response.data['detail'])
 

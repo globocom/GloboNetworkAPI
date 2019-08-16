@@ -45,7 +45,7 @@ class Vrf(BaseModel):
             return Vrf.objects.filter(id=id_vrf).uniqueResult()
         except ObjectDoesNotExist as e:
             raise VrfNotFoundError(
-                u'Dont there is a Vrf by pk = %s.' % id_vrf)
+                u'Vrf id = %s does not exist.' % id_vrf)
         except OperationalError as e:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError(
