@@ -81,7 +81,7 @@ class EquipAccessEditResource(RestResource):
             enable_pass = equipmentaccess_map.get('enable_pass')
             type_access = equipmentaccess_map.get('id_tipo_acesso')
             equip_access = equipmentaccess_map.get('id_equip_acesso')
-            vrf = equipamento_acesso_map.get('vrf')
+            vrf = equipmentaccess_map.get('vrf')
 
             # Password must NOT be none and 20 is the maxsize and 3 is the
             # minsize
