@@ -251,25 +251,25 @@ def undeploy_networkipv4(network_id, user, force=False):
 
         return status_deploy
 
-    except ip_models.NetworkIPv4ErrorV3, e:
+    except ip_models.NetworkIPv4ErrorV3 as e:
         raise ValidationAPIException(e.message)
 
-    except ObjectDoesNotExistException, e:
+    except ObjectDoesNotExistException as e:
         raise ObjectDoesNotExistException(e.detail)
 
-    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException, e:
+    except exceptions_eqpt.AllEquipmentsAreInMaintenanceException as e:
         raise ValidationAPIException(e.detail)
 
-    except exceptions.IncorrectRedundantGatewayRegistryException, e:
+    except exceptions.IncorrectRedundantGatewayRegistryException as e:
         raise ValidationAPIException(e.detail)
 
-    except exceptions.NetworkAlreadyActive, e:
+    except exceptions.NetworkAlreadyActive as e:
         raise ValidationAPIException(e.detail)
 
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(e.detail)
 
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     finally:
