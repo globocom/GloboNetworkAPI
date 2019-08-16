@@ -186,7 +186,6 @@ class EquipamentoAcessoResource(RestResource):
                     raise InvalidValueError(None, 'vrf', vrf)
                 vrf_obj = Vrf(int(vrf))
 
-
             # Cria acesso ao equipamento conforme dados recebidos no XML
             equipamento_acesso = EquipamentoAcesso(
                 equipamento=Equipamento(id=id_equipamento),
@@ -207,7 +206,7 @@ class EquipamentoAcessoResource(RestResource):
             networkapi_map['equipamento_acesso'] = equipamento_acesso_map
 
             return self.response(dumps_networkapi(networkapi_map))
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
         except XMLError, x:
             self.log.error(u'Erro ao ler o XML da requisição.')
@@ -352,7 +351,7 @@ class EquipamentoAcessoResource(RestResource):
 
                 # Retorna response vazio em caso de sucesso
                 return self.response(dumps_networkapi({}))
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
         except EquipamentoNotFoundError:
             return self.response_error(117, id_equipamento)
