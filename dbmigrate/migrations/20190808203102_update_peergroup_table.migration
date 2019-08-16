@@ -10,8 +10,13 @@ MODIFY `id_route_map_out` INT(10) UNSIGNED default NULL ;
 SQL_DOWN = u"""
 
 ALTER TABLE `peer_group`
-MODIFY `id_route_map_in` INT(10) UNSIGNED NOT NULL COMMENT '',
-MODIFY `id_route_map_out` INT(10) UNSIGNED NOT NULL COMMENT '';
+ drop foreign key fk_peer_group_id_route_map_in,
+ drop foreign key fk_peer_group_id_route_map_out,
+ MODIFY `id_route_map_in` INT(10) UNSIGNED NOT NULL COMMENT '',
+ MODIFY `id_route_map_out` INT(10) UNSIGNED NOT NULL COMMENT '';
+ALTER TABLE `peer_group`
+ add CONSTRAINT `fk_peer_group_id_route_map_in` FOREIGN KEY (`id_route_map_in`) REFERENCES `route_map` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ add CONSTRAINT `fk_peer_group_id_route_map_out` FOREIGN KEY (`id_route_map_out`) REFERENCES `route_map` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION ;
 
 """
 
