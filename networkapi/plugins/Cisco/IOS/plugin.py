@@ -49,11 +49,9 @@ class IOS(BasePlugin):
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
         """
-        if use_vrf is None:
-            use_vrf = self.management_vrf
-
-        command = 'copy tftp://%s/%s %s %s\n\n' % (
-            self.tftpserver, filename, destination, use_vrf)
+        # IOS does not have option to use vrf in exec time of copy command
+        command = 'copy tftp://%s/%s %s\n\n' % (
+            self.tftpserver, filename, destination)
 
         log.info('sending command: %s' % command)
 
