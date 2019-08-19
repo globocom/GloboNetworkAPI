@@ -38,6 +38,7 @@ from networkapi.tipoacesso.models import TipoAcessoError
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util import is_valid_string_maxsize
 from networkapi.util import is_valid_string_minsize
+from networkapi.api_vrf.models import Vrf
 
 
 class EquipAccessEditResource(RestResource):
@@ -80,6 +81,7 @@ class EquipAccessEditResource(RestResource):
             enable_pass = equipmentaccess_map.get('enable_pass')
             type_access = equipmentaccess_map.get('id_tipo_acesso')
             equip_access = equipmentaccess_map.get('id_equip_acesso')
+            vrf = equipmentaccess_map.get('vrf')
 
             # Password must NOT be none and 20 is the maxsize and 3 is the
             # minsize
@@ -110,6 +112,15 @@ class EquipAccessEditResource(RestResource):
                     u'Parameter type_access_id is invalid. Value: %s.', type_access)
                 raise InvalidValueError(None, 'type_access_id', type_access)
 
+            # Valid vrf id
+            vrf_obj = None
+            if vrf:
+                if not is_valid_int_greater_zero_param(vrf):
+                    self.log.error(
+                        u'The vrf parameter is not a valid value: %s.', vrf)
+                    raise InvalidValueError(None, 'vrf', vrf)
+                vrf_obj = Vrf(int(vrf))
+
             type_access = TipoAcesso.get_by_pk(type_access)
 
             # Business Rules
@@ -133,6 +144,12 @@ class EquipAccessEditResource(RestResource):
                     fqdn=fqdn, user=user, password=password, enable_pass=enable_pass)
                 equip_access.tipo_acesso = type_access
 
+                # Compatibility
+                # If there is no 'vrf' field in equipmentaccess_map, keep the actual
+                # cleans (insert null) if vrf = ''
+                if vrf is not None:
+                    equip_access.vrf = vrf_obj
+
                 equip_access.save(auth)
 
                 # update
@@ -143,13 +160,13 @@ class EquipAccessEditResource(RestResource):
                 # Return XML
                 return self.response(dumps_networkapi(equipmentaccess_map))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
-        except EquipamentoAccessNotFoundError, e:
+        except EquipamentoAccessNotFoundError as e:
             return self.response_error(303)
-        except EquipamentoAccessDuplicatedError, e:
+        except EquipamentoAccessDuplicatedError as e:
             return self.response_error(242, equip_access.equipamento.id, type_access.id)
-        except AccessTypeNotFoundError, e:
+        except AccessTypeNotFoundError as e:
             return self.response_error(304)
         except (TipoAcessoError, EquipamentoError):
             return self.response_error(1)

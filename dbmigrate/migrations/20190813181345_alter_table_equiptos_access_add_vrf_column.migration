@@ -1,0 +1,25 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+ALTER TABLE `equiptos_access`
+ADD COLUMN id_vrf int(10) unsigned DEFAULT NULL;
+
+ALTER TABLE `equiptos_access`
+ADD CONSTRAINT `fk_equiptos_access_id_vrf`
+  FOREIGN KEY (`id_vrf`)
+  REFERENCES `vrf` (`id`)
+  ON DELETE SET NULL
+  ON UPDATE CASCADE;
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `equiptos_access` 
+DROP FOREIGN KEY `fk_equiptos_access_id_vrf`;
+
+ALTER TABLE `equiptos_access` 
+DROP COLUMN `id_vrf`;
+
+"""
+
+
