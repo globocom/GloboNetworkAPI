@@ -587,11 +587,11 @@ class Vlan(BaseModel):
         self.acl_file_name = self.nome
         self.acl_valida = 0
         self.ativada = 0
-        # self.ambiente.vxlan = self.ambiente.vxlan
+        self.vxlan = self.ambiente.vxlan
 
         try:
             self.save()
-        except Exception, e:
+        except Exception as e:
             msg = u'Error persisting a VLAN.'
             self.log.error(msg)
             raise VlanError(e, msg)
@@ -667,11 +667,11 @@ class Vlan(BaseModel):
         self.acl_file_name = self.nome
         self.acl_valida = 0
         self.ativada = 0
-        # self.vxlan = self.ambiente.vxlan
+        self.vxlan = self.ambiente.vxlan
 
         try:
             self.save()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Falha ao inserir a VLAN.')
             raise VlanError(e, u'Falha ao inserir a VLAN.')
 
