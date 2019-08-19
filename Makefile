@@ -120,7 +120,7 @@ publish: clean
 #
 
 start: docker-compose.yml
-	@docker-compose up --detach
+	@docker-compose up -d
 
 
 stop: docker-compose.yml

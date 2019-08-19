@@ -69,7 +69,8 @@ def _applyconfig(equipment, filename, equipment_access=None, source_server=None,
     equip_plugin = PluginFactory.factory(equipment)
     equip_plugin.connect()
     equip_plugin.ensure_privilege_level()
-    equip_output = equip_plugin.copyScriptFileToConfig(filename)
+    vrf = equip_plugin.equipment_access.vrf.internal_name if equip_plugin.equipment_access.vrf else None
+    equip_output = equip_plugin.copyScriptFileToConfig(filename, use_vrf=vrf)
     equip_plugin.close()
 
     return equip_output
