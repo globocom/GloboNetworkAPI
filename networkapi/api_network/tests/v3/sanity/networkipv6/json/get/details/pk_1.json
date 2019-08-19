@@ -33,7 +33,8 @@
       "active": false,
       "vrf": null,
       "acl_draft": null,
-      "acl_draft_v6": null
+      "acl_draft_v6": null,
+      "vxlan": false
     },
     "network_type": {
       "id": 1,

@@ -11,7 +11,8 @@
     "vlan": {
       "id": 1,
       "name": "Vlan with PK 1",
-      "num_vlan": 1
+      "num_vlan": 1,
+      "vxlan": false
     }
   }
 ]

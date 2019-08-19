@@ -316,15 +316,18 @@ class VlanEditResource(RestResource):
                 ipequipamento__ip__networkipv4__vlan=id_vlan, equipamentoambiente__is_router=1)
             equips_from_ipv6 = Equipamento.objects.filter(
                 ipv6equipament__ip__networkipv6__vlan=id_vlan, equipamentoambiente__is_router=1)
+
             for equip in equips_from_ipv4:
                 # User permission
-                if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
+                if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None,
+                                equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
                     self.log.error(
                         u'User does not have permission to perform the operation.')
                     return self.not_authorized()
             for equip in equips_from_ipv6:
                 # User permission
-                if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
+                if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None,
+                                equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
                     self.log.error(
                         u'User does not have permission to perform the operation.')
                     return self.not_authorized()
@@ -348,20 +351,20 @@ class VlanEditResource(RestResource):
 
             return self.response(dumps_networkapi({}))
 
-        except InvalidValueError, e:
+        except InvalidValueError as e:
             return self.response_error(269, e.param, e.value)
-        except AmbienteNotFoundError, e:
+        except AmbienteNotFoundError as e:
             return self.response_error(112)
-        except VlanNameDuplicatedError, e:
+        except VlanNameDuplicatedError as e:
             return self.response_error(108)
-        except VlanNumberNotAvailableError, e:
+        except VlanNumberNotAvailableError as e:
             return self.response_error(306, vlan.num_vlan)
-        except VlanNumberEnvironmentNotAvailableError, e:
+        except VlanNumberEnvironmentNotAvailableError as e:
             return self.response_error(315, e.message)
-        except VlanNotFoundError, e:
+        except VlanNotFoundError as e:
             return self.response_error(150, e.message)
-        except XMLError, e:
+        except XMLError as e:
             self.log.error(u'Error reading the XML request.')
             return self.response_error(3, e)
-        except (VlanError, AmbienteError), e:
+        except (VlanError, AmbienteError) as e:
             return self.response_error(1)
