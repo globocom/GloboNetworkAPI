@@ -7,7 +7,8 @@
     "vlan": {
       "id": 1,
       "name": "Vlan with PK 1",
-      "num_vlan": 1
+      "num_vlan": 1,
+      "vxlan": false
     },
     "network_type": 1,
     "environmentvip": null
@@ -20,7 +21,8 @@
     "vlan": {
       "id": 1,
       "name": "Vlan with PK 1",
-      "num_vlan": 1
+      "num_vlan": 1,
+      "vxlan": false
     },
     "network_type": 1,
     "environmentvip": null
