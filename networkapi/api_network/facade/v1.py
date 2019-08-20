@@ -20,6 +20,7 @@ from django.template import Context
 from django.template import Template
 
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
+from networkapi.api_interface import exceptions as exceptions_interface
 from networkapi.api_network import exceptions
 from networkapi.api_network.facade.v3 import utils
 from networkapi.api_network.models import DHCPRelayIPv4
@@ -304,7 +305,7 @@ def _generate_config_file(dict_ips, equipment, template_type):
         config_to_be_saved += network_template_file.render(Context(key_dict))
     except KeyError, exception:
         log.error('Erro: %s ' % exception)
-        raise exceptions.InvalidKeyException(exception)
+        raise exceptions_interface.InvalidKeyException(exception)
 
     # Save new file
     try:
