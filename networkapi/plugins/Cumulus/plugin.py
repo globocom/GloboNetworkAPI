@@ -293,7 +293,7 @@ class Cumulus(BasePlugin):
 
     def close(self):
         """This configuration file won't use ssh connections"""
-        self._command_list[:] = list()
+        del self._command_list[:]
         pass
 
     def exec_command(
