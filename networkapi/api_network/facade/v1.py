@@ -21,6 +21,7 @@ from django.template import Template
 
 from networkapi.api_deploy.facade import deploy_config_in_equipment_synchronous
 from networkapi.api_network import exceptions
+from networkapi.api_network.facade.v3 import utils
 from networkapi.api_network.models import DHCPRelayIPv4
 from networkapi.api_network.models import DHCPRelayIPv6
 from networkapi.distributedlock import distributedlock
@@ -105,6 +106,7 @@ def deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
 
     Returns: List with status of equipments output
     """
+    log.info("deploy_networkIPv4_configuration")
 
     data = dict()
     # lock network id to prevent multiple requests to same id
@@ -325,7 +327,8 @@ def _generate_template_dict(dict_ips, equipment):
     Returns: 1-dimension dictionary to use in template rendering for equipment
     """
 
-    key_dict = {}
+    key_dict = dict()
+
     # TODO Separate differet vendor support if needed for gateway redundancy
     key_dict['VLAN_NUMBER'] = dict_ips['vlan_num']
     key_dict['VLAN_NAME'] = dict_ips['vlan_name']
@@ -338,6 +341,10 @@ def _generate_template_dict(dict_ips, equipment):
     key_dict['NETWORK_WILDMASK'] = dict_ips['wildmask']
     key_dict['IP_VERSION'] = dict_ips['ip_version']
     key_dict['FIRST_NETWORK'] = dict_ips['first_network']
+
+    if dict_ips['is_vxlan']:
+        key_dict['LOCAL_TUNNEL_IP'] = utils.get_local_tunnel_ip(equipment.id)
+
     if 'vrf' in dict_ips.keys():
         key_dict['VRF'] = dict_ips['vrf']
 
@@ -352,7 +359,8 @@ def _generate_template_dict(dict_ips, equipment):
 
 
 def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list):
-    """Generate dictionary with vlan an IP information to be used to generate
+    """
+    Generate dictionary with vlan an IP information to be used to generate
     template dict for equipment configuration
 
     Args: networkipv4 NetworkIPv4 object
@@ -361,25 +369,31 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
     Returns: 2-dimension dictionary with equipments information for template rendering
     """
 
+    log.info("get_dict_v4_to_use_in_configuration_deploy")
+    
     try:
-        gateway_ip = Ip.get_by_octs_and_net(networkipv4.oct1, networkipv4.oct2,
-                                            networkipv4.oct3, networkipv4.oct4 + 1, networkipv4)
+        gateway_ip = Ip.get_by_octs_and_net(networkipv4.oct1,
+                                            networkipv4.oct2,
+                                            networkipv4.oct3,
+                                            networkipv4.oct4 + 1,
+                                            networkipv4)
     except IpNotFoundError:
-        log.error('Equipment IPs not correctly registered. \
-            Router equipments should have first IP of network allocated for them.')
+        log.error('Equipment IPs not correctly registered. '
+                  'Router equipments should have first IP of network allocated for them.')
         raise exceptions.IncorrectRedundantGatewayRegistryException()
 
-    ips = IpEquipamento.objects.filter(
-        ip=gateway_ip, equipamento__in=equipment_list)
+    ips = IpEquipamento.objects.filter(ip=gateway_ip,
+                                       equipamento__in=equipment_list)
+
     if len(ips) != len(equipment_list):
-        log.error('Equipment IPs not correctly registered. \
-            Router equipments should have first IP of network allocated for them.')
+        log.error('Equipment IPs not correctly registered. '
+                  'Router equipments should have first IP of network allocated for them.')
         raise exceptions.IncorrectRedundantGatewayRegistryException()
 
     dict_ips = dict()
-    if networkipv4.vlan.vrf is not None and networkipv4.vlan.vrf is not '':
+    if networkipv4.vlan.vrf and networkipv4.vlan.vrf:
         dict_ips['vrf'] = networkipv4.vlan.vrf
-    elif networkipv4.vlan.ambiente.vrf is not None and networkipv4.vlan.ambiente.vrf is not '':
+    elif networkipv4.vlan.ambiente.vrf and networkipv4.vlan.ambiente.vrf:
         dict_ips['vrf'] = networkipv4.vlan.ambiente.vrf
 
     # DHCPRelay list
@@ -391,40 +405,54 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
                 dhcprelay.ipv4.oct1, dhcprelay.ipv4.oct2, dhcprelay.ipv4.oct3, dhcprelay.ipv4.oct4)
             dict_ips['dhcprelay_list'].append(ipv4)
 
-    dict_ips['gateway'] = '%d.%d.%d.%d' % (
-        gateway_ip.oct1, gateway_ip.oct2, gateway_ip.oct3, gateway_ip.oct4)
+    dict_ips['gateway'] = '%d.%d.%d.%d' % (gateway_ip.oct1,
+                                           gateway_ip.oct2,
+                                           gateway_ip.oct3,
+                                           gateway_ip.oct4)
     dict_ips['ip_version'] = 'IPV4'
     dict_ips['equipments'] = dict()
     dict_ips['vlan_num'] = networkipv4.vlan.num_vlan
     dict_ips['vlan_name'] = networkipv4.vlan.nome
     dict_ips['cidr_block'] = networkipv4.block
-    dict_ips['mask'] = '%d.%d.%d.%d' % (
-        networkipv4.mask_oct1, networkipv4.mask_oct2, networkipv4.mask_oct3, networkipv4.mask_oct4)
-    dict_ips['wildmask'] = '%d.%d.%d.%d' % (
-        255 - networkipv4.mask_oct1, 255 - networkipv4.mask_oct2, 255 - networkipv4.mask_oct3, 255 - networkipv4.mask_oct4)
+    dict_ips['mask'] = '%d.%d.%d.%d' % (networkipv4.mask_oct1,
+                                        networkipv4.mask_oct2,
+                                        networkipv4.mask_oct3,
+                                        networkipv4.mask_oct4)
+    dict_ips['wildmask'] = '%d.%d.%d.%d' % (255 - networkipv4.mask_oct1,
+                                            255 - networkipv4.mask_oct2,
+                                            255 - networkipv4.mask_oct3,
+                                            255 - networkipv4.mask_oct4)
 
     if _has_active_network_in_vlan(networkipv4.vlan):
         dict_ips['first_network'] = False
     else:
         dict_ips['first_network'] = True
 
+    is_vxlan = networkipv4.vlan.ambiente.vxlan
+
+    log.debug("is_vxlan:" % is_vxlan)
+
     # Check IPs for routers when there are multiple gateways
-    if len(equipment_list) > 1:
+    if len(equipment_list) > 1 and not is_vxlan:
         dict_ips['gateway_redundancy'] = True
         equip_number = 0
         for equipment in equipment_list:
-            ip_equip = IpEquipamento.objects.filter(equipamento=equipment, ip__networkipv4=networkipv4).exclude(ip=gateway_ip)\
-                .select_related('ip')
-            if ip_equip == []:
-                log.error('Error: Equipment IPs not correctly registered. \
-                    In case of multiple gateways, they should have an IP other than the gateway registered.')
+            ip_equip = IpEquipamento.objects.filter(equipamento=equipment, ip__networkipv4=networkipv4)\
+                .exclude(ip=gateway_ip).select_related('ip')
+            if not ip_equip:
+                log.error('Error: Equipment IPs not correctly registered. '
+                          'In case of multiple gateways, they should have an '
+                          'IP other than the gateway registered.')
                 raise exceptions.IncorrectNetworkRouterRegistryException()
             ip = ip_equip[0].ip
             dict_ips[equipment] = dict()
-            dict_ips[equipment]['ip'] = '%s.%s.%s.%s' % (
-                ip.oct1, ip.oct2, ip.oct3, ip.oct4)
+            dict_ips[equipment]['ip'] = '%s.%s.%s.%s' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4)
             dict_ips[equipment]['prio'] = 100 + equip_number
             equip_number += 1
+    elif is_vxlan:
+        for equipment in equipment_list:
+            dict_ips[equipment] = dict()
+            dict_ips[equipment]['local_tunnel_ip'] = utils.get_local_tunnel_ip(equipment)
     else:
         dict_ips['gateway_redundancy'] = False
         dict_ips[equipment_list[0]] = dict()
@@ -496,7 +524,7 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
         for equipment in equipment_list:
             ip_equip = Ipv6Equipament.objects.filter(equipamento=equipment, ip__networkipv6=networkipv6).exclude(ip=gateway_ip)\
                 .select_related('ip')
-            if ip_equip == []:
+            if not ip_equip:
                 log.error('Error: Equipment IPs not correctly registered. \
                     In case of multiple gateways, they should have an IP other than the gateway registered.')
                 raise exceptions.IncorrectNetworkRouterRegistryException()
@@ -511,6 +539,8 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
         dict_ips[equipment_list[0]] = dict()
         dict_ips[equipment_list[0]]['ip'] = dict_ips['gateway']
         dict_ips[equipment_list[0]]['prio'] = 100
+
+    dict_ips['is_vxlan'] = networkipv6.vlan.vxlan
 
     return dict_ips
 
