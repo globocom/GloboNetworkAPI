@@ -430,7 +430,7 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
 
     is_vxlan = networkipv4.vlan.ambiente.vxlan
 
-    log.debug("is_vxlan:" % is_vxlan)
+    log.debug("is_vxlan: %s" % is_vxlan)
 
     # Check IPs for routers when there are multiple gateways
     if len(equipment_list) > 1 and not is_vxlan:
