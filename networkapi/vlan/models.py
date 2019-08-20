@@ -671,7 +671,7 @@ class Vlan(BaseModel):
 
         try:
             self.save()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Falha ao inserir a VLAN.')
             raise VlanError(e, u'Falha ao inserir a VLAN.')
 
