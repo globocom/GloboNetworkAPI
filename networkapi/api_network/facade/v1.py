@@ -430,6 +430,7 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
         dict_ips['first_network'] = True
 
     is_vxlan = networkipv4.vlan.ambiente.vxlan
+    dict_ips['is_vxlan'] = is_vxlan
 
     log.debug("is_vxlan: %s" % is_vxlan)
 
