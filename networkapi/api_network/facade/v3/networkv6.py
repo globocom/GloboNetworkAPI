@@ -509,4 +509,6 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6,
         dict_ips[equipment_list[0]]['ip'] = dict_ips['gateway']
         dict_ips[equipment_list[0]]['prio'] = 100
 
+    dict_ips['is_vxlan'] = networkipv6.vlan.vxlan
+
     return dict_ips

@@ -13,12 +13,16 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
     name = serializers.Field(source='nome')
     description = serializers.Field(source='descricao')
     active = serializers.Field(source='ativada')
-    environment = serializers.SerializerMethodField('get_environment')
-    networks_ipv4 = serializers.SerializerMethodField('get_networks_ipv4')
-    networks_ipv6 = serializers.SerializerMethodField('get_networks_ipv6')
+    environment = serializers.SerializerMethodField(
+        'get_environment')
+    networks_ipv4 = serializers.SerializerMethodField(
+        'get_networks_ipv4')
+    networks_ipv6 = serializers.SerializerMethodField(
+        'get_networks_ipv6')
     vrfs = serializers.SerializerMethodField('get_vrfs')
-    groups_permissions = serializers\
-        .SerializerMethodField('get_groups_permissions')
+    groups_permissions = serializers.SerializerMethodField(
+        'get_groups_permissions')
+    vxlan = serializers.Field(source='vxlan')
 
     def get_environment(self, obj):
         return self.extends_serializer(obj, 'environment')
@@ -42,6 +46,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
             'id',
             'name',
             'num_vlan',
+            'vxlan',
             'environment',
             'description',
             'acl_file_name',
@@ -62,6 +67,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
             'id',
             'name',
             'num_vlan',
+            'vxlan',
             'environment',
             'description',
             'acl_file_name',
@@ -78,6 +84,7 @@ class VlanV3Serializer(DynamicFieldsModelSerializer):
             'id',
             'name',
             'num_vlan',
+            'vxlan'
         )
 
         details_fields = default_fields

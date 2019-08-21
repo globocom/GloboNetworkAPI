@@ -407,9 +407,8 @@ def autoprovision_splf(rack, equips):
         subnetsRackBOCABipv6[numero_rack] = splitnetworkbyrack(CIDRBOCABipv6interno, prefixInternoBOCABV6, numero_rack)
     #          ::::::: SUBNETING EACH RACK NETWORK:::::::
     # PODS FE => 128 redes /28 ; 128 redes /64
-    #redesPODSBEipv4[numero_rack] = list(subnetsRackFEipv4[numero_rack].subnet(28))
-    #redesPODSBEipv6[numero_rack] = list(subnetsRackFEipv6[numero_rack].subnet(64))
-
+    # redesPODSBEipv4[numero_rack] = list(subnetsRackFEipv4[numero_rack].subnet(28))
+    # redesPODSBEipv6[numero_rack] = list(subnetsRackFEipv6[numero_rack].subnet(64))
 
     for equip, spn, j in zip(equips_sorted[:2], [0, 2], [0, 1]):
         # lf 1/2

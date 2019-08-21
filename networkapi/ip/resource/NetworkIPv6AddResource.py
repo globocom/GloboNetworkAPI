@@ -190,8 +190,7 @@ class NetworkIPv6AddResource(RestResource):
 
             # New NetworkIPv6
             network_ipv6 = NetworkIPv6()
-            vlan_map = network_ipv6.add_network_ipv6(
-                user, vlan_id, net, evip, prefix)
+            vlan_map = network_ipv6.add_network_ipv6(user, vlan_id, net, evip, prefix)
 
             list_equip_routers_ambient = EquipamentoAmbiente.get_routers_by_environment(
                 vlan_map['vlan']['id_ambiente'])
@@ -224,28 +223,48 @@ class NetworkIPv6AddResource(RestResource):
                 else:
                     multiple_ips = False
 
-                for equip in list_equip_routers_ambient:
+                if vlan_map.get('vlan').get('vxlan'):
+                    logging.debug('vxlan')
 
-                    Ipv6Equipament().create(
-                        user, ipv6_model.id, equip.equipamento.id)
+                    for equip in list_equip_routers_ambient:
+                        Ipv6Equipament().create(user, ipv6_model.id, equip.equipamento.id)
 
                     if multiple_ips:
-                        router_ip = Ipv6.get_first_available_ip6(
-                            vlan_map['vlan']['id_network'], True)
-                        router_ip = str(router_ip).split(':')
-                        ipv6_model2 = Ipv6()
-                        ipv6_model2.block1 = router_ip[0]
-                        ipv6_model2.block2 = router_ip[1]
-                        ipv6_model2.block3 = router_ip[2]
-                        ipv6_model2.block4 = router_ip[3]
-                        ipv6_model2.block5 = router_ip[4]
-                        ipv6_model2.block6 = router_ip[5]
-                        ipv6_model2.block7 = router_ip[6]
-                        ipv6_model2.block8 = router_ip[7]
-                        ipv6_model2.networkipv6_id = vlan_map[
-                            'vlan']['id_network']
-                        ipv6_model2.save()
-                        Ipv6Equipament().create(user, ipv6_model2.id, equip.equipamento.id)
+                        router_ip = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'], True)
+
+                        ipv6s = Ipv6()
+                        ipv6s.block1, ipv6s.block2, ipv6s.block3, ipv6s.block4, ipv6s.block5, \
+                        ipv6s.block6, ipv6s.block7, ipv6s.block8 = str(router_ip).split(':')
+                        ipv6s.networkipv6_id = vlan_map['vlan']['id_network']
+                        ipv6s.descricao = "IPv6 alocado para debug"
+                        ipv6s.save(user)
+
+                        Ipv6Equipament().create(user,
+                                                ipv6s.id,
+                                                list_equip_routers_ambient[0].equipamento.id)
+
+                else:
+
+                    for equip in list_equip_routers_ambient:
+                        Ipv6Equipament().create(user, vlan_map['vlan']['id_network'], equip.equipamento.id)
+
+                        if multiple_ips:
+                            router_ip = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'], True)
+                            router_ip = str(router_ip).split(':')
+                            ipv6_model2 = Ipv6()
+                            ipv6_model2.block1 = router_ip[0]
+                            ipv6_model2.block2 = router_ip[1]
+                            ipv6_model2.block3 = router_ip[2]
+                            ipv6_model2.block4 = router_ip[3]
+                            ipv6_model2.block5 = router_ip[4]
+                            ipv6_model2.block6 = router_ip[5]
+                            ipv6_model2.block7 = router_ip[6]
+                            ipv6_model2.block8 = router_ip[7]
+                            ipv6_model2.networkipv6_id = vlan_map['vlan']['id_network']
+                            ipv6_model2.save(user)
+                            Ipv6Equipament().create(user,
+                                                    ipv6_model2.id,
+                                                    list_equip_routers_ambient[0].equipamento.id)
 
             # Return XML
             return self.response(dumps_networkapi(vlan_map))
