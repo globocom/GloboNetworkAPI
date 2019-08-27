@@ -19,6 +19,12 @@ from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
+from networkapi.util.cache import get_cached_search
+from networkapi.util.cache import delete_cached_searches_list
+from networkapi.util.cache import set_cache_search_with_list
+from networkapi.util.cache import ENVIRONMENT_CACHE_ENTRY
+
+
 log = logging.getLogger(__name__)
 
 
@@ -191,6 +197,11 @@ class EnvironmentDBView(CustomAPIView):
         """Returns a list of environment by ids ou dict."""
 
         if not kwargs.get('obj_ids'):
+
+            data = get_cached_search(ENVIRONMENT_CACHE_ENTRY, self.search)
+            if data:
+                return Response(data, status=status.HTTP_200_OK)
+
             obj_model = facade.get_environment_by_search(self.search)
             environments = obj_model['query_set']
             only_main_property = False
@@ -219,6 +230,7 @@ class EnvironmentDBView(CustomAPIView):
             only_main_property=only_main_property
         )
 
+        set_cache_search_with_list(ENVIRONMENT_CACHE_ENTRY, self.search, data)
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview

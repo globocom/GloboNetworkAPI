@@ -46,8 +46,11 @@ from networkapi.util import is_valid_text
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
+from networkapi.util.cache import delete_cached_searches_list
+from networkapi.util.cache import ENVIRONMENT_CACHE_ENTRY
 
 log = logging.getLogger(__name__)
+
 
 class AmbienteError(Exception):
 
@@ -297,7 +300,8 @@ class GrupoL3(BaseModel):
 
         except Exception, e:
             self.log.error(u'Falha ao inserir um Ambiente L3. Error: %s' % e)
-            raise AmbienteError('Falha ao inserir um Ambiente L3. Error: %s' % e)
+            raise AmbienteError(
+                'Falha ao inserir um Ambiente L3. Error: %s' % e)
 
 
 class DivisaoDc(BaseModel):
@@ -368,7 +372,8 @@ class DivisaoDc(BaseModel):
 
         except Exception, e:
             self.log.error(u'Falha ao inserir um Ambiente DC. Error: %s' % e)
-            raise AmbienteError('Falha ao inserir um Ambiente DC. Error: %s' % e)
+            raise AmbienteError(
+                'Falha ao inserir um Ambiente DC. Error: %s' % e)
 
 
 class AmbienteLogico(BaseModel):
@@ -430,7 +435,8 @@ class AmbienteLogico(BaseModel):
 
             try:
                 AmbienteLogico.objects.get(nome__iexact=env.get('name'))
-                raise AmbienteDuplicatedError(None, u'Ambiente Logico duplicado.')
+                raise AmbienteDuplicatedError(
+                    None, u'Ambiente Logico duplicado.')
             except Exception:
                 self.log.debug('Ambiente Logico não duplicado.')
 
@@ -439,8 +445,10 @@ class AmbienteLogico(BaseModel):
             return self.save()
 
         except Exception, e:
-            self.log.error(u'Falha ao inserir um Ambiente Logico. Error: %s' % e)
-            raise AmbienteError('Falha ao inserir um Ambiente Logico. Error: %s' % e)
+            self.log.error(
+                u'Falha ao inserir um Ambiente Logico. Error: %s' % e)
+            raise AmbienteError(
+                'Falha ao inserir um Ambiente Logico. Error: %s' % e)
 
 
 class EnvironmentVip(BaseModel):
@@ -1130,7 +1138,6 @@ class Ambiente(BaseModel):
         self.ambiente_logico = AmbienteLogico.get_by_pk(
             self.ambiente_logico.id)
         self.divisao_dc = DivisaoDc.get_by_pk(self.divisao_dc.id)
-
         try:
             self.grupo_l3 = GrupoL3.objects.get(pk=self.grupo_l3.id)
 
@@ -1157,7 +1164,9 @@ class Ambiente(BaseModel):
             vrf_model = get_model('api_vrf', 'Vrf')
             self.default_vrf = vrf_model.get_by_pk(self.default_vrf.id)
 
-            return self.save()
+            saved = self.save()
+            delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
+            return saved
 
         except FilterNotFoundError, e:
             raise e
@@ -1250,6 +1259,7 @@ class Ambiente(BaseModel):
 
             environment.__dict__.update(kwargs)
             environment.save(authenticated_user)
+            delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
         except AmbienteDuplicatedError, e:
             raise e
@@ -1320,6 +1330,7 @@ class Ambiente(BaseModel):
         # Remove the environment
         try:
             environment.delete()
+            delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
         except Exception, e:
             cls.log.error(u'Falha ao remover o Ambiente.')
             raise AmbienteError(e, u'Falha ao remover o Ambiente.')
@@ -1351,7 +1362,6 @@ class Ambiente(BaseModel):
         return envvip_model
 
     def create_v3(self, env_map):
-
         try:
             self.grupo_l3 = GrupoL3.get_by_pk(env_map.get('grupo_l3'))
             self.ambiente_logico = AmbienteLogico\
@@ -1401,6 +1411,7 @@ class Ambiente(BaseModel):
 
             configs = env_map.get('configs', [])
             self.create_configs(configs, self.id)
+            delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
         except Exception, e:
             raise EnvironmentErrorV3(e)
@@ -1497,6 +1508,7 @@ class Ambiente(BaseModel):
             raise EnvironmentErrorV3(e)
 
         finally:
+            delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
             destroy_lock(locks_list)
 
     def delete_v3(self):
@@ -1536,6 +1548,7 @@ class Ambiente(BaseModel):
         # Remove the environment
         try:
             self.delete()
+            delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
         except Exception, e:
             self.log.error(u'Falha ao remover o Ambiente.')
             raise AmbienteError(e, u'Falha ao remover o Ambiente.')
@@ -1577,6 +1590,7 @@ class Ambiente(BaseModel):
             ip_config.network_type_id = config.get('network_type')
 
             ip_config.save()
+        delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
     def create_configs(self, configs, env_id):
         """
@@ -1585,9 +1599,10 @@ class Ambiente(BaseModel):
         :param configs: Configs of environment
         :param env: Id of environment
         """
-
         for config in configs:
             IPConfig.create(env_id, config)
+
+        delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
     def delete_configs(self, configs_ids, env_id):
         """
@@ -1599,6 +1614,7 @@ class Ambiente(BaseModel):
 
         for config_id in configs_ids:
             IPConfig.remove(None, None, env_id, config_id)
+        delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
 
 class IP_VERSION:

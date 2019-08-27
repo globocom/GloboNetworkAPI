@@ -26,7 +26,6 @@ from networkapi.plugins.factory import PluginFactory
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
 
-
 log = logging.getLogger(__name__)
 
 
