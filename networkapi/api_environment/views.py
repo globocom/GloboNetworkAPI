@@ -196,9 +196,11 @@ class EnvironmentDBView(CustomAPIView):
     def get(self, request, *args, **kwargs):
         """Returns a list of environment by ids ou dict."""
 
-        if not kwargs.get('obj_ids'):
+        # String with all important fields to define response
+        request_identifier_to_cache = str(self.search)+str(self.fields)+str(self.include)+str(self.exclude)+str(self.kind)
 
-            data = get_cached_search(ENVIRONMENT_CACHE_ENTRY, self.search)
+        if not kwargs.get('obj_ids'):
+            data = get_cached_search(ENVIRONMENT_CACHE_ENTRY, request_identifier_to_cache)
             if data:
                 return Response(data, status=status.HTTP_200_OK)
 
@@ -230,7 +232,7 @@ class EnvironmentDBView(CustomAPIView):
             only_main_property=only_main_property
         )
 
-        set_cache_search_with_list(ENVIRONMENT_CACHE_ENTRY, self.search, data)
+        set_cache_search_with_list(ENVIRONMENT_CACHE_ENTRY, request_identifier_to_cache, data)
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
