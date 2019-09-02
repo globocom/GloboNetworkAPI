@@ -46,8 +46,8 @@ from networkapi.util import is_valid_text
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
-from networkapi.util.cache import delete_cached_searches_list
-from networkapi.util.cache import ENVIRONMENT_CACHE_ENTRY
+from networkapi.util.appcache import delete_cached_searches_list
+from networkapi.util.appcache import ENVIRONMENT_CACHE_ENTRY
 
 log = logging.getLogger(__name__)
 

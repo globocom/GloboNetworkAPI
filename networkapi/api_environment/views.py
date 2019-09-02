@@ -19,10 +19,10 @@ from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
-from networkapi.util.cache import get_cached_search
-from networkapi.util.cache import delete_cached_searches_list
-from networkapi.util.cache import set_cache_search_with_list
-from networkapi.util.cache import ENVIRONMENT_CACHE_ENTRY
+from networkapi.util.appcache import get_cached_search
+from networkapi.util.appcache import delete_cached_searches_list
+from networkapi.util.appcache import set_cache_search_with_list
+from networkapi.util.appcache import ENVIRONMENT_CACHE_ENTRY
 
 
 log = logging.getLogger(__name__)
