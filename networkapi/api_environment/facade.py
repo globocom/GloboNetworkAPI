@@ -25,8 +25,17 @@ from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.plugins.factory import PluginFactory
 from networkapi.api_equipment import exceptions as exceptions_eqpt
 from networkapi.api_equipment import facade as facade_eqpt
+from networkapi.system.facade import get_value
+from networkapi.util.appcache import DEFAULT_CACHE_TIMEOUT
 
 log = logging.getLogger(__name__)
+
+
+def get_environment_cache_time():
+    try:
+        return int(get_value('ENVIRONMENT_CACHE_TIMEOUT'))
+    except Exception as e:
+        return DEFAULT_CACHE_TIMEOUT
 
 
 def get_l3_environment_by_search(search=dict()):
