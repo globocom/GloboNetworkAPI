@@ -333,10 +333,10 @@ def _generate_template_dict(dict_ips, equipment):
     # TODO Separate differet vendor support if needed for gateway redundancy
     key_dict['VLAN_NUMBER'] = dict_ips['vlan_num']
     key_dict['VLAN_NAME'] = dict_ips['vlan_name']
-    key_dict['IP'] = dict_ips[equipment]['ip']
+    key_dict['IP'] = dict_ips[equipment].get('ip')
     key_dict['USE_GW_RED'] = dict_ips['gateway_redundancy']
     key_dict['GW_RED_ADDR'] = dict_ips['gateway']
-    key_dict['GW_RED_PRIO'] = dict_ips[equipment]['prio']
+    key_dict['GW_RED_PRIO'] = dict_ips[equipment].get('prio')
     key_dict['CIDR_BLOCK'] = dict_ips['cidr_block']
     key_dict['NETWORK_MASK'] = dict_ips['mask']
     key_dict['NETWORK_WILDMASK'] = dict_ips['wildmask']
@@ -453,6 +453,7 @@ def get_dict_v4_to_use_in_configuration_deploy(user, networkipv4, equipment_list
             dict_ips[equipment]['prio'] = 100 + equip_number
             equip_number += 1
     elif is_vxlan:
+        dict_ips['gateway_redundancy'] = True
         for equipment in equipment_list:
             dict_ips[equipment] = dict()
             dict_ips[equipment]['local_tunnel_ip'] = utils.get_local_tunnel_ip(equipment)
