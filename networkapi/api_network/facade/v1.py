@@ -344,7 +344,8 @@ def _generate_template_dict(dict_ips, equipment):
     key_dict['FIRST_NETWORK'] = dict_ips['first_network']
 
     if dict_ips['is_vxlan']:
-        key_dict['LOCAL_TUNNEL_IP'] = utils.get_local_tunnel_ip(equipment.id)
+        key_dict['VXLAN'] = dict_ips.get('is_vxlan')
+        key_dict['VXLAN_ANYCAST_IP'] = utils.get_local_tunnel_ip(equipment.id)
 
     if 'vrf' in dict_ips.keys():
         key_dict['VRF'] = dict_ips['vrf']
