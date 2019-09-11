@@ -592,7 +592,7 @@ class Vlan(BaseModel):
         try:
             self.save()
         except Exception as e:
-            msg = u'Error persisting a VLAN.'
+            msg = 'Error persisting a VLAN. E: %s' % e
             self.log.error(msg)
             raise VlanError(e, msg)
 
