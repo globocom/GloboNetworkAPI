@@ -521,8 +521,13 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
     else:
         dict_ips['first_network'] = True
 
+    is_vxlan = networkipv6.vlan.ambiente.vxlan
+    dict_ips['is_vxlan'] = is_vxlan
+
+    log.debug("is_vxlan: %s" % is_vxlan)
+
     # Check IPs for routers when there are multiple gateways
-    if len(equipment_list) > 1:
+    if len(equipment_list) > 1 and not is_vxlan:
         dict_ips['gateway_redundancy'] = True
         equip_number = 0
         for equipment in equipment_list:
@@ -538,13 +543,16 @@ def get_dict_v6_to_use_in_configuration_deploy(user, networkipv6, equipment_list
                 ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
             dict_ips[equipment]['prio'] = 100 + equip_number
             equip_number += 1
+    elif is_vxlan:
+        dict_ips['gateway_redundancy'] = True
+        for equipment in equipment_list:
+            dict_ips[equipment] = dict()
+            dict_ips[equipment]['local_tunnel_ip'] = utils.get_local_tunnel_ip(equipment)
     else:
         dict_ips['gateway_redundancy'] = False
         dict_ips[equipment_list[0]] = dict()
         dict_ips[equipment_list[0]]['ip'] = dict_ips['gateway']
         dict_ips[equipment_list[0]]['prio'] = 100
-
-    dict_ips['is_vxlan'] = networkipv6.vlan.vxlan
 
     return dict_ips
 
