@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.template import Context
 from django.template import Template
 
 from networkapi.api_network import exceptions
+from networkapi.ip.models import Ip
+from networkapi.ip.models import IpEquipamento
 from networkapi.equipamento import models as eqpt_models
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
@@ -12,6 +15,9 @@ from networkapi.plugins.factory import PluginFactory
 from networkapi.settings import NETWORK_CONFIG_FILES_PATH
 from networkapi.settings import NETWORK_CONFIG_TEMPLATE_PATH
 from networkapi.settings import NETWORK_CONFIG_TOAPPLY_REL_PATH
+from networkapi.system.facade import get_value as get_variable
+from networkapi.system import exceptions as var_exceptions
+
 log = logging.getLogger(__name__)
 
 TEMPLATE_NETWORKv4_ACTIVATE = 'ipv4_activate_network_configuration'
@@ -120,7 +126,8 @@ def generate_template_dict(dict_ips, equipment):
     Returns: 1-dimension dictionary to use in template rendering for equipment
     """
 
-    key_dict = {}
+    key_dict = dict()
+
     # TODO Separate differet vendor support if needed for gateway redundancy
     key_dict['VLAN_NUMBER'] = dict_ips['vlan_num']
     key_dict['VLAN_NAME'] = dict_ips['vlan_name']
@@ -133,6 +140,10 @@ def generate_template_dict(dict_ips, equipment):
     key_dict['NETWORK_WILDMASK'] = dict_ips['wildmask']
     key_dict['IP_VERSION'] = dict_ips['ip_version']
     key_dict['FIRST_NETWORK'] = dict_ips['first_network']
+
+    if dict_ips['is_vxlan']:
+        key_dict['LOCAL_TUNNEL_IP'] = get_local_tunnel_ip(equipment.id)
+
     if 'vrf' in dict_ips.keys():
         key_dict['VRF'] = dict_ips['vrf']
 
@@ -155,3 +166,19 @@ def remove_svi(equipment, vlan_num):
     equip_plugin.close()
 
     return output
+
+
+def get_local_tunnel_ip(equipment):
+
+    try:
+        networkv4_tunnel_id = get_variable("networkv4_tunnel_ip")
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException("Erro buscando o id da rede com o local_tunnel_ip")
+
+    unique_ip = IpEquipamento.objects.filter(equipamento=equipment, ip__networkipv4=networkv4_tunnel_id)\
+        .select_related('ip').uniqueResult()
+
+    log.debug('equip %s' % equipment)
+    log.debug('unique_ip: %s' % unique_ip.ip.ip_formated)
+
+    return unique_ip.ip.ip_formated

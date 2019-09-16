@@ -309,14 +309,13 @@ def networkIPv4_deploy(request, network_id):
     Receives optional parameter equipments to specify what equipment should
     receive network configuration
     """
-
+    log.debug("networkIPv4_deploy")
     networkipv4 = NetworkIPv4.get_by_pk(int(network_id))
     environment = networkipv4.vlan.ambiente
     equipments_id_list = None
     if request.DATA is not None:
         equipments_id_list = request.DATA.get('equipments', None)
 
-    equipment_list = []
     if equipments_id_list is not None:
         if type(equipments_id_list) is not list:
             raise api_exceptions.ValidationException('equipments')
@@ -349,7 +348,8 @@ def networkIPv4_deploy(request, network_id):
     # Check permission to configure equipments
     for equip in equipment_list:
         # User permission
-        if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None, equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
+        if not has_perm(request.user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION, None,
+                        equip.id, AdminPermission.EQUIP_WRITE_OPERATION):
             log.error(u'User does not have permission to perform the operation.')
             raise PermissionDenied(
                 'No permission to configure equipment %s-%s' % (equip.id, equip.nome))

@@ -14,7 +14,6 @@ from networkapi.distributedlock import distributedlock
 from networkapi.distributedlock import LockNotAcquiredError
 from networkapi.extra_logging import local
 
-
 log = logging.getLogger(__name__)
 
 
