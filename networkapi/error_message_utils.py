@@ -214,7 +214,7 @@ error_messages = {
     290: u'Option vip is already associated with the environment vip',
     291: u'Option vip is not associated with the environment vip',
     292: u'IPv6 %s not registered for the environment %s',
-    293: u'Dont Deallocate all relationships between Vlan be because is active.',
+    293: u'Vlan is currently in active/deployed state. It needs to be undeployed before deletion.',
     294: u'Invalid Environment Configuration or not registered',
     295: u'Unavailable address to create a NetworkIPv4',
     296: u'Unavailable address to create a NetworkIPv6',
