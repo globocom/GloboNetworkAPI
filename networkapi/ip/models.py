@@ -62,9 +62,11 @@ from networkapi.util.decorators import cached_property
 from networkapi.util.geral import create_lock_with_blocking
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
+from networkapi.api_rest.exceptions import NetworkAPIException
 
 
 log = logging.getLogger(__name__)
+
 
 class NetworkIPv4Error(Exception):
 
@@ -625,6 +627,8 @@ class NetworkIPv4(BaseModel):
 
         except (ValueError, TypeError, AddressValueError), e:
             raise ConfigEnvironmentInvalidError(e, u'Invalid Configuration')
+        except NetworkAPIException as e:
+            return self.response_error(150, e)
 
         # Return vlan map
         vlan_map = dict()
