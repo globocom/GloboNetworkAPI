@@ -352,7 +352,7 @@ class VlanFindResource(RestResource):
 
             if name is not None:
                 # If name is valid, add to filter
-                if not is_valid_string_minsize(name, 3, False):
+                if not is_valid_string_minsize(name, 1, False):
                     raise InvalidValueError(None, 'nome', name)
                 else:
                     # Iexact must be valid to add name to filter

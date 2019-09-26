@@ -17,6 +17,7 @@ import logging
 
 from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import ConfigEnvironmentInvalidError
+from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.auth import has_perm
 from networkapi.config.models import Configuration
@@ -51,28 +52,22 @@ class NetworkIPv4AddResource(RestResource):
             URL: network/ipv4/add/
         """
 
-        # Commons Validations
-
-        # User permission
         if not has_perm(user, AdminPermission.VLAN_MANAGEMENT, AdminPermission.WRITE_OPERATION):
             self.log.error(
                 u'User does not have permission to perform the operation.')
             return self.not_authorized()
 
-        # Business Validations
-
-        # Load XML data
         xml_map, _ = loads(request.raw_post_data)
-
-        # XML data format
         networkapi_map = xml_map.get('networkapi')
+
         if networkapi_map is None:
-            msg = u'There is no value to the networkapi tag of XML request.'
+            msg = "There is no value to the networkapi tag of XML request."
             self.log.error(msg)
             return self.response_error(3, msg)
+
         vlan_map = networkapi_map.get('vlan')
         if vlan_map is None:
-            msg = u'There is no value to the vlan tag of XML request.'
+            msg = "There is no value to the vlan tag of XML request."
             self.log.error(msg)
             return self.response_error(3, msg)
 
@@ -84,8 +79,9 @@ class NetworkIPv4AddResource(RestResource):
 
         # Valid prefix
         if not is_valid_int_greater_zero_param(prefix, False) or (prefix and int(prefix) > 32):
-            self.log.error(u'Parameter prefix is invalid. Value: %s.', prefix)
-            return self.response_error(269, 'prefix', prefix)
+            msg = "CIDR prefix is invalid. It must be between 1 and 32  Value: {}".format(prefix)
+            self.log.error(msg)
+            return self.response_error(150, msg)
 
         return self.network_ipv4_add(user, vlan_id, network_type, environment_vip, prefix)
 
@@ -146,35 +142,21 @@ class NetworkIPv4AddResource(RestResource):
 
         try:
 
-            # Valid vlan ID
             if not is_valid_int_greater_zero_param(vlan_id):
-                self.log.error(u'Parameter id_vlan is invalid. Value: %s.', vlan_id)
-                raise InvalidValueError(None, 'id_vlan', vlan_id)
+                msg = "The Vlan number is invalid. Value: {}".format(prefix)
+                self.log.error(msg)
+                return self.response_error(150, msg)
 
-            # Network Type
-
-            # Valid network_type ID
-            # if not is_valid_int_greater_zero_param(network_type):
-            #     self.log.error(
-            #         u'Parameter id_tipo_rede is invalid. Value: %s.', network_type)
-            #     raise InvalidValueError(None, 'id_tipo_rede', network_type)
-
-            # Find network_type by ID to check if it exist
             net = None
             if network_type:
                 net = TipoRede.get_by_pk(network_type)
 
-            # Environment Vip
-
             if environment_vip is not None:
-
                 # Valid environment_vip ID
                 if not is_valid_int_greater_zero_param(environment_vip):
-                    self.log.error(
-                        u'Parameter id_ambiente_vip is invalid. Value: %s.', environment_vip)
-                    raise InvalidValueError(
-                        None, 'id_ambiente_vip', environment_vip)
-
+                    msg = "The VIP Environment id is invalid. Value: {}".format(prefix)
+                    self.log.error(msg)
+                    return self.response_error(150, msg)
                 # Find Environment VIP by ID to check if it exist
                 evip = EnvironmentVip.get_by_pk(environment_vip)
 
@@ -270,4 +252,6 @@ class NetworkIPv4AddResource(RestResource):
         except ConfigEnvironmentInvalidError:
             return self.response_error(294)
         except IpNotAvailableError, e:
+            return self.response_error(150, e)
+        except NetworkAPIException as e:
             return self.response_error(150, e)
