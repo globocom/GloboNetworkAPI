@@ -260,3 +260,6 @@ class Functionality(models.Model):
             functionality.nome = event_functionality
             functionality.save()
             return event_functionality
+    
+    def __str__(self):
+        return self.name

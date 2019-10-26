@@ -56,3 +56,6 @@ class Semaforo(models.Model):
                 u'Falha ao realizar o lock para o identificador %s.' % id)
             raise SemaforoError(
                 e, u'Falha ao realizar o lock para o identificador %s.' % id)
+
+    def __str__(self):
+        return self.descricao
