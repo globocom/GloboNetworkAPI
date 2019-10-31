@@ -328,7 +328,7 @@ error_messages = {
     410: u'Channel não pode ser deletado. %s',
     413: u'Interface não pode ser desconectada. Remova o Port Channel primeiro.',
     414: u'A rede a ser cadastrada não pertence a rede do ambiente. Cadastre o range desejado no ambiente',
-    415: u'O ambiente não consta com rede cadastrada. É necessário cadastrar uma rede ao ambiente.'
+    415: u'O ambiente não está configurado. É necessário efetuar a configuração.'
 }
 
 

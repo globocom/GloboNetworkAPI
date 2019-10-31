@@ -184,12 +184,12 @@ class NetworkAddResource(RestResource):
                         config_env = ConfigEnvironment()
                         environment_conf = config_env.get_by_environment(vlan_env_id)
 
-                        for env_config in environment_conf:
+                        if environment_conf:
+                            for env_config in environment_conf:
 
-                            ipconfig = env_config.ip_config
-                            subnet = ipconfig.subnet
+                                ipconfig = env_config.ip_config
+                                subnet = ipconfig.subnet
 
-                        if subnet:
                             env_net = IPNetwork(subnet)
 
                             try:
@@ -209,8 +209,8 @@ class NetworkAddResource(RestResource):
                                 return self.response_error(414)
 
                         else:
-                            raise NetworkEnvironmentError(None, 'O ambiente não consta com rede cadastrada. '
-                                                                'É necessário cadastrar uma rede ao ambiente.')
+                            raise NetworkEnvironmentError(None, 'O ambiente não está configurado. '
+                                                                'É necessário efetuar a configuração.')
 
                     except NetworkEnvironmentError:
                         self.log.error('The environment does not have a registered network')
