@@ -183,9 +183,9 @@ class NetworkAddResource(RestResource):
                     config_env = ConfigEnvironment()
                     environment_conf = config_env.get_by_environment(vlan_env_id)
 
-                    for x in environment_conf:
+                    for env_config in environment_conf:
 
-                        ipconfig = x.ip_config
+                        ipconfig = env_config.ip_config
                         subnet = ipconfig.subnet
 
                         try:
