@@ -179,14 +179,14 @@ class NetworkAddResource(RestResource):
                 try:
                     vlan = Vlan().get_by_pk(id_vlan)
                     vlan_env_id = vlan.ambientes
-                    
+
                     try:
                         config_env = ConfigEnvironment()
                         environment_conf = config_env.get_by_environment(vlan_env_id)
 
                         if environment_conf:
                             for env_config in environment_conf:
-
+                                
                                 ipconfig = env_config.ip_config
                                 subnet = ipconfig.subnet
 
