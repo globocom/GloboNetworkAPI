@@ -142,6 +142,32 @@ class NetworkIPRangeEnvError(NetworkIPvXError):
         return msg.encode('utf-8', 'replace')
 
 
+class NetworkSubnetRange(NetworkIPvXError):
+
+    """Exception for a network that does not be a subnet of de environment network."""
+
+    def __init__(self, cause, message=None):
+        self.cause = cause
+        self.message = message
+
+    def __str__(self):
+        msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
+        return msg.encode('utf-8', 'replace')
+
+
+class NetworkEnvironmentError(NetworkIPvXError):
+
+    """Exception for a environment that does not have a network."""
+
+    def __init__(self, cause, message=None):
+        self.cause = cause
+        self.message = message
+
+    def __str__(self):
+        msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
+        return msg.encode('utf-8', 'replace')
+
+
 class IpErrorV3(Exception):
 
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com IP."""
