@@ -214,7 +214,7 @@ error_messages = {
     290: u'Option vip is already associated with the environment vip',
     291: u'Option vip is not associated with the environment vip',
     292: u'IPv6 %s not registered for the environment %s',
-    293: u'Dont Deallocate all relationships between Vlan be because is active.',
+    293: u'Vlan is currently in active/deployed state. It needs to be undeployed before deletion.',
     294: u'Invalid Environment Configuration or not registered',
     295: u'Unavailable address to create a NetworkIPv4',
     296: u'Unavailable address to create a NetworkIPv6',
@@ -327,6 +327,8 @@ error_messages = {
     407: u'Erro ao remover a variável.',
     410: u'Channel não pode ser deletado. %s',
     413: u'Interface não pode ser desconectada. Remova o Port Channel primeiro.',
+    414: u'A rede a ser cadastrada não pertence a rede do ambiente. Cadastre o range desejado no ambiente',
+    415: u'O ambiente não está configurado. É necessário efetuar a configuração.'
 }
 
 
