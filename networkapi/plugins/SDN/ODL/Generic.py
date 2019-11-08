@@ -91,7 +91,7 @@ class ODLPlugin(BaseSdnPlugin):
         except Exception as err:
             message = self._parse_errors(err.response.json())
             log.error("ERROR while removing a flow due to It does not exist anymore: %s" % message)
-            continue
+            pass
 
 
     def update_all_flows(self, data, flow_type=FlowTypes.ACL):
