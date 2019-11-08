@@ -68,6 +68,7 @@ class ODLPlugin(BaseSdnPlugin):
             builder = AclFlowBuilder(data, self.environment, version=self.version)
 
             flows_set = builder.build()
+
         try:
             for flows in flows_set:
                 for flow in flows['flow']:
@@ -82,6 +83,7 @@ class ODLPlugin(BaseSdnPlugin):
 
 
     def del_flow(self, flow_id=0, nodes_ids=[]):
+        """Insert a try except to avoid code breakage when removing a non-existent acl"""
 
         try:
             return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
@@ -93,18 +95,14 @@ class ODLPlugin(BaseSdnPlugin):
 
 
     def update_all_flows(self, data, flow_type=FlowTypes.ACL):
-        current_flows = self.get_flows()
 
+        current_flows = self.get_flows()
         if flow_type == FlowTypes.ACL:
             builder = AclFlowBuilder(data, self.environment, version=self.version)
             new_flows_set = builder.build()
 
         for node in current_flows.keys():
             log.info("Starting update all flows for node %s"%node)
-
-            #if flow_type == FlowTypes.ACL:
-            #    builder = AclFlowBuilder(data, self.environment, version=self.version)
-            #    new_flows_set = builder.build()
 
             #Makes a diff
             operations = self._diff_flows(current_flows[node], new_flows_set)
