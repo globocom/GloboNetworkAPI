@@ -82,7 +82,14 @@ class ODLPlugin(BaseSdnPlugin):
 
 
     def del_flow(self, flow_id=0, nodes_ids=[]):
-        return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
+
+        try:
+            return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
+
+        except Exception as err:
+            message = self._parse_errors(err.response.json())
+            log.error("ERROR while removing a flow due to It does not exist anymore: %s" % message)
+            continue
 
 
     def update_all_flows(self, data, flow_type=FlowTypes.ACL):
@@ -104,15 +111,7 @@ class ODLPlugin(BaseSdnPlugin):
 
             try:
                 for flow in operations["delete"]:
-
-                    try:
-                        self.del_flow(flow_id=flow['id'], nodes_ids=[node])
-
-                    except Exception as err:
-                        message = self._parse_errors(err.response.json())
-                        log.error("ERROR while removing a flow. It does not Exist: %s" % message)
-                        raise exceptions.CommandErrorException(msg=message)
-
+                    self.del_flow(flow_id=flow['id'], nodes_ids=[node])
 
                 for flow in operations["insert"]:
                     self._flow(flow_id=flow['id'],
