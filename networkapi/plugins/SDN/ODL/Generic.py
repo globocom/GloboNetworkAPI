@@ -95,8 +95,8 @@ class ODLPlugin(BaseSdnPlugin):
 
 
     def update_all_flows(self, data, flow_type=FlowTypes.ACL):
-
         current_flows = self.get_flows()
+
         if flow_type == FlowTypes.ACL:
             builder = AclFlowBuilder(data, self.environment, version=self.version)
             new_flows_set = builder.build()
