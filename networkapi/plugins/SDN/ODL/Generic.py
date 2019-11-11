@@ -83,26 +83,25 @@ class ODLPlugin(BaseSdnPlugin):
 
 
     def del_flow(self, flow_id=0, nodes_ids=[]):
-        """Insert a try except to avoid code breakage when removing a non-existent acl"""
+        "Insert a try except to avoid code breakage when removing a non-existent acl"
 
         try:
             return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
 
-        except Exception as err:
-            message = self._parse_errors(err.response.json())
-            log.error("ERROR while removing a flow due to It does not exist anymore: %s" % message)
+        except Exception as e:
+            message = self._parse_errors(e.response.json())
+            log.error("ERROR while removing a flow: %s" % message)
             pass
-
 
     def update_all_flows(self, data, flow_type=FlowTypes.ACL):
         current_flows = self.get_flows()
 
-        if flow_type == FlowTypes.ACL:
-            builder = AclFlowBuilder(data, self.environment, version=self.version)
-            new_flows_set = builder.build()
-
         for node in current_flows.keys():
             log.info("Starting update all flows for node %s"%node)
+
+            if flow_type == FlowTypes.ACL:
+                builder = AclFlowBuilder(data, self.environment, version=self.version)
+                new_flows_set = builder.build()
 
             #Makes a diff
             operations = self._diff_flows(current_flows[node], new_flows_set)
