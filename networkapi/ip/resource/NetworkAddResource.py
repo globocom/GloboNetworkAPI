@@ -209,18 +209,8 @@ class NetworkAddResource(RestResource):
                                 return self.response_error(414)
 
                         else:
-<<<<<<< HEAD
-<<<<<<< HEAD
                             raise NetworkEnvironmentError(None, 'O ambiente não está configurado. '
                                                                 'É necessário efetuar a configuração.')
-=======
-                            raise NetworkEnvironmentError(None, 'O ambiente não consta com rede cadastrada. '
-                                                                'É necessário cadastrar uma rede ao ambiente.')
->>>>>>> fix NetworkEnvironmentError exception
-=======
-                            raise NetworkEnvironmentError(None, 'O ambiente não está configurado. '
-                                                                'É necessário efetuar a configuração.')
->>>>>>> add environment configuration exception
 
                     except NetworkEnvironmentError:
                         self.log.error('The environment does not have a registered network')
