@@ -103,7 +103,6 @@ class ODLPlugin(BaseSdnPlugin):
         for node in current_flows.keys():
             log.info("Starting update all flows for node %s"%node)
 
-            #Makes a diff
             operations = self._diff_flows(current_flows[node], new_flows_set)
 
             try:
