@@ -27,6 +27,7 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.system import exceptions
 from networkapi.system.facade import get_value
 from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util.appcache import encrypt_key
 
 
 class UsuarioError(Exception):
@@ -184,6 +185,13 @@ class Usuario(BaseModel):
         """
         bypass = 0
         try:
+            try:
+                hash_key = str(username + '/' + password)
+                encrypted_hash_key = encrypt_key(hash_key)
+                self.log.debug("Key encrypted: %s " % encrypted_hash_key)
+            except Exception as ERROR:
+                self.log.error(ERROR)
+
             try:
                 use_ldap = convert_string_or_int_to_boolean(
                     get_value('use_ldap'))

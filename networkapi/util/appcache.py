@@ -1,4 +1,5 @@
 import hashlib
+import bcrypt
 import logging
 
 from django.core.cache import cache as djangocache
@@ -21,6 +22,14 @@ def cache_enabled():
         return 0
     except Exception as e:
         return 0
+
+
+def encrypt_key(key):
+    try:
+        return bcrypt.hashpw(key, bcrypt.gensalt())
+
+    except Exception as ERROR:
+        log.error(ERROR)
 
 
 def get_cached_search(prefix, search):
