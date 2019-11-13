@@ -188,7 +188,7 @@ class Usuario(BaseModel):
             try:
                 hash_key = str(username + '/' + password)
                 encrypted_hash_key = encrypt_key(hash_key)
-                self.log.debug("Key encrypted: %s " % encrypted_hash_key)
+
             except Exception as ERROR:
                 self.log.error(ERROR)
 

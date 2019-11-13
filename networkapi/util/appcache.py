@@ -26,8 +26,9 @@ def cache_enabled():
 
 def encrypt_key(key):
     try:
-        return bcrypt.hashpw(key, bcrypt.gensalt())
-
+        key_encrypted =  bcrypt.hashpw(key, bcrypt.gensalt())
+        log.debug('Key encrypted successfully!')
+        return key_encrypted
     except Exception as ERROR:
         log.error(ERROR)
 
