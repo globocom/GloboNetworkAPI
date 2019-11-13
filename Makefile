@@ -49,7 +49,8 @@ help:
 	@echo "Remote:"
 	@echo "  publish    to publish the package to PyPI"
 	@echo "  push_img   to push image to docker hub"
-	@echo "  test_ci    Used by Travis CI to run tests on django applications"
+	@echo "  test_ci    Used by Travis CI to run tests on django applications. The app name must be provided. Ex. ''make test_ci app=networkapi/api_environment'"
+	@echo "  test_ci_travis    to localy run the same Travis CI tests"
 	@echo
 
 
@@ -119,11 +120,12 @@ publish: clean
 # Containers based target rules
 #
 
-start: docker-compose.yml
-	@docker-compose up -d
+start: docker-compose-sdn.yml docker-compose.yml
+	docker-compose up --force-recreate --remove-orphans -d
+	docker-compose --file $< up --force-recreate -d
 
 
-stop: docker-compose.yml
+stop: docker-compose-sdn.yml docker-compose.yml
 	@docker-compose down --remove-orphans
 
 
@@ -145,6 +147,10 @@ test_ci:
 	@echo "Running NetAPI tests for app '${app}'"
 	time docker exec -it netapi_app ./fast_start_test.sh ${app}
 
+
+test_ci_travis:
+	@echo "Running the same NetAPI tests enabled on travis"
+	time docker exec -it netapi_app ./thesame_tests_travis_do.sh
 
 fixture:
 ifeq (${model},)
