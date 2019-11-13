@@ -96,12 +96,12 @@ class ODLPlugin(BaseSdnPlugin):
     def update_all_flows(self, data, flow_type=FlowTypes.ACL):
         current_flows = self.get_flows()
 
-        if flow_type == FlowTypes.ACL:
-            builder = AclFlowBuilder(data, self.environment, version=self.version)
-            new_flows_set = builder.build()
-
         for node in current_flows.keys():
             log.info("Starting update all flows for node %s"%node)
+
+            if flow_type == FlowTypes.ACL:
+                builder = AclFlowBuilder(data, self.environment, version=self.version)
+                new_flows_set = builder.build()
 
             operations = self._diff_flows(current_flows[node], new_flows_set)
 
