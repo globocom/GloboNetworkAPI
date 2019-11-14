@@ -150,7 +150,7 @@ test_ci:
 
 test_ci_travis:
 	@echo "Running the same NetAPI tests enabled on travis"
-	time docker exec -it netapi_app ./thesame_tests_travis_do.sh
+	time docker exec -it netapi_app ./thesame_tests_travis_does.sh
 
 fixture:
 ifeq (${model},)
