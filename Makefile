@@ -28,7 +28,7 @@ help:
 	@echo
 	@echo "Local:"
 	@echo "  api	    To get a shell of network_app container"
-	@echo "  db	    To get a shell of network_db container"
+	@echo "  db	        To get a shell of network_db container"
 	@echo "  start      to run project through docker compose"
 	@echo "  stop       to stop all containers from docker composition"
 	@echo "  logs       to follow logs on application container"
@@ -50,7 +50,7 @@ help:
 	@echo "  publish    to publish the package to PyPI"
 	@echo "  push_img   to push image to docker hub"
 	@echo "  test_ci    Used by Travis CI to run tests on django applications. The app name must be provided. Ex. ''make test_ci app=networkapi/api_environment'"
-	@echo "  test_ci_travis    to localy run the same Travis CI tests"
+	@echo "  test_ci_travis    To locally run the same Travis CI tests"
 	@echo
 
 
