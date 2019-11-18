@@ -24,9 +24,9 @@ def cache_enabled():
         return 0
 
 
-def encrypt_key(key):
+def encrypt_key(key, salt_key):
     try:
-        key_encrypted = bcrypt.hashpw(key, bcrypt.gensalt())
+        key_encrypted = bcrypt.hashpw(key, salt_key)
         log.debug('Key encrypted successfully!')
         return key_encrypted
     except Exception as ERROR:
@@ -45,10 +45,11 @@ def get_cache(key):
     try:
         data = djangocache.get(key)
         if data:
-            log.debug('Got cached data !')
+            log.debug('Got cached data!')
         return data
     except Exception as ERROR:
         log.error(ERROR)
+
 
 def get_cached_search(prefix, search):
 
