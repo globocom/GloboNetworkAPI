@@ -178,7 +178,7 @@ class NetworkAddResource(RestResource):
                 # Check if the new network is in the range of the Environment Network
                 try:
                     vlan = Vlan().get_by_pk(id_vlan)
-                    vlan_env_id = vlan.ambientes
+                    vlan_env_id = vlan.ambiente
 
                     try:
                         config_env = ConfigEnvironment()
