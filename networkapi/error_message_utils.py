@@ -327,6 +327,8 @@ error_messages = {
     407: u'Erro ao remover a variável.',
     410: u'Channel não pode ser deletado. %s',
     413: u'Interface não pode ser desconectada. Remova o Port Channel primeiro.',
+    414: u'A rede a ser cadastrada não pertence a rede do ambiente. Cadastre o range desejado no ambiente',
+    415: u'O ambiente não está configurado. É necessário efetuar a configuração.'
 }
 
 
