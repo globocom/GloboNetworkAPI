@@ -186,7 +186,7 @@ class NetworkAddResource(RestResource):
 
                         if environment_conf:
                             for env_config in environment_conf:
-                                
+
                                 ipconfig = env_config.ip_config
                                 subnet = ipconfig.subnet
 
