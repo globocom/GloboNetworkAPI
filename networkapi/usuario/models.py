@@ -205,12 +205,12 @@ class Usuario(BaseModel):
                             return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
 
                         else:
-                            set_cache(encrypted_hash_key, True, 300)
+                            set_cache(encrypted_hash_key, True, get_value('time_cache_user'))
                             self.log.debug('The user was cached successfully!')
 
                     else:
                         salt_key = bcrypt.gensalt()
-                        set_cache('salt_key', salt_key, 86400)
+                        set_cache('salt_key', salt_key, get_value('time_cache_salt_key'))
                         self.log.debug('The encrypt token was generated successfully!')
 
             except Exception as ERROR:
