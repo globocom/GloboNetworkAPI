@@ -211,7 +211,7 @@ class Usuario(BaseModel):
                     else:
                         salt_key = bcrypt.gensalt()
                         set_cache('salt_key', salt_key, get_value('time_cache_salt_key'))
-                        self.log.debug('The encrypt token was generated successfully!')
+                        self.log.debug('The encrypt token was generated and cached successfully!')
 
             except Exception as ERROR:
                 self.log.error(ERROR)
