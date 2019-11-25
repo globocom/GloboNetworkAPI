@@ -16,6 +16,7 @@
 from __future__ import with_statement
 
 import hashlib
+import bcrypt
 import logging
 
 import ldap
@@ -27,6 +28,7 @@ from networkapi.models.BaseModel import BaseModel
 from networkapi.system import exceptions
 from networkapi.system.facade import get_value
 from networkapi.util import convert_string_or_int_to_boolean
+from networkapi.util.appcache import encrypt_key, get_cache, set_cache
 
 
 class UsuarioError(Exception):
@@ -184,6 +186,36 @@ class Usuario(BaseModel):
         """
         bypass = 0
         try:
+            try:
+                use_cache_user = convert_string_or_int_to_boolean(
+                    get_value('use_cache_user'))
+
+                if use_cache_user:
+                    salt = get_cache('salt_key')
+
+                    if salt:
+                        self.log.debug('The encrypt key was taken successfully!')
+
+                        hash_key = str(username + '/' + password)
+                        encrypted_hash_key = encrypt_key(hash_key, salt)
+                        cached_hash_key = get_cache(encrypted_hash_key)
+
+                        if cached_hash_key:
+                            self.log.debug('This authentication is using cached user')
+                            return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
+
+                        else:
+                            set_cache(encrypted_hash_key, True, get_value('time_cache_user'))
+                            self.log.debug('The user was cached successfully!')
+
+                    else:
+                        salt_key = bcrypt.gensalt()
+                        set_cache('salt_key', salt_key, get_value('time_cache_salt_key'))
+                        self.log.debug('The encrypt token was generated and cached successfully!')
+
+            except Exception as ERROR:
+                self.log.error(ERROR)
+
             try:
                 use_ldap = convert_string_or_int_to_boolean(
                     get_value('use_ldap'))
