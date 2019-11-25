@@ -29,7 +29,8 @@ error_messages = {
     104: u'Identificador do modelo do equipamento é obrigatório',
     105: u'Nome do equipamento é obrigatório',
     106: u'Identificador do grupo do equipamento é obrigatório',
-    107: u'Equipamento do grupo “Equipamentos Orquestração” somente poderá ser criado com tipo igual a “Servidor Virtual"',
+    107: u'Equipamento do grupo “Equipamentos Orquestração” somente poderá ser criado com tipo igual a '
+         u'“Servidor Virtual"',
     108: u'the VLAN name duplicated within an environment informed',
     109: u'Não existe número de VLAN disponível nos intervalos de %d até %d e de %d até %d para o ambiente informado',
     110: u'Ambiente com Divisão DC diferente de BE e FE',
@@ -230,8 +231,10 @@ error_messages = {
     306: u'Vlan já cadastrada com o número %s',
     307: u'%s',
     308: u'Não existe associação de Ip e Equipamento para o IP %s',
-    309: u'Failure to remove an association between an equipment and a group because the equipment is related only to one group.',
-    310: u'Não foi possível excluir o grupo %s por alguns equipamentos estarem associados apenas a este grupo. Equipamentos: %s',
+    309: u'Failure to remove an association between an equipment and a group because the equipment is related only '
+         u'to one group.',
+    310: u'Não foi possível excluir o grupo %s por alguns equipamentos estarem associados apenas a este grupo. '
+         u'Equipamentos: %s',
     311: u'Já existe uma Vlan com o arquivo_acl = %s',
     312: u'Tipo de Equipamento com nome %s, já cadastrado.',
     313: u'%s.',  # Healthcheck já cadastrado
@@ -262,7 +265,8 @@ error_messages = {
     333: u'Alteração de real server concluída com falha, ocorreram erros de script com o(s) real(s) %s e ip(s) %s.',
     334: u'%s',
     335: u'Existe uma rede com mesma faixa relacionada com ambiente vip',
-    336: u"Não foi possivel desassociar ambiente %s, pois existem ips sendo utilizados pelas requisições vip's. IPv4[ %s ] - IPV6[ %s ]",
+    336: u"Não foi possivel desassociar ambiente %s, pois existem ips sendo utilizados pelas requisições vip's. "
+         u"IPv4[ %s ] - IPV6[ %s ]",
     337: u'Valor do parâmetro %s inválido. Valor: %s.',
     338: u'Ocorreu um erro ao salvar o filtro no banco de dados. Verifique se o nome é único.',
     339: u'Não foi possível recuperar o filtro especificado do banco de dados.',
@@ -271,18 +275,23 @@ error_messages = {
     342: u'Não foi possível recuperar o tipo de equipamento especificado do banco de dados.',
     343: u'A associação entre o filtro %s e o tipo de equipamento %s já existe.',
     344: u'%s',
-    345: u"Não foi possivel remover o equipamento %s, pois existem ips sendo utilizados por requisições vip's. IPv4[ %s ] - IPV6[ %s ]",
-    346: u"Um dos equipamentos associados com o ambiente desta rede também está associado com outro ambiente que tem uma rede com essa mesma faixa, adicione filtros nos ambientes se necessário.",
-    347: u"O equipamento que está sendo associado já possui um ip na mesma faixa em outra rede, se necessário adicione filtros nos ambientes.",
+    345: u"Não foi possivel remover o equipamento %s, pois existem ips sendo utilizados por requisições vip's. "
+         u"IPv4[ %s ] - IPV6[ %s ]",
+    346: u"Um dos equipamentos associados com o ambiente desta rede também está associado com outro ambiente que "
+         u"tem uma rede com essa mesma faixa, adicione filtros nos ambientes se necessário.",
+    347: u"O equipamento que está sendo associado já possui um ip na mesma faixa em outra rede, se necessário "
+         u"adicione filtros nos ambientes.",
     348: u"O tipo de equipamento %s não pode ser desassociado do filtro %s.",
     349: u"O filtro %s não pode ser desassociado do ambiente pois está em uso.",
     350: u'Permissão %s não cadastrada.',
     351: u'Permissão Administrativa com função %s já cadastrada.',
-    352: u"Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado na requisição vip %s e o equipamento é o único balanceador associado a este ip.",
+    352: u"Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado na requisição "
+         u"vip %s e o equipamento é o único balanceador associado a este ip.",
     353: u'Valores duplicados para Porta Real, Porta Vip e IP do Real na mesma Requisição VIP.',
     354: u'Não foi possível excluir o ip de id %s pois ele está sendo usado em uma requisição VIP.',
     355: u'Não foi possível excluir a rede de id %s pois há um ip nela sendo usado em uma requisição VIP.',
-    356: u'Não foi possível excluir a vlan de id %s pois há uma rede que possui um ip sendo usado em uma requisição VIP.',
+    356: u'Não foi possível excluir a vlan de id %s pois há uma rede que possui um ip sendo usado em uma '
+         u'requisição VIP.',
     357: u'Esse ambiente já possui blocos cadastrados.',
     358: u'Regra inválida ou não cadastrada.',
     359: u'Bloco inválido ou não cadastrado.',
@@ -295,7 +304,8 @@ error_messages = {
     368: u'Nao foi possivel remover a vlan pois ela esta inativa.',
     369: u'Nao foi possivel remover a vlan pois as seguintes redes nao puderam ser removidas: %s.',
     370: u'Nao foi possivel excluir o vip %s. Remova-o dos equipamentos primeiro.',
-    371: u'Bloco não pode ser adicionado porque já existe uma regra para ser aplicada e o valor do parametro override é zero.',
+    371: u'Bloco não pode ser adicionado porque já existe uma regra para ser aplicada e o valor do parametro '
+         u'override é zero.',
     372: u'Server Pool Does Not Exists',
     373: u'Equipamento(s) do Server Pool: %s não pertence ao mesmo ambiente do Ambiente Vip: %s.',
     374: u'Está requisição vip não possui nenhum server pool cadastrado.',
@@ -309,16 +319,21 @@ error_messages = {
     382: u'Os arquivos de configuracao do Rack %s nao podem ser gerados. %s',
     383: u'Nao foi possivel aplicar a configuracao do rack %s. %s',
     384: u'Erro ao editar ServerPool: %s',
-    385: u'Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nos server pools (id:identifier) %s.',
-    386: u'Não foi possível excluir a rede %s pois o ip %s contido nela esta sendo usado nos Server Pools (id:identifier) %s.',
-    387: u'Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, e esse ip esta sendo usado nos Server Pools (id:identifier) %s.',
-    389: u'Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools (id:identifier) %s.',
+    385: u'Não foi possível desassociar o ip %s do equipamento %s pois o ip está sendo utilizado nos server pools '
+         u'(id:identifier) %s.',
+    386: u'Não foi possível excluir a rede %s pois o ip %s contido nela esta sendo usado nos Server Pools '
+         u'(id:identifier) %s.',
+    387: u'Não foi possível excluir a vlan %s pois ela possui a rede %s e essa rede possui o ip %s contido nela, '
+         u'e esse ip esta sendo usado nos Server Pools (id:identifier) %s.',
+    389: u'Não foi possível excluir o vip %s pois o ip %s do mesmo esta sendo usado nos Server Pools '
+         u'(id:identifier) %s.',
     390: u'Não foi possível excluir o vip %s pois os seguintes vips %s estão usando o mesmo ip %s.',
     391: u'Failure accessing Foreman server: %s',
     392: u'Environment is already associated with the environment vip',
     393: u'Environment is not associated with the environment vip',
     394: u'O ambiente %s não pode ser desvinculado pois existem server pools com reals vinculados a este ambiente.',
-    396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes vips "%s".',
+    396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes '
+         u'vips "%s".',
     397: u'O Rack, que o servidor está, não foi cadastrado.',
     400: u'Nao foi possivel adicionar o Rack',
     401: u'As mudancas nao foram salvas',
@@ -345,10 +360,10 @@ def error_dumps(code, *args):
     error_map['codigo'] = '%04d' % code
     error_map['descricao'] = message
 
-    map = dict()
-    map['erro'] = error_map
+    maps = dict()
+    maps['erro'] = error_map
 
-    return xml_utils.dumps_networkapi(map)
+    return xml_utils.dumps_networkapi(maps)
 
 
 if __name__ == '__main__':
