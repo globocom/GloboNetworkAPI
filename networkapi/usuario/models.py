@@ -28,10 +28,9 @@ from networkapi.system import exceptions
 from networkapi.system.facade import get_value
 from networkapi.util import convert_string_or_int_to_boolean
 from networkapi.util.appcache import get_cache, set_cache
-from networkapi.util.encrypt import encrypt_key, decrypt_key, generate_key
+from networkapi.util.encrypt import encrypt_key, generate_key
 
-from Crypto.Random import get_random_bytes
-from base64 import b64encode, b64decode
+from base64 import b64encode
 
 
 class UsuarioError(Exception):
@@ -199,21 +198,21 @@ class Usuario(BaseModel):
                     if salt:
                         self.log.debug('The encrypt key was taken successfully!')
 
-                        hash_key = str(username + password)
-                        encrypted_hash_key = encrypt_key(hash_key, salt)
-                        cached_hash_key = get_cache(b64encode(encrypted_hash_key))
+                        hash_text = str(username + password)
+                        encrypted_hash_text = encrypt_key(hash_text, salt)
+                        cached_hash_text = get_cache(b64encode(encrypted_hash_text))
 
-                        if cached_hash_key:
+                        if cached_hash_text:
                             self.log.debug('This authentication is using cached user')
                             pswd = Usuario.encode_password(password)
                             return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
 
                         else:
-                            set_cache(b64encode(encrypted_hash_key), True, int(get_value('time_cache_user')))
+                            set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
                             self.log.debug('The user was cached successfully!')
 
                     else:
-                        salt_key = get_random_bytes(8)
+                        salt_key = generate_key()
                         set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
                         self.log.debug('The encrypt token was generated and cached successfully!')
 

@@ -1,24 +1,22 @@
 import hashlib
 import logging
 from Crypto.Cipher import Blowfish
+from Crypto.Random import get_random_bytes
 
 log = logging.getLogger(__name__)
 
-INPUT_SIZE = 8
 
-
-def encrypt_key(key, salt_key):
+def encrypt_key(text, salt_key):
     try:
-        new_str = key
-        pad_chars = INPUT_SIZE - (len(key) % INPUT_SIZE)
-
-        if pad_chars != 0:
-            for x in range(pad_chars):
-                new_str += " "
+        bs = Blowfish.block_size
+        extra_bytes = len(text) % bs
+        padding_size = bs - extra_bytes
+        padding = chr(padding_size) * padding_size
+        padded_text = text + padding
 
         crypt_obj = Blowfish.new(salt_key, Blowfish.MODE_ECB)
 
-        cipher = crypt_obj.encrypt(new_str)
+        cipher = crypt_obj.encrypt(padded_text)
 
         return cipher
     except Exception as ERROR:
@@ -41,12 +39,10 @@ def decrypt_key(cipher, salt_key):
         log.error(ERROR)
 
 
-def generate_key(password, salt, iterations):
-    assert iterations > 0
+def generate_key():
+    try:
+        bs = Blowfish.block_size
+        return get_random_bytes(bs)
 
-    key = password + salt
-
-    for i in range(iterations):
-        key = hashlib.sha256(key).digest()
-
-    return key
+    except Exception as ERROR:
+        log.error(ERROR)
