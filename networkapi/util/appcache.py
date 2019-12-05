@@ -1,5 +1,4 @@
 import hashlib
-import bcrypt
 import logging
 
 from django.core.cache import cache as djangocache
@@ -22,15 +21,6 @@ def cache_enabled():
         return 0
     except Exception as e:
         return 0
-
-
-def encrypt_key(key, salt_key):
-    try:
-        key_encrypted = bcrypt.hashpw(key, salt_key)
-        log.debug('Key encrypted successfully!')
-        return key_encrypted
-    except Exception as ERROR:
-        log.error(ERROR)
 
 
 def set_cache(key, data, timeout):

@@ -1,6 +1,5 @@
 amqp==1.4.9
 anyjson==0.3.3
-bcrypt==3.1.7
 bigsuds==1.0.4
 billiard==3.3.0.23
 celery==3.1.24
