@@ -1921,6 +1921,8 @@ class EnvCIDR(BaseModel):
         return objects
 
     def delete(self):
+        log.info("EnvCIDR delete method")
+
         super(EnvCIDR, self).delete()
 
 

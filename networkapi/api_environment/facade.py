@@ -294,7 +294,8 @@ def get_cidr(cidr=None, env=None, ip_version=None):
     """Return a list of CIDR."""
 
     try:
-        cidr = EnvCIDR.get(id=cidr, environment=env, ip_version=ip_version)
+        env_cidr = EnvCIDR()
+        cidr = env_cidr.get(id=cidr, environment=env, ip_version=ip_version)
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
@@ -307,9 +308,10 @@ def delete_cidr(cidr=None, env=None):
     """Delete CIDR."""
 
     try:
-        cidr_obj = EnvCIDR.get(id=cidr, environment=env)
+        env_cidr = EnvCIDR()
+        cidr_obj = env_cidr.get(id=cidr, environment=env)
         for cidr in cidr_obj:
-            cidr.EnvCIDR.delete_v3()
+            cidr.delete()
     except AmbienteUsedByEquipmentVlanError, e:
         raise ValidationAPIException(str(e))
     except exceptions.EnvironmentDoesNotExistException, e:
