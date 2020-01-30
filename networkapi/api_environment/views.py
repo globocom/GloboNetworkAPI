@@ -401,22 +401,23 @@ class EnvFlowView(CustomAPIView):
 class EnvironmentCIDRDBView(CustomAPIView):
 
     @logs_method_apiview
-    @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, Read))
-    @prepare_search
     def get(self, request, *args, **kwargs):
         """Returns a list of environment by ids ou dict."""
 
-        if not kwargs.get('obj_ids'):
-            obj_model = facade.get_l3_environment_by_search(self.search)
-            environments = obj_model['query_set']
-            only_main_property = False
-        else:
-            return Response(dict(), status=status.HTTP_400_BAD_REQUEST)
+        cidr_id = kwargs.get('cidr_id', None)
 
-        # serializer environments
-        serializer_env = serializers.GrupoL3Serializer(
-            environments,
+        if cidr_id:
+            cidr = facade.get_cidr(cidr=cidr_id)
+            only_main_property = True
+            obj_model = None
+        else:
+            obj_model = facade.get_cidr(self.search)
+            cidr = obj_model.get('query_set')
+            only_main_property = False
+
+        serializer = serializers.EnvCIDRSerializer(
+            cidr,
             many=True,
             fields=self.fields,
             include=self.include,
@@ -425,10 +426,10 @@ class EnvironmentCIDRDBView(CustomAPIView):
         )
 
         data = render_to_json(
-            serializer_env,
-            main_property='l3_environments',
-            obj_model=obj_model,
+            serializer,
+            main_property='EnvCIDR',
             request=request,
+            obj_model=obj_model,
             only_main_property=only_main_property
         )
 
@@ -465,21 +466,3 @@ class EnvironmentCIDRDBView(CustomAPIView):
             facade.delete_cidr(cidr=cidr_id)
 
         return Response({}, status=status.HTTP_200_OK)
-
-    @logs_method_apiview
-    @permission_classes_apiview((IsAuthenticated, Read))
-    def get(self, request, *args, **kwargs):
-        """Returns a list of environment by ids ou dict."""
-
-        cidr_id = kwargs.get('cidr_id', None)
-        environment_id = kwargs.get('environment_id', None)
-        ip_version = kwargs.get('ip_version', None)
-
-        if environment_id:
-            cidr = facade.list_flows_by_envid(env=environment_id)
-        elif cidr_id:
-            cidr = facade.list_flows_by_envid(cidr=cidr_id)
-        else:
-            cidr = list()
-
-        return Response(cidr, status=status.HTTP_200_OK)

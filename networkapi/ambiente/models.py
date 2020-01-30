@@ -1803,6 +1803,10 @@ class EnvCIDR(BaseModel):
     id = models.AutoField(
         primary_key=True
     )
+    network = models.CharField(
+        max_length=44,
+        db_column='network'
+    )
     network_first_ip = models.CharField(
         max_length=40,
         db_column='network_first_ip'
@@ -1911,6 +1915,17 @@ class EnvCIDR(BaseModel):
                 objects = EnvCIDR.objects.filter(ip_version=ip_version)
             except ObjectDoesNotExist:
                 raise ObjectDoesNotExistException('There is no CIDR with ip%s version' % ip_version)
+            except OperationalError as e:
+                self.log.error('Lock wait timeout exceeded.')
+                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
+            except Exception as e:
+                self.log.error('Error finding CIDR.')
+                raise Exception('Error finding CIDR. E: %s' % e)
+        else:
+            try:
+                objects = EnvCIDR.objects.all()
+            except ObjectDoesNotExist:
+                raise ObjectDoesNotExistException('There is no CIDR.')
             except OperationalError as e:
                 self.log.error('Lock wait timeout exceeded.')
                 raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')

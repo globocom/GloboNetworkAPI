@@ -304,6 +304,20 @@ def get_cidr(cidr=None, env=None, ip_version=None):
         return cidr
 
 
+def get_cidr_by_search(search=dict()):
+    """Return a list of dc environments by dict."""
+
+    try:
+        cidrs = EnvCIDR.objects.filter()
+        cidrs_map = build_query_to_datatable_v3(cidrs, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return cidrs_map
+
+
 def delete_cidr(cidr=None, env=None):
     """Delete CIDR."""
 

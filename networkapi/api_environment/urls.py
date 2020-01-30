@@ -6,7 +6,7 @@ from networkapi.api_environment import views
 
 urlpatterns = patterns(
     '',
-    url(r'^v3/cidr/((?P<cidr_id>\d+)/)?$',
+    url(r'^v3/cidr/((?P<cidr_id>[;\w]+)/)?$',
         views.EnvironmentCIDRDBView.as_view()),
     url(r'^v3/environment/dc/((?P<obj_ids>[;\w]+)/)?$',
         views.EnvironmentDCDBView.as_view()),
