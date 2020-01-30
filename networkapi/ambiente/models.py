@@ -1887,40 +1887,6 @@ class EnvCIDR(BaseModel):
             except Exception as e:
                 self.log.error('Error finding CIDR.')
                 raise Exception('Error finding CIDR. E: %s' % e)
-        elif environment and ip_version:
-            try:
-                objects = EnvCIDR.objects.filter(id_env=environment, ip_version=ip_version)
-            except ObjectDoesNotExist:
-                raise ObjectDoesNotExistException('There is no CIDR with environment id = %s and '
-                                                  'ip%s version' % (id, ip_version))
-            except OperationalError as e:
-                self.log.error('Lock wait timeout exceeded.')
-                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
-            except Exception as e:
-                self.log.error('Error finding CIDR.')
-                raise Exception('Error finding CIDR. E: %s' % e)
-        elif environment:
-            try:
-                objects = EnvCIDR.objects.filter(id_env=environment)
-            except ObjectDoesNotExist:
-                raise ObjectDoesNotExistException('There is no CIDR with environment id = %s.' % id)
-            except OperationalError as e:
-                self.log.error('Lock wait timeout exceeded.')
-                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
-            except Exception as e:
-                self.log.error('Error finding CIDR.')
-                raise Exception('Error finding CIDR. E: %s' % e)
-        elif ip_version:
-            try:
-                objects = EnvCIDR.objects.filter(ip_version=ip_version)
-            except ObjectDoesNotExist:
-                raise ObjectDoesNotExistException('There is no CIDR with ip%s version' % ip_version)
-            except OperationalError as e:
-                self.log.error('Lock wait timeout exceeded.')
-                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
-            except Exception as e:
-                self.log.error('Error finding CIDR.')
-                raise Exception('Error finding CIDR. E: %s' % e)
         else:
             try:
                 objects = EnvCIDR.objects.all()

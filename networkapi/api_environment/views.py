@@ -20,7 +20,6 @@ from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
 from networkapi.util.appcache import get_cached_search
-from networkapi.util.appcache import delete_cached_searches_list
 from networkapi.util.appcache import set_cache_search_with_list
 from networkapi.util.appcache import ENVIRONMENT_CACHE_ENTRY
 
@@ -402,6 +401,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
 
     @logs_method_apiview
     @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
     def get(self, request, *args, **kwargs):
         """Returns a list of environment by ids ou dict."""
 
@@ -412,7 +412,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
             only_main_property = True
             obj_model = None
         else:
-            obj_model = facade.get_cidr(self.search)
+            obj_model = facade.get_cidr_by_search(self.search)
             cidr = obj_model.get('query_set')
             only_main_property = False
 

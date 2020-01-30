@@ -13,20 +13,34 @@ log = logging.getLogger(__name__)
 class EnvCIDRSerializer(DynamicFieldsModelSerializer):
 
     id = serializers.RelatedField(source='id')
-    network_first_ip = serializers.RelatedField(source='network_first_ip')
-    network_last_ip = serializers.RelatedField(source='network_last_ip')
-    network_mask = serializers.RelatedField(source='network_mask')
+    network = serializers.RelatedField(source='network')
     ip_version = serializers.RelatedField(source='ip_version')
+    prefix = serializers.RelatedField(source='subnet_mask')
+    net_type = serializers.RelatedField(source='id_network_type.id')
+    net_type_name = serializers.RelatedField(source='id_network_type.tipo_rede')
+    environment = serializers.RelatedField(source='id_env.id')
+    environment_name = serializers.RelatedField(source='id_env.name')
 
     class Meta:
         EnvCIDR = get_model('ambiente', 'EnvCIDR')
         model = EnvCIDR
         fields = (
             'id',
-            'network_first_ip',
-            'network_last_ip',
-            'network_mask',
-            'ip_version'
+            'network',
+            'ip_version',
+            'net_type',
+            'prefix',
+            'environment'
+        )
+        details_fields = (
+            'id',
+            'network',
+            'ip_version',
+            'net_type',
+            'net_type_name',
+            'prefix',
+            'environment',
+            'environment_name'
         )
 
 

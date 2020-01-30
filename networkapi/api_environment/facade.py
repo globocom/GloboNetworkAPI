@@ -295,7 +295,7 @@ def get_cidr(cidr=None, env=None, ip_version=None):
 
     try:
         env_cidr = EnvCIDR()
-        cidr = env_cidr.get(id=cidr, environment=env, ip_version=ip_version)
+        cidr = env_cidr.get(id=cidr)
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
