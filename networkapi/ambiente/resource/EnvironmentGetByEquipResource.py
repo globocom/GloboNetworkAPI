@@ -40,59 +40,63 @@ class EnvironmentGetByEquipResource(RestResource):
         URL: /ambiente/equip/id_equip
         """
 
-        try:
+        rest = RestResource()
 
-            # Commons Validations
+        return rest.not_found()
 
-            # User permission
-
-            if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
-                return self.not_authorized()
-            if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
-                return self.not_authorized()
-
-            id_equip = kwargs.get('id_equip')
-
-            if not is_valid_int_greater_zero_param(id_equip):
-                raise InvalidValueError(None, 'id_equip', id_equip)
-
-            # Business Rules
-            equip = Equipamento.get_by_pk(id_equip)
-            environments_list = EquipamentoAmbiente.get_by_equipment(equip.id)
-
-            # Get all environments in DB
-            lists_aux = []
-            for environment in environments_list:
-                env = Ambiente.get_by_pk(environment.ambiente.id)
-                env_map = model_to_dict(env)
-                env_map['grupo_l3_name'] = env.grupo_l3.nome
-                env_map['ambiente_logico_name'] = env.ambiente_logico.nome
-                env_map['divisao_dc_name'] = env.divisao_dc.nome
-                env_map['is_router'] = environment.is_router
-
-                try:
-                    env_map['range'] = str(
-                        env.min_num_vlan_1) + ' - ' + str(env.max_num_vlan_1)
-                    if env.min_num_vlan_1 != env.min_num_vlan_2:
-                        env_map['range'] = env_map[
-                            'range'] + '; ' + str(env.min_num_vlan_2) + ' - ' + str(env.max_num_vlan_2)
-                except:
-                    env_map['range'] = 'Nao definido'
-
-                if env.filter is not None:
-                    env_map['filter_name'] = env.filter.name
-
-                lists_aux.append(env_map)
-            # Return XML
-            environment_list = dict()
-            environment_list['ambiente'] = lists_aux
-            return self.response(dumps_networkapi(environment_list))
-
-        except InvalidValueError, e:
-            self.log.error(
-                u'Parameter %s is invalid. Value: %s.', e.param, e.value)
-            return self.response_error(269, e.param, e.value)
-        except EquipamentoNotFoundError, e:
-            return self.response_error(117, id_equip)
-        except GrupoError:
-            return self.response_error(1)
+        # try:
+        #
+        #     # Commons Validations
+        #
+        #     # User permission
+        #
+        #     if not has_perm(user, AdminPermission.ENVIRONMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
+        #         return self.not_authorized()
+        #     if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.READ_OPERATION):
+        #         return self.not_authorized()
+        #
+        #     id_equip = kwargs.get('id_equip')
+        #
+        #     if not is_valid_int_greater_zero_param(id_equip):
+        #         raise InvalidValueError(None, 'id_equip', id_equip)
+        #
+        #     # Business Rules
+        #     equip = Equipamento.get_by_pk(id_equip)
+        #     environments_list = EquipamentoAmbiente.get_by_equipment(equip.id)
+        #
+        #     # Get all environments in DB
+        #     lists_aux = []
+        #     for environment in environments_list:
+        #         env = Ambiente.get_by_pk(environment.ambiente.id)
+        #         env_map = model_to_dict(env)
+        #         env_map['grupo_l3_name'] = env.grupo_l3.nome
+        #         env_map['ambiente_logico_name'] = env.ambiente_logico.nome
+        #         env_map['divisao_dc_name'] = env.divisao_dc.nome
+        #         env_map['is_router'] = environment.is_router
+        #
+        #         try:
+        #             env_map['range'] = str(
+        #                 env.min_num_vlan_1) + ' - ' + str(env.max_num_vlan_1)
+        #             if env.min_num_vlan_1 != env.min_num_vlan_2:
+        #                 env_map['range'] = env_map[
+        #                     'range'] + '; ' + str(env.min_num_vlan_2) + ' - ' + str(env.max_num_vlan_2)
+        #         except:
+        #             env_map['range'] = 'Nao definido'
+        #
+        #         if env.filter is not None:
+        #             env_map['filter_name'] = env.filter.name
+        #
+        #         lists_aux.append(env_map)
+        #     # Return XML
+        #     environment_list = dict()
+        #     environment_list['ambiente'] = lists_aux
+        #     return self.response(dumps_networkapi(environment_list))
+        #
+        # except InvalidValueError, e:
+        #     self.log.error(
+        #         u'Parameter %s is invalid. Value: %s.', e.param, e.value)
+        #     return self.response_error(269, e.param, e.value)
+        # except EquipamentoNotFoundError, e:
+        #     return self.response_error(117, id_equip)
+        # except GrupoError:
+        #     return self.response_error(1)
