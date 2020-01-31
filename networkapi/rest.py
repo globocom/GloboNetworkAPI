@@ -204,6 +204,18 @@ class RestResource(object):
 
         return http_res
 
+    def not_found(self):
+        """Cria um HttpResponse com código HTTP 404 - Not Found."""
+        http_res = HttpResponse(
+            u'404 - Chamada não encontrada.',
+            status=404,
+            content_type='text/plain')
+
+        http_res['X-Request-Id'] = local.request_id
+        http_res['X-Request-Context'] = local.request_context
+
+        return http_res
+
     def response(self, content, status=200, content_type='text/plain'):
         """Cria um HttpResponse com os dados informados"""
 
