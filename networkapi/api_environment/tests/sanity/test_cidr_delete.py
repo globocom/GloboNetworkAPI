@@ -33,12 +33,12 @@ class CIDRDeleteTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    def test_method_get_env_cidr(self):
-        from networkapi.ambiente.models import EnvCIDR
-
-        name_file = "networkapi/api_environment/tests/sanity/json/get/get_one_env_cidr.json"
-
-        self.compare_json(name_file, EnvCIDR.get(1))
+    # def test_method_get_env_cidr(self):
+    #     from networkapi.ambiente.models import EnvCIDR
+    #
+    #     name_file = "networkapi/api_environment/tests/sanity/json/get/get_one_env_cidr.json"
+    #
+    #     self.compare_json(name_file, EnvCIDR.get(1))
 
     # def test_delete_one_env_success(self):
     #     """Test of success for delete one environment."""

@@ -269,20 +269,18 @@ def post_cidr(obj):
 
     from netaddr import IPNetwork
 
-    log.debug("BEFORE %s" % obj)
     data = dict()
     data['id'] = obj.get('id')
     data['ip_version'] = obj.get('ip_version')
     data['subnet_mask'] = obj.get('subnet_mask')
     data['network_type'] = obj.get('network_type')
     data['environment'] = obj.get('environment')
+    data['network'] = obj.get('network')
 
     network = IPNetwork(obj.get('network'))
     data['network_first_ip'] = int(network.ip)
     data['network_last_ip'] = int(network.broadcast)
     data['network_mask'] = network.prefixlen
-
-    log.debug("AFTER %s" % data)
 
     cidr = EnvCIDR()
     response = cidr.post(data)

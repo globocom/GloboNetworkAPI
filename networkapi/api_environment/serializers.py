@@ -15,9 +15,9 @@ class EnvCIDRSerializer(DynamicFieldsModelSerializer):
     id = serializers.RelatedField(source='id')
     network = serializers.RelatedField(source='network')
     ip_version = serializers.RelatedField(source='ip_version')
-    prefix = serializers.RelatedField(source='subnet_mask')
-    net_type = serializers.RelatedField(source='id_network_type.id')
-    net_type_name = serializers.RelatedField(source='id_network_type.tipo_rede')
+    subnet_mask = serializers.RelatedField(source='subnet_mask')
+    network_type = serializers.RelatedField(source='id_network_type.id')
+    network_type_name = serializers.RelatedField(source='id_network_type.tipo_rede')
     environment = serializers.RelatedField(source='id_env.id')
     environment_name = serializers.RelatedField(source='id_env.name')
 
@@ -28,17 +28,17 @@ class EnvCIDRSerializer(DynamicFieldsModelSerializer):
             'id',
             'network',
             'ip_version',
-            'net_type',
-            'prefix',
+            'network_type',
+            'subnet_mask',
             'environment'
         )
         details_fields = (
             'id',
             'network',
             'ip_version',
-            'net_type',
-            'net_type_name',
-            'prefix',
+            'network_type',
+            'network_type_name',
+            'subnet_mask',
             'environment',
             'environment_name'
         )

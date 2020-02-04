@@ -443,11 +443,11 @@ class EnvironmentCIDRDBView(CustomAPIView):
         """Create new environment."""
 
         objects = request.DATA
+
         # json_validate(SPECS.get('simple_env_post')).validate(envs)
         response = list()
-        for cidr in objects['cidr']:
+        for cidr in objects['EnvCIDR']:
             cidr_obj = facade.post_cidr(cidr)
-            log.debug(cidr_obj)
             response.append(dict(id=cidr_obj))
 
         return Response(response, status=status.HTTP_201_CREATED)

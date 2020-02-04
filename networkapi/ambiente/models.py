@@ -1847,10 +1847,10 @@ class EnvCIDR(BaseModel):
     def post(self, env_cidr):
         """Efetua a inclusão de um novo CIDR.
         """
-        log.debug("create CIDR")
+        log.debug("create CIDR: %s" % env_cidr)
 
         try:
-
+            self.network = env_cidr.get('network')
             self.network_first_ip = env_cidr.get('network_first_ip')
             self.network_last_ip = env_cidr.get('network_last_ip')
             self.network_mask = env_cidr.get('network_mask')
@@ -1858,8 +1858,6 @@ class EnvCIDR(BaseModel):
             self.subnet_mask = env_cidr.get('subnet_mask')
             self.id_env = Ambiente().get_by_pk(int(env_cidr.get('environment')))
             self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
-
-            log.debug(env_cidr)
 
             self.save()
 
@@ -1872,9 +1870,7 @@ class EnvCIDR(BaseModel):
     def put(self, env_cidr):
         pass
 
-    def get(self, id=None, environment=None, ip_version=None):
-
-        objects = list()
+    def get(self, id=None):
 
         if id:
             try:
