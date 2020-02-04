@@ -1874,7 +1874,7 @@ class EnvCIDR(BaseModel):
 
         if id:
             try:
-                objects = EnvCIDR.objects.filter(id=id)
+                objects = EnvCIDR.objects.get(id=id)
             except ObjectDoesNotExist:
                 raise ObjectDoesNotExistException('There is no CIDR with pk = %s.' % id)
             except OperationalError as e:

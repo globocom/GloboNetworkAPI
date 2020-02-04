@@ -405,10 +405,12 @@ class EnvironmentCIDRDBView(CustomAPIView):
     def get(self, request, *args, **kwargs):
         """Returns a list of environment by ids ou dict."""
 
-        cidr_id = kwargs.get('cidr_id', None)
-
-        if cidr_id:
-            cidr = facade.get_cidr(cidr=cidr_id)
+        if kwargs.get('cidr_id'):
+            cidr_ids = kwargs.get('cidr_id').split(';')
+            cidr = list()
+            for ids in cidr_ids:
+                cidr_obj = facade.get_cidr(cidr=ids)
+                cidr.append(cidr_obj)
             only_main_property = True
             obj_model = None
         else:

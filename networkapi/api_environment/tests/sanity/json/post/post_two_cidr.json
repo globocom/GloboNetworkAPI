@@ -1,0 +1,16 @@
+{
+  "EnvCIDR": [{
+    "network": "192.168.0.0/24",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "environment": 1
+  },
+  {
+    "network": "10.0.0.0/24",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "environment": 1
+  }]
+}

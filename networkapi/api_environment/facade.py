@@ -288,7 +288,7 @@ def post_cidr(obj):
     return response
 
 
-def get_cidr(cidr=None, env=None, ip_version=None):
+def get_cidr(cidr=None):
     """Return a list of CIDR."""
 
     try:

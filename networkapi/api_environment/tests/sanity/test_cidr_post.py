@@ -9,7 +9,7 @@ from networkapi.test.test_case import NetworkApiTestCase
 log = logging.getLogger(__name__)
 
 
-class TestCIDRPostOneSuccessTestCase(NetworkApiTestCase):
+class TestCIDRPostTestCase(NetworkApiTestCase):
 
     fixtures = [
         'networkapi/system/fixtures/initial_variables.json',
@@ -27,7 +27,7 @@ class TestCIDRPostOneSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_environment/fixtures/initial_environment.json',
     ]
 
-    json_path = 'api_environment/tests/sanity/json/post/%s'
+    post_path = 'api_environment/tests/sanity/json/post/%s'
     get_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
@@ -39,13 +39,13 @@ class TestCIDRPostOneSuccessTestCase(NetworkApiTestCase):
     def test_post_one_cidr(self):
         """Test of success to post 1 CIDR."""
 
-        name_file = self.json_path % 'post_one_cidr.json'
-        com_file = self.get_path % 'get_one_cidr.json'
+        post_file = self.post_path % 'post_one_cidr.json'
+        rcv_file = self.get_path % 'get_one_cidr.json'
 
-        # Does post request
+        # post request
         response = self.client.post(
             '/api/v3/cidr/',
-            data=json.dumps(self.load_json_file(name_file)),
+            data=json.dumps(self.load_json_file(post_file)),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -53,9 +53,41 @@ class TestCIDRPostOneSuccessTestCase(NetworkApiTestCase):
 
         id_cidr = response.data[0]['id']
 
-        # Does get request
+        # get request
         response = self.client.get(
             '/api/v3/cidr/%s/' % id_cidr,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property id
+        data = response.data
+        del data['EnvCIDR'][0]['id']
+
+        self.compare_json(rcv_file, data)
+
+    def test_post_two_cidrs(self):
+        """Test of success to post 2 cidrs."""
+
+        post_file = self.post_path % 'post_two_cidr.json'
+        rcv_file = self.get_path % 'get_two_cidr.json'
+
+        # post request
+        response = self.client.post(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(post_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id1_cidr = response.data[0]['id']
+        id2_cidr = response.data[1]['id']
+
+        # get request
+        response = self.client.get(
+            '/api/v3/cidr/%s;%s/' % (id1_cidr, id2_cidr),
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
@@ -64,135 +96,10 @@ class TestCIDRPostOneSuccessTestCase(NetworkApiTestCase):
         # Removes property id/name in each dict
         data = response.data
         del data['EnvCIDR'][0]['id']
+        del data['EnvCIDR'][1]['id']
 
-        self.compare_json(com_file, data)
+        self.compare_json(rcv_file, data)
 
-    # def test_post_one_env_with_father_environment(self):
-    #     """Test of success to post 1 environment with father environment."""
-    #
-    #     name_file = self.json_path % 'post_one_env_with_father.json'
-    #     get_file = self.get_path % 'post_one_env_with_father.json'
-    #
-    #     # Does post request
-    #     response = self.client.post(
-    #         '/api/v3/environment/',
-    #         data=networkapi.api_environment.tests.sanity.json.dumps(self.load_json_file(name_file)),
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(201, response.status_code)
-    #
-    #     id_env = response.data[0]['id']
-    #
-    #     # Does get request
-    #     response = self.client.get(
-    #         '/api/v3/environment/%s/' % id_env,
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(200, response.status_code)
-    #
-    #     # Removes property id/name
-    #     data = response.data
-    #     del data['environments'][0]['id']
-    #     del data['environments'][0]['name']
-    #     del data['environments'][0]['sdn_controllers']
-    #
-    #     self.compare_json(get_file, data)
-#
-#     def test_post_one_env_with_configs(self):
-#         """Test of success to post 1 environment with configs."""
-#
-#         name_file = self.json_path % 'post_one_env_with_configs.json'
-#         get_file = self.get_path % 'post_one_env_with_configs.json'
-#
-#         # Does post request
-#         response = self.client.post(
-#             '/api/v3/environment/',
-#             data=networkapi.api_environment.tests.sanity.json.dumps(self.load_json_file(name_file)),
-#             content_type='application/json',
-#             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-#
-#         self.compare_status(201, response.status_code)
-#
-#         id_env = response.data[0]['id']
-#
-#         # Does get request
-#         response = self.client.get(
-#             '/api/v3/environment/%s/?include=configs' % id_env,
-#             content_type='application/json',
-#             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-#
-#         self.compare_status(200, response.status_code)
-#
-#         # Removes property id/name/sdn_controllers
-#         data = response.data
-#         del data['environments'][0]['id']
-#         del data['environments'][0]['configs'][0]['id']
-#         del data['environments'][0]['name']
-#         del data['environments'][0]['sdn_controllers']
-#
-#         self.compare_json(get_file, data)
-#
-#
-# class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
-#
-#     fixtures = [
-#         'networkapi/system/fixtures/initial_variables.json',
-#         'networkapi/usuario/fixtures/initial_usuario.json',
-#         'networkapi/grupo/fixtures/initial_ugrupo.json',
-#         'networkapi/usuario/fixtures/initial_usuariogrupo.json',
-#         'networkapi/api_ogp/fixtures/initial_objecttype.json',
-#         'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
-#         'networkapi/grupo/fixtures/initial_permissions.json',
-#         'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
-#         'networkapi/api_rack/fixtures/initial_datacenter.json',
-#         'networkapi/api_rack/fixtures/initial_fabric.json',
-#         'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
-#         'networkapi/api_environment/fixtures/initial_base_environment.json',
-#         'networkapi/api_environment/fixtures/initial_environment.json',
-#     ]
-#
-#     json_path = 'api_environment/tests/sanity/json/post/%s'
-#     comp_path = 'api_environment/tests/sanity/json/get/%s'
-#
-#     def setUp(self):
-#         self.client = Client()
-#
-#     def tearDown(self):
-#         pass
-#
-#     def test_post_one_cidr(self):
-#         """Test of success to post 2 environments."""
-#
-#         name_file = self.json_path % 'post_one_cidr.json'
-#         com_file = self.comp_path % 'get_one_cidr.json'
-#
-#         # Does post request
-#         response = self.client.post(
-#             '/api/v3/cidr/',
-#             data=networkapi.api_environment.tests.sanity.json.dumps(self.load_json_file(name_file)),
-#             content_type='application/json',
-#             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-#
-#         self.compare_status(201, response.status_code)
-#
-#         id_cidr = response.data[0]['id']
-#
-#         # Does get request
-#         response = self.client.get(
-#             '/api/v3/cidr/%s/' % id_cidr,
-#             content_type='application/json',
-#             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-#
-#         self.compare_status(200, response.status_code)
-#
-#         # Removes property id/name in each dict
-#         data = response.data
-#         del data['EnvCIDR'][0]['id']
-#
-#         self.compare_json(com_file, data)
-#
 # #     def test_post_two_env_with_father_environment(self):
 #         """Test of success to post 2 environments with father environment."""
 #
