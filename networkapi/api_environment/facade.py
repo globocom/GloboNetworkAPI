@@ -13,6 +13,7 @@ from networkapi.ambiente.models import EnvCIDR
 from networkapi.ambiente.models import DivisaoDc
 from networkapi.ambiente.models import GrupoL3
 from networkapi.ambiente.models import EnvironmentErrorV3
+from networkapi.ambiente.models import CIDRErrorV3
 from networkapi.api_environment.tasks.flows import async_add_flow
 from networkapi.api_environment.tasks.flows import async_delete_flow
 from networkapi.api_environment.tasks.flows import async_flush_environment
@@ -238,11 +239,11 @@ def create_environment(env):
     try:
         env_obj = Ambiente()
         env_obj.create_v3(env)
-    except EnvironmentErrorV3, e:
+    except EnvironmentErrorV3 as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return env_obj
@@ -269,21 +270,32 @@ def post_cidr(obj):
 
     from netaddr import IPNetwork
 
-    data = dict()
-    data['id'] = obj.get('id')
-    data['ip_version'] = obj.get('ip_version')
-    data['subnet_mask'] = obj.get('subnet_mask')
-    data['network_type'] = obj.get('network_type')
-    data['environment'] = obj.get('environment')
-    data['network'] = obj.get('network')
+    try:
+        data = dict()
+        data['id'] = obj.get('id')
+        data['ip_version'] = obj.get('ip_version')
+        data['subnet_mask'] = obj.get('subnet_mask')
+        data['network_type'] = obj.get('network_type')
+        data['environment'] = obj.get('environment')
+        data['network'] = obj.get('network')
 
-    network = IPNetwork(obj.get('network'))
-    data['network_first_ip'] = int(network.ip)
-    data['network_last_ip'] = int(network.broadcast)
-    data['network_mask'] = network.prefixlen
+        try:
+            network = IPNetwork(obj.get('network'))
+        except Exception as e:
+            raise ValidationAPIException(str(e))
 
-    cidr = EnvCIDR()
-    response = cidr.post(data)
+        data['network_first_ip'] = int(network.ip)
+        data['network_last_ip'] = int(network.broadcast)
+        data['network_mask'] = network.prefixlen
+
+        cidr = EnvCIDR()
+        response = cidr.post(data)
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
 
     return response
 

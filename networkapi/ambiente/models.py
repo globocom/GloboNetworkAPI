@@ -76,6 +76,15 @@ class EnvironmentErrorV3(Exception):
         return str(self.cause)
 
 
+class CIDRErrorV3(Exception):
+
+    def __init__(self, cause):
+        self.cause = cause
+
+    def __str__(self):
+        return str(self.cause)
+
+
 class AmbienteNotFoundError(AmbienteError):
 
     """Retorna exceção para pesquisa de ambiente por chave primária."""
@@ -1835,7 +1844,7 @@ class EnvCIDR(BaseModel):
     )
     id_env = models.ForeignKey(
         Ambiente,
-        db_column='id_env',
+        db_column='id_env'
     )
 
     log = logging.getLogger('Environment_CIDR')
@@ -1843,6 +1852,7 @@ class EnvCIDR(BaseModel):
     class Meta(BaseModel.Meta):
         db_table = u'environment_cidr'
         managed = True
+        unique_together = ('id_env', 'network')
 
     def post(self, env_cidr):
         """Efetua a inclusão de um novo CIDR.
@@ -1860,12 +1870,10 @@ class EnvCIDR(BaseModel):
             self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
 
             self.save()
-
-            return self.id
-
         except Exception as e:
-            self.log.error('Falha ao inserir um CIDR. Error: %s' % e)
-            raise Exception('Falha ao inserir CIDR. Error: %s' % e)
+            raise CIDRErrorV3(e)
+
+        return self.id
 
     def put(self, env_cidr):
         pass
