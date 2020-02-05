@@ -1892,7 +1892,7 @@ class EnvCIDR(BaseModel):
             try:
                 objects = EnvCIDR.objects.get(id=id)
             except ObjectDoesNotExist:
-                raise ObjectDoesNotExistException('There is no CIDR with pk = %s.' % id)
+                raise CIDRErrorV3('There is no CIDR with pk = %s.' % id)
             except OperationalError as e:
                 self.log.error('Lock wait timeout exceeded.')
                 raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')

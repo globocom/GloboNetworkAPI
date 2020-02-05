@@ -54,5 +54,19 @@
     },
     "model": "ambiente.EnvCIDR",
     "pk": 5
+  },
+  {
+    "fields": {
+      "network": "201.7.0.0/16",
+      "network_first_ip": "3372679168",
+      "network_last_ip": "3372744703",
+      "network_mask": "16",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "24",
+      "id_env": 3
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 6
   }
 ]

@@ -459,12 +459,9 @@ class EnvironmentCIDRDBView(CustomAPIView):
     def delete(self, request, *args, **kwargs):
         """ Deletes a single cidr by id or all cidr associate to an environment. """
 
-        cidr_id = kwargs.get('cidr_id')
-        environment_id = kwargs.get('environment_id', None)
+        cidr_id = kwargs.get('cidr_id').split(';')
 
-        if environment_id:
-            facade.delete_cidr(env=environment_id)
-        else:
-            facade.delete_cidr(cidr=cidr_id)
+        for ids in cidr_id:
+            facade.delete_cidr(cidr=ids)
 
         return Response({}, status=status.HTTP_200_OK)

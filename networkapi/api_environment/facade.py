@@ -306,7 +306,9 @@ def get_cidr(cidr=None):
     try:
         env_cidr = EnvCIDR()
         cidr = env_cidr.get(id=cidr)
-    except FieldError as e:
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
         raise NetworkAPIException(str(e))
@@ -328,21 +330,18 @@ def get_cidr_by_search(search=dict()):
         return cidrs_map
 
 
-def delete_cidr(cidr=None, env=None):
+def delete_cidr(cidr=None):
     """Delete CIDR."""
 
     try:
         env_cidr = EnvCIDR()
-        cidr_obj = env_cidr.get(id=cidr, environment=env)
-        for cidr in cidr_obj:
-            cidr.delete()
-    except AmbienteUsedByEquipmentVlanError, e:
+        cidr_obj = env_cidr.get(id=cidr)
+        cidr_obj.delete()
+    except CIDRErrorV3 as e:
         raise ValidationAPIException(str(e))
-    except exceptions.EnvironmentDoesNotExistException, e:
+    except ValidationAPIException as e:
         raise ObjectDoesNotExistException(str(e))
-    except AmbienteError, e:
-        raise NetworkAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
 

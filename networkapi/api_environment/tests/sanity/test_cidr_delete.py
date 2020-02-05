@@ -33,51 +33,44 @@ class CIDRDeleteTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
-    # def test_method_get_env_cidr(self):
-    #     from networkapi.ambiente.models import EnvCIDR
-    #
-    #     name_file = "networkapi/api_environment/tests/sanity/json/get/get_one_env_cidr.json"
-    #
-    #     self.compare_json(name_file, EnvCIDR.get(1))
+    def test_delete_one_cidr_success(self):
+        """Test of success for delete one cidr."""
 
-    # def test_delete_one_env_success(self):
-    #     """Test of success for delete one environment."""
-    #
-    #     # Does post request
-    #     response = self.client.delete(
-    #         '/api/v3/environment/1/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(200, response.status_code)
-    #
-    #     # Does get request
-    #     response = self.client.get(
-    #         '/api/v3/environment/1/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(404, response.status_code)
+        # Does post request
+        response = self.client.delete(
+            '/api/v3/cidr/5/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-    # def test_delete_two_env_success(self):
-    #     """Test of success for delete two environments."""
-    #
-    #     # Does post request
-    #     response = self.client.delete(
-    #         '/api/v3/environment/1;2/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(200, response.status_code)
-    #
-    #     # Does get request
-    #     response = self.client.get(
-    #         '/api/v3/environment/1;2/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(404, response.status_code)
-    #
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/cidr/5/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response.status_code)
+
+    def test_delete_two_cidr_success(self):
+        """Test of success for delete two environments."""
+
+        # Does post request
+        response = self.client.delete(
+            '/api/v3/cidr/4;6/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/cidr/4;6/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response.status_code)
+
     # def test_delete_one_env_inexistent_error(self):
     #     """Test of error for delete one inexistent environment."""
     #
