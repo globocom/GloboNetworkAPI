@@ -116,7 +116,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         self.compare_status(400, response_error.status_code)
 
         self.compare_values(
-            "(1062, \"Duplicate entry '1-10.225.0.0/24' for key 'id_env'\")",
+            "10.225.0.0/24 overlaps 10.225.0.0/24",
             response_error.data['detail'])
 
     def test_post_invalid_cidr(self):
@@ -135,4 +135,22 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         self.compare_values(
             'invalid IPNetwork 300.0.0.0/24',
+            response_error.data['detail'])
+
+    def test_post_overlap_cidr(self):
+        """Test of error for post an cidr that overlap."""
+
+        post_file = self.post_path % 'post_cidr_overlap_error.json'
+
+        # Does post request
+        response_error = self.client.post(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(post_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response_error.status_code)
+
+        self.compare_values(
+            '10.225.0.0/25 overlaps 10.225.0.0/24',
             response_error.data['detail'])

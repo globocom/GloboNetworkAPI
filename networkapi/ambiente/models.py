@@ -1859,6 +1859,8 @@ class EnvCIDR(BaseModel):
         """
         log.debug("create CIDR: %s" % env_cidr)
 
+        import ipaddr
+
         try:
             self.network = env_cidr.get('network')
             self.network_first_ip = env_cidr.get('network_first_ip')
@@ -1866,6 +1868,12 @@ class EnvCIDR(BaseModel):
             self.network_mask = env_cidr.get('network_mask')
             self.ip_version = env_cidr.get('ip_version')
             self.subnet_mask = env_cidr.get('subnet_mask')
+
+            objects = EnvCIDR.objects.filter(id_env=int(env_cidr.get('environment')))
+            for obj in objects:
+                if ipaddr.IPNetwork(obj.network).overlaps(ipaddr.IPNetwork(self.network)):
+                    raise CIDRErrorV3("%s overlaps %s" % (self.network, obj.network))
+
             self.id_env = Ambiente().get_by_pk(int(env_cidr.get('environment')))
             self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
 
