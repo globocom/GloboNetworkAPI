@@ -300,12 +300,12 @@ def post_cidr(obj):
     return response
 
 
-def get_cidr(cidr=None):
+def get_cidr(cidr=None, environment=None):
     """Return a list of CIDR."""
 
     try:
         env_cidr = EnvCIDR()
-        cidr = env_cidr.get(id=cidr)
+        cidr = env_cidr.get(cidr_id=cidr, env_id=environment)
     except CIDRErrorV3 as e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException as e:
@@ -330,13 +330,14 @@ def get_cidr_by_search(search=dict()):
         return cidrs_map
 
 
-def delete_cidr(cidr=None):
+def delete_cidr(cidr=None, environment=None):
     """Delete CIDR."""
 
     try:
         env_cidr = EnvCIDR()
-        cidr_obj = env_cidr.get(id=cidr)
-        cidr_obj.delete()
+        cidr_obj = env_cidr.get(cidr_id=cidr, env_id=environment)
+        for cidr in cidr_obj:
+            cidr.delete()
     except CIDRErrorV3 as e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException as e:

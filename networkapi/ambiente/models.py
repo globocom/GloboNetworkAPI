@@ -1857,8 +1857,6 @@ class EnvCIDR(BaseModel):
     def post(self, env_cidr):
         """Efetua a inclusão de um novo CIDR.
         """
-        log.debug("create CIDR: %s" % env_cidr)
-
         import ipaddr
 
         try:
@@ -1886,13 +1884,28 @@ class EnvCIDR(BaseModel):
     def put(self, env_cidr):
         pass
 
-    def get(self, id=None):
+    def get(self, cidr_id=None, env_id=None):
 
-        if id:
+        if cidr_id:
             try:
-                objects = EnvCIDR.objects.get(id=id)
+                objects = EnvCIDR.objects.filter(id=cidr_id)
+                if not objects:
+                    raise ObjectDoesNotExist
             except ObjectDoesNotExist:
-                raise CIDRErrorV3('There is no CIDR with pk = %s.' % id)
+                raise CIDRErrorV3('There is no CIDR with pk = %s.' % cidr_id)
+            except OperationalError as e:
+                self.log.error('Lock wait timeout exceeded.')
+                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
+            except Exception as e:
+                self.log.error('Error finding CIDR.')
+                raise Exception('Error finding CIDR. E: %s' % e)
+        elif env_id:
+            try:
+                objects = EnvCIDR.objects.filter(id_env=env_id)
+                if not objects:
+                    raise ObjectDoesNotExist
+            except ObjectDoesNotExist:
+                raise CIDRErrorV3('There is no CIDR linked with the environment id=%s.' % env_id)
             except OperationalError as e:
                 self.log.error('Lock wait timeout exceeded.')
                 raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')

@@ -22,7 +22,7 @@
       "ip_version": "v4",
       "id_network_type": 1,
       "subnet_mask": "27",
-      "id_env": 2
+      "id_env": 1
     },
     "model": "ambiente.EnvCIDR",
     "pk": 3

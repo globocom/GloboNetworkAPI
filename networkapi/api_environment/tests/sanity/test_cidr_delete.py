@@ -53,7 +53,7 @@ class CIDRDeleteTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
     def test_delete_two_cidr_success(self):
-        """Test of success for delete two environments."""
+        """Test of success for delete two cidr."""
 
         # Does post request
         response = self.client.delete(
@@ -71,64 +71,45 @@ class CIDRDeleteTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
 
-    # def test_delete_one_env_inexistent_error(self):
-    #     """Test of error for delete one inexistent environment."""
-    #
-    #     # Does post request
-    #     response = self.client.delete(
-    #         '/api/v3/environment/1000/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     # Tests code returned
-    #     self.compare_status(404, response.status_code)
-    #
-    # def test_delete_two_env_inexistent_error(self):
-    #     """Test of error for delete two inexistent environments."""
-    #
-    #     # Does post request
-    #     response = self.client.delete(
-    #         '/api/v3/environment/1000;1001/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     # Tests code returned
-    #     self.compare_status(404, response.status_code)
-    #
-    # def test_delete_env_with_vlan_success(self):
-    #     """Test of success for delete one environment with vlans."""
-    #
-    #     # Does get request
-    #     response = self.client.get(
-    #         '/api/v3/vlan/3/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(200, response.status_code)
-    #
-    #     # Does post request
-    #     response = self.client.delete(
-    #         '/api/v3/environment/3/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     # Tests code returned
-    #     self.compare_status(200, response.status_code)
-    #
-    #     # Does get request
-    #     response = self.client.get(
-    #         '/api/v3/environment/3/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     # Tests code returned
-    #     self.compare_status(404, response.status_code)
-    #
-    #     # Does get request
-    #     response = self.client.get(
-    #         '/api/v3/vlan/3/',
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     # Tests code returned
-    #     self.compare_status(404, response.status_code)
+    def test_delete_cidr_by_env_success(self):
+        """Test of success for delete all cidr linked to an environment."""
+
+        # Does post request
+        response = self.client.delete(
+            '/api/v3/cidr/environment/1/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Does get request
+        response = self.client.get(
+            '/api/v3/cidr/2;3/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response.status_code)
+
+    def test_delete_one_cidr_inexistent_error(self):
+        """Test of error for delete one inexistent cidr."""
+
+        # Does post request
+        response = self.client.delete(
+            '/api/v3/cidr/1000/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(400, response.status_code)
+
+    def test_delete_two_cidr_inexistent_error(self):
+        """Test of error for delete two inexistent cidr."""
+
+        # Does post request
+        response = self.client.delete(
+            '/api/v3/cidr/1000;1001/',
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        # Tests code returned
+        self.compare_status(400, response.status_code)
