@@ -1,0 +1,42 @@
+{
+  "EnvCIDR": [{
+    "id": 6,
+    "network": "201.7.0.0/16",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "24",
+    "environment": 3
+  },
+  {
+    "id": 5,
+    "network": "f0b0:b0b0:b0b0:e003::/118",
+    "ip_version": "v6",
+    "network_type": 1,
+    "subnet_mask": "120",
+    "environment": 3
+  },
+  {
+    "id": 4,
+    "network": "f0b0:1010:1010:1010::/118",
+    "ip_version": "v6",
+    "network_type": 1,
+    "subnet_mask": "120",
+    "environment": 2
+  },
+  {
+    "id": 3,
+    "network": "192.168.10.0/24",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "environment": 1
+  },
+  {
+    "id": 2,
+    "network": "10.225.0.0/24",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "environment": 1
+  }]
+}
