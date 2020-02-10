@@ -91,11 +91,7 @@ class EnvironmentListResource(RestResource):
         URL: /ambiente/list/
         """
 
-        # return get_envs(self, user)
-
-        rest = RestResource()
-
-        return rest.not_found()
+        return get_envs(self, user)
 
     def handle_put(self, request, user, *args, **kwargs):
         """Treat requests PUT to list all Environments without blocks.
@@ -103,8 +99,4 @@ class EnvironmentListResource(RestResource):
         URL: /ambiente/list_no_blocks/
         """
 
-        # return get_envs(self, user, True)
-
-        rest = RestResource()
-
-        return rest.not_found()
+        return get_envs(self, user, True)
