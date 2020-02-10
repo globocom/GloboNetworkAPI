@@ -28,7 +28,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         'networkapi/api_environment/fixtures/initial_cidr.json',
     ]
 
-    post_path = 'api_environment/tests/sanity/json/put/%s'
+    put_path = 'api_environment/tests/sanity/json/put/%s'
     get_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
@@ -40,7 +40,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
     def test_edit_one_cidr(self):
         """Test of success to edit a CIDR."""
 
-        put_file = self.post_path % 'put_one_cidr.json'
+        put_file = self.put_path % 'put_one_cidr.json'
 
         # post request
         response = self.client.put(
@@ -63,57 +63,24 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         self.compare_json(put_file, response.data)
 
-    # def test_post_two_cidrs(self):
-    #     """Test of success to post 2 cidrs."""
-    #
-    #     post_file = self.post_path % 'post_two_cidr.json'
-    #     rcv_file = self.get_path % 'get_two_cidr.json'
-    #
-    #     # post request
-    #     response = self.client.post(
-    #         '/api/v3/cidr/',
-    #         data=json.dumps(self.load_json_file(post_file)),
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(201, response.status_code)
-    #
-    #     id1_cidr = response.data[0]['id']
-    #     id2_cidr = response.data[1]['id']
-    #
-    #     # get request
-    #     response = self.client.get(
-    #         '/api/v3/cidr/%s;%s/' % (id1_cidr, id2_cidr),
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(200, response.status_code)
-    #
-    #     # Removes property id/name in each dict
-    #     data = response.data
-    #     del data['EnvCIDR'][0]['id']
-    #     del data['EnvCIDR'][1]['id']
-    #
-    #     self.compare_json(rcv_file, data)
-    #
-    # def test_post_duplicated_cidr(self):
-    #     """Test of error for post a duplicated cidr."""
-    #
-    #     post_file = self.post_path % 'post_cidr_duplicate_error.json'
-    #
-    #     # Does post request
-    #     response_error = self.client.post(
-    #         '/api/v3/cidr/',
-    #         data=json.dumps(self.load_json_file(post_file)),
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(400, response_error.status_code)
-    #
-    #     self.compare_values(
-    #         "10.225.0.0/24 overlaps 10.225.0.0/24",
-    #         response_error.data['detail'])
-    #
+    def test_put_with_duplicated_cidr(self):
+        """Test of error for edit a cidr with a duplicated network."""
+
+        put_file = self.put_path % 'put_cidr_duplicate_error.json'
+
+        # Does post request
+        response_error = self.client.put(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(put_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response_error.status_code)
+
+        self.compare_values(
+            "192.168.10.0/24 overlaps 192.168.10.0/24",
+            response_error.data['detail'])
+
     # def test_post_invalid_cidr(self):
     #     """Test of error for post an invalid cidr."""
     #
