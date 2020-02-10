@@ -300,6 +300,47 @@ def post_cidr(obj):
     return response
 
 
+def update_cidr(obj):
+    log.info("Facade update cidr")
+
+    from netaddr import IPNetwork
+
+    try:
+
+        try:
+            cidr_obj = get_cidr(cidr=obj.get('id'))
+        except Exception as e:
+            raise CIDRErrorV3(e)
+
+        data = dict()
+        data['id'] = obj.get('id')
+        data['ip_version'] = obj.get('ip_version')
+        data['subnet_mask'] = obj.get('subnet_mask')
+        data['network_type'] = obj.get('network_type')
+        data['environment'] = obj.get('environment')
+        data['network'] = obj.get('network')
+
+        try:
+            network = IPNetwork(obj.get('network'))
+        except Exception as e:
+            raise ValidationAPIException(str(e))
+
+        data['network_first_ip'] = int(network.ip)
+        data['network_last_ip'] = int(network.broadcast)
+        data['network_mask'] = network.prefixlen
+
+        response = cidr_obj[0].put(data)
+
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return response
+
+
 def get_cidr(cidr=None, environment=None):
     """Return a list of CIDR."""
 

@@ -433,7 +433,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
 
         data = render_to_json(
             serializer,
-            main_property='EnvCIDR',
+            main_property='cidr',
             request=request,
             obj_model=obj_model,
             only_main_property=only_main_property
@@ -452,7 +452,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
 
         # json_validate(SPECS.get('simple_env_post')).validate(envs)
         response = list()
-        for cidr in objects['EnvCIDR']:
+        for cidr in objects['cidr']:
             cidr_obj = facade.post_cidr(cidr)
             response.append(dict(id=cidr_obj))
 
@@ -472,3 +472,22 @@ class EnvironmentCIDRDBView(CustomAPIView):
             facade.delete_cidr(environment=_id)
 
         return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    # @raise_json_validate('environment_put')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Update CIDR."""
+
+        cidrs = request.DATA
+
+        # json_validate(SPECS.get('environment_put')).validate(envs)
+
+        response = list()
+
+        for cidr in cidrs['cidr']:
+            cidr_obj = facade.update_cidr(cidr)
+            response.append(dict(id=cidr_obj))
+
+        return Response(response, status=status.HTTP_200_OK)

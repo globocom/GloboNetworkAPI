@@ -1855,8 +1855,7 @@ class EnvCIDR(BaseModel):
         unique_together = ('id_env', 'network')
 
     def post(self, env_cidr):
-        """Efetua a inclusão de um novo CIDR.
-        """
+
         import ipaddr
 
         try:
@@ -1882,7 +1881,35 @@ class EnvCIDR(BaseModel):
         return self.id
 
     def put(self, env_cidr):
-        pass
+        log.info("Update CIDR")
+
+        import ipaddr
+
+        try:
+            cidr_id = env_cidr.get('id')
+
+            self.network = env_cidr.get('network')
+            self.network_first_ip = env_cidr.get('network_first_ip')
+            self.network_last_ip = env_cidr.get('network_last_ip')
+            self.network_mask = env_cidr.get('network_mask')
+            self.ip_version = env_cidr.get('ip_version')
+            self.subnet_mask = env_cidr.get('subnet_mask')
+
+            objects = EnvCIDR.objects.filter(id_env=int(env_cidr.get('environment'))).exclude(id=cidr_id)
+
+            for obj in objects:
+                if ipaddr.IPNetwork(obj.network).overlaps(ipaddr.IPNetwork(self.network)):
+                    raise CIDRErrorV3("%s overlaps %s" % (self.network, obj.network))
+
+            self.id_env = Ambiente().get_by_pk(int(env_cidr.get('environment')))
+            self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
+
+            self.save()
+
+        except Exception as e:
+            raise CIDRErrorV3(e)
+
+        return self.id
 
     def get(self, cidr_id=None, env_id=None):
 
