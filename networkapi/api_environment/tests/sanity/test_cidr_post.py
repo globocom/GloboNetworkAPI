@@ -64,7 +64,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         # Removes property id
         data = response.data
-        del data['EnvCIDR'][0]['id']
+        del data['cidr'][0]['id']
 
         self.compare_json(rcv_file, data)
 
@@ -96,8 +96,8 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         # Removes property id/name in each dict
         data = response.data
-        del data['EnvCIDR'][0]['id']
-        del data['EnvCIDR'][1]['id']
+        del data['cidr'][0]['id']
+        del data['cidr'][1]['id']
 
         self.compare_json(rcv_file, data)
 

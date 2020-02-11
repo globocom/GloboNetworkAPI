@@ -1,5 +1,5 @@
 {
-  "EnvCIDR": [{
+  "cidr": [{
     "id": 6,
     "network": "201.7.0.0/16",
     "ip_version": "v4",
