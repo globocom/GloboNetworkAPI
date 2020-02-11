@@ -81,38 +81,70 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
             "192.168.10.0/24 overlaps 192.168.10.0/24",
             response_error.data['detail'])
 
-    # def test_post_invalid_cidr(self):
-    #     """Test of error for post an invalid cidr."""
-    #
-    #     post_file = self.post_path % 'post_cidr_invalid_error.json'
-    #
-    #     # Does post request
-    #     response_error = self.client.post(
-    #         '/api/v3/cidr/',
-    #         data=json.dumps(self.load_json_file(post_file)),
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(400, response_error.status_code)
-    #
-    #     self.compare_values(
-    #         'invalid IPNetwork 300.0.0.0/24',
-    #         response_error.data['detail'])
-    #
-    # def test_post_overlap_cidr(self):
-    #     """Test of error for post an cidr that overlap."""
-    #
-    #     post_file = self.post_path % 'post_cidr_overlap_error.json'
-    #
-    #     # Does post request
-    #     response_error = self.client.post(
-    #         '/api/v3/cidr/',
-    #         data=json.dumps(self.load_json_file(post_file)),
-    #         content_type='application/json',
-    #         HTTP_AUTHORIZATION=self.get_http_authorization('test'))
-    #
-    #     self.compare_status(400, response_error.status_code)
-    #
-    #     self.compare_values(
-    #         '10.225.0.0/25 overlaps 10.225.0.0/24',
-    #         response_error.data['detail'])
+    def test_put_invalid_cidr(self):
+        """Test of error for edit a cidr with an invalid network."""
+
+        put_file = self.put_path % 'put_cidr_invalid_error.json'
+
+        # Does post request
+        response_error = self.client.put(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(put_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response_error.status_code)
+
+        self.compare_values(
+            'invalid IPNetwork 300.0.0.0/24',
+            response_error.data['detail'])
+
+    def test_put_env_cidr(self):
+        """Test of error for edit a cidr and change the environment."""
+
+        put_file = self.put_path % 'put_cidr_environment.json'
+
+        # Does post request
+        response_error = self.client.put(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(put_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response_error.status_code)
+
+    def test_put_env_cidr_overlap_error(self):
+        """Test of error for edit a cidr."""
+
+        put_file = self.put_path % 'put_cidr_env_overlap_error.json'
+
+        # Does post request
+        response_error = self.client.put(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(put_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response_error.status_code)
+
+        self.compare_values(
+            '201.7.0.0/24 overlaps 201.7.0.0/16',
+            response_error.data['detail'])
+
+    def test_put_env_cidr_invalid_error(self):
+        """Test of error for edit a cidr."""
+
+        put_file = self.put_path % 'put_cidr_env_invalid_error.json'
+
+        # Does post request
+        response_error = self.client.put(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(put_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(400, response_error.status_code)
+
+        self.compare_values(
+            'invalid IPNetwork 300.7.0.0/24',
+            response_error.data['detail'])
