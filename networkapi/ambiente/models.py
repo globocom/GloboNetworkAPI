@@ -1422,7 +1422,7 @@ class Ambiente(BaseModel):
 
             configs = env_map.get('configs', [])
             self.create_configs(configs, self.id)
-            self.create_network(configs, self.id)
+            #self.create_network(configs, self.id)
             delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
         except Exception, e:
@@ -1622,7 +1622,7 @@ class Ambiente(BaseModel):
         from netaddr import IPNetwork
 
         for config in configs:
-            network = IPNetwork(config.get('network'))
+            network = IPNetwork(config.get('subnet'))
             octs = str(network.ip)
             mask = str(network.netmask)
 
@@ -1630,8 +1630,8 @@ class Ambiente(BaseModel):
                 netv4 = dict()
                 netv4['oct1'], netv4['oct2'], netv4['oct3'], netv4['oct4'] = octs.split('.')
                 netv4['mask_oct1'], netv4['mask_oct2'], netv4['mask_oct3'], netv4['mask_oct4'] = mask.split('.')
-                netv4['prefix'] = config.get('prefix')
-                netv4['network_type'] = config.get('net_type')
+                netv4['prefix'] = config.get('new_prefix')
+                netv4['network_type'] = config.get('network_type')
                 netv4['environment'] = [env_id]
 
                 create_networkipv4(netv4)
