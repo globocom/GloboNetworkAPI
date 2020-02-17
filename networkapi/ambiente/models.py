@@ -1497,36 +1497,70 @@ class Ambiente(BaseModel):
 
             # If have changes in configs
             if configs is not None:
-                ips_by_env = IPConfig.get_by_environment(None, self.id)
-                ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
 
-                # Configs with ids
-                ids_conf_receive = [cfg.get('id') for cfg in configs
-                                    if cfg.get('id')]
+                self.check_config(env_id=self.id, configs=configs)
 
-                # Configs to update: configs with id
-                cfg_upt = [cfg for cfg in configs if cfg.get('id') and
-                           cfg.get('id') in ids_conf_current]
+                self.check_cidr(env_id=self.id, configs=configs)
 
-                # Configs to create: configs without id
-                cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
-
-                # Configs to delete: configs not received
-                cfg_del = [id_conf for id_conf in ids_conf_current
-                           if id_conf not in ids_conf_receive]
-
-                # Updates configs
-                self.update_configs(cfg_upt, self.id)
-                # Creates configs
-                self.create_configs(cfg_ins, self.id)
-                # Deletes configs
-                self.delete_configs(cfg_del, self.id)
         except Exception, e:
             raise EnvironmentErrorV3(e)
 
         finally:
             delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
             destroy_lock(locks_list)
+
+    def check_config(self, env_id=None, configs=[]):
+
+        ips_by_env = IPConfig.get_by_environment(None, env_id)
+        ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+
+        # Configs with ids
+        ids_conf_receive = [cfg.get('id') for cfg in configs
+                            if cfg.get('id')]
+
+        # Configs to update: configs with id
+        cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+                   cfg.get('id') in ids_conf_current]
+
+        # Configs to create: configs without id
+        cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+
+        # Configs to delete: configs not received
+        cfg_del = [id_conf for id_conf in ids_conf_current
+                   if id_conf not in ids_conf_receive]
+
+        # Updates configs
+        self.update_configs(cfg_upt, self.id)
+        # Creates configs
+        self.create_configs(cfg_ins, self.id)
+        # Deletes configs
+        self.delete_configs(cfg_del, self.id)
+
+    def check_cidr(self, env_id=None, configs=[]):
+
+        # CIDR
+        cidrs = EnvCIDR().get(env_id=env_id)
+
+        cidrs_current = [net.id for net in cidrs]
+
+        # Configs with ids
+        cidrs_receive = [cfg.get('id') for cfg in configs
+                         if cfg.get('id')]
+
+        # Configs to update: configs with id
+        cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+                   cfg.get('id') in cidrs_current]
+
+        # Configs to create: configs without id
+        cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+
+        # Configs to delete: configs not received
+        cfg_del = [id_conf for id_conf in cidrs_current
+                   if id_conf not in cidrs_receive]
+
+        self.update_cidr(cfg_upt, self.id)
+        self.create_cidr(cfg_ins, self.id)
+        self.delete_cidr(cfg_del)
 
     def delete_v3(self):
         ip_models = get_app('ip', 'models')
@@ -1609,6 +1643,21 @@ class Ambiente(BaseModel):
             ip_config.save()
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
+    def update_cidr(self, configs, env_id):
+        log.debug("Update config on cidr tables")
+
+        from networkapi.api_environment.facade import update_cidr
+
+        for config in configs:
+            data = dict()
+            data['id'] = config.get('id')
+            data['ip_version'] = config.get('type')
+            data['subnet_mask'] = config.get('new_prefix')
+            data['network_type'] = config.get('network_type')
+            data['environment'] = env_id
+            data['network'] = config.get('subnet')
+            update_cidr(data)
+
     def create_configs(self, configs, env_id):
         log.debug("Save config on ipconfig tables")
 
@@ -1653,6 +1702,19 @@ class Ambiente(BaseModel):
         for config_id in configs_ids:
             IPConfig.remove(None, None, env_id, config_id)
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
+
+    def delete_cidr(self, configs_ids):
+        """
+        Delete configs of environment
+
+        :param configs_ids: Id of Configs of environment
+        :param env_id: Id of environment
+        """
+
+        from networkapi.api_environment.facade import delete_cidr
+
+        for cidr_id in configs_ids:
+            delete_cidr(cidr=cidr_id)
 
 
 class IP_VERSION:
