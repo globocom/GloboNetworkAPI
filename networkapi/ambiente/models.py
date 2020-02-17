@@ -1423,7 +1423,7 @@ class Ambiente(BaseModel):
             configs = env_map.get('configs', [])
 
             # save network on IPConfig tables
-            self.create_configs(configs, self.id)
+            configs = self.create_configs(configs, self.id)
 
             # save network on CIDR tables
             self.create_cidr(configs, self.id)
@@ -1619,9 +1619,12 @@ class Ambiente(BaseModel):
         :param env: Id of environment
         """
         for config in configs:
-            IPConfig.create(env_id, config)
+            config_id = IPConfig.create(env_id, config)
+            config['config_id'] = config_id.id
 
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
+
+        return configs
 
     def create_cidr(self, configs, env_id):
         log.debug("Save config on cidr tables")
@@ -1630,6 +1633,8 @@ class Ambiente(BaseModel):
 
         for config in configs:
             data = dict()
+            if config.get('config_id'):
+                data['id'] = config.get('config_id')
             data['ip_version'] = config.get('type')
             data['subnet_mask'] = config.get('new_prefix')
             data['network_type'] = config.get('network_type')
@@ -1855,6 +1860,8 @@ class EnvCIDR(BaseModel):
         import ipaddr
 
         try:
+            if env_cidr.get('id'):
+                self.id = env_cidr.get('id')
             self.network = env_cidr.get('network')
             self.network_first_ip = env_cidr.get('network_first_ip')
             self.network_last_ip = env_cidr.get('network_last_ip')
