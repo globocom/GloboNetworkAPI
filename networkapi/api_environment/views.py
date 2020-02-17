@@ -442,7 +442,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    # @raise_json_validate('environment_post')
+    @raise_json_validate('cidr_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
@@ -450,7 +450,8 @@ class EnvironmentCIDRDBView(CustomAPIView):
 
         objects = request.DATA
 
-        # json_validate(SPECS.get('simple_env_post')).validate(envs)
+        json_validate(SPECS.get('cidr_post')).validate(objects)
+
         response = list()
         for cidr in objects['cidr']:
             cidr_obj = facade.post_cidr(cidr)
