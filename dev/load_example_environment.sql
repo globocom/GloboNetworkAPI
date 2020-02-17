@@ -762,39 +762,39 @@ INSERT INTO
    `equipamentos` (id_equip, id_tipo_equipamento, id_modelo, nome, maintenance)
 VALUES
    (
-      1, 1, 1, 'Switch R1', 0
+      1, 1, 1, 'SWITCH-R1', 0
    )
 ,
    (
-      2, 1, 1, 'Switch R2', 0
+      2, 1, 1, 'SWITCH-R2', 0
    )
 ,
    (
-      3, 1, 1, 'Switch R3', 0
+      3, 1, 1, 'SWITCH-R3', 0
    )
 ,
    (
-      4, 1, 1, 'Switch B1', 0
+      4, 1, 1, 'SWITCH-B1', 0
    )
 ,
    (
-      5, 1, 1, 'Switch B2', 0
+      5, 1, 1, 'SWITCH-B2', 0
    )
 ,
    (
-      6, 1, 1, 'Switch B3', 0
+      6, 1, 1, 'SWITCH-B3', 0
    )
 ,
    (
-      7, 1, 1, 'Switch 01', 0
+      7, 1, 1, 'SWITCH-01', 0
    )
 ,
    (
-      8, 1, 1, 'Switch 02', 0
+      8, 1, 1, 'SWITCH-02', 0
    )
 ,
    (
-      9, 1, 1, 'Switch 03', 0
+      9, 1, 1, 'SWITCH-03', 0
    )
 ,
    (
@@ -806,67 +806,67 @@ VALUES
    )
 ,
    (
-      12, 3, 1, 'Router', 0
+      12, 3, 1, 'ROUTER', 0
    )
 ,
    (
-      13, 2, 1, 'Server S1', 0
+      13, 2, 1, 'SERVER-S1', 0
    )
 ,
    (
-      14, 2, 1, 'Server P1', 0
+      14, 2, 1, 'SERVER-P1', 0
    )
 ,
    (
-      15, 2, 1, 'Server P2', 0
+      15, 2, 1, 'SERVER-P2', 0
    )
 ,
    (
-      16, 2, 1, 'Server P3', 0
+      16, 2, 1, 'SERVER-P3', 0
    )
 ,
    (
-      17, 2, 1, 'Server P4', 0
+      17, 2, 1, 'SERVER-P4', 0
    )
 ,
    (
-      18, 2, 1, 'Server P5', 0
+      18, 2, 1, 'SERVER-P5', 0
    )
 ,
    (
-      19, 5, 1, 'Load-Balancer', 0
+      19, 5, 1, 'LOAD-BALANCER', 0
    )
 ,
    (
-      20, 2, 1, 'Server Space 1', 0
+      20, 2, 1, 'SERVER-SPACE-1', 0
    )
 ,
    (
-      21, 2, 1, 'Server Space 2', 0
+      21, 2, 1, 'SERVER-SPACE-2', 0
    )
 ,
    (
-      22, 1, 1, 'TOR 1 Space 1', 0
+      22, 1, 1, 'TOR-1-SPACE-1', 0
    )
 ,
    (
-      23, 1, 1, 'TOR 2 Space 1', 0
+      23, 1, 1, 'TOR-2-SPACE-1', 0
    )
 ,
    (
-      24, 1, 1, 'TOR 1 Space 2', 0
+      24, 1, 1, 'TOR-1-SPACE-2', 0
    )
 ,
    (
-      25, 1, 1, 'TOR 2 Space 2', 0
+      25, 1, 1, 'TOR-2-SPACE-2', 0
    )
 ,
    (
-      26, 3, 1, 'Fabric router 0', 0
+      26, 3, 1, 'FABRIC-ROUTER-0', 0
    )
 ,
    (
-      27, 3, 1, 'Fabric router 1', 0
+      27, 3, 1, 'FABRIC-ROUTER-1', 0
    )
 ;
 
@@ -1013,11 +1013,11 @@ VALUES
    )
 ,
    (
-      2, 2, 0, 168, 192, 'Router', 1
+      2, 2, 0, 168, 192, 'ROUTER', 1
    )
 ,
    (
-      3, 1, 1, 168, 192, 'Router', 2
+      3, 1, 1, 168, 192, 'ROUTER', 2
    )
 ,
    (
@@ -1025,11 +1025,11 @@ VALUES
    )
 ,
    (
-      5, 6, 0, 16, 172, 'Server S1', 3
+      5, 6, 0, 16, 172, 'SERVER-S1', 3
    )
 ,
    (
-      6, 6, 0, 0, 10, 'Server S1', 4
+      6, 6, 0, 0, 10, 'SERVER-S1', 4
    )
 ,
    (
