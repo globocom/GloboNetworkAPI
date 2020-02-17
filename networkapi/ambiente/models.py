@@ -1421,8 +1421,13 @@ class Ambiente(BaseModel):
             self.save()
 
             configs = env_map.get('configs', [])
+
+            # save network on IPConfig tables
             self.create_configs(configs, self.id)
-            #self.create_network(configs, self.id)
+
+            # save network on CIDR tables
+            self.create_cidr(configs, self.id)
+
             delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
         except Exception, e:
@@ -1605,6 +1610,8 @@ class Ambiente(BaseModel):
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
     def create_configs(self, configs, env_id):
+        log.debug("Save config on ipconfig tables")
+
         """
         Create configs of environment
 
@@ -1616,37 +1623,26 @@ class Ambiente(BaseModel):
 
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
-    def create_network(self, configs, env_id):
-        from networkapi.api_network.facade.v3.networkv4 import create_networkipv4
-        from networkapi.api_network.facade.v3.networkv6 import create_networkipv6
-        from netaddr import IPNetwork
+    def create_cidr(self, configs, env_id):
+        log.debug("Save config on cidr tables")
+
+        from networkapi.api_environment.facade import post_cidr
 
         for config in configs:
-            network = IPNetwork(config.get('subnet'))
-            octs = str(network.ip)
-            mask = str(network.netmask)
-
-            if network.version is 4:
-                netv4 = dict()
-                netv4['oct1'], netv4['oct2'], netv4['oct3'], netv4['oct4'] = octs.split('.')
-                netv4['mask_oct1'], netv4['mask_oct2'], netv4['mask_oct3'], netv4['mask_oct4'] = mask.split('.')
-                netv4['prefix'] = config.get('new_prefix')
-                netv4['network_type'] = config.get('network_type')
-                netv4['environment'] = [env_id]
-
-                create_networkipv4(netv4)
-            elif config.get('ip_version') in "v6":
-                netv6 = dict()
-                create_networkipv6(netv6)
-
-        delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
+            data = dict()
+            data['ip_version'] = config.get('type')
+            data['subnet_mask'] = config.get('new_prefix')
+            data['network_type'] = config.get('network_type')
+            data['environment'] = env_id
+            data['network'] = config.get('subnet')
+            post_cidr(data)
 
     def delete_configs(self, configs_ids, env_id):
         """
         Delete configs of environment
 
         :param configs_ids: Id of Configs of environment
-        :param env: Id of environment
+        :param env_id: Id of environment
         """
 
         for config_id in configs_ids:
