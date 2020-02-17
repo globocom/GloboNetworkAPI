@@ -1596,6 +1596,10 @@ class Ambiente(BaseModel):
             self.log.error(u'Falha ao remover algum Ambiente Config.')
             raise AmbienteError(e, u'Falha ao remover algum Ambiente Config.')
 
+        # Remove CIDR associated with environment
+        from networkapi.api_environment.facade import delete_cidr
+        delete_cidr(environment=self.id)
+
         # Remove the environment
         try:
             self.delete()
@@ -1995,9 +1999,7 @@ class EnvCIDR(BaseModel):
             try:
                 objects = EnvCIDR.objects.filter(id_env=env_id)
                 if not objects:
-                    raise ObjectDoesNotExist
-            except ObjectDoesNotExist:
-                raise CIDRErrorV3('There is no CIDR linked with the environment id=%s.' % env_id)
+                    log.debug('There is no CIDR linked with the environment id=%s.' % env_id)
             except OperationalError as e:
                 self.log.error('Lock wait timeout exceeded.')
                 raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
