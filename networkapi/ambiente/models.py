@@ -1707,7 +1707,7 @@ class Ambiente(BaseModel):
             IPConfig.remove(None, None, env_id, config_id)
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
-    def delete_cidr(self, configs_ids):
+    def delete_cidr(self, configs_ids=[]):
         """
         Delete configs of environment
 
