@@ -641,6 +641,10 @@ SPECS = {
     'cidr_post': os.path.join(
         PROJECT_ROOT_PATH,
         'api_environment/specs/cidr_post.json'
+    ),
+    'cidr_put': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_environment/specs/cidr_put.json'
     )
 }
 

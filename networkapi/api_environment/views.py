@@ -475,7 +475,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
         return Response({}, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    # @raise_json_validate('environment_put')
+    @raise_json_validate('cidr_put')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def put(self, request, *args, **kwargs):
@@ -483,7 +483,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
 
         cidrs = request.DATA
 
-        # json_validate(SPECS.get('environment_put')).validate(envs)
+        json_validate(SPECS.get('cidr_put')).validate(cidrs)
 
         response = list()
 
