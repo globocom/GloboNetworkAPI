@@ -1,7 +1,5 @@
 #!/bin/sh
 
-pip install -r requirements_test.txt
-
 echo "exporting NETWORKAPI_DEBUG"
 export NETWORKAPI_LOG_QUEUE=0
 
