@@ -1679,7 +1679,7 @@ class Ambiente(BaseModel):
 
         return configs
 
-    def create_cidr(self, configs, env_id):
+    def create_cidr(self, configs=None, env_id=None):
         log.debug("Save config on cidr tables")
 
         from networkapi.api_environment.facade import post_cidr
