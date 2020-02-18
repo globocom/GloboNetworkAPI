@@ -143,7 +143,7 @@ test:
 
 test_ci:
 	@echo "Running NetAPI tests for app '${app}'"
-	time docker exec -it netapi_app scripts/docker/docker-start-test.sh ${app}
+	time docker exec -it netapi_app ./fast_start_test.sh ${app}
 
 
 fixture:
