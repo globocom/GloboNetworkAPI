@@ -42,6 +42,7 @@ from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util import is_valid_string_maxsize
 from networkapi.util import is_valid_string_minsize
+from networkapi.util import is_valid_vlan_name
 from networkapi.vlan.models import Vlan
 from networkapi.vlan.models import VlanACLDuplicatedError
 from networkapi.vlan.models import VlanError
@@ -115,6 +116,11 @@ class VlanInsertResource(RestResource):
             # Valid name of Vlan
             if not is_valid_string_minsize(name, 3) or not is_valid_string_maxsize(name, 50):
                 self.log.error(u'Parameter name is invalid. Value: %s', name)
+                raise InvalidValueError(None, 'name', name)
+
+            if not is_valid_vlan_name(name):
+                self.log.error(
+                    u'Parameter %s is invalid because is using special characters and/or breaklines.', name)
                 raise InvalidValueError(None, 'name', name)
 
             if not network_ipv4 or not str(network_ipv4).isdigit():
