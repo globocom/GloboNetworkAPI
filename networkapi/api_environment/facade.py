@@ -363,7 +363,6 @@ def get_cidr_by_search(search=dict()):
     try:
         cidrs = EnvCIDR.objects.filter()
         cidrs_map = build_query_to_datatable_v3(cidrs, search)
-
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
@@ -385,7 +384,6 @@ def delete_cidr(cidr=None, environment=None):
     except ValidationAPIException as e:
         raise ObjectDoesNotExistException(str(e))
     except Exception as e:
-
         raise NetworkAPIException(str(e))
 
 

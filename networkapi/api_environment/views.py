@@ -449,6 +449,7 @@ class EnvironmentCIDRDBView(CustomAPIView):
         """Create new environment."""
 
         objects = request.DATA
+
         json_validate(SPECS.get('cidr_post')).validate(objects)
 
         response = list()
