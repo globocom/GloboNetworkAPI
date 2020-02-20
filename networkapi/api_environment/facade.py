@@ -270,7 +270,6 @@ def post_cidr(obj):
 
     from netaddr import IPNetwork
 
-<<<<<<< HEAD
     try:
         data = dict()
         data['id'] = obj.get('id')
@@ -338,30 +337,10 @@ def update_cidr(obj):
         raise ValidationAPIException(str(e))
     except Exception as e:
         raise NetworkAPIException(str(e))
-=======
-    log.debug("BEFORE %s" % obj)
-    data = dict()
-    data['id'] = obj.get('id')
-    data['ip_version'] = obj.get('ip_version')
-    data['subnet_mask'] = obj.get('subnet_mask')
-    data['network_type'] = obj.get('network_type')
-    data['environment'] = obj.get('environment')
-
-    network = IPNetwork(obj.get('network'))
-    data['network_first_ip'] = int(network.ip)
-    data['network_last_ip'] = int(network.broadcast)
-    data['network_mask'] = network.prefixlen
-
-    log.debug("AFTER %s" % data)
-
-    cidr = EnvCIDR()
-    response = cidr.post(data)
->>>>>>> Creates EnvCIDR table
 
     return response
 
 
-<<<<<<< HEAD
 def get_cidr(cidr=None, environment=None):
     """Return a list of CIDR."""
 
@@ -384,19 +363,12 @@ def get_cidr_by_search(search=dict()):
     try:
         cidrs = EnvCIDR.objects.filter()
         cidrs_map = build_query_to_datatable_v3(cidrs, search)
-=======
-def get_cidr(cidr=None, env=None, ip_version=None):
-    """Return a list of CIDR."""
 
-    try:
-        cidr = EnvCIDR.get(id=cidr, environment=env, ip_version=ip_version)
->>>>>>> Creates EnvCIDR table
     except FieldError as e:
         raise ValidationAPIException(str(e))
     except Exception as e:
         raise NetworkAPIException(str(e))
     else:
-<<<<<<< HEAD
         return cidrs_map
 
 
@@ -413,25 +385,7 @@ def delete_cidr(cidr=None, environment=None):
     except ValidationAPIException as e:
         raise ObjectDoesNotExistException(str(e))
     except Exception as e:
-=======
-        return cidr
 
-
-def delete_cidr(cidr=None, env=None):
-    """Delete CIDR."""
-
-    try:
-        cidr_obj = EnvCIDR.get(id=cidr, environment=env)
-        for cidr in cidr_obj:
-            cidr.EnvCIDR.delete_v3()
-    except AmbienteUsedByEquipmentVlanError, e:
-        raise ValidationAPIException(str(e))
-    except exceptions.EnvironmentDoesNotExistException, e:
-        raise ObjectDoesNotExistException(str(e))
-    except AmbienteError, e:
-        raise NetworkAPIException(str(e))
-    except Exception, e:
->>>>>>> Creates EnvCIDR table
         raise NetworkAPIException(str(e))
 
 

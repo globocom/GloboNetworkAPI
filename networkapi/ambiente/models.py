@@ -1421,6 +1421,7 @@ class Ambiente(BaseModel):
             self.save()
 
             configs = env_map.get('configs', [])
+
             # save network on IPConfig tables
             configs = self.create_configs(configs, self.id)
 
@@ -1675,6 +1676,7 @@ class Ambiente(BaseModel):
             config['config_id'] = config_id.id
 
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
+
         return configs
 
     def create_cidr(self, configs=None, env_id=None):
@@ -1961,6 +1963,7 @@ class EnvCIDR(BaseModel):
             self.network_mask = env_cidr.get('network_mask')
             self.ip_version = env_cidr.get('ip_version')
             self.subnet_mask = env_cidr.get('subnet_mask')
+
             objects = EnvCIDR.objects.filter(id_env=int(env_cidr.get('environment'))).exclude(id=cidr_id)
 
             for obj in objects:

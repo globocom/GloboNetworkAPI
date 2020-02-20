@@ -400,16 +400,11 @@ class EnvFlowView(CustomAPIView):
 class EnvironmentCIDRDBView(CustomAPIView):
 
     @logs_method_apiview
-<<<<<<< HEAD
-=======
-    @raise_json_validate('')
->>>>>>> Creates EnvCIDR table
     @permission_classes_apiview((IsAuthenticated, Read))
     @prepare_search
     def get(self, request, *args, **kwargs):
         """Returns a list of environment by ids ou dict."""
 
-<<<<<<< HEAD
         if kwargs.get('cidr_id'):
             cidr_ids = kwargs.get('cidr_id').split(';')
             cidr = list()
@@ -429,18 +424,6 @@ class EnvironmentCIDRDBView(CustomAPIView):
 
         serializer = serializers.EnvCIDRSerializer(
             cidr,
-=======
-        if not kwargs.get('obj_ids'):
-            obj_model = facade.get_l3_environment_by_search(self.search)
-            environments = obj_model['query_set']
-            only_main_property = False
-        else:
-            return Response(dict(), status=status.HTTP_400_BAD_REQUEST)
-
-        # serializer environments
-        serializer_env = serializers.GrupoL3Serializer(
-            environments,
->>>>>>> Creates EnvCIDR table
             many=True,
             fields=self.fields,
             include=self.include,
@@ -449,48 +432,28 @@ class EnvironmentCIDRDBView(CustomAPIView):
         )
 
         data = render_to_json(
-<<<<<<< HEAD
             serializer,
             main_property='cidr',
             request=request,
             obj_model=obj_model,
-=======
-            serializer_env,
-            main_property='l3_environments',
-            obj_model=obj_model,
-            request=request,
->>>>>>> Creates EnvCIDR table
             only_main_property=only_main_property
         )
 
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-<<<<<<< HEAD
     @raise_json_validate('cidr_post')
-=======
-    # @raise_json_validate('environment_post')
->>>>>>> Creates EnvCIDR table
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Create new environment."""
 
         objects = request.DATA
-<<<<<<< HEAD
-
         json_validate(SPECS.get('cidr_post')).validate(objects)
 
         response = list()
         for cidr in objects['cidr']:
             cidr_obj = facade.post_cidr(cidr)
-=======
-        # json_validate(SPECS.get('simple_env_post')).validate(envs)
-        response = list()
-        for cidr in objects['cidr']:
-            cidr_obj = facade.post_cidr(cidr)
-            log.debug(cidr_obj)
->>>>>>> Creates EnvCIDR table
             response.append(dict(id=cidr_obj))
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -500,7 +463,6 @@ class EnvironmentCIDRDBView(CustomAPIView):
     def delete(self, request, *args, **kwargs):
         """ Deletes a single cidr by id or all cidr associate to an environment. """
 
-<<<<<<< HEAD
         if kwargs.get('cidr_id'):
             ids = kwargs.get('cidr_id').split(';')
             for _id in ids:
@@ -508,20 +470,10 @@ class EnvironmentCIDRDBView(CustomAPIView):
         elif kwargs.get('env_id'):
             _id = kwargs.get('env_id')
             facade.delete_cidr(environment=_id)
-=======
-        cidr_id = kwargs.get('cidr_id')
-        environment_id = kwargs.get('environment_id', None)
-
-        if environment_id:
-            facade.delete_cidr(env=environment_id)
-        else:
-            facade.delete_cidr(cidr=cidr_id)
->>>>>>> Creates EnvCIDR table
 
         return Response({}, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-<<<<<<< HEAD
     @raise_json_validate('cidr_put')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
@@ -539,21 +491,3 @@ class EnvironmentCIDRDBView(CustomAPIView):
             response.append(dict(id=cidr_obj))
 
         return Response(response, status=status.HTTP_200_OK)
-=======
-    @permission_classes_apiview((IsAuthenticated, Read))
-    def get(self, request, *args, **kwargs):
-        """Returns a list of environment by ids ou dict."""
-
-        cidr_id = kwargs.get('cidr_id', None)
-        environment_id = kwargs.get('environment_id', None)
-        ip_version = kwargs.get('ip_version', None)
-
-        if environment_id:
-            cidr = facade.list_flows_by_envid(env=environment_id)
-        elif cidr_id:
-            cidr = facade.list_flows_by_envid(cidr=cidr_id)
-        else:
-            cidr = list()
-
-        return Response(cidr, status=status.HTTP_200_OK)
->>>>>>> Creates EnvCIDR table
