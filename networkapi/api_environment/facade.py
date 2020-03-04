@@ -271,6 +271,8 @@ def post_cidr(obj):
     from netaddr import IPNetwork
 
     try:
+        cidr = EnvCIDR()
+
         data = dict()
         data['id'] = obj.get('id')
         data['ip_version'] = obj.get('ip_version')
@@ -284,12 +286,31 @@ def post_cidr(obj):
         except Exception as e:
             raise ValidationAPIException(str(e))
 
+        environment = Ambiente().get_by_pk(int(obj.get('environment')))
+        msg = list()
+        if not cidr.check_cidr(environment, obj.get('network')):
+            message = "The network is not a subnet of the father environment."
+            msg.append(dict(message=message,
+                            environment_id=obj.get('environment')))
+            log.info(message)
+
+        duplicated_cidr = cidr.check_duplicated_cidr(environment, obj.get('network'))
+
+        duplicated_ids = [ids.id_env.id for ids in duplicated_cidr]
+
+        if duplicated_cidr:
+            message = "CIDR %s overlaps with networks from environments: %s" % \
+                      (obj.get('network'), duplicated_ids)
+            msg.append(dict(message=message,
+                            environment_id=obj.get('environment')))
+            log.info(message)
+
         data['network_first_ip'] = int(network.ip)
         data['network_last_ip'] = int(network.broadcast)
         data['network_mask'] = network.prefixlen
 
-        cidr = EnvCIDR()
         response = cidr.post(data)
+
     except CIDRErrorV3 as e:
         raise ValidationAPIException(str(e))
     except ValidationAPIException as e:
@@ -297,7 +318,7 @@ def post_cidr(obj):
     except Exception as e:
         raise NetworkAPIException(str(e))
 
-    return response
+    return response, msg
 
 
 def update_cidr(obj):

@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import ipaddr
 import logging
 
 from _mysql_exceptions import OperationalError
@@ -1921,9 +1923,44 @@ class EnvCIDR(BaseModel):
         managed = True
         unique_together = ('id_env', 'network')
 
-    def post(self, env_cidr):
+    def check_cidr(self, environment, network):
+        """
+        check if network is a subnet of the father environment
+        :param environment: environment id
+        :param network: environment cidr
+        :return: boolean
+        """
 
-        import ipaddr
+        if environment.father_environment:
+            id_env_father = environment.father_environment.id
+        else:
+            return True
+
+        cidr_env_father = self.get(env_id=id_env_father)
+
+        for cidr in cidr_env_father:
+            if ipaddr.IPNetwork(network).overlaps(ipaddr.IPNetwork(cidr.network)):
+                return True
+
+        return False
+
+    def check_duplicated_cidr(self, environment, network):
+        """
+        check if the network overlaps another cidr from another environment.
+        :return:
+        """
+
+        environments = list()
+
+        if environment.father_environment:
+            id_env_father = environment.father_environment.id
+            environments = EnvCIDR.objects.filter(network=network).exclude(id_env=id_env_father)
+        else:
+            environments = EnvCIDR.objects.filter(network=network)
+
+        return environments
+
+    def post(self, env_cidr):
 
         try:
             if env_cidr.get('id'):
@@ -1940,7 +1977,9 @@ class EnvCIDR(BaseModel):
                 if ipaddr.IPNetwork(obj.network).overlaps(ipaddr.IPNetwork(self.network)):
                     raise CIDRErrorV3("%s overlaps %s" % (self.network, obj.network))
 
-            self.id_env = Ambiente().get_by_pk(int(env_cidr.get('environment')))
+            environment = Ambiente().get_by_pk(int(env_cidr.get('environment')))
+            self.id_env = environment
+
             self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
 
             self.save()

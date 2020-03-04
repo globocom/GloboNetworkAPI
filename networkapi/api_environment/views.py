@@ -454,8 +454,8 @@ class EnvironmentCIDRDBView(CustomAPIView):
 
         response = list()
         for cidr in objects['cidr']:
-            cidr_obj = facade.post_cidr(cidr)
-            response.append(dict(id=cidr_obj))
+            cidr_obj, msg = facade.post_cidr(cidr)
+            response.append(dict(id=cidr_obj, message=msg))
 
         return Response(response, status=status.HTTP_201_CREATED)
 
