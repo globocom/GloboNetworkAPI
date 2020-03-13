@@ -185,35 +185,33 @@ class NetworkAddResource(RestResource):
                         environment_conf = config_env.get_by_environment(vlan_env_id)
 
                         if environment_conf:
+
                             for env_config in environment_conf:
 
                                 ipconfig = env_config.ip_config
                                 subnet = ipconfig.subnet
 
-                            env_net = IPNetwork(subnet)
+                                env_net = IPNetwork(subnet)
 
-                            try:
                                 if net in env_net:
                                     self.log.debug('Network "%s" can be allocated because is in the '
                                                    'environment network(%s) subnets.' % (net, subnet))
+                                    is_valid_net = True
+                                    break
 
-                                else:
-                                    raise NetworkSubnetRange(None, 'A rede a ser cadastrada (%s) não pertence às '
-                                                                   'subredes do ambiente (rede ambiente: %s). '
-                                                                   'Cadastre o range desejado no '
-                                                                   'ambiente.' % (net, subnet))
-
-                            except NetworkSubnetRange:
-                                self.log.error('Network "%s" can not be allocated because is not in the '
-                                               'environment network(%s) subnets.' % (net, subnet))
-                                return self.response_error(414)
+                            raise NetworkSubnetRange(None, 'A rede a ser cadastrada (%s) não pertence às '
+                                   'subredes do ambiente.' % net) if not is_valid_net else None
 
                         else:
-                            raise NetworkEnvironmentError(None, 'O ambiente não está configurado. '
-                                                                'É necessário efetuar a configuração.')
+                            raise NetworkEnvironmentError(None, 'O ambiente não está configurado. ')
+
+                    except NetworkSubnetRange:
+                        self.log.error('Network "%s" can not be allocated because is not in the '
+                                       'environment network(%s) subnets.' % (net, subnet))
+                        return self.response_error(414)
 
                     except NetworkEnvironmentError:
-                        self.log.error('The environment does not have a registered network')
+                        self.log.error('The environment does not have a configuration')
                         return self.response_error(415)
 
                 except Exception as ERROR:
