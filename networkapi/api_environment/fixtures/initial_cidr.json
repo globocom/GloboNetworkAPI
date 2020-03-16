@@ -96,5 +96,33 @@
     },
     "model": "ambiente.EnvCIDR",
     "pk": 8
+  },
+  {
+    "fields": {
+      "network": "10.0.1.0/24",
+      "network_first_ip": "167772416",
+      "network_last_ip": "167772671",
+      "network_mask": "24",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "27",
+      "id_env": 2
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 9
+  },
+  {
+    "fields": {
+      "network": "10.0.5.0/24",
+      "network_first_ip": "167773440",
+      "network_last_ip": "167773695",
+      "network_mask": "24",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "27",
+      "id_env": 2
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 9
   }
 ]

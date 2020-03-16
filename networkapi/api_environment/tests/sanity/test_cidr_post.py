@@ -162,4 +162,4 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         response = EnvCIDR().checkAvailableCIDR(2)
 
-        self.compare_values("10.0.1.0/24", response[0])
+        self.compare_values("10.0.6.0/24", response[0])
