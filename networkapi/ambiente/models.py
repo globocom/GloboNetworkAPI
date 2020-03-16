@@ -1950,8 +1950,6 @@ class EnvCIDR(BaseModel):
         :return:
         """
 
-        environments = list()
-
         if environment.father_environment:
             id_env_father = environment.father_environment.id
             environments = EnvCIDR.objects.filter(network=network).exclude(id_env=id_env_father)
@@ -1959,6 +1957,65 @@ class EnvCIDR(BaseModel):
             environments = EnvCIDR.objects.filter(network=network)
 
         return environments
+
+    def searchNextAvailableCIDR(self, subnets):
+        """
+        Method that search next availacle cidr.
+        :param subnets: all subnets of environment.
+        :return: available subnet
+        """
+        log.debug("searchNextAvailableCIDR")
+        for idx in enumerate(subnets):
+            if subnets[idx].network_last_ip + 1 is not subnets[idx+1].network_first_ip:
+                subnet = subnets[idx].network
+                new_subnet = ipaddr.IPNetwork(subnet).next()
+                if not new_subnet.overlaps(ipaddr.IPNetwork(subnets[idx+1].network)):
+                    return str(new_subnet)
+        return ""
+
+    def nextAvailableCIDR(self, subnets, network):
+        """
+        Try to aloccate
+        :param subnets:
+        :param network:
+        :return:
+        """
+        log.debug("Last Subnet: %s" % subnets.latest('id').network)
+
+        from netaddr import IPNetwork as NETADDR
+        subnet = NETADDR(subnets.latest('id').network).next()
+        if ipaddr.IPNetwork(subnet).overlaps(ipaddr.IPNetwork(network.network)):
+            return str(subnet)
+
+        return self.searchNextAvailableCIDR()
+
+    def checkAvailableCIDR(self, environment_id):
+        """"""
+
+        environment = Ambiente.get_by_pk(environment_id)
+
+        env_father_cidrs = self.get(env_id=environment.father_environment.id)
+
+        msg = ""
+        next_available_cidr = ""
+
+        for cidr in env_father_cidrs:
+            env_subnets = EnvCIDR.objects.filter(
+                network_first_ip__gte=cidr.network_first_ip,
+                network_last_ip__lte=cidr.network_last_ip).exclude(
+                id=cidr.id).order_by(
+                "network_first_ip")
+            log.debug("Number of Subnets: %s" %len(env_subnets))
+            if len(env_subnets) == 2**(int(cidr.subnet_mask) - int(cidr.network_mask)):
+                msg += "There's no available network in this environment. CIDR: %s" % cidr.network
+                log.info(msg)
+                pass
+            else:
+                next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr)
+                msg = "Next available subnet: %s." % next_available_cidr
+                log.info(msg)
+
+        return next_available_cidr, msg
 
     def post(self, env_cidr):
 

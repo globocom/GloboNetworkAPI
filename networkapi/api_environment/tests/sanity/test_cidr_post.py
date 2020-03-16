@@ -154,3 +154,12 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         self.compare_values(
             '10.225.0.0/25 overlaps 10.225.0.0/24',
             response_error.data['detail'])
+
+    def test_checkAvailableCIDR(self):
+        """Test of Success to get the next available CIDR."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(2)
+
+        self.compare_values("10.0.1.0/24", response[0])
