@@ -246,7 +246,7 @@ class NetworkIPv6AddResource(RestResource):
                 else:
 
                     for equip in list_equip_routers_ambient:
-                        Ipv6Equipament().create(user, vlan_map['vlan']['id_network'], equip.equipamento.id)
+                        Ipv6Equipament().create(user, ipv6_model.id, equip.equipamento.id)
 
                         if multiple_ips:
                             router_ip = Ipv6.get_first_available_ip6(vlan_map['vlan']['id_network'], True)
