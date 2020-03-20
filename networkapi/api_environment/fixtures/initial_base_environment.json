@@ -22,6 +22,27 @@
   },
   {
     "fields": {
+      "nome": "SANITY-CIDR-1"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-2"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-3"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 5
+  },
+  {
+    "fields": {
       "nome": "RACK-1"
     },
     "model": "ambiente.grupol3",

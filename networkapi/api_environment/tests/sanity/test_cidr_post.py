@@ -163,3 +163,14 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response = EnvCIDR().checkAvailableCIDR(2)
 
         self.compare_values("10.0.6.0/24", response[0])
+
+    def test_checkAvailableCIDRWithTwoBlocks(self):
+        """Test of Success to get the next available CIDR
+        when the environment father has two cidr and just
+        one of them with subnet available."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(7)
+
+        self.compare_values("201.7.1.0/24", response[0])

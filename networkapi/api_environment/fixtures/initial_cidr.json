@@ -124,5 +124,75 @@
     },
     "model": "ambiente.EnvCIDR",
     "pk": 9
+  },
+  {
+    "fields": {
+      "network": "192.168.0.0/24",
+      "network_first_ip": "3232235520",
+      "network_last_ip": "3232235775",
+      "network_mask": "24",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "25",
+      "id_env": 5
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 10
+  },
+  {
+    "fields": {
+      "network": "201.7.0.0/16",
+      "network_first_ip": "3372679168",
+      "network_last_ip": "3372744703",
+      "network_mask": "16",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "24",
+      "id_env": 5
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 11
+  },
+  {
+    "fields": {
+      "network": "192.168.0.0/25",
+      "network_first_ip": "3232235520",
+      "network_last_ip": "3232235647",
+      "network_mask": "25",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "31",
+      "id_env": 6
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 12
+  },
+  {
+    "fields": {
+      "network": "192.168.0.128/25",
+      "network_first_ip": "3232235648",
+      "network_last_ip": "3232235775",
+      "network_mask": "25",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "31",
+      "id_env": 6
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 13
+  },
+  {
+    "fields": {
+      "network": "201.7.0.0/24",
+      "network_first_ip": "3372679168",
+      "network_last_ip": "3372679423",
+      "network_mask": "24",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "27",
+      "id_env": 6
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 14
   }
 ]

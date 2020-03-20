@@ -1987,7 +1987,7 @@ class EnvCIDR(BaseModel):
         if ipaddr.IPNetwork(subnet).overlaps(ipaddr.IPNetwork(network.network)):
             return str(subnet)
 
-        return self.searchNextAvailableCIDR()
+        return self.searchNextAvailableCIDR(subnets)
 
     def checkAvailableCIDR(self, environment_id):
         """"""
@@ -1995,6 +1995,7 @@ class EnvCIDR(BaseModel):
         environment = Ambiente.get_by_pk(environment_id)
 
         env_father_cidrs = self.get(env_id=environment.father_environment.id)
+        log.debug(env_father_cidrs)
 
         msg = ""
         next_available_cidr = ""
@@ -2002,14 +2003,16 @@ class EnvCIDR(BaseModel):
         for cidr in env_father_cidrs:
             env_subnets = EnvCIDR.objects.filter(
                 network_first_ip__gte=cidr.network_first_ip,
-                network_last_ip__lte=cidr.network_last_ip).exclude(
+                network_last_ip__lte=cidr.network_last_ip,
+                id_env__father_environment__id=cidr.id_env.id).exclude(
                 id=cidr.id).order_by(
                 "network_first_ip")
-            log.debug("Number of Subnets: %s" %len(env_subnets))
+            log.debug("CIDR: %s" % cidr.network)
+            log.debug("Number of Subnets: %s" % len(env_subnets))
+
             if len(env_subnets) == 2**(int(cidr.subnet_mask) - int(cidr.network_mask)):
                 msg += "There's no available network in this environment. CIDR: %s" % cidr.network
                 log.info(msg)
-                pass
             else:
                 next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr)
                 msg = "Next available subnet: %s." % next_available_cidr
