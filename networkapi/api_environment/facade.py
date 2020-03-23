@@ -9,9 +9,11 @@ from networkapi.ambiente.models import AmbienteError
 from networkapi.ambiente.models import AmbienteNotFoundError
 from networkapi.ambiente.models import AmbienteUsedByEquipmentVlanError
 from networkapi.ambiente.models import AmbienteLogico
+from networkapi.ambiente.models import EnvCIDR
 from networkapi.ambiente.models import DivisaoDc
 from networkapi.ambiente.models import GrupoL3
 from networkapi.ambiente.models import EnvironmentErrorV3
+from networkapi.ambiente.models import CIDRErrorV3
 from networkapi.api_environment.tasks.flows import async_add_flow
 from networkapi.api_environment.tasks.flows import async_delete_flow
 from networkapi.api_environment.tasks.flows import async_flush_environment
@@ -237,11 +239,11 @@ def create_environment(env):
     try:
         env_obj = Ambiente()
         env_obj.create_v3(env)
-    except EnvironmentErrorV3, e:
+    except EnvironmentErrorV3 as e:
         raise ValidationAPIException(str(e))
-    except ValidationAPIException, e:
+    except ValidationAPIException as e:
         raise ValidationAPIException(str(e))
-    except Exception, e:
+    except Exception as e:
         raise NetworkAPIException(str(e))
 
     return env_obj
@@ -262,6 +264,127 @@ def delete_environment(env_ids):
             raise NetworkAPIException(str(e))
         except Exception, e:
             raise NetworkAPIException(str(e))
+
+
+def post_cidr(obj):
+
+    from netaddr import IPNetwork
+
+    try:
+        data = dict()
+        data['id'] = obj.get('id')
+        data['ip_version'] = obj.get('ip_version')
+        data['subnet_mask'] = obj.get('subnet_mask')
+        data['network_type'] = obj.get('network_type')
+        data['environment'] = obj.get('environment')
+        data['network'] = obj.get('network')
+
+        try:
+            network = IPNetwork(obj.get('network'))
+        except Exception as e:
+            raise ValidationAPIException(str(e))
+
+        data['network_first_ip'] = int(network.ip)
+        data['network_last_ip'] = int(network.broadcast)
+        data['network_mask'] = network.prefixlen
+
+        cidr = EnvCIDR()
+        response = cidr.post(data)
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return response
+
+
+def update_cidr(obj):
+    log.info("Facade update cidr")
+
+    from netaddr import IPNetwork
+
+    try:
+
+        try:
+            cidr_obj = get_cidr(cidr=obj.get('id'))
+        except Exception as e:
+            raise CIDRErrorV3(e)
+
+        data = dict()
+        data['id'] = obj.get('id')
+        data['ip_version'] = obj.get('ip_version')
+        data['subnet_mask'] = obj.get('subnet_mask')
+        data['network_type'] = obj.get('network_type')
+        data['environment'] = obj.get('environment')
+        data['network'] = obj.get('network')
+
+        try:
+            network = IPNetwork(obj.get('network'))
+        except Exception as e:
+            raise ValidationAPIException(str(e))
+
+        data['network_first_ip'] = int(network.ip)
+        data['network_last_ip'] = int(network.broadcast)
+        data['network_mask'] = network.prefixlen
+
+        response = cidr_obj[0].put(data)
+
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return response
+
+
+def get_cidr(cidr=None, environment=None):
+    """Return a list of CIDR."""
+
+    try:
+        env_cidr = EnvCIDR()
+        cidr = env_cidr.get(cidr_id=cidr, env_id=environment)
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return cidr
+
+
+def get_cidr_by_search(search=dict()):
+    """Return a list of dc environments by dict."""
+
+    try:
+        cidrs = EnvCIDR.objects.filter()
+        cidrs_map = build_query_to_datatable_v3(cidrs, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return cidrs_map
+
+
+def delete_cidr(cidr=None, environment=None):
+    """Delete CIDR."""
+
+    try:
+        env_cidr = EnvCIDR()
+        cidr_obj = env_cidr.get(cidr_id=cidr, env_id=environment)
+        for cidr in cidr_obj:
+            cidr.delete()
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ObjectDoesNotExistException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
 
 
 def get_controller_by_envid(env_id):

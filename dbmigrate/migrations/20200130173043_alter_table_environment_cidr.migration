@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `environment_cidr`
+ADD COLUMN `network` varchar(44) NOT NULL;
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `environment_cidr`
+DROP COLUMN `network`;
+
+"""

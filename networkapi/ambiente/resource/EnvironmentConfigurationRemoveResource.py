@@ -53,6 +53,10 @@ class EnvironmentConfigurationRemoveResource(RestResource):
             ip_config = IPConfig.remove(
                 self, user, environment_id, configuration_id)
 
+            # remove from cidr table
+            logging.debug("Remove config from cidr table.")
+            Ambiente().delete_cidr([configuration_id])
+
             return self.response(dumps_networkapi({'ip_config': ip_config}))
 
         except PermissionError:

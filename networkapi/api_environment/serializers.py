@@ -10,6 +10,40 @@ from networkapi.util.serializers import DynamicFieldsModelSerializer
 log = logging.getLogger(__name__)
 
 
+class EnvCIDRSerializer(DynamicFieldsModelSerializer):
+
+    id = serializers.RelatedField(source='id')
+    network = serializers.RelatedField(source='network')
+    ip_version = serializers.RelatedField(source='ip_version')
+    subnet_mask = serializers.RelatedField(source='subnet_mask')
+    network_type = serializers.RelatedField(source='id_network_type.id')
+    network_type_name = serializers.RelatedField(source='id_network_type.tipo_rede')
+    environment = serializers.RelatedField(source='id_env.id')
+    environment_name = serializers.RelatedField(source='id_env.name')
+
+    class Meta:
+        EnvCIDR = get_model('ambiente', 'EnvCIDR')
+        model = EnvCIDR
+        fields = (
+            'id',
+            'network',
+            'ip_version',
+            'network_type',
+            'subnet_mask',
+            'environment'
+        )
+        details_fields = (
+            'id',
+            'network',
+            'ip_version',
+            'network_type',
+            'network_type_name',
+            'subnet_mask',
+            'environment',
+            'environment_name'
+        )
+
+
 class IpConfigV3Serializer(DynamicFieldsModelSerializer):
 
     id = serializers.RelatedField(source='ip_config.id')
