@@ -186,6 +186,8 @@ class NetworkAddResource(RestResource):
 
                             if environment_conf:
 
+                                is_valid_net = False
+
                                 for env_config in environment_conf:
 
                                     ipconfig = env_config.ip_config
