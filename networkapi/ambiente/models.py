@@ -53,6 +53,8 @@ from networkapi.util.appcache import delete_cached_searches_list
 from networkapi.util.appcache import ENVIRONMENT_CACHE_ENTRY
 from networkapi.vlan.models import TipoRede
 
+from netaddr import IPNetwork as NETADDR
+
 log = logging.getLogger(__name__)
 
 
@@ -1966,8 +1968,6 @@ class EnvCIDR(BaseModel):
         """
         log.debug("searchNextAvailableCIDR")
 
-        from netaddr import IPNetwork as NETADDR
-
         for idx, _ in enumerate(subnets):
             if int(subnets[idx].network_last_ip) + 1 is not int(subnets[idx+1].network_first_ip):
                 subnet = subnets[idx].network
@@ -1983,9 +1983,11 @@ class EnvCIDR(BaseModel):
         :param network:
         :return:
         """
-        log.debug("Last Subnet: %s" % subnets.latest('id').network)
 
-        from netaddr import IPNetwork as NETADDR
+        if not subnets:
+            subnet = list(NETADDR(network.network).subnet(int(network.subnet_mask)))[0]
+            return str(subnet)
+
         subnet = NETADDR(subnets.latest('id').network).next()
         if ipaddr.IPNetwork(subnet).overlaps(ipaddr.IPNetwork(network.network)):
             return str(subnet)

@@ -184,3 +184,12 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response = EnvCIDR().checkAvailableCIDR(10)
 
         self.compare_values("10.143.0.4/31", response[0])
+
+    def test_allocateFirstSubnetCIDR(self):
+        """Test of Success allocate the first subnet."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(12)
+
+        self.compare_values("10.224.0.0/27", response[0])

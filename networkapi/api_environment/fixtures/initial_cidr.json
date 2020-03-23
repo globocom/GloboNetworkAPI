@@ -250,5 +250,19 @@
     },
     "model": "ambiente.EnvCIDR",
     "pk": 18
+  },
+  {
+    "fields": {
+      "network": "10.224.0.0/24",
+      "network_first_ip": "182452224",
+      "network_last_ip": "182452479",
+      "network_mask": "24",
+      "ip_version": "v4",
+      "id_network_type": 1,
+      "subnet_mask": "27",
+      "id_env": 11
+    },
+    "model": "ambiente.EnvCIDR",
+    "pk": 19
   }
 ]
