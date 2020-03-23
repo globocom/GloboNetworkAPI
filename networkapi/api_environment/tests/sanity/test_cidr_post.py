@@ -174,3 +174,13 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response = EnvCIDR().checkAvailableCIDR(7)
 
         self.compare_values("201.7.1.0/24", response[0])
+
+    def test_AvailableCIDR(self):
+        """Test of Success when the method has to find the
+        subnet that was not allocate yeat."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(10)
+
+        self.compare_values("10.143.0.4/31", response[0])

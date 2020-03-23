@@ -1965,11 +1965,14 @@ class EnvCIDR(BaseModel):
         :return: available subnet
         """
         log.debug("searchNextAvailableCIDR")
-        for idx in enumerate(subnets):
-            if subnets[idx].network_last_ip + 1 is not subnets[idx+1].network_first_ip:
+
+        from netaddr import IPNetwork as NETADDR
+
+        for idx, _ in enumerate(subnets):
+            if int(subnets[idx].network_last_ip) + 1 is not int(subnets[idx+1].network_first_ip):
                 subnet = subnets[idx].network
-                new_subnet = ipaddr.IPNetwork(subnet).next()
-                if not new_subnet.overlaps(ipaddr.IPNetwork(subnets[idx+1].network)):
+                new_subnet = NETADDR(subnet).next()
+                if not ipaddr.IPNetwork(new_subnet).overlaps(ipaddr.IPNetwork(subnets[idx+1].network)):
                     return str(new_subnet)
         return ""
 
