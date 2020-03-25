@@ -193,3 +193,34 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response = EnvCIDR().checkAvailableCIDR(12)
 
         self.compare_values("10.224.0.0/27", response[0])
+
+    def test_post_cidr_auto(self):
+        """Test of success to allocate a new subnet."""
+
+        post_file = self.post_path % 'post_cidr_auto.json'
+        rcv_file = self.get_path % 'get_cidr_auto.json'
+
+        # post request
+        response = self.client.post(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(post_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_cidr = response.data[0]['id']
+
+        # get request
+        response = self.client.get(
+            '/api/v3/cidr/%s/' % id_cidr,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property id
+        data = response.data
+        del data['cidr'][0]['id']
+
+        self.compare_json(rcv_file, data)

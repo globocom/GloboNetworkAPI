@@ -442,20 +442,24 @@ class EnvironmentCIDRDBView(CustomAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
-    @raise_json_validate('cidr_post')
     @permission_classes_apiview((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         """Create new environment."""
 
         objects = request.DATA
-
-        json_validate(SPECS.get('cidr_post')).validate(objects)
-
         response = list()
-        for cidr in objects['cidr']:
-            cidr_obj, msg = facade.post_cidr(cidr)
-            response.append(dict(id=cidr_obj, message=msg))
+
+        if objects.get('cidr')[0].get('network'):
+            json_validate(SPECS.get('cidr_post')).validate(objects)
+            for cidr in objects['cidr']:
+                cidr_obj, msg = facade.post_cidr(cidr)
+                response.append(dict(id=cidr_obj, message=msg))
+        else:
+            json_validate(SPECS.get('cidr_post_auto')).validate(objects)
+            for cidr in objects['cidr']:
+                cidr_obj, msg = facade.post_cidr_auto(cidr)
+                response.append(dict(id=cidr_obj, message=msg))
 
         return Response(response, status=status.HTTP_201_CREATED)
 

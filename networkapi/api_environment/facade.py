@@ -266,6 +266,23 @@ def delete_environment(env_ids):
             raise NetworkAPIException(str(e))
 
 
+def post_cidr_auto(obj):
+    try:
+        cidr = EnvCIDR()
+        subnet, _ = cidr.checkAvailableCIDR(obj.get('environment'))
+        obj["network"] = subnet
+        response, msg = post_cidr(obj)
+
+    except CIDRErrorV3 as e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return response, msg
+
+
 def post_cidr(obj):
 
     from netaddr import IPNetwork
