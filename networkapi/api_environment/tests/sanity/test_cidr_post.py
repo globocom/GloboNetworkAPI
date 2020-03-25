@@ -154,3 +154,73 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         self.compare_values(
             '10.225.0.0/25 overlaps 10.225.0.0/24',
             response_error.data['detail'])
+
+    def test_checkAvailableCIDR(self):
+        """Test of Success to get the next available CIDR."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(2)
+
+        self.compare_values("10.0.6.0/24", response[0])
+
+    def test_checkAvailableCIDRWithTwoBlocks(self):
+        """Test of Success to get the next available CIDR
+        when the environment father has two cidr and just
+        one of them with subnet available."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(7)
+
+        self.compare_values("201.7.1.0/24", response[0])
+
+    def test_AvailableCIDR(self):
+        """Test of Success when the method has to find the
+        subnet that was not allocate yeat."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(10)
+
+        self.compare_values("10.143.0.4/31", response[0])
+
+    def test_allocateFirstSubnetCIDR(self):
+        """Test of Success allocate the first subnet."""
+
+        from networkapi.ambiente.models import EnvCIDR
+
+        response = EnvCIDR().checkAvailableCIDR(12)
+
+        self.compare_values("10.224.0.0/27", response[0])
+
+    def test_post_cidr_auto(self):
+        """Test of success to allocate a new subnet."""
+
+        post_file = self.post_path % 'post_cidr_auto.json'
+        rcv_file = self.get_path % 'get_cidr_auto.json'
+
+        # post request
+        response = self.client.post(
+            '/api/v3/cidr/',
+            data=json.dumps(self.load_json_file(post_file)),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(201, response.status_code)
+
+        id_cidr = response.data[0]['id']
+
+        # get request
+        response = self.client.get(
+            '/api/v3/cidr/%s/' % id_cidr,
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        # Removes property id
+        data = response.data
+        del data['cidr'][0]['id']
+
+        self.compare_json(rcv_file, data)
