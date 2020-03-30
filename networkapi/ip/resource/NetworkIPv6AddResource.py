@@ -264,7 +264,7 @@ class NetworkIPv6AddResource(RestResource):
                             ipv6_model2.save(user)
                             Ipv6Equipament().create(user,
                                                     ipv6_model2.id,
-                                                    list_equip_routers_ambient[0].equipamento.id)
+                                                    equip.equipamento.id)
 
             # Return XML
             return self.response(dumps_networkapi(vlan_map))
