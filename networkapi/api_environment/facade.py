@@ -269,7 +269,8 @@ def delete_environment(env_ids):
 def post_cidr_auto(obj):
     try:
         cidr = EnvCIDR()
-        subnet, _ = cidr.checkAvailableCIDR(obj.get('environment'))
+        subnet, _ = cidr.checkAvailableCIDR(obj.get('environment'),
+                                            obj.get('ip_version'))
         obj["network"] = subnet
         response, msg = post_cidr(obj)
 

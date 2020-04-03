@@ -1994,13 +1994,13 @@ class EnvCIDR(BaseModel):
 
         return self.searchNextAvailableCIDR(subnets)
 
-    def checkAvailableCIDR(self, environment_id):
+    def checkAvailableCIDR(self, environment_id, ip_version=None):
         """"""
 
         environment = Ambiente.get_by_pk(environment_id)
 
-        env_father_cidrs = self.get(env_id=environment.father_environment.id)
-        log.debug(env_father_cidrs)
+        env_father_cidrs = EnvCIDR.objects.filter(id_env=environment.father_environment.id,
+                                                  ip_version=ip_version)
 
         msg = ""
         next_available_cidr = ""
