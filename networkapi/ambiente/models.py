@@ -1424,11 +1424,14 @@ class Ambiente(BaseModel):
 
             configs = env_map.get('configs', [])
 
-            # save network on IPConfig tables
-            configs = self.create_configs(configs, self.id)
+            for conf in configs:
+                conf["environment"] = self.id
+
+            # # save network on IPConfig tables
+            # configs = self.create_configs(configs, self.id)
 
             # save network on CIDR tables
-            self.create_cidr(configs, self.id)
+            self.create_cidr(configs)
 
             delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
@@ -1499,9 +1502,7 @@ class Ambiente(BaseModel):
 
             # If have changes in configs
             if configs is not None:
-
-                self.check_config(env_id=self.id, configs=configs)
-
+                # self.check_config(env_id=self.id, configs=configs)
                 self.check_cidr(env_id=self.id, configs=configs)
 
         except Exception, e:
@@ -1539,6 +1540,7 @@ class Ambiente(BaseModel):
         self.delete_configs(cfg_del, self.id)
 
     def check_cidr(self, env_id=None, configs=[]):
+        log.info("check_cidr")
 
         # CIDR
         cidrs = EnvCIDR().get(env_id=env_id)
@@ -1546,23 +1548,21 @@ class Ambiente(BaseModel):
         cidrs_current = [net.id for net in cidrs]
 
         # Configs with ids
-        cidrs_receive = [cfg.get('id') for cfg in configs
-                         if cfg.get('id')]
+        cidrs_receive = [cfg.get('id') for cfg in configs]
+
+        # Configs to delete: configs not received
+        cfg_del = [id_conf for id_conf in cidrs_current
+                   if cidrs_current and id_conf not in cidrs_receive]
+        self.delete_cidr(cfg_del)
+
+        # Configs to create: configs without id
+        cfg_ins = [cfg for cfg in configs if not cfg.get('id') in cidrs_current]
+        self.create_cidr(cfg_ins)
 
         # Configs to update: configs with id
         cfg_upt = [cfg for cfg in configs if cfg.get('id') and
                    cfg.get('id') in cidrs_current]
-
-        # Configs to create: configs without id
-        cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
-
-        # Configs to delete: configs not received
-        cfg_del = [id_conf for id_conf in cidrs_current
-                   if id_conf not in cidrs_receive]
-
-        self.update_cidr(cfg_upt, self.id)
-        self.create_cidr(cfg_ins, self.id)
-        self.delete_cidr(cfg_del)
+        self.update_cidr(cfg_upt)
 
     def delete_v3(self):
         ip_models = get_app('ip', 'models')
@@ -1649,20 +1649,13 @@ class Ambiente(BaseModel):
             ip_config.save()
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
-    def update_cidr(self, configs, env_id):
+    def update_cidr(self, configs):
         log.debug("Update config on cidr tables")
 
         from networkapi.api_environment.facade import update_cidr
 
         for config in configs:
-            data = dict()
-            data['id'] = config.get('id')
-            data['ip_version'] = config.get('type')
-            data['subnet_mask'] = config.get('new_prefix')
-            data['network_type'] = config.get('network_type')
-            data['environment'] = env_id
-            data['network'] = config.get('subnet')
-            update_cidr(data)
+            update_cidr(config)
 
     def create_configs(self, configs, env_id):
         log.debug("Save config on ipconfig tables")
@@ -1681,21 +1674,13 @@ class Ambiente(BaseModel):
 
         return configs
 
-    def create_cidr(self, configs=None, env_id=None):
+    def create_cidr(self, configs=None):
         log.debug("Save config on cidr tables")
 
         from networkapi.api_environment.facade import post_cidr
 
         for config in configs:
-            data = dict()
-            if config.get('config_id'):
-                data['id'] = config.get('config_id')
-            data['ip_version'] = config.get('type')
-            data['subnet_mask'] = config.get('new_prefix')
-            data['network_type'] = config.get('network_type')
-            data['environment'] = env_id
-            data['network'] = config.get('subnet')
-            post_cidr(data)
+            post_cidr(config)
 
     def delete_configs(self, configs_ids, env_id):
         """

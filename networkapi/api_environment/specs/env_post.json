@@ -25,13 +25,13 @@
                 "network_type": {
                   "type": "integer"
                 },
-                "new_prefix": {
+                "subnet_mask": {
                   "type": "string"
                 },
-                "subnet": {
+                "network": {
                   "type": "string"
                 },
-                "type": {
+                "ip_version": {
                   "type": "string"
                 }
               },
