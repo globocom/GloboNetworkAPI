@@ -1010,12 +1010,13 @@ class NetworkIPv4(BaseModel):
 
     def validate_v3(self):
         """Validate networkIPv4."""
-
+        models = get_model("ambiente", "EnvCIDR")
         if not self.network_type:
             raise NetworkIPv4ErrorV3('Network type can not null')
 
         # validate if network if allow in environment
-        configs = self.vlan.ambiente.configs.all()
+        env_id = self.vlan.ambiente.id
+        configs = models().get(env_id=env_id)
         self.vlan.allow_networks_environment(configs, [self], [])
 
     def activate_v3(self):
@@ -1114,6 +1115,8 @@ class NetworkIPv4(BaseModel):
         """
 
         vlan_model = get_model('vlan', 'Vlan')
+        cidr_model = get_model('ambiente', 'EnvCIDR')
+
         self.vlan = vlan_model().get_by_pk(id_vlan)
 
         nets_envs, netv6 = network.get_networks_related(
@@ -1125,19 +1128,19 @@ class NetworkIPv4(BaseModel):
         network_found = None
 
         try:
-
-            configs = self.vlan.ambiente.configs.filter(
-                ip_config__type=IP_VERSION.IPv4[0])
+            env_id = self.vlan.ambiente.id
+            configs = cidr_model().get(env_id=env_id).filter(
+                ip_version=IP_VERSION.IPv4[0])
 
             # For each configuration founded in environment
             for config in configs:
 
-                net4 = IPNetwork(config.ip_config.subnet)
+                net4 = IPNetwork(config.network)
 
                 if prefix is not None:
                     new_prefix = int(prefix)
                 else:
-                    new_prefix = int(config.ip_config.new_prefix)
+                    new_prefix = int(config.subnet_mask)
 
                 self.log.info(
                     u'Prefix that will be used: %s' % new_prefix)
@@ -1165,7 +1168,7 @@ class NetworkIPv4(BaseModel):
                         self.mask_oct4 = mask[3]
 
                         if not self.network_type:
-                            self.network_type = config.ip_config.network_type
+                            self.network_type = config.id_network_type
 
                         return
 
