@@ -202,7 +202,7 @@
       "environment": 1,
       "id": 3,
       "ip_version": "v4",
-      "network": "192.168.10.0/24",
+      "network": "192.0.10.0/24",
       "network_type": 1,
       "network_type_name": "Network of Equipments",
       "subnet_mask": "27"

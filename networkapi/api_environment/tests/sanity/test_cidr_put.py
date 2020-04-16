@@ -78,7 +78,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         self.compare_status(400, response_error.status_code)
 
         self.compare_values(
-            "192.168.10.0/24 overlaps 192.168.10.0/24",
+            "192.168.10.0/24 overlaps 192.168.0.0/8",
             response_error.data['detail'])
 
     def test_put_invalid_cidr(self):
