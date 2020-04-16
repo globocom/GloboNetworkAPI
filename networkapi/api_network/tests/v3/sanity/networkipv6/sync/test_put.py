@@ -42,6 +42,8 @@ class NetworkIPv6PutSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
         'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
         'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json',
+        'networkapi/api_network/fixtures/sanity/initial_cidr.json',
+
     ]
 
     json_path = 'api_network/tests/v3/sanity/networkipv6/json/%s'
@@ -230,6 +232,7 @@ class NetworkIPv6PutErrorTestCase(NetworkApiTestCase):
         'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
         'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
         'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json',
+        'networkapi/api_network/fixtures/sanity/initial_cidr.json'
     ]
 
     json_path = 'api_network/tests/v3/sanity/networkipv6/json/%s'
@@ -327,7 +330,9 @@ class NetworkIPv6ForcePutSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_network/fixtures/sanity/initial_equipments_group.json',
         'networkapi/api_network/fixtures/sanity/initial_ipv6_eqpt.json',
         'networkapi/api_network/fixtures/sanity/initial_roteiros.json',
-        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json'
+        'networkapi/api_network/fixtures/sanity/initial_equip_marca_model.json',
+        'networkapi/api_network/fixtures/sanity/initial_cidr.json'
+
     ]
 
     json_path = 'api_network/tests/v3/sanity/networkipv6/json/%s'
