@@ -7,9 +7,9 @@
       "configs": [
         {
           "network_type": 2,
-          "new_prefix": "24",
-          "subnet": "192.168.0.0/16",
-          "type": "v4"
+          "subnet_mask": "24",
+          "network": "192.168.0.0/16",
+          "ip_version": "v4"
         }
       ],
       "dcroom": 1,
@@ -34,9 +34,9 @@
       "configs": [
         {
           "network_type": 2,
-          "new_prefix": "24",
-          "subnet": "192.168.0.0/16",
-          "type": "v4"
+          "subnet_mask": "24",
+          "network": "192.168.0.0/16",
+          "ip_version": "v4"
         }
       ],
       "dcroom": 1,

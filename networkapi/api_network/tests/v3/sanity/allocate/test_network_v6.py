@@ -39,6 +39,7 @@ class NetworksIntegrationV6TestCase(NetworkApiTestCase):
         fixtures_base_path % 'initial_equipments.json',
         fixtures_base_path % 'initial_equipments_env.json',
         fixtures_base_path % 'initial_vlan.json',
+        fixtures_base_path % 'initial_cidrs.json',
     ]
 
     def setUp(self):

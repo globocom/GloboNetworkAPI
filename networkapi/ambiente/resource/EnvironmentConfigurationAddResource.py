@@ -109,7 +109,7 @@ class EnvironmentConfigurationAddResource(RestResource):
             data['subnet'] = network
 
             env = Ambiente()
-            env.create_cidr(configs=[data], env_id=id_environment)
+            env.create_cidr(configs=[data])
 
             return self.response(dumps_networkapi({'network': network_map}))
 

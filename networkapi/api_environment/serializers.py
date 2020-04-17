@@ -16,10 +16,10 @@ class EnvCIDRSerializer(DynamicFieldsModelSerializer):
     network = serializers.RelatedField(source='network')
     ip_version = serializers.RelatedField(source='ip_version')
     subnet_mask = serializers.RelatedField(source='subnet_mask')
-    network_type = serializers.RelatedField(source='id_network_type.id')
-    network_type_name = serializers.RelatedField(source='id_network_type.tipo_rede')
     environment = serializers.RelatedField(source='id_env.id')
     environment_name = serializers.RelatedField(source='id_env.name')
+    network_type = serializers.RelatedField(source='id_network_type.id')
+    network_type_name = serializers.RelatedField(source='id_network_type.tipo_rede')
 
     class Meta:
         EnvCIDR = get_model('ambiente', 'EnvCIDR')
@@ -30,6 +30,12 @@ class EnvCIDRSerializer(DynamicFieldsModelSerializer):
             'ip_version',
             'network_type',
             'subnet_mask',
+            'environment',
+            'network_type_name'
+        )
+        basic_fields = (
+            'id',
+            'network',
             'environment'
         )
         details_fields = (
@@ -37,10 +43,10 @@ class EnvCIDRSerializer(DynamicFieldsModelSerializer):
             'network',
             'ip_version',
             'network_type',
-            'network_type_name',
             'subnet_mask',
             'environment',
-            'environment_name'
+            'environment_name',
+            'network_type_name'
         )
 
 
@@ -102,7 +108,7 @@ class DivisaoDcV3Serializer(DynamicFieldsModelSerializer):
 
 class EnvironmentV3Serializer(DynamicFieldsModelSerializer):
 
-    configs = IpConfigV3Serializer(source='configs', many=True)
+    configs = EnvCIDRSerializer(source='configs', many=True)
     father_environment = serializers.SerializerMethodField('get_father_environment')
     grupo_l3 = serializers.SerializerMethodField('get_grupo_l3')
     ambiente_logico = serializers.SerializerMethodField('get_ambiente_logico')

@@ -160,9 +160,9 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         from networkapi.ambiente.models import EnvCIDR
 
-        response = EnvCIDR().checkAvailableCIDR(2)
+        response, _ = EnvCIDR().checkAvailableCIDR(2, "v4")
 
-        self.compare_values("10.0.6.0/24", response[0])
+        self.compare_values("10.0.6.0/24", response)
 
     def test_checkAvailableCIDRWithTwoBlocks(self):
         """Test of Success to get the next available CIDR
@@ -171,9 +171,9 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         from networkapi.ambiente.models import EnvCIDR
 
-        response = EnvCIDR().checkAvailableCIDR(7)
+        response, _ = EnvCIDR().checkAvailableCIDR(7, "v4")
 
-        self.compare_values("201.7.1.0/24", response[0])
+        self.compare_values("201.7.1.0/24", response)
 
     def test_AvailableCIDR(self):
         """Test of Success when the method has to find the
@@ -181,18 +181,18 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
 
         from networkapi.ambiente.models import EnvCIDR
 
-        response = EnvCIDR().checkAvailableCIDR(10)
+        response, _ = EnvCIDR().checkAvailableCIDR(10, "v4")
 
-        self.compare_values("10.143.0.4/31", response[0])
+        self.compare_values("10.143.0.4/31", response)
 
     def test_allocateFirstSubnetCIDR(self):
         """Test of Success allocate the first subnet."""
 
         from networkapi.ambiente.models import EnvCIDR
 
-        response = EnvCIDR().checkAvailableCIDR(12)
+        response, _ = EnvCIDR().checkAvailableCIDR(12, "v4")
 
-        self.compare_values("10.224.0.0/27", response[0])
+        self.compare_values("10.224.0.0/27", response)
 
     def test_post_cidr_auto(self):
         """Test of success to allocate a new subnet."""
