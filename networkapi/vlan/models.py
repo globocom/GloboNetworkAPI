@@ -833,9 +833,9 @@ class Vlan(BaseModel):
             raise VlanNameDuplicatedError(
                 None, 'Name VLAN can not be duplicated in the environment.')
 
-            # Validate Name VLAN
-            if not self.valid_vlan_name(self.nome):
-                raise VlanNameInvalid(None, 'Name VLAN can not have special characters or breakline.')
+        # Validate Name VLAN
+        if not self.valid_vlan_name(self.nome):
+            raise VlanNameInvalid(None, 'Name VLAN can not have special characters or breakline.')
 
         try:
             return self.save()
@@ -1518,10 +1518,10 @@ class Vlan(BaseModel):
 
         for net in netv4:
             configsv4 = configs.filter(
-                ip_config__type='v4'
+                ip_version='v4'
             )
 
-            nts = [IPNetwork(config.ip_config.subnet) for config in configsv4]
+            nts = [IPNetwork(config.network) for config in configsv4]
 
             net_ip = [IPNetwork(net.networkv4)]
 
@@ -1535,10 +1535,10 @@ class Vlan(BaseModel):
 
         for net in netv6:
             configsv6 = configs.filter(
-                ip_config__type='v6'
+                ip_version='v6'
             )
 
-            nts = [IPNetwork(config.ip_config.subnet) for config in configsv6]
+            nts = [IPNetwork(config.network) for config in configsv6]
 
             net_ip = [IPNetwork(net.networkv6)]
 

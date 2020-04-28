@@ -39,6 +39,15 @@
                 },
                 "type": {
                   "type": "string"
+                },
+                "subnet_mask": {
+                  "type": "string"
+                },
+                "network": {
+                  "type": "string"
+                },
+                "ip_version": {
+                  "type": "string"
                 }
               },
               "type": "object"

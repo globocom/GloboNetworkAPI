@@ -107,6 +107,11 @@ class NetworkTypeResource(RestResource):
                     u'Parameter %s is invalid. Value: %s.', 'name', name)
                 raise InvalidValueError(None, 'name', name)
 
+            if not is_valid_vlan_name(name):
+                self.log.error(
+                    u'Parameter %s is invalid because is using special characters and/or breaklines.', name)
+                raise InvalidValueError(None, 'name', name)
+
             net_type = TipoRede(tipo_rede=name)
 
             if not is_valid_vlan_name(name):

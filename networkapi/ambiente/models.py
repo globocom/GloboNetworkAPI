@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import ipaddr
 import logging
 
 from _mysql_exceptions import OperationalError
@@ -25,6 +27,7 @@ from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 
 from networkapi.api_pools import exceptions
+from networkapi.api_rest.exceptions import ObjectDoesNotExistException
 from networkapi.api_vrf.models import Vrf
 from networkapi.distributedlock import LOCK_ENVIRONMENT
 from networkapi.distributedlock import LOCK_ENVIRONMENT_ALLOCATES
@@ -48,6 +51,9 @@ from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 from networkapi.util.appcache import delete_cached_searches_list
 from networkapi.util.appcache import ENVIRONMENT_CACHE_ENTRY
+from networkapi.vlan.models import TipoRede
+
+from netaddr import IPNetwork as NETADDR
 
 log = logging.getLogger(__name__)
 
@@ -66,6 +72,15 @@ class AmbienteError(Exception):
 
 
 class EnvironmentErrorV3(Exception):
+
+    def __init__(self, cause):
+        self.cause = cause
+
+    def __str__(self):
+        return str(self.cause)
+
+
+class CIDRErrorV3(Exception):
 
     def __init__(self, cause):
         self.cause = cause
@@ -1010,9 +1025,7 @@ class Ambiente(BaseModel):
     def _get_configs(self):
         """Returns configs of environment."""
 
-        configs = self.configenvironment_set.prefetch_related(
-            'ip_config',
-        ).all()
+        configs = self.envcidr_set.all()
 
         return configs
 
@@ -1410,7 +1423,16 @@ class Ambiente(BaseModel):
             self.save()
 
             configs = env_map.get('configs', [])
-            self.create_configs(configs, self.id)
+
+            for conf in configs:
+                conf["environment"] = self.id
+
+            # # save network on IPConfig tables
+            # configs = self.create_configs(configs, self.id)
+
+            # save network on CIDR tables
+            self.create_cidr(configs)
+
             delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
         except Exception, e:
@@ -1480,36 +1502,67 @@ class Ambiente(BaseModel):
 
             # If have changes in configs
             if configs is not None:
-                ips_by_env = IPConfig.get_by_environment(None, self.id)
-                ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+                # self.check_config(env_id=self.id, configs=configs)
+                self.check_cidr(env_id=self.id, configs=configs)
 
-                # Configs with ids
-                ids_conf_receive = [cfg.get('id') for cfg in configs
-                                    if cfg.get('id')]
-
-                # Configs to update: configs with id
-                cfg_upt = [cfg for cfg in configs if cfg.get('id') and
-                           cfg.get('id') in ids_conf_current]
-
-                # Configs to create: configs without id
-                cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
-
-                # Configs to delete: configs not received
-                cfg_del = [id_conf for id_conf in ids_conf_current
-                           if id_conf not in ids_conf_receive]
-
-                # Updates configs
-                self.update_configs(cfg_upt, self.id)
-                # Creates configs
-                self.create_configs(cfg_ins, self.id)
-                # Deletes configs
-                self.delete_configs(cfg_del, self.id)
         except Exception, e:
             raise EnvironmentErrorV3(e)
 
         finally:
             delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
             destroy_lock(locks_list)
+
+    def check_config(self, env_id=None, configs=[]):
+
+        ips_by_env = IPConfig.get_by_environment(None, env_id)
+        ids_conf_current = [ip_by_env.id for ip_by_env in ips_by_env]
+
+        # Configs with ids
+        ids_conf_receive = [cfg.get('id') for cfg in configs
+                            if cfg.get('id')]
+
+        # Configs to update: configs with id
+        cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+                   cfg.get('id') in ids_conf_current]
+
+        # Configs to create: configs without id
+        cfg_ins = [cfg for cfg in configs if not cfg.get('id')]
+
+        # Configs to delete: configs not received
+        cfg_del = [id_conf for id_conf in ids_conf_current
+                   if id_conf not in ids_conf_receive]
+
+        # Updates configs
+        self.update_configs(cfg_upt, self.id)
+        # Creates configs
+        self.create_configs(cfg_ins, self.id)
+        # Deletes configs
+        self.delete_configs(cfg_del, self.id)
+
+    def check_cidr(self, env_id=None, configs=[]):
+        log.info("check_cidr")
+
+        # CIDR
+        cidrs = EnvCIDR().get(env_id=env_id)
+
+        cidrs_current = [net.id for net in cidrs]
+
+        # Configs with ids
+        cidrs_receive = [cfg.get('id') for cfg in configs]
+
+        # Configs to delete: configs not received
+        cfg_del = [id_conf for id_conf in cidrs_current
+                   if cidrs_current and id_conf not in cidrs_receive]
+        self.delete_cidr(cfg_del)
+
+        # Configs to create: configs without id
+        cfg_ins = [cfg for cfg in configs if not cfg.get('id') in cidrs_current]
+        self.create_cidr(cfg_ins)
+
+        # Configs to update: configs with id
+        cfg_upt = [cfg for cfg in configs if cfg.get('id') and
+                   cfg.get('id') in cidrs_current]
+        self.update_cidr(cfg_upt)
 
     def delete_v3(self):
         ip_models = get_app('ip', 'models')
@@ -1544,6 +1597,10 @@ class Ambiente(BaseModel):
                 ConfigEnvironmentNotFoundError), e:
             self.log.error(u'Falha ao remover algum Ambiente Config.')
             raise AmbienteError(e, u'Falha ao remover algum Ambiente Config.')
+
+        # Remove CIDR associated with environment
+        from networkapi.api_environment.facade import delete_cidr
+        delete_cidr(environment=self.id)
 
         # Remove the environment
         try:
@@ -1592,7 +1649,17 @@ class Ambiente(BaseModel):
             ip_config.save()
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
+    def update_cidr(self, configs):
+        log.debug("Update config on cidr tables")
+
+        from networkapi.api_environment.facade import update_cidr
+
+        for config in configs:
+            update_cidr(config)
+
     def create_configs(self, configs, env_id):
+        log.debug("Save config on ipconfig tables")
+
         """
         Create configs of environment
 
@@ -1600,21 +1667,45 @@ class Ambiente(BaseModel):
         :param env: Id of environment
         """
         for config in configs:
-            IPConfig.create(env_id, config)
+            config_id = IPConfig.create(env_id, config)
+            config['config_id'] = config_id.id
 
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
+
+        return configs
+
+    def create_cidr(self, configs=None):
+        log.debug("Save config on cidr tables")
+
+        from networkapi.api_environment.facade import post_cidr
+
+        for config in configs:
+            post_cidr(config)
 
     def delete_configs(self, configs_ids, env_id):
         """
         Delete configs of environment
 
         :param configs_ids: Id of Configs of environment
-        :param env: Id of environment
+        :param env_id: Id of environment
         """
 
         for config_id in configs_ids:
             IPConfig.remove(None, None, env_id, config_id)
         delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
+
+    def delete_cidr(self, configs_ids=[]):
+        """
+        Delete configs of environment
+
+        :param configs_ids: Id of Configs of environment
+        :param env_id: Id of environment
+        """
+
+        from networkapi.api_environment.facade import delete_cidr
+
+        for cidr_id in configs_ids:
+            delete_cidr(cidr=cidr_id)
 
 
 class IP_VERSION:
@@ -1766,6 +1857,260 @@ class IPConfig(BaseModel):
         except Exception, e:
             cls.log.error(u'Error removing IpConfig.')
             raise IPConfigError(e, u'Error removing IpConfig.')
+
+
+class EnvCIDR(BaseModel):
+
+    from networkapi.vlan.models import TipoRede
+
+    id = models.AutoField(
+        primary_key=True
+    )
+    network = models.CharField(
+        max_length=44,
+        db_column='network'
+    )
+    network_first_ip = models.CharField(
+        max_length=40,
+        db_column='network_first_ip'
+    )
+    network_last_ip = models.CharField(
+        max_length=40,
+        db_column='network_last_ip'
+    )
+    network_mask = models.CharField(
+        max_length=3,
+        blank=False
+    )
+    ip_version = models.CharField(
+        max_length=2,
+        blank=False,
+        choices=IP_VERSION.List
+    )
+    id_network_type = models.ForeignKey(
+        TipoRede,
+        db_column='id_network_type',
+        null=True
+    )
+    subnet_mask = models.CharField(
+        max_length=3,
+        blank=False
+    )
+    id_env = models.ForeignKey(
+        Ambiente,
+        db_column='id_env'
+    )
+
+    log = logging.getLogger('Environment_CIDR')
+
+    class Meta(BaseModel.Meta):
+        db_table = u'environment_cidr'
+        managed = True
+        unique_together = ('id_env', 'network')
+
+    def check_cidr(self, environment, network):
+        """
+        check if network is a subnet of the father environment
+        :param environment: environment id
+        :param network: environment cidr
+        :return: boolean
+        """
+
+        if environment.father_environment:
+            id_env_father = environment.father_environment.id
+        else:
+            return True
+
+        cidr_env_father = self.get(env_id=id_env_father)
+
+        for cidr in cidr_env_father:
+            if ipaddr.IPNetwork(network).overlaps(ipaddr.IPNetwork(cidr.network)):
+                return True
+
+        return False
+
+    def check_duplicated_cidr(self, environment, network):
+        """
+        check if the network overlaps another cidr from another environment.
+        :return:
+        """
+
+        if environment.father_environment:
+            id_env_father = environment.father_environment.id
+            environments = EnvCIDR.objects.filter(network=network).exclude(id_env=id_env_father)
+        else:
+            environments = EnvCIDR.objects.filter(network=network)
+
+        return environments
+
+    def searchNextAvailableCIDR(self, subnets):
+        """
+        Method that search next availacle cidr.
+        :param subnets: all subnets of environment.
+        :return: available subnet
+        """
+        log.debug("searchNextAvailableCIDR")
+
+        for idx, _ in enumerate(subnets):
+            if int(subnets[idx].network_last_ip) + 1 is not int(subnets[idx+1].network_first_ip):
+                subnet = subnets[idx].network
+                new_subnet = NETADDR(subnet).next()
+                if not ipaddr.IPNetwork(new_subnet).overlaps(ipaddr.IPNetwork(subnets[idx+1].network)):
+                    return str(new_subnet)
+        return ""
+
+    def nextAvailableCIDR(self, subnets, network):
+        """
+        Try to aloccate
+        :param subnets:
+        :param network:
+        :return:
+        """
+
+        if not subnets:
+            subnet = list(NETADDR(network.network).subnet(int(network.subnet_mask)))[0]
+            return str(subnet)
+
+        subnet = NETADDR(subnets.latest('id').network).next()
+        if ipaddr.IPNetwork(subnet).overlaps(ipaddr.IPNetwork(network.network)):
+            return str(subnet)
+
+        return self.searchNextAvailableCIDR(subnets)
+
+    def checkAvailableCIDR(self, environment_id, ip_version=None):
+        """"""
+
+        environment = Ambiente.get_by_pk(environment_id)
+
+        env_father_cidrs = EnvCIDR.objects.filter(id_env=environment.father_environment.id,
+                                                  ip_version=ip_version)
+
+        msg = ""
+        next_available_cidr = ""
+
+        for cidr in env_father_cidrs:
+            env_subnets = EnvCIDR.objects.filter(
+                network_first_ip__gte=cidr.network_first_ip,
+                network_last_ip__lte=cidr.network_last_ip,
+                id_env__father_environment__id=cidr.id_env.id).exclude(
+                id=cidr.id).order_by(
+                "network_first_ip")
+            log.debug("CIDR: %s" % cidr.network)
+            log.debug("Number of Subnets: %s" % len(env_subnets))
+
+            if len(env_subnets) == 2**(int(cidr.subnet_mask) - int(cidr.network_mask)):
+                msg += "There's no available network in this environment. CIDR: %s" % cidr.network
+                log.info(msg)
+            else:
+                next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr)
+                msg = "Next available subnet: %s." % next_available_cidr
+                log.info(msg)
+
+        return next_available_cidr, msg
+
+    def post(self, env_cidr):
+
+        try:
+            if env_cidr.get('id'):
+                self.id = env_cidr.get('id')
+            self.network = env_cidr.get('network')
+            self.network_first_ip = env_cidr.get('network_first_ip')
+            self.network_last_ip = env_cidr.get('network_last_ip')
+            self.network_mask = env_cidr.get('network_mask')
+            self.ip_version = env_cidr.get('ip_version')
+            self.subnet_mask = env_cidr.get('subnet_mask')
+
+            objects = EnvCIDR.objects.filter(id_env=int(env_cidr.get('environment')))
+            for obj in objects:
+                if ipaddr.IPNetwork(obj.network).overlaps(ipaddr.IPNetwork(self.network)):
+                    raise CIDRErrorV3("%s overlaps %s" % (self.network, obj.network))
+
+            environment = Ambiente().get_by_pk(int(env_cidr.get('environment')))
+            self.id_env = environment
+
+            self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
+
+            self.save()
+        except Exception as e:
+            raise CIDRErrorV3(e)
+
+        return self.id
+
+    def put(self, env_cidr):
+        log.info("Update CIDR")
+
+        import ipaddr
+
+        try:
+            cidr_id = env_cidr.get('id')
+
+            self.network = env_cidr.get('network')
+            self.network_first_ip = env_cidr.get('network_first_ip')
+            self.network_last_ip = env_cidr.get('network_last_ip')
+            self.network_mask = env_cidr.get('network_mask')
+            self.ip_version = env_cidr.get('ip_version')
+            self.subnet_mask = env_cidr.get('subnet_mask')
+
+            objects = EnvCIDR.objects.filter(id_env=int(env_cidr.get('environment'))).exclude(id=cidr_id)
+
+            for obj in objects:
+                if ipaddr.IPNetwork(obj.network).overlaps(ipaddr.IPNetwork(self.network)):
+                    raise CIDRErrorV3("%s overlaps %s" % (self.network, obj.network))
+
+            self.id_env = Ambiente().get_by_pk(int(env_cidr.get('environment')))
+            self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
+
+            self.save()
+
+        except Exception as e:
+            raise CIDRErrorV3(e)
+
+        return self.id
+
+    def get(self, cidr_id=None, env_id=None):
+
+        if cidr_id:
+            try:
+                objects = EnvCIDR.objects.filter(id=cidr_id)
+                if not objects:
+                    raise ObjectDoesNotExist
+            except ObjectDoesNotExist:
+                raise CIDRErrorV3('There is no CIDR with pk = %s.' % cidr_id)
+            except OperationalError as e:
+                self.log.error('Lock wait timeout exceeded.')
+                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
+            except Exception as e:
+                self.log.error('Error finding CIDR.')
+                raise Exception('Error finding CIDR. E: %s' % e)
+        elif env_id:
+            try:
+                objects = EnvCIDR.objects.filter(id_env=env_id)
+                if not objects:
+                    log.debug('There is no CIDR linked with the environment id=%s.' % env_id)
+            except OperationalError as e:
+                self.log.error('Lock wait timeout exceeded.')
+                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
+            except Exception as e:
+                self.log.error('Error finding CIDR.')
+                raise Exception('Error finding CIDR. E: %s' % e)
+        else:
+            try:
+                objects = EnvCIDR.objects.all()
+            except ObjectDoesNotExist:
+                raise ObjectDoesNotExistException('There is no CIDR.')
+            except OperationalError as e:
+                self.log.error('Lock wait timeout exceeded.')
+                raise OperationalError(e, 'Lock wait timeout exceeded; try restarting transaction')
+            except Exception as e:
+                self.log.error('Error finding CIDR.')
+                raise Exception('Error finding CIDR. E: %s' % e)
+
+        return objects
+
+    def delete(self):
+        log.info("EnvCIDR delete method")
+
+        super(EnvCIDR, self).delete()
 
 
 class ConfigEnvironment(BaseModel):

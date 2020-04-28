@@ -81,7 +81,7 @@ def get_networkipv6_by_search(search=dict()):
         return net_map
 
 
-def create_networkipv6(networkv6, user, force=False):
+def create_networkipv6(networkv6, user=None, force=False):
     """Creates a NetworkIPv6."""
 
     try:
