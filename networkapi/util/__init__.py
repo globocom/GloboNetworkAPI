@@ -231,7 +231,7 @@ def is_valid_vlan_name(vlan_name):
         return False
 
     regex_for_breakline = re.compile('\r|\n\r|\n')
-    regex_for_special_characters = re.compile('[@_!#$%^&*()<>?/\\\|}{~:]')
+    regex_for_special_characters = re.compile('[@!#$%^&*()<>?/\\\|}{~:]')
 
     return False if regex_for_breakline.search(vlan_name) or regex_for_special_characters.search(vlan_name) else True
 
