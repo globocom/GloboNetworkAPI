@@ -229,8 +229,7 @@ class Usuario(BaseModel):
 
                 if use_authapi:
 
-                    pswd_authapi = Usuario.encode_password(password)
-                    user = Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd_authapi, ativo=1)
+                    user = Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
 
                     authapi_info = dict(
                         mail=user.email,
