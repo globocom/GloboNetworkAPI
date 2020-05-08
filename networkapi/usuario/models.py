@@ -177,12 +177,53 @@ class Usuario(BaseModel):
                 return Usuario.objects.prefetch_related('grupos').get(user_ldap__iexact=ldap_usr, ativo=1)
             else:
                 return Usuario.objects.prefetch_related('grupos').get(user_ldap__iexact=ldap_usr)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as ERROR:
             raise UsuarioNotFoundError(
-                e, u'There is no User with ldap_user = %s.' % ldap_usr)
-        except Exception, e:
+                ERROR, u'There is no User with ldap_user = %s.' % ldap_usr)
+        except Exception as ERROR:
             cls.log.error(u'Failure to search the User.')
-            raise UsuarioError(e, u'Failure to search the User.')
+            raise UsuarioError(ERROR, u'Failure to search the User.')
+
+    @classmethod
+    def get_by_authapi(cls, username, password):
+        """Get User in AuthAPI by username and password.
+
+        @return: User.
+
+        @raise UsuarioNotFoundError: User is not registered.
+        @raise UsuarioError: Failed to search for the User.
+        """
+        try:
+            user = Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
+
+            authapi_info = dict(
+                mail=user.email,
+                password=password,
+                src=socket.gethostbyname(socket.gethostname())
+            )
+
+            ssl_cert = open(get_value('path_ssl_cert'))
+
+            if ssl_cert:
+                response = requests.post(get_value('authapi_url'), json=authapi_info, verify=ssl_cert.name)
+                ssl_cert.close()
+
+                if response.status_code == 200:
+                    cls.log.debug('This authentication uses AuthAPI for user \'%s\'' % username)
+                    return user
+
+                else:
+                    cls.log.debug('Error getting user from AuthAPI. Trying authentication with LDAP')
+
+            else:
+                cls.log.debug('Error getting SSL certificate')
+
+        except ObjectDoesNotExist as ERROR:
+            raise UsuarioNotFoundError(
+                ERROR, u'There is no User with username = %s.' % username)
+        except Exception as ERROR:
+            cls.log.error(ERROR, u'Failure to search the User in AuthAPI.')
+            raise UsuarioError(ERROR, u'Failure to search the User in AuthAPI.')
 
     def get_enabled_user(self, username, password):
         """
@@ -192,71 +233,12 @@ class Usuario(BaseModel):
         """
         bypass = 0
         try:
-            try:
-                use_cache_user = convert_string_or_int_to_boolean(
-                    get_value('use_cache_user'))
-
-                if use_cache_user:
-                    salt = get_cache('salt_key')
-
-                    if salt:
-                        self.log.debug('The encrypt key was taken successfully!')
-
-                        hash_text = str(username + password)
-                        encrypted_hash_text = encrypt_key(hash_text, salt)
-                        cached_hash_text = get_cache(b64encode(encrypted_hash_text))
-
-                        if cached_hash_text:
-                            self.log.debug('This authentication is using cached user')
-                            pswd = Usuario.encode_password(password)
-                            return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
-
-                        else:
-                            set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
-                            self.log.debug('The user was cached successfully!')
-
-                    else:
-                        salt_key = generate_key()
-                        set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
-                        self.log.debug('The encrypt token was generated and cached successfully!')
-
-            except Exception as ERROR:
-                self.log.error(ERROR)
+            if convert_string_or_int_to_boolean(get_value('use_cache_user')):
+                self.get_cache_user()
 
             # AuthAPI authentication
-            try:
-                use_authapi = convert_string_or_int_to_boolean(get_value('use_authapi'))
-
-                if use_authapi:
-
-                    user = Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
-
-                    authapi_info = dict(
-                        mail=user.email,
-                        password=password,
-                        src=socket.gethostbyname(socket.gethostname())
-                    )
-
-                    path_ssl_cert = get_value('path_ssl_cert')
-                    ssl_cert = open(path_ssl_cert)
-
-                    if ssl_cert:
-
-                        response = requests.post(get_value('authapi_url'), json=authapi_info, verify=ssl_cert.name)
-
-                        ssl_cert.close()
-
-                        if response.status_code == 200:
-                            return user
-                            self.log.debug('This authentication uses AuthAPI for user \'%s\'' % username)
-                        else:
-                            self.log.debug('Error getting user from AuthAPI. Trying authentication with LDAP')
-
-                    else:
-                        self.log.debug('Error getting SSL certificate from \'%s\'' % path_ssl_cert)
-
-            except Exception as ERROR:
-                self.log.error(ERROR)
+            if convert_string_or_int_to_boolean(get_value('use_authapi')):
+                return self.get_by_authapi(username, password)
 
             try:
                 use_ldap = convert_string_or_int_to_boolean(
@@ -351,3 +333,90 @@ class UsuarioGrupo(BaseModel):
         except Exception, e:
             cls.log.error(u'Failure to search the UserGroup.')
             raise UsuarioError(e, u'Failure to search the UserGroup.')
+
+
+class CacheUser(object):
+
+    log = logging.getLogger('CacheUser')
+
+    @classmethod
+    def get_salt_key(cls):
+        try:
+            if get_cache('salt_key'):
+                cls.log.debug('The encrypt key was taken successfully!')
+
+            else:
+                salt_key = generate_key()
+                set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
+                cls.log.debug('The encrypt token was generated and cached successfully!')
+
+            return get_cache('salt_key')
+
+        except Exception as ERROR:
+            cls.log.error(ERROR)
+
+    def mount_hash(self, username, password):
+        try:
+            salt = self.get_salt_key()
+            hash_text = str(username + password)
+
+            return encrypt_key(hash_text, salt)
+
+        except Exception as ERROR:
+            self.log.error(ERROR)
+
+    def cache_user(self, username, password):
+        try:
+            salt = get_cache('salt_key')
+
+            if salt:
+                self.log.debug('The encrypt key was taken successfully!')
+
+                hash_text = str(username + password)
+                encrypted_hash_text = encrypt_key(hash_text, salt)
+                cached_hash_text = get_cache(b64encode(encrypted_hash_text))
+
+                if cached_hash_text:
+                    self.log.debug('This authentication is using cached user')
+                    pswd = Usuario.encode_password(password)
+                    return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
+
+                else:
+                    set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
+                    self.log.debug('The user was cached successfully!')
+
+            else:
+                salt_key = generate_key()
+                set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
+                self.log.debug('The encrypt token was generated and cached successfully!')
+
+        except Exception as ERROR:
+            self.log.error(ERROR)
+
+    def get_cache_user(self, username, password):
+        try:
+            salt = get_cache('salt_key')
+
+            if salt:
+                self.log.debug('The encrypt key was taken successfully!')
+
+                hash_text = str(username + password)
+                encrypted_hash_text = encrypt_key(hash_text, salt)
+                cached_hash_text = get_cache(b64encode(encrypted_hash_text))
+
+                if cached_hash_text:
+                    self.log.debug('This authentication is using cached user')
+                    pswd = Usuario.encode_password(password)
+                    return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
+
+                else:
+                    set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
+                    self.log.debug('The user was cached successfully!')
+
+            else:
+                salt_key = generate_key()
+                set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
+                self.log.debug('The encrypt token was generated and cached successfully!')
+
+        except Exception as ERROR:
+            self.log.error(ERROR)
