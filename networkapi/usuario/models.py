@@ -361,62 +361,25 @@ class CacheUser(object):
             hash_text = str(username + password)
 
             return encrypt_key(hash_text, salt)
-
-        except Exception as ERROR:
-            self.log.error(ERROR)
-
-    def cache_user(self, username, password):
-        try:
-            salt = get_cache('salt_key')
-
-            if salt:
-                self.log.debug('The encrypt key was taken successfully!')
-
-                hash_text = str(username + password)
-                encrypted_hash_text = encrypt_key(hash_text, salt)
-                cached_hash_text = get_cache(b64encode(encrypted_hash_text))
-
-                if cached_hash_text:
-                    self.log.debug('This authentication is using cached user')
-                    pswd = Usuario.encode_password(password)
-                    return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
-
-                else:
-                    set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
-                    self.log.debug('The user was cached successfully!')
-
-            else:
-                salt_key = generate_key()
-                set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
-                self.log.debug('The encrypt token was generated and cached successfully!')
+            self.log.debug('The hash was generated successfully!')
 
         except Exception as ERROR:
             self.log.error(ERROR)
 
     def get_cache_user(self, username, password):
         try:
-            salt = get_cache('salt_key')
+            if get_cache(b64encode(self.mount_hash(username, password))):
+                self.log.debug('This authentication is using cached user')
+                pswd = Usuario.encode_password(password)
+                return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
 
-            if salt:
-                self.log.debug('The encrypt key was taken successfully!')
+        except Exception as ERROR:
+            self.log.error(ERROR)
 
-                hash_text = str(username + password)
-                encrypted_hash_text = encrypt_key(hash_text, salt)
-                cached_hash_text = get_cache(b64encode(encrypted_hash_text))
-
-                if cached_hash_text:
-                    self.log.debug('This authentication is using cached user')
-                    pswd = Usuario.encode_password(password)
-                    return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
-
-                else:
-                    set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
-                    self.log.debug('The user was cached successfully!')
-
-            else:
-                salt_key = generate_key()
-                set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
-                self.log.debug('The encrypt token was generated and cached successfully!')
+    def cache_user(self, username, password):
+        try:
+            set_cache(b64encode(self.mount_hash(username, password)), True, int(get_value('time_cache_user')))
+            self.log.debug('The user was cached successfully!')
 
         except Exception as ERROR:
             self.log.error(ERROR)
