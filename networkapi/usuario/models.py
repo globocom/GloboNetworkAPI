@@ -232,13 +232,18 @@ class Usuario(BaseModel):
         Retorna apenas usuário ativo.
         """
         bypass = 0
+        cache_user = CacheUser()
         try:
             if convert_string_or_int_to_boolean(get_value('use_cache_user')):
-                self.get_cache_user()
+                return cache_user.get(username, password)
 
             # AuthAPI authentication
             if convert_string_or_int_to_boolean(get_value('use_authapi')):
-                return self.get_by_authapi(username, password)
+                user = self.get_by_authapi(username, password)
+
+                if user:
+                    cache_user.set(username, password)
+                    return user
 
             try:
                 use_ldap = convert_string_or_int_to_boolean(
@@ -260,6 +265,8 @@ class Usuario(BaseModel):
 
             # local auth
             if bypass:
+                cache_user.set(username, password)
+
                 password = Usuario.encode_password(password)
                 return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
 
@@ -268,7 +275,11 @@ class Usuario(BaseModel):
                 connect = ldap.open(ldap_server)
                 user_dn = 'cn=' + username + ',' + ldap_param
                 connect.simple_bind_s(user_dn, password)
+
+                cache_user.set(username, password)
+
                 return return_user
+
             except ldap.INVALID_CREDENTIALS, e:
                 self.log.error('LDAP authentication error %s' % e)
             except exceptions.VariableDoesNotExistException, e:
@@ -366,7 +377,7 @@ class CacheUser(object):
         except Exception as ERROR:
             self.log.error(ERROR)
 
-    def get_cache_user(self, username, password):
+    def get(self, username, password):
         try:
             if get_cache(b64encode(self.mount_hash(username, password))):
                 self.log.debug('This authentication is using cached user')
@@ -376,7 +387,7 @@ class CacheUser(object):
         except Exception as ERROR:
             self.log.error(ERROR)
 
-    def cache_user(self, username, password):
+    def set(self, username, password):
         try:
             set_cache(b64encode(self.mount_hash(username, password)), True, int(get_value('time_cache_user')))
             self.log.debug('The user was cached successfully!')
