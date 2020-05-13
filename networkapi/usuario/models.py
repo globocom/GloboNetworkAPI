@@ -162,8 +162,10 @@ class Usuario(BaseModel):
     @classmethod
     def get_by_authapi(cls, username, password):
         """"Get User in AuthAPI by username and password.
-        @return: User.
-        @raise UsuarioNotFoundError: User is not registered.
+        @return: AuthAPI response.
+        @raise UsuarioNotFoundError: User is not registered
+        @raise VariableDoesNotExist: Feature Flag not found.
+        @raise Exception: For any different problem found.
         """
         try:
             user = Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
