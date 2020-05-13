@@ -90,6 +90,52 @@ class UserGroupNotFoundError(UsuarioError):
         UsuarioError.__init__(self, cause, message)
 
 
+class CacheUser(object):
+
+    log = logging.getLogger('CacheUser')
+
+    def generate_salt_key(self):
+        try:
+            salt = get_cache('salt_key')
+
+            if not salt:
+                salt_key = generate_key()
+                set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
+                self.log.debug('The encrypt token was generated and cached successfully!')
+                return salt_key
+
+            return salt
+
+        except exceptions.VariableDoesNotExistException:
+            self.log.error(u'Error getting time_cache_salt_key variable.')
+        except Exception as ERROR:
+            self.log.error(ERROR)
+
+    def mount_hash(self, username, password):
+        try:
+            salt = self.generate_salt_key()
+
+            if salt:
+                self.log.debug('The encrypt key was taken successfully!')
+                hash_text = str(username + password)
+                encrypted_hash_text = encrypt_key(hash_text, salt)
+                self.log.debug('The encrypted_hash_text was generate successfully!')
+
+                return encrypted_hash_text
+
+            else:
+                self.log.error('Problems to take salt_key')
+
+        except Exception as ERROR:
+            self.log.error(ERROR)
+
+    def get(self):
+        pass
+
+    def set(self):
+        pass
+
+
 class Usuario(BaseModel):
 
     user = models.CharField(unique=True, max_length=45)
@@ -103,6 +149,8 @@ class Usuario(BaseModel):
         unique=True, max_length=45, null=True, blank=True)
 
     log = logging.getLogger('Usuario')
+
+    cache_user = CacheUser()
 
     class Meta(BaseModel.Meta):
         db_table = u'usuarios'
@@ -229,13 +277,10 @@ class Usuario(BaseModel):
                     get_value('use_cache_user'))
 
                 if use_cache_user:
-                    salt = get_cache('salt_key')
 
-                    if salt:
-                        self.log.debug('The encrypt key was taken successfully!')
+                    encrypted_hash_text = self.cache_user.mount_hash(username, password)
 
-                        hash_text = str(username + password)
-                        encrypted_hash_text = encrypt_key(hash_text, salt)
+                    if encrypted_hash_text:
                         cached_hash_text = get_cache(b64encode(encrypted_hash_text))
 
                         if cached_hash_text:
@@ -248,9 +293,7 @@ class Usuario(BaseModel):
                             self.log.debug('The user was cached successfully!')
 
                     else:
-                        salt_key = generate_key()
-                        set_cache('salt_key', salt_key, int(get_value('time_cache_salt_key')))
-                        self.log.debug('The encrypt token was generated and cached successfully!')
+                        self.log.error('Problems to take encrypted_hash_text')
 
             except Exception as ERROR:
                 self.log.error(ERROR)
