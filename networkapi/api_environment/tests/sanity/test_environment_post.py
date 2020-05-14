@@ -342,5 +342,5 @@ class EnvironmentPostErrorTestCase(NetworkApiTestCase):
         self.compare_status(400, response.status_code)
 
         self.compare_values(
-            'Causa: , Mensagem: There is no environment with id = 10.',
+            'Causa: , Mensagem: There is no environment with id = 100.',
             response.data['detail'])

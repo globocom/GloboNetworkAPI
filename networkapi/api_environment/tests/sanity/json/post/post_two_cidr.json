@@ -1,0 +1,16 @@
+{
+  "cidr": [{
+    "network": "10.225.2.0/24",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "environment": 1
+  },
+  {
+    "network": "10.255.1.0/24",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "environment": 1
+  }]
+}

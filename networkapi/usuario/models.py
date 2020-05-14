@@ -229,8 +229,7 @@ class Usuario(BaseModel):
 
                 if use_authapi:
 
-                    pswd_authapi = Usuario.encode_password(password)
-                    user = Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd_authapi, ativo=1)
+                    user = Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
 
                     authapi_info = dict(
                         mail=user.email,
@@ -238,18 +237,14 @@ class Usuario(BaseModel):
                         src=socket.gethostbyname(socket.gethostname())
                     )
 
-                    endpoint_ssl_cert = get_value('endpoint_ssl_cert')
-                    ssl_cert = requests.get(endpoint_ssl_cert)
+                    path_ssl_cert = get_value('path_ssl_cert')
+                    ssl_cert = open(path_ssl_cert)
 
-                    if ssl_cert.status_code == 200:
+                    if ssl_cert:
 
-                        cert = tempfile.NamedTemporaryFile(delete=False)
-                        cert.write(ssl_cert.text)
-                        cert.close()
+                        response = requests.post(get_value('authapi_url'), json=authapi_info, verify=ssl_cert.name)
 
-                        response = requests.post(get_value('authapi_url'), json=authapi_info, verify=cert.name)
-
-                        os.unlink(cert.name)
+                        ssl_cert.close()
 
                         if response.status_code == 200:
                             return user
@@ -258,7 +253,7 @@ class Usuario(BaseModel):
                             self.log.debug('Error getting user from AuthAPI. Trying authentication with LDAP')
 
                     else:
-                        self.log.debug('Error getting SSL certificate from \'%s\'' % endpoint_ssl_cert)
+                        self.log.debug('Error getting SSL certificate from \'%s\'' % path_ssl_cert)
 
             except Exception as ERROR:
                 self.log.error(ERROR)

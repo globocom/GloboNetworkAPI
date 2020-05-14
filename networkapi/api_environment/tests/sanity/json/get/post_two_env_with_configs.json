@@ -6,10 +6,12 @@
       "aws_vpc": null,
       "configs": [
         {
+          "environment": 18,
+          "ip_version": "v4",
+          "network": "192.168.0.0/16",
           "network_type": 2,
-          "new_prefix": "24",
-          "subnet": "192.168.0.0/16",
-          "type": "v4"
+          "network_type_name": "Network VIP",
+          "subnet_mask": "24"
         }
       ],
       "dcroom": 1,
@@ -33,10 +35,12 @@
       "aws_vpc": null,
       "configs": [
         {
+          "environment": 19,
+          "ip_version": "v4",
+          "network": "192.168.0.0/16",
           "network_type": 2,
-          "new_prefix": "24",
-          "subnet": "192.168.0.0/16",
-          "type": "v4"
+          "network_type_name": "Network VIP",
+          "subnet_mask": "24"
         }
       ],
       "dcroom": 1,

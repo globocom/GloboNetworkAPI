@@ -1,0 +1,13 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE `environment_cidr`
+ADD UNIQUE KEY `cidr_uni` (`id_env`,`network`);
+
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `environment_cidr`
+DROP UNIQUE KEY `cidr_uni`;
+
+"""
+

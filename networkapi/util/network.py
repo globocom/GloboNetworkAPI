@@ -228,14 +228,15 @@ def validate_network(envs, net_ip, version):
     """
 
     models = get_app('ambiente', 'models')
+    cidr = models.EnvCIDR()
 
     # Filter network_ipv4 where environment has config permiting to insert
     # current network.
     nets_envs = list()
     for env in envs:
         # get configs v4 of environment
-        nts = [IPNetwork(config.ip_config.subnet)
-               for config in env.configs.filter(ip_config__type=version)]
+        nts = [IPNetwork(config.network)
+               for config in cidr.get(env_id=env.id).filter(ip_version=version)]
 
         # get networks that can be intersect with current network
         if verify_intersect(nts, net_ip)[0]:

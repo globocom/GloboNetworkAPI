@@ -1,0 +1,220 @@
+{
+  "cidr": [
+    {
+      "environment": 3,
+      "id": 25,
+      "ip_version": "v6",
+      "network": "fdbe:bebe:bebe:1800:0:0:0:0/58",
+      "network_type": 2,
+      "network_type_name": "Network VIP",
+      "subnet_mask": "64"
+    },
+    {
+      "environment": 3,
+      "id": 24,
+      "ip_version": "v4",
+      "network": "192.168.0.0/16",
+      "network_type": 2,
+      "network_type_name": "Network VIP",
+      "subnet_mask": "24"
+    },
+    {
+      "environment": 2,
+      "id": 23,
+      "ip_version": "v6",
+      "network": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "64"
+    },
+    {
+      "environment": 2,
+      "id": 22,
+      "ip_version": "v4",
+      "network": "192.168.0.0/8",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "24"
+    },
+    {
+      "environment": 1,
+      "id": 21,
+      "ip_version": "v6",
+      "network": "fdbe:bebe:bebe:1340:0:0:0:0/58",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "64"
+    },
+    {
+      "environment": 1,
+      "id": 20,
+      "ip_version": "v4",
+      "network": "192.168.0.0/8",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "24"
+    },
+    {
+      "environment": 11,
+      "id": 19,
+      "ip_version": "v4",
+      "network": "10.224.0.0/24",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "27"
+    },
+    {
+      "environment": 9,
+      "id": 18,
+      "ip_version": "v4",
+      "network": "10.143.0.6/31",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "32"
+    },
+    {
+      "environment": 9,
+      "id": 17,
+      "ip_version": "v4",
+      "network": "10.143.0.2/31",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "32"
+    },
+    {
+      "environment": 9,
+      "id": 16,
+      "ip_version": "v4",
+      "network": "10.143.0.0/31",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "32"
+    },
+    {
+      "environment": 8,
+      "id": 15,
+      "ip_version": "v4",
+      "network": "10.143.0.0/29",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "31"
+    },
+    {
+      "environment": 6,
+      "id": 14,
+      "ip_version": "v4",
+      "network": "201.7.0.0/24",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "27"
+    },
+    {
+      "environment": 6,
+      "id": 13,
+      "ip_version": "v4",
+      "network": "192.168.0.128/25",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "31"
+    },
+    {
+      "environment": 6,
+      "id": 12,
+      "ip_version": "v4",
+      "network": "192.168.0.0/25",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "31"
+    },
+    {
+      "environment": 5,
+      "id": 11,
+      "ip_version": "v4",
+      "network": "201.7.0.0/16",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "24"
+    },
+    {
+      "environment": 5,
+      "id": 10,
+      "ip_version": "v4",
+      "network": "192.168.0.0/24",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "25"
+    },
+    {
+      "environment": 2,
+      "id": 9,
+      "ip_version": "v4",
+      "network": "10.0.5.0/24",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "27"
+    },
+    {
+      "environment": 2,
+      "id": 8,
+      "ip_version": "v4",
+      "network": "10.0.0.0/24",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "27"
+    },
+    {
+      "environment": 4,
+      "id": 7,
+      "ip_version": "v4",
+      "network": "10.0.0.0/16",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "24"
+    },
+    {
+      "environment": 3,
+      "id": 6,
+      "ip_version": "v4",
+      "network": "201.7.0.0/16",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "24"
+    },
+    {
+      "environment": 3,
+      "id": 5,
+      "ip_version": "v6",
+      "network": "f0b0:b0b0:b0b0:e003::/118",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "120"
+    },
+    {
+      "environment": 2,
+      "id": 4,
+      "ip_version": "v6",
+      "network": "f0b0:1010:1010:1010::/118",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "120"
+    },
+    {
+      "environment": 1,
+      "id": 3,
+      "ip_version": "v4",
+      "network": "192.0.10.0/24",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "27"
+    },
+    {
+      "environment": 1,
+      "id": 2,
+      "ip_version": "v4",
+      "network": "10.225.0.0/24",
+      "network_type": 1,
+      "network_type_name": "Network of Equipments",
+      "subnet_mask": "27"
+    }
+  ]
+}

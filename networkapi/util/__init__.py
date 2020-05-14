@@ -223,7 +223,9 @@ def is_valid_string_minsize(param, minsize=None, required=True):
 
 def is_valid_vlan_name(vlan_name):
     """Checks if the parameter is a valid string for Vlan's name, without special characters and breaklines
+
     @param vlan_name: Value to be validated.
+
     @return True if the parameter hasn't a special character, or False otherwise.
     """
 
@@ -342,7 +344,7 @@ def is_valid_pool_identifier_text(param, required=True):
 
 def is_valid_option(param):
     """Checks if the parameter is a valid field text and 0-9 and should follow the format of [A-Za-z]
-     and special characters hyphen, underline and point.
+    and special characters hyphen, underline and point.
 
     @param param: Value to be validated.
 

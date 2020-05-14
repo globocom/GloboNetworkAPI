@@ -20,7 +20,6 @@ from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
 from networkapi.util.appcache import get_cached_search
-from networkapi.util.appcache import delete_cached_searches_list
 from networkapi.util.appcache import set_cache_search_with_list
 from networkapi.util.appcache import ENVIRONMENT_CACHE_ENTRY
 
@@ -394,5 +393,106 @@ class EnvFlowView(CustomAPIView):
             'id': flow_id or environment_id,
             'task_id': task.id
         }
+
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class EnvironmentCIDRDBView(CustomAPIView):
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of environment by ids ou dict."""
+
+        if kwargs.get('cidr_id'):
+            cidr_ids = kwargs.get('cidr_id').split(';')
+            cidr = list()
+            for ids in cidr_ids:
+                cidr += facade.get_cidr(cidr=ids)
+            only_main_property = True
+            obj_model = None
+        elif kwargs.get('env_id'):
+            env_id = kwargs.get('env_id')
+            cidr = facade.get_cidr(environment=env_id)
+            only_main_property = True
+            obj_model = None
+        else:
+            obj_model = facade.get_cidr_by_search(self.search)
+            cidr = obj_model.get('query_set')
+            only_main_property = False
+
+        serializer = serializers.EnvCIDRSerializer(
+            cidr,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer,
+            main_property='cidr',
+            request=request,
+            obj_model=obj_model,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new environment."""
+
+        objects = request.DATA
+        response = list()
+
+        if objects.get('cidr')[0].get('network'):
+            json_validate(SPECS.get('cidr_post')).validate(objects)
+            for cidr in objects['cidr']:
+                cidr_obj, msg = facade.post_cidr(cidr)
+                response.append(dict(id=cidr_obj, message=msg))
+        else:
+            json_validate(SPECS.get('cidr_post_auto')).validate(objects)
+            for cidr in objects['cidr']:
+                cidr_obj, msg = facade.post_cidr_auto(cidr)
+                response.append(dict(id=cidr_obj, message=msg))
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    def delete(self, request, *args, **kwargs):
+        """ Deletes a single cidr by id or all cidr associate to an environment. """
+
+        if kwargs.get('cidr_id'):
+            ids = kwargs.get('cidr_id').split(';')
+            for _id in ids:
+                facade.delete_cidr(cidr=_id)
+        elif kwargs.get('env_id'):
+            _id = kwargs.get('env_id')
+            facade.delete_cidr(environment=_id)
+
+        return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('cidr_put')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Update CIDR."""
+
+        cidrs = request.DATA
+
+        json_validate(SPECS.get('cidr_put')).validate(cidrs)
+
+        response = list()
+
+        for cidr in cidrs['cidr']:
+            cidr_obj = facade.update_cidr(cidr)
+            response.append(dict(id=cidr_obj))
 
         return Response(response, status=status.HTTP_200_OK)

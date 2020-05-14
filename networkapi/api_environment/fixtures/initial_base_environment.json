@@ -22,6 +22,62 @@
   },
   {
     "fields": {
+      "nome": "SANITY-CIDR-1"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-2"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-3"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-4"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-5"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 7
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-6"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 8
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-7"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 9
+  },
+  {
+    "fields": {
+      "nome": "SANITY-CIDR-8"
+    },
+    "model": "ambiente.ambientelogico",
+    "pk": 10
+  },
+  {
+    "fields": {
       "nome": "RACK-1"
     },
     "model": "ambiente.grupol3",

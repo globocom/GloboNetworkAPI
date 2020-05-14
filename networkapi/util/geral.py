@@ -153,9 +153,9 @@ def generate_return_json(obj_serializer, main_property, **kwargs):
 
         data.update({
             'total': obj_model.get('total'),
-            'url_next_search': url_next_search,
+            'url_next_search': str(url_next_search),
             'next_search': obj_model.get('next_search'),
-            'url_prev_search': url_prev_search,
+            'url_prev_search': str(url_prev_search),
             'prev_search': obj_model.get('prev_search')
         })
 
