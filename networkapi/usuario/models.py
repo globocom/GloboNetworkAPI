@@ -94,7 +94,12 @@ class CacheUser(object):
 
     log = logging.getLogger('CacheUser')
 
-    def generate_salt_key(self):
+    def _generate_salt_key(self):
+        """"Generate salt_key for encrypt process in cache user.
+        @return: salt_key.
+        @raise VariableDoesNotExistException: time_cache_salt_key is not registered.
+        @raise Exception: Any different errors catch.
+        """
         try:
             salt = get_cache('salt_key')
 
@@ -111,9 +116,13 @@ class CacheUser(object):
         except Exception as ERROR:
             self.log.error(ERROR)
 
-    def mount_hash(self, username, password):
+    def _mount_hash(self, username, password):
+        """"Generate hash of username + password, then encrypt it for caching.
+        @return: hash encrypted.
+        @raise Exception: Any different errors catch.
+        """
         try:
-            salt = self.generate_salt_key()
+            salt = self._generate_salt_key()
 
             if salt:
                 self.log.debug('The encrypt key was taken successfully!')
@@ -127,13 +136,47 @@ class CacheUser(object):
                 self.log.error('Problems to take salt_key')
 
         except Exception as ERROR:
+            self.log.error(u'Error on mount hash for cache user: %s' % ERROR)
+
+    def get(self, username, password):
+        """"Get the cached user.
+        @return: Hash of user cached.
+        @raise Exception: Any different errors catch.
+        """
+        try:
+            encrypted_hash_text = self._mount_hash(username, password)
+
+            if encrypted_hash_text:
+                self.log.debug('The encrypted_hash_text was taken successfully!')
+                cached_hash_text = get_cache(b64encode(encrypted_hash_text))
+
+                return cached_hash_text
+
+            else:
+                self.log.error('Problems to take encrypted_hash_text')
+
+        except Exception as ERROR:
+            self.log.error(u'Error on get cached user: %s' % ERROR)
+
+    def set(self, username, password):
+        """"Set the cached user.
+        @raise VariableDoesNotExistException: time_cache_user is not registered.
+        @raise Exception: Any different errors catch.
+        """
+        try:
+            encrypted_hash_text = self._mount_hash(username, password)
+
+            if encrypted_hash_text:
+                set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
+                self.log.debug('The user was cached successfully!')
+
+            else:
+                self.log.error('Problems to take encrypted_hash_text')
+
+        except exceptions.VariableDoesNotExistException:
+            self.log.error(u'Error getting time_cache_user variable.')
+        except Exception as ERROR:
             self.log.error(ERROR)
-
-    def get(self):
-        pass
-
-    def set(self):
-        pass
 
 
 class Usuario(BaseModel):
@@ -272,31 +315,24 @@ class Usuario(BaseModel):
         """
         bypass = 0
         try:
+            # Cached User authentication
             try:
-                use_cache_user = convert_string_or_int_to_boolean(
-                    get_value('use_cache_user'))
+                if convert_string_or_int_to_boolean(get_value('use_cache_user')):
+                    cached_hash_text = self.cache_user.get(username, password)
 
-                if use_cache_user:
-
-                    encrypted_hash_text = self.cache_user.mount_hash(username, password)
-
-                    if encrypted_hash_text:
-                        cached_hash_text = get_cache(b64encode(encrypted_hash_text))
-
-                        if cached_hash_text:
-                            self.log.debug('This authentication is using cached user')
-                            pswd = Usuario.encode_password(password)
-                            return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
-
-                        else:
-                            set_cache(b64encode(encrypted_hash_text), True, int(get_value('time_cache_user')))
-                            self.log.debug('The user was cached successfully!')
+                    if cached_hash_text:
+                        self.log.debug('This authentication is using cached user')
+                        pswd = Usuario.encode_password(password)
+                        return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
 
                     else:
-                        self.log.error('Problems to take encrypted_hash_text')
+                        raise Exception('No cached user found with this credentials')
 
+            except exceptions.VariableDoesNotExistException:
+                self.log.error(
+                    u'Error getting cache user variable. Trying AuthAPI authentication')
             except Exception as ERROR:
-                self.log.error(ERROR)
+                self.log.error(u'Error to get cached user. %s. Trying AuthAPI authentication. ' % ERROR)
 
             # AuthAPI authentication
             try:
@@ -305,6 +341,13 @@ class Usuario(BaseModel):
 
                     if response.status_code == 200:
                         self.log.debug('This authentication uses AuthAPI for user \'%s\'' % username)
+
+                        try:
+                            if convert_string_or_int_to_boolean(get_value('use_cache_user')):
+                                self.cache_user.set(username, password)
+                        except exceptions.VariableDoesNotExistException:
+                            self.log.debug(u'User will not be cached because cached user is disabled')
+
                         return Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
 
                     elif response.status_code == 400:
@@ -339,6 +382,13 @@ class Usuario(BaseModel):
 
             # local auth
             if bypass:
+
+                try:
+                    if convert_string_or_int_to_boolean(get_value('use_cache_user')):
+                        self.cache_user.set(username, password)
+                except exceptions.VariableDoesNotExistException:
+                    self.log.debug(u'User will not be cached because cached user is disabled')
+
                 password = Usuario.encode_password(password)
                 return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
 
@@ -347,7 +397,15 @@ class Usuario(BaseModel):
                 connect = ldap.open(ldap_server)
                 user_dn = 'cn=' + username + ',' + ldap_param
                 connect.simple_bind_s(user_dn, password)
+
+                try:
+                    if convert_string_or_int_to_boolean(get_value('use_cache_user')):
+                        self.cache_user.set(username, password)
+                except exceptions.VariableDoesNotExistException:
+                    self.log.debug(u'User will not be cached because cached user is disabled')
+
                 return return_user
+
             except ldap.INVALID_CREDENTIALS, e:
                 self.log.error('LDAP authentication error %s' % e)
             except exceptions.VariableDoesNotExistException, e:
