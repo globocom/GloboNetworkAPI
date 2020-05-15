@@ -102,27 +102,32 @@ def get_equips(equipments):
     Join all properties needed
     """
 
-    itens = []
+    itens = list()
+    logging.debug("get")
+    logging.debug(equipments)
     for equip in equipments:
+        logging.debug("eq")
+        logging.debug(equip)
         equip_dict = prepares_equips(equip)
         itens.append(equip_dict)
 
     return itens
 
 
-@cache_function(EQUIPMENT_CACHE_TIME, True)
+# @cache_function(EQUIPMENT_CACHE_TIME, True)
 def prepares_equips(equip):
+    logging.debug("20")
 
-    equip_dict = dict()
     equip_dict = model_to_dict(equip)
     equip_dict['tipo_equipamento'] = equip.tipo_equipamento.tipo_equipamento
+    logging.debug("21")
 
     group_list = []
     for g in equip.grupos.all():
         group_dict = dict()
         group_dict['nome'] = g.nome
         group_list.append(group_dict)
-
+    logging.debug("22")
     ips_list = []
     env_list = []
     for ipe in equip.ipequipamento_set.all():
@@ -139,7 +144,7 @@ def prepares_equips(equip):
         env_list.append(ipp.networkipv4.vlan.ambiente.id)
 
         ips_list.append(ip_dict)
-
+    logging.debug("23")
     for ipv6e in equip.ipv6equipament_set.all():
 
         ipp = Ipv6.objects.select_related('ambiente').get(id=ipv6e.ip.id)
@@ -155,7 +160,7 @@ def prepares_equips(equip):
         env_list.append(ipp.networkipv6.vlan.ambiente.id)
 
         ips_list.append(ipv6_dict)
-
+    logging.debug("24")
     for env in equip.equipamentoambiente_set.all():
         if env.ambiente.id not in env_list:
 
@@ -172,7 +177,7 @@ def prepares_equips(equip):
             ip_dict['ambiente'] = amb.divisao_dc.nome + '-' + \
                 amb.ambiente_logico.nome + '-' + amb.grupo_l3.nome
             ips_list.append(ip_dict)
-
+    logging.debug("25")
     equip_dict['grupos'] = group_list
     equip_dict['ips'] = ips_list
 
@@ -180,12 +185,12 @@ def prepares_equips(equip):
         equip_dict['is_more'] = True
     else:
         equip_dict['is_more'] = False
-
+    logging.debug("26")
     if len(group_list) > 3:
         equip_dict['is_more_group'] = True
     else:
         equip_dict['is_more_group'] = False
-
+    logging.debug("27")
     return equip_dict
 
 
@@ -228,21 +233,21 @@ class EquipmentFindResource(RestResource):
                 msg = u'There is no value to the equipment tag of XML request.'
                 self.log.error(msg)
                 return self.response_error(3, msg)
-
+            logging.debug("1")
             # Get XML data
             start_record = equipment_map.get('start_record')
             end_record = equipment_map.get('end_record')
             asorting_cols = equipment_map.get('asorting_cols')
             searchable_columns = equipment_map.get('searchable_columns')
             custom_search = equipment_map.get('custom_search')
-
+            logging.debug("2")
             name = equipment_map.get('nome')
             iexact = equipment_map.get('exato')
             environment = equipment_map.get('ambiente')
             equip_type = equipment_map.get('tipo_equipamento')
             group = equipment_map.get('grupo')
             ip = equipment_map.get('ip')
-
+            logging.debug("3")
             # Business Rules
 
             # Start with alls
@@ -264,7 +269,7 @@ class EquipmentFindResource(RestResource):
                             equip = equip.filter(nome=name)
                         else:
                             equip = equip.filter(nome__icontains=name)
-
+            logging.debug("4")
             # If environment is valid, add to filter
             if environment is not None:
                 if not is_valid_int_greater_zero_param(environment, False):
@@ -272,7 +277,7 @@ class EquipmentFindResource(RestResource):
                 else:
                     equip = equip.filter(
                         equipamentoambiente__ambiente__pk=environment)
-
+            logging.debug("5")
             if equip_type is not None:
                 # If equip_type is valid, add to filter
                 if not is_valid_int_greater_zero_param(equip_type, False):
@@ -280,14 +285,14 @@ class EquipmentFindResource(RestResource):
                         None, 'tipo_equipamento', equip_type)
                 else:
                     equip = equip.filter(tipo_equipamento__pk=equip_type)
-
+            logging.debug("6")
             if group is not None:
                 # If equip_type is valid, add to filter
                 if not is_valid_int_greater_zero_param(group, False):
                     raise InvalidValueError(None, 'grupo', group)
                 else:
                     equip = equip.filter(grupos__pk=group)
-
+            logging.debug("7")
             if ip is not None:
                 # If ip is valid
                 if not is_valid_string_minsize(ip, 1, False):
@@ -345,19 +350,19 @@ class EquipmentFindResource(RestResource):
 
                         equip = equip.filter(
                             oct1 & oct2 & oct3 & oct4 & oct5 & oct6 & oct7 & oct8)
-
+            logging.debug("9")
             equip = equip.distinct()
 
             # Datatable paginator
             equip, total = build_query_to_datatable(
                 equip, asorting_cols, custom_search, searchable_columns, start_record, end_record)
-
+            logging.debug("10")
             itens = get_equips(equip)
-
+            logging.debug("15")
             equipment_map = dict()
             equipment_map['equipamento'] = itens
             equipment_map['total'] = total
-
+            logging.debug("17")
             return self.response(dumps_networkapi(equipment_map))
 
         except InvalidValueError, e:
