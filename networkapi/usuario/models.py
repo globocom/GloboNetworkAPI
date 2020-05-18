@@ -322,7 +322,6 @@ class Usuario(BaseModel):
 
                     if cached_hash_text:
                         self.log.debug('This authentication is using cached user')
-                        pswd = Usuario.encode_password(password)
                         return Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
 
                     else:
