@@ -323,7 +323,7 @@ class Usuario(BaseModel):
                     if cached_hash_text:
                         self.log.debug('This authentication is using cached user')
                         pswd = Usuario.encode_password(password)
-                        return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=pswd, ativo=1)
+                        return Usuario.objects.prefetch_related('grupos').get(user=username, ativo=1)
 
                     else:
                         raise Exception('No cached user found with this credentials')
