@@ -2884,8 +2884,8 @@ class NetworkIPv6(BaseModel):
 
                             if network_type:
                                 internal_network_type = network_type
-                            elif config.network_type is not None:
-                                internal_network_type = config.network_type
+                            elif config.id_network_type is not None:
+                                internal_network_type = config.id_network_type
                             else:
                                 self.log.error(
                                     u'Parameter tipo_rede is invalid. Value: %s', network_type)
