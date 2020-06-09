@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import logging
 import os
 import re
@@ -58,18 +59,20 @@ class Generic(BasePlugin):
     CURRENTLY_BUSY_WAIT = 'Currently busy with copying a file'
     INVALID_REGEX = '([Ii]nvalid)|overlaps with'
     WARNING_REGEX = 'config ignored|Warning'
-    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
+    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|%|utility is occupied'
 
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
 
     def _deploy_pre_req(self, neighbor):
+        log.debug("_deploy_pre_req")
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
         route_map_out = neighbor.peer_group.route_map_out
 
         rms = route_map_in.route_map_entries | \
             route_map_out.route_map_entries
+
         for rm_entry in rms:
             list_config_bgp = rm_entry.list_config_bgp
             if not list_config_bgp.equipments.filter(id=self.equipment.id):
@@ -82,6 +85,7 @@ class Generic(BasePlugin):
             self.deploy_route_map(neighbor.peer_group.route_map_out)
 
     def _undeploy_pre_req(self, neighbor, ip_version):
+        log.debug("_undeploy_pre_req")
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
         route_map_out = neighbor.peer_group.route_map_out
@@ -166,6 +170,7 @@ class Generic(BasePlugin):
 
     def deploy_neighbor(self, neighbor):
         """Deploy neighbor"""
+        log.debug("deploy_neighbor")
 
         self._deploy_pre_req(neighbor)
 
@@ -175,10 +180,12 @@ class Generic(BasePlugin):
             self.TEMPLATE_NEIGHBOR_V6_ADD
 
         config = self._generate_template_dict_neighbor(neighbor)
+
         self._operate_equipment('neighbor', template_type, config)
 
     def undeploy_neighbor(self, neighbor):
         """Undeploy neighbor"""
+        log.debug("undeploy_neighbor")
 
         ip_version = IPAddress(str(neighbor.remote_ip)).version
 
@@ -192,6 +199,7 @@ class Generic(BasePlugin):
 
     def deploy_list_config_bgp(self, list_config_bgp):
         """Deploy prefix list"""
+        log.debug("deploy_list_config_bgp")
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
 
@@ -200,6 +208,7 @@ class Generic(BasePlugin):
 
     def undeploy_list_config_bgp(self, list_config_bgp):
         """Undeploy prefix list"""
+        log.debug("undeploy_list_config_bgp")
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
 
@@ -208,6 +217,7 @@ class Generic(BasePlugin):
 
     def deploy_route_map(self, route_map):
         """Deploy route map"""
+        log.debug("deploy_route_map")
 
         config = self._generate_template_dict_route_map(route_map)
 
@@ -216,6 +226,7 @@ class Generic(BasePlugin):
 
     def undeploy_route_map(self, route_map):
         """Undeploy route map"""
+        log.debug("undeploy_route_map")
 
         config = self._generate_template_dict_route_map(route_map)
 
@@ -223,6 +234,7 @@ class Generic(BasePlugin):
             'route_map', self.TEMPLATE_ROUTE_MAP_REMOVE, config)
 
     def _operate_equipment(self, type, template_type, config):
+        log.debug("_operate_equipment")
 
         self.connect()
         self._ensure_privilege_level()
@@ -239,12 +251,13 @@ class Generic(BasePlugin):
 
         Returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
         """
-
+        log.debug("_generate_config_file")
         request_id = getattr(local, 'request_id', NO_REQUEST_ID)
 
         filename_out = 'bgp_{}_{}_config_{}'.format(
             type, self.equipment.id, request_id)
 
+        log.debug("filename_out %s" % filename_out)
         filename = BGP_CONFIG_FILES_PATH + filename_out
         rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out
 
@@ -255,11 +268,11 @@ class Generic(BasePlugin):
 
     def _get_template_config(self, template_type, config):
         """Load template file and render values in VARs"""
+        log.debug("_get_template_config")
 
         try:
             template_file = self._load_template_file(template_type)
             config_to_be_saved = template_file.render(Context(config))
-
         except KeyError as err:
             log.error('Error: %s', err)
             raise deploy_exc.InvalidKeyException(err)
@@ -277,10 +290,12 @@ class Generic(BasePlugin):
 
         Returns: template string
         """
-
+        log.debug("_load_template_file")
         equipment_template = self._get_equipment_template(template_type)
 
         filename = BGP_CONFIG_TEMPLATE_PATH + '/' + equipment_template.roteiro.roteiro
+
+        log.debug("template_path: %s" % filename)
 
         template_file = self._read_config(filename)
 
@@ -288,17 +303,17 @@ class Generic(BasePlugin):
 
     def _get_equipment_template(self, template_type):
         """Return a script by equipment and template_type"""
-
+        log.debug("_get_equipment_template")
         try:
             return eqpt_models.EquipamentoRoteiro.search(
                 None, self.equipment.id, template_type).uniqueResult()
-        except:
-            log.error('Template type %s not found.' % template_type)
-            raise plugin_exc.BGPTemplateException()
+        except Exception as e:
+            log.error('Template type %s not found. Error: %s' % (template_type, e))
+            raise plugin_exc.BGPTemplateException(e)
 
     def _generate_template_dict_neighbor(self, neighbor):
         """Make a dictionary to use in template"""
-
+        log.debug("_generate_template_dict_neighbor")
         key_dict = {
             'AS_NUMBER': neighbor.local_asn.name,
             'VRF_NAME': neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf.internal_name,
@@ -315,23 +330,21 @@ class Generic(BasePlugin):
             'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
             'COMMUNITY': neighbor.community
         }
-
         return key_dict
 
     def _generate_template_dict_list_config_bgp(self, list_config_bgp):
         """Make a dictionary to use in template"""
-
+        log.debug("_generate_template_dict_list_config_bgp")
         key_dict = {
             'TYPE': self._get_type_list(list_config_bgp.type)['config_list'],
             'NAME': list_config_bgp.name,
             'CONFIG': list_config_bgp.config
         }
-
         return key_dict
 
     def _generate_template_dict_route_map(self, route_map):
         """Make a dictionary to use in template"""
-
+        log.debug("_generate_template_dict_route_map")
         entries = []
         for entry_obj in route_map.route_map_entries:
             action = 'permit' if entry_obj.action == 'P' else 'deny'
@@ -348,10 +361,10 @@ class Generic(BasePlugin):
             'NAME': route_map.name,
             'ENTRIES': entries
         }
-
         return key_dict
 
     def _get_type_list(self, type):
+        log.debug("_get_type_list")
         types = {
             'P': {
                 'config_list': 'prefix-list',
@@ -366,7 +379,7 @@ class Generic(BasePlugin):
 
     def _read_config(self, filename):
         """Return content from template_file"""
-
+        log.debug("_read_config")
         try:
             file_handle = open(filename, 'r')
             template_content = Template(file_handle.read())
@@ -382,7 +395,7 @@ class Generic(BasePlugin):
 
     def _save_config(self, filename, config):
         """Write config in template file"""
-
+        log.debug("_save_config")
         try:
             file_handle = open(filename, 'w')
             file_handle.write(config)
@@ -395,7 +408,7 @@ class Generic(BasePlugin):
     # DEPLOY #
     ##########
     def _deploy_config_in_equipment(self, rel_filename):
-
+        log.debug("_deploy_config_in_equipment")
         path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
         if not path.startswith(TFTPBOOT_FILES_PATH):
             raise deploy_exc.InvalidFilenameException(rel_filename)
@@ -403,7 +416,7 @@ class Generic(BasePlugin):
         return self._apply_config(rel_filename)
 
     def _apply_config(self, filename):
-
+        log.debug("_apply_config")
         if self.equipment.maintenance:
             raise AllEquipmentsAreInMaintenanceException()
 
@@ -415,18 +428,19 @@ class Generic(BasePlugin):
         Copy file from TFTP server to destination
         By default, plugin should apply file in running configuration (active)
         """
-
+        log.debug("_copy_script_file_to_config")
         command = 'copy tftp://{}/{} {}\n\n'.format(
             self.tftpserver, filename, destination)
 
         file_copied = 0
         retries = 0
-        while(not file_copied and retries < self.MAX_TRIES):
+        recv = ""
+
+        while not file_copied and retries < self.MAX_TRIES:
             if retries is not 0:
                 sleep(self.RETRY_WAIT_TIME)
-
             try:
-                log.info('try: %s - sending command: %s' % (retries, command))
+                log.debug('try: %s - sending command: %s' % (retries, command))
                 self.channel.send('%s\n' % command)
                 recv = self._wait_string(self.VALID_TFTP_PUT_MESSAGE)
                 file_copied = 1
@@ -446,7 +460,7 @@ class Generic(BasePlugin):
             privilege_level = self.admin_privileges
 
         self.channel.send('\n')
-        recv = self._wait_string('>|#')
+        self._wait_string('>|#')
         self.channel.send('show privilege\n')
         recv = self._wait_string('Current privilege level is')
         level = re.search(
@@ -455,9 +469,9 @@ class Generic(BasePlugin):
         level = (level.split(' '))[-1]
         if int(level) < privilege_level:
             self.channel.send('enable\n')
-            recv = self._wait_string('Password:')
+            self._wait_string('Password:')
             self.channel.send('%s\n' % self.equipment_access.enable_pass)
-            recv = self._wait_string('#')
+            self._wait_string('#')
 
     def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
                      wait_str_failed_regex=None):
