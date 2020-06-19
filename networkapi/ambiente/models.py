@@ -1929,6 +1929,18 @@ class EnvCIDR(BaseModel):
 
         return False
 
+    def check_environment_father(self, environment):
+        if environment.father_environment:
+            id_env_father = environment.father_environment.id
+            environment_father = self.get(env_id=id_env_father)
+            for cidr in environment_father:
+                return None
+            else:
+                return "The Environment Father doesn't have an IP"
+        else:
+            return "The ambient doesn't have an Environment Father"
+
+
     def check_duplicated_cidr(self, environment, network):
         """
         check if the network overlaps another cidr from another environment.

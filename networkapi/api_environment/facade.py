@@ -312,6 +312,15 @@ def post_cidr(obj):
                             environment_id=obj.get('environment')))
             log.info(message)
 
+        father_environment = cidr.check_environment_father(environment)
+
+        if father_environment:
+            message = father_environment
+            msg.append(dict(message=message))
+            log.info(message)
+            raise ValidationAPIException(message)
+
+
         duplicated_cidr = cidr.check_duplicated_cidr(environment, obj.get('network'))
 
         duplicated_ids = [ids.id_env.id for ids in duplicated_cidr]
