@@ -320,7 +320,6 @@ def post_cidr(obj):
             log.info(message)
             raise ValidationAPIException(message)
 
-
         duplicated_cidr = cidr.check_duplicated_cidr(environment, obj.get('network'))
 
         duplicated_ids = [ids.id_env.id for ids in duplicated_cidr]
