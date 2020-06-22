@@ -1936,10 +1936,22 @@ class EnvCIDR(BaseModel):
             for cidr in environment_father:
                 return None
             else:
-                return "The Environment Father doesn't have an IP"
+                return "The Environment Father doesn't have an allocated CIDR block"
         else:
-            return "The ambient doesn't have an Environment Father"
+            return "The Environment doesn't have an Environment Father"
 
+    def check_prefix(self, network_address, subnet_mask):
+        """
+        check if subnet mask is correct, based on network mask.
+
+        :param network_address: environment cidr
+        :param subnet_mask: environment cidr subnet mask
+        :return: boolean
+        """
+
+        network = ipaddr.IPNetwork(network_address)
+
+        return True if int(network.prefixlen) <= int(subnet_mask) else False
 
     def check_duplicated_cidr(self, environment, network):
         """
@@ -2031,6 +2043,9 @@ class EnvCIDR(BaseModel):
             self.network_mask = env_cidr.get('network_mask')
             self.ip_version = env_cidr.get('ip_version')
             self.subnet_mask = env_cidr.get('subnet_mask')
+
+            if not self.check_prefix(self.network, self.subnet_mask):
+                raise CIDRErrorV3("The prefix %s is not valid for the network %s" % (self.subnet_mask, self.network))
 
             objects = EnvCIDR.objects.filter(id_env=int(env_cidr.get('environment')))
             for obj in objects:
