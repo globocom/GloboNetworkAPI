@@ -228,24 +228,25 @@ def autoprovision_splf(rack, equips):
     for spn in spn_envs:
         if spn.divisao_dc.nome[:2] == "BE":
             VLANBE = spn.min_num_vlan_1
+            log.debug("spn_configs %s" % spn.configs)
             for net in spn.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBEipv4 = IPNetwork(str(net.ip_config.subnet))
-                    prefixBEV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBEipv4 = IPNetwork(str(net.network))
+                    prefixBEV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBEipv6 = IPNetwork(str(net.ip_config.subnet))
-                    prefixBEV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBEipv6 = IPNetwork(str(net.network))
+                    prefixBEV6 = int(net.subnet_mask)
         elif spn.divisao_dc.nome[:2] == "FE":
             VLANFE = spn.min_num_vlan_1
             for net in spn.configs:
-                if net.ip_config.type=="v4":
-                    CIDRFEipv4 = IPNetwork(str(net.ip_config.subnet))
-                    prefixFEV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRFEipv4 = IPNetwork(str(net.network))
+                    prefixFEV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRFEipv6 = IPNetwork(str(net.ip_config.subnet))
-                    prefixFEV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRFEipv6 = IPNetwork(str(net.network))
+                    prefixFEV6 = int(net.subnet_mask)
         elif spn.divisao_dc.nome == "BO":
             VLANBORDA = spn.min_num_vlan_1
         elif spn.divisao_dc.nome == "BOCACHOS-A":
@@ -256,56 +257,59 @@ def autoprovision_splf(rack, equips):
     for prod in prod_envs:
         if prod.divisao_dc.nome[:2] == "BE":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBEipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoV4 = int(net.ip_config.new_prefix)
+                #
+                if net.ip_version == "v4":
+                    CIDRBEipv4interno = IPNetwork(str(net.network))
+                    prefixInternoV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBEipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBEipv6interno = IPNetwork(str(net.network))
+                    prefixInternoV6 = int(net.subnet_mask)
         elif prod.divisao_dc.nome[:2] == "FE":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRFEipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoFEV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRFEipv4interno = IPNetwork(str(net.network))
+                    prefixInternoFEV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoFEV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRFEipv6interno = IPNetwork(str(net.network))
+                    prefixInternoFEV6 = int(net.subnet_mask)
+
         elif prod.divisao_dc.nome == "BO_DSR":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBO_DSRipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBO_DSRV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBO_DSRipv4interno = IPNetwork(str(net.network))
+                    prefixInternoBO_DSRV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBO_DSRipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBO_DSRV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBO_DSRipv6interno = IPNetwork(str(net.network))
+                    prefixInternoBO_DSRV6 = int(net.subnet_mask)
+
         elif prod.divisao_dc.nome == "BOCACHOS-A":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBOCAAipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCAAV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBOCAAipv4interno = IPNetwork(str(net.network))
+                    prefixInternoBOCAAV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBOCAAipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCAAV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBOCAAipv6interno = IPNetwork(str(net.network))
+                    prefixInternoBOCAAV6 = int(net.subnet_mask)
         elif prod.divisao_dc.nome == "BOCACHOS-B":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBOCABipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCABV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBOCABipv4interno = IPNetwork(str(net.network))
+                    prefixInternoBOCABV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBOCABipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCABV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBOCABipv6interno = IPNetwork(str(net.network))
+                    prefixInternoBOCABV6 = int(net.subnet_mask)
 
     log.debug(str(lf_env))
     for netlf in lf_env.configs:
-        if netlf.ip_config.type=="v4":
-            IBGPToRLxLipv4 = IPNetwork(str(netlf.ip_config.subnet))
-        elif netlf.ip_config.type=="v6":
-            IBGPToRLxLipv6 = IPNetwork(str(netlf.ip_config.subnet))
+        if netlf.ip_version == "v4":
+            IBGPToRLxLipv4 = IPNetwork(str(netlf.network))
+        elif netlf.ip_version == "v6":
+            IBGPToRLxLipv6 = IPNetwork(str(netlf.network))
 
     SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 0)
     SPINE2ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 1)
@@ -573,9 +577,9 @@ def autoprovision_coreoob(rack, equips):
     vlan_base = environment.min_num_vlan_1
 
     for net in environment.configs:
-        if net.ip_config.type == "v4":
-            redev4 = IPNetwork(str(net.ip_config.subnet))
-            prefixv4 = int(net.ip_config.new_prefix)
+        if net.ip_version == "v4":
+            redev4 = IPNetwork(str(net.network))
+            prefixv4 = int(net.subnet_mask)
             subredev4 = list(redev4.subnet(prefixv4))
 
     if not vlan_base:
