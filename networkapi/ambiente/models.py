@@ -1929,17 +1929,6 @@ class EnvCIDR(BaseModel):
 
         return False
 
-    def check_environment_father(self, environment):
-        if environment.father_environment:
-            id_env_father = environment.father_environment.id
-            environment_father = self.get(env_id=id_env_father)
-            for cidr in environment_father:
-                return None
-            else:
-                return "The Environment Father doesn't have an allocated CIDR block"
-        else:
-            return "The Environment doesn't have an Environment Father"
-
     def check_prefix(self, network_address, subnet_mask):
         """
         check if subnet mask is correct, based on network mask.
