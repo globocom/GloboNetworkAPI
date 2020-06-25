@@ -66,8 +66,12 @@ class Asn(BaseModel):
 
         self.name = as_map.get('name')
         self.description = as_map.get('description')
-
         self.save()
+
+        if as_map.get("equip_id"):
+            asn_equip = AsnEquipment()
+            asn_equip.create_v4(dict(equipment=as_map.get("equip_id"),
+                                     asn=self.id))
 
     def update_v4(self, as_map):
         """Update ASN."""
