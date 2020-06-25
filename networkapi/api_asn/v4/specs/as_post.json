@@ -18,7 +18,7 @@
             "type": "string"
           },
           "equip_id": {
-            "type": "integer"
+            "type": "array"
           }
         },
         "required": [
