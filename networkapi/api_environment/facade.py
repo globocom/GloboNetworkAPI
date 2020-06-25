@@ -269,6 +269,25 @@ def delete_environment(env_ids):
 def post_cidr_auto(obj):
     try:
         cidr = EnvCIDR()
+        msg = list()
+        network_check = None
+        check_environment_father = None
+        environment = Ambiente().get_by_pk(int(obj.get('environment')))
+        if environment.father_environment:
+            id_env_father = environment.father_environment.id
+            environment_father = cidr.get(env_id=id_env_father)
+            for cidr in environment_father:
+                network_check = 1
+            if not network_check:
+                check_environment_father = "The Environment Father doesn't have an allocated CIDR block"
+        else:
+            check_environment_father = "The Environment doesn't have an Environment Father"
+
+        if check_environment_father:
+            msg.append(dict(message=check_environment_father))
+            log.info(check_environment_father)
+            raise ValidationAPIException(check_environment_father)
+
         subnet, _ = cidr.checkAvailableCIDR(obj.get('environment'),
                                             obj.get('ip_version'))
         obj["network"] = subnet
