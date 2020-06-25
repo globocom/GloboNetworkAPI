@@ -69,8 +69,8 @@ class Asn(BaseModel):
         self.save()
 
         if len(as_map.get("equip_id")):
-            asn_equip = AsnEquipment()
             for equip in as_map.get("equip_id"):
+                asn_equip = AsnEquipment()
                 asn_equip.create_v4(dict(equipment=equip,
                                          asn=self.id))
 
