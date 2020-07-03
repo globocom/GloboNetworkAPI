@@ -56,6 +56,7 @@ from networkapi.vlan.models import TipoRede
 
 from netaddr import IPNetwork as NETADDR
 
+
 log = logging.getLogger(__name__)
 
 
