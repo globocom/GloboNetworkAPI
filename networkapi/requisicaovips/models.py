@@ -2543,33 +2543,35 @@ class ServerPool(BaseModel):
                     networkipv6__vlan__ambiente=pool['environment']
                 ))
             ).distinct()
+            self.log.debug("amb pool: %s" % amb)
+            if amb:
+                if member.get('ip', None) is not None:
+                    amb = amb.filter(
+                        vlan__networkipv4__ip=member['ip']['id']
+                    )
+                    self.log.debug("amb ip: %s" % amb)
+                    # Ip not found environment
+                    if not amb:
+                        raise pool_exceptions.IpNotFoundByEnvironment(
+                            'Environment of IP:%s(%s) and different of '
+                            'environment of server pool: %s' %
+                            (member['ip']['ip_formated'], member['ip']['id'],
+                                pool['identifier'])
+                        )
 
-            if member.get('ip', None) is not None:
-                amb = amb.filter(
-                    vlan__networkipv4__ip=member['ip']['id']
-                )
-                # Ip not found environment
-                if not amb:
-                    raise pool_exceptions.IpNotFoundByEnvironment(
-                        'Environment of IP:%s(%s) and different of '
-                        'environment of server pool: %s' %
-                        (member['ip']['ip_formated'], member['ip']['id'],
-                            pool['identifier'])
+                if member.get('ipv6', None) is not None:
+                    amb = amb.filter(
+                        vlan__networkipv6__ipv6=member['ipv6']['id']
                     )
 
-            if member.get('ipv6', None) is not None:
-                amb = amb.filter(
-                    vlan__networkipv6__ipv6=member['ipv6']['id']
-                )
-
-                # Ip not found environment
-                if not amb:
-                    raise pool_exceptions.IpNotFoundByEnvironment(
-                        'Environment of IP:%s(%s) and different of '
-                        'environment of server pool: %s' %
-                        (member['ipv6']['ip_formated'], member['ipv6']['id'],
-                            pool['identifier'])
-                    )
+                    # Ip not found environment
+                    if not amb:
+                        raise pool_exceptions.IpNotFoundByEnvironment(
+                            'Environment of IP:%s(%s) and different of '
+                            'environment of server pool: %s' %
+                            (member['ipv6']['ip_formated'], member['ipv6']['id'],
+                                pool['identifier'])
+                        )
 
 
 class ServerPoolMember(BaseModel):
