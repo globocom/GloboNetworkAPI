@@ -38,6 +38,7 @@ from networkapi.exception import EnvironmentVipAssociatedToSomeNetworkError
 from networkapi.exception import EnvironmentVipError
 from networkapi.exception import EnvironmentVipNotFoundError
 from networkapi.exception import InvalidValueError
+from networkapi.api_rest.exceptions import ValidationAPIException
 from networkapi.filter.models import CannotDissociateFilterError
 from networkapi.filter.models import Filter
 from networkapi.filter.models import FilterNotFoundError
@@ -1995,12 +1996,18 @@ class EnvCIDR(BaseModel):
         """"""
 
         environment = Ambiente.get_by_pk(environment_id)
+        try:
+            father_environment = environment.father_environment.id
+        except:
+            raise ValidationAPIException("The environment doesn't have an Environment Father")
 
         env_father_cidrs = EnvCIDR.objects.filter(id_env=environment.father_environment.id,
                                                   ip_version=ip_version)
-
         msg = ""
         next_available_cidr = ""
+
+        if not env_father_cidrs:
+            raise ValidationAPIException("The Environment Father doesnt have an allocated CIDR block")
 
         for cidr in env_father_cidrs:
             env_subnets = EnvCIDR.objects.filter(
