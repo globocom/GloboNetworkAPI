@@ -16,6 +16,9 @@
           },
           "description": {
             "type": "string"
+          },
+          "equip_id": {
+            "type": "array"
           }
         },
         "required": [
