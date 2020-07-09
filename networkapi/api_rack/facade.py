@@ -35,6 +35,7 @@ from networkapi.ip.models import IpEquipamento
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError
 from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
+from networkapi.api_rack import provision
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, NetworkAPIException
@@ -378,16 +379,22 @@ def gerar_arquivo_config(ids):
                     except:
                         pass
             except:
-                raise Exception("Erro ao buscar o roteiro de configuracao ou as interfaces associadas ao equipamento: "
-                                "%s." % equip.get("nome"))
+                raise Exception(
+                    "Erro ao buscar o roteiro de configuracao ou as interfaces associadas ao equipamento: %s."
+                    % equip.get("nome"))
             try:
                 equip["roteiro"] = _buscar_roteiro(equip.get("id"), "CONFIGURACAO")
                 equip["ip_mngt"] = _buscar_ip(equip.get("id"))
             except:
                 raise Exception("Erro ao buscar os roteiros do equipamento: %s" % equip.get("nome"))
 
-        autoprovision.autoprovision_splf(rack, equips)
-        autoprovision.autoprovision_coreoob(rack, equips)
+        # autoprovision.autoprovision_splf(rack, equips)
+        # autoprovision.autoprovision_coreoob(rack, equips)
+
+        auto = provision.Provision(rack.id)
+        auto.spine_provision(rack, equips)
+        auto.oob_provision(rack, equips)
+
 
     return True
 
