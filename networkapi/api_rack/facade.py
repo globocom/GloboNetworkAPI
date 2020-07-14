@@ -536,7 +536,7 @@ def _create_prod_envs(rack, user):
                                                    grupo_l3__nome=str(rack.dcroom.name),
                                                    ambiente_logico__nome="PRODUCAO"
                                                    ).exclude(divisao_dc__nome="BO_DMZ")
-
+    facade_env
     log.debug("PROD environments: "+str(prod_envs))
 
     try:
@@ -874,6 +874,32 @@ def rack_environments_vlans(rack_id, user):
     rack.save()
 
     return rack
+
+
+def allocate_env_vlan(user, rack_id):
+    log.info("Rack Environments")
+
+    from networkapi.api_rack.rackenvironments import RackEnvironment
+
+    rack_env = RackEnvironment(user, rack_id)
+
+    # spine x leaf
+    rack_env.spines_environment_save()
+    rack_env.spine_leaf_vlans_save()
+
+    # leaf x leaf
+    rack_env.leaf_leaf_vlans_save()
+
+    # producao/cloud
+    rack_env.prod_environment_save()
+    rack_env.children_prod_environment_save()
+
+    # redes de gerencia OOB
+    rack_env.manage_vlan_save()
+
+    rack_env.allocated()
+
+    return rack_env.rack
 
 
 def api_foreman(rack):
