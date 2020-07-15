@@ -897,9 +897,21 @@ def allocate_env_vlan(user, rack_id):
     # redes de gerencia OOB
     rack_env.manage_vlan_save()
 
-    rack_env.allocated()
+    rack_env.allocate()
 
     return rack_env.rack
+
+
+def deallocate_env_vlan(user, rack_id):
+    log.info("Rack deallocate")
+
+    from networkapi.api_rack.rackenvironments import RackEnvironment
+
+    rack_env = RackEnvironment(user, rack_id)
+
+    rack_env.rack_vlans_remove()
+    rack_env.rack_environment_remove()
+    rack_env.deallocate()
 
 
 def api_foreman(rack):

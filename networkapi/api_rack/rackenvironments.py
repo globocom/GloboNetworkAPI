@@ -31,12 +31,12 @@ class RackEnvironment:
     def save_vlan(self, vlan):
         pass
 
-    def allocated(self):
+    def allocate(self):
         self.rack.__dict__.update(
             id=self.rack.id, create_vlan_amb=True)
         self.rack.save()
 
-    def deallocated(self):
+    def deallocate(self):
         self.rack.__dict__.update(
             id=self.rack.id, create_vlan_amb=False)
         self.rack.save()
@@ -116,9 +116,6 @@ class RackEnvironment:
         return environment_spn_lf_list
 
     def spines_environment_read(self):
-        pass
-
-    def spines_environment_remove(self):
         pass
 
     def spine_leaf_vlans_save(self):
@@ -491,3 +488,24 @@ class RackEnvironment:
             facade_redev4_v3.create_networkipv4(network, self.user)
 
         return vlan
+
+    def rack_environment_remove(self):
+        log.info("_remove_envs")
+
+        envs = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
+                                                  grupo_l3__nome=str(self.rack.nome))
+
+        for env in envs:
+            env.delete_v3()
+
+        log.debug("PROD environments: %s. Total: %s" % (str(envs), len(envs)))
+
+    def rack_vlans_remove(self):
+        log.info("remove_vlans")
+
+        vlans = models_vlan.Vlan.objects.filter(nome__icontains="_"+self.rack.nome)
+
+        for vlan in vlans:
+            vlan.delete_v3()
+
+        log.debug("Vlans: %s. total: %s" % (vlans, len(vlans)))
