@@ -234,7 +234,10 @@ class EnvironmentDBView(CustomAPIView):
         )
 
         set_cache_search_with_list(
-            ENVIRONMENT_CACHE_ENTRY, request_identifier_to_cache, data, facade.get_environment_cache_time())
+            ENVIRONMENT_CACHE_ENTRY,
+            request_identifier_to_cache,
+            data,
+            facade.get_environment_cache_time())
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview
