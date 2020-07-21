@@ -1426,14 +1426,11 @@ class Ambiente(BaseModel):
 
             configs = env_map.get('configs', [])
 
-            for conf in configs:
-                conf["environment"] = self.id
-
             # # save network on IPConfig tables
             # configs = self.create_configs(configs, self.id)
 
             # save network on CIDR tables
-            self.create_cidr(configs)
+            self.create_cidr(configs=configs, env_id=self.id)
 
             delete_cached_searches_list(ENVIRONMENT_CACHE_ENTRY)
 
@@ -1676,13 +1673,16 @@ class Ambiente(BaseModel):
     #
     #     return configs
 
-    def create_cidr(self, configs=None):
-        log.debug("Save config on cidr tables")
+    def create_cidr(self, configs=None, env_id=None):
+        log.debug("create_cidr")
 
         from networkapi.api_environment.facade import post_cidr
+        from networkapi.api_environment.facade import post_cidr_auto
 
         for config in configs:
-            post_cidr(config)
+            if env_id:
+                config["environment"] = env_id
+            post_cidr(config) if config.get("network") else post_cidr_auto(config)
 
     # def delete_configs(self, configs_ids, env_id):
     #     """

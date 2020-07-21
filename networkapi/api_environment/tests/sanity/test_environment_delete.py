@@ -46,7 +46,7 @@ class EnvironmentDeleteTestCase(NetworkApiTestCase):
 
         # Does get request
         response = self.client.get(
-            '/api/v3/environment/2/',
+            '/api/v3/environment/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
