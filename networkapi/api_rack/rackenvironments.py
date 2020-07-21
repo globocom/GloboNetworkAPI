@@ -11,6 +11,7 @@ from networkapi.vlan import models as models_vlan
 from networkapi.api_environment import facade as facade_env
 from networkapi.api_vlan.facade import v3 as facade_vlan_v3
 from networkapi.api_network.facade.v3 import networkv4 as facade_redev4_v3
+from networkapi.api_network.facade.v3 import networkv6 as facade_redev6_v3
 from networkapi.equipamento.models import EquipamentoAmbiente
 from networkapi.equipamento.models import EquipamentoAmbienteDuplicatedError
 
@@ -130,7 +131,6 @@ class RackEnvironment:
                                                                                     "SPINE04LEAF"])
         log.debug("SPN environments" + str(spn_lf_envs))
 
-        rack_number = int(self.rack.numero)
         tipo_rede = "Ponto a ponto"
         try:
             id_network_type = models_vlan.TipoRede().get_by_name(tipo_rede).id
@@ -140,35 +140,35 @@ class RackEnvironment:
             network_type.save()
             id_network_type = network_type.id
             pass
-        for env in spn_lf_envs:
-            env_id = env.id
-            vlan_base = env.min_num_vlan_1
-            vlan_number = int(vlan_base) + int(rack_number)
-            vlan_name = "VLAN_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + self.rack.nome
 
-            for net in env.configs:
-                prefix = int(net.subnet_mask)
-                network = {
-                    'prefix': prefix,  # str(list(cidr.subnet(prefix))[rack_number]),
-                    'network_type': id_network_type
-                }
-                if str(net.ip_version)[-1] is "4":
-                    create_networkv4 = network
-                elif str(net.ip_version)[-1] is "6":
-                    create_networkv6 = network
+        for env in spn_lf_envs:
+
             obj = {
-                'name': vlan_name,
-                'num_vlan': vlan_number,
-                'environment': env_id,
+                'name': "VLAN_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + self.rack.nome,
+                'environment': env.id,
                 'default_vrf': env.default_vrf.id,
                 'vrf': env.vrf,
-                'create_networkv4': create_networkv4 if create_networkv4 else None,
-                'create_networkv6': create_networkv6 if create_networkv6 else None
+                'create_networkv4': None,
+                'create_networkv6': None,
+                'description': "Vlan spinexleaf do rack " + self.rack.nome
+
             }
-            try:
-                facade_vlan_v3.create_vlan(obj, self.user)
-            except:
-                log.debug("Vlan object: %s" % str(obj))
+            vlan = facade_vlan_v3.create_vlan(obj, self.user)
+
+            log.debug("Vlan allocated: " + str(vlan))
+
+            for config in env.configs:
+                log.debug("Configs: " + str(config))
+                network = dict(prefix=config.subnet_mask,
+                               cluster_unit=None,
+                               vlan=vlan.id,
+                               network_type=id_network_type,
+                               environmentvip=None)
+                log.debug("Network allocated: " + str(network))
+                if str(config.ip_version)[-1] is "4":
+                    facade_redev4_v3.create_networkipv4(network, self.user)
+                elif str(config.ip_version)[-1] is "6":
+                    facade_redev6_v3.create_networkipv6(network, self.user)
 
     def spine_leaf_vlans_read(self):
         pass
@@ -274,22 +274,20 @@ class RackEnvironment:
                 cidr = IPNetwork(str(net.network))
                 prefix = int(net.subnet_mask)
                 subnet_list = list(cidr.subnet(int(prefix)))
-                try:
-                    bloco = subnet_list[int(self.rack.numero)]
-                except IndexError:
-                    msg = "Rack number %d is greater than the maximum number of " \
-                          "subnets available with prefix %d from %s subnet" % \
-                          (self.rack.numero, prefix, cidr)
-                    raise Exception(msg)
+                # try:
+                #     bloco = subnet_list[int(self.rack.numero)]
+                # except IndexError:
+                #     msg = "Rack number %d is greater than the maximum number of " \
+                #           "subnets available with prefix %d from %s subnet" % \
+                #           (self.rack.numero, prefix, cidr)
+                #     raise Exception(msg)
 
                 if isinstance(details, list) and len(details) > 0:
-
                     if details[0].get(str(net.ip_version)):
                         new_prefix = details[0].get(str(net.ip_version)).get("new_prefix")
                     else:
                         new_prefix = 31 if net.ip_version == "v4" else 127
                     network = {
-                        'network': str(bloco),
                         'ip_version': net.ip_version,
                         'network_type': net.id_network_type.id,
                         'subnet_mask': new_prefix
@@ -351,14 +349,10 @@ class RackEnvironment:
 
         try:
             fabricconfig = json.loads(fabricconfig)
-        except:
-            pass
-
-        try:
             fabricconfig = ast.literal_eval(fabricconfig)
             log.debug("config -ast: %s" % str(fabricconfig))
         except:
-            pass
+            log.debug("Error loading fabric json.")
 
         environment = None
         father_id = env.id
@@ -367,16 +361,17 @@ class RackEnvironment:
         for fab in fabricconfig.get("Ambiente"):
             if int(fab.get("id")) == int(env.father_environment.id):
                 fabenv = fab.get("details")
+
         if not fabenv:
             log.debug("No configurations for child environment of env id=%s" % (
-                str(env.id))
-                      )
+                str(env.id)))
             return False
 
         fabenv.sort(key=operator.itemgetter('min_num_vlan_1'))
         log.debug("Order by min_num_vlan: %s" % str(fabenv))
 
         for idx, amb in enumerate(fabenv):
+            log.debug("amb: %s" % amb)
             try:
                 id_div = models_env.DivisaoDc().get_by_name(amb.get("name")).id
             except:
@@ -389,24 +384,23 @@ class RackEnvironment:
             config_subnet = []
             for net in env.configs:
                 for net_dict in amb.get("config"):
-
                     if net_dict.get("type") == net.ip_version:
                         cidr = IPNetwork(net.network)
-
-                        initial_prefix = 20 if net.ip_version == "v4" else 56
                         prefixo = net_dict.get("mask")
+                        initial_prefix = 20 if net.ip_version == "v4" else 56
+
                         if not idx:
                             bloco = list(cidr.subnet(int(prefixo)))[0]
                             log.debug(str(bloco))
                         else:
-                            bloco1 = list(cidr.subnet(initial_prefix))[1]
-                            bloco = list(bloco1.subnet(int(prefixo)))[idx - 1]
+                            bloco1 = list(cidr.subnet(int(initial_prefix)))[1]
+                            bloco = list(bloco1.subnet(int(prefixo)))[int(idx) - 1]
                             log.debug(str(bloco))
                         network = {
-                            'network': str(bloco),
                             'ip_version': str(net.ip_version),
                             'network_type': int(net.id_network_type.id),
-                            'subnet_mask': int(net_dict.get("new_prefix"))
+                            'subnet_mask': int(net_dict.get("new_prefix")),
+                            'network': str(bloco)
                         }
                         config_subnet.append(network)
 
@@ -440,6 +434,8 @@ class RackEnvironment:
                     equipamento_ambiente.create(self.user)
                 except EquipamentoAmbienteDuplicatedError:
                     pass
+                except Exception as e:
+                    log.debug("error %s" % e)
 
         return environment
 
@@ -453,18 +449,16 @@ class RackEnvironment:
         log.debug("OOB environments: " + str(env_oob))
 
         for env in [env_oob]:
-            vlan_base = env.min_num_vlan_1
-            vlan_number = int(vlan_base) + int(self.rack.numero)
-            vlan_name = "VLAN_" + env.ambiente_logico.nome + "_" + self.rack.nome
 
             obj = {
-                'name': vlan_name,
-                'num_vlan': vlan_number,
+                'name': "VLAN_" + env.ambiente_logico.nome + "_" + self.rack.nome,
                 'environment': env.id,
                 'default_vrf': env.default_vrf.id,
                 'vrf': env.vrf,
                 'create_networkv4': None,
-                'create_networkv6': None
+                'create_networkv6': None,
+                'description': "Vlan de gerência do rack " + self.rack.nome
+
             }
             vlan = facade_vlan_v3.create_vlan(obj, self.user)
 
@@ -473,17 +467,11 @@ class RackEnvironment:
             network = dict()
             for config in env.configs:
                 log.debug("Configs: " + str(config))
-                new_prefix = config.subnet_mask
-                redev4 = IPNetwork(config.network)
-                new_v4 = list(redev4.subnet(int(new_prefix)))[int(self.rack.numero)]
-                oct1, oct2, oct3, var = str(new_v4).split('.')
-                oct4, prefix = var.split('/')
-                netmask = str(new_v4.netmask)
-                mask1, mask2, mask3, mask4 = netmask.split('.')
-                network = dict(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, prefix=prefix, mask_oct1=mask1,
-                               mask_oct2=mask2,
-                               mask_oct3=mask3, mask_oct4=mask4, cluster_unit=None, vlan=vlan.id,
-                               network_type=config.id_network_type.id, environmentvip=None)
+                network = dict(prefix=config.subnet_mask,
+                               cluster_unit=None,
+                               vlan=vlan.id,
+                               network_type=config.id_network_type.id,
+                               environmentvip=None)
                 log.debug("Network allocated: " + str(network))
             facade_redev4_v3.create_networkipv4(network, self.user)
 
