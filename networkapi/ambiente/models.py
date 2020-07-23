@@ -2037,8 +2037,9 @@ class EnvCIDR(BaseModel):
 
             next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr, network_mask)
             if not next_available_cidr:
-                raise CIDRErrorV3("It was not possible to allocate the subnet with prefix length %s "
-                                  "for the environment %s. Register a new CIDR on the father environment."
+                raise CIDRErrorV3("Out of address space. It was not possible to allocate the subnet with "
+                                  "prefix length %s for the environment %s. "
+                                  "Please register a new CIDR on the father environment."
                                   % (network_mask, environment.name))
 
             msg = "Subnet available: %s." % next_available_cidr
