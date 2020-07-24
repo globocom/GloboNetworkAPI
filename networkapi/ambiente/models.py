@@ -2022,8 +2022,7 @@ class EnvCIDR(BaseModel):
                 "The Environment Father doesnt have an allocated CIDR block")
 
         for cidr in env_father_cidrs:
-            if not network_mask:
-                network_mask = cidr.subnet_mask
+            mask = cidr.subnet_mask if not network_mask else network_mask
 
             env_subnets = EnvCIDR.objects.filter(
                 network_first_ip__gte=cidr.network_first_ip,
@@ -2035,15 +2034,15 @@ class EnvCIDR(BaseModel):
             log.debug("Father`s CIDR: %s" % cidr.network)
             log.debug("Subnets: %s" % len(env_subnets))
 
-            next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr, network_mask)
-            if not next_available_cidr:
-                raise CIDRErrorV3("Out of address space. It was not possible to allocate the subnet with "
-                                  "prefix length %s for the environment %s. "
-                                  "Please register a new CIDR on the father environment."
-                                  % (network_mask, environment.name))
+            next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr, mask)
+            if next_available_cidr:
+                msg = "Subnet available: %s." % next_available_cidr
+                return next_available_cidr, msg
 
-            msg = "Subnet available: %s." % next_available_cidr
-            return next_available_cidr, msg
+        raise CIDRErrorV3("Out of address space. It was not possible to allocate the subnet with "
+                          "prefix length %s for the environment %s. "
+                          "Please register a new CIDR on the father environment."
+                          % (network_mask, environment.name))
 
     def post(self, env_cidr):
 
