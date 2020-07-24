@@ -259,34 +259,21 @@ class RackEnvironment:
         except:
             pass
 
-        environment = []
+        environment = list()
         for env in prod_envs:
-
-            father_id = env.id
-
             details = None
             for fab in fabricconfig.get("Ambiente"):
-                if int(fab.get("id")) == int(father_id):
+                if int(fab.get("id")) == env.id:
                     details = fab.get("details")
 
-            config_subnet = []
+            config_subnet = list()
             for net in env.configs:
-                cidr = IPNetwork(str(net.network))
-                prefix = int(net.subnet_mask)
-                subnet_list = list(cidr.subnet(int(prefix)))
-                # try:
-                #     bloco = subnet_list[int(self.rack.numero)]
-                # except IndexError:
-                #     msg = "Rack number %d is greater than the maximum number of " \
-                #           "subnets available with prefix %d from %s subnet" % \
-                #           (self.rack.numero, prefix, cidr)
-                #     raise Exception(msg)
 
                 if isinstance(details, list) and len(details) > 0:
                     if details[0].get(str(net.ip_version)):
                         new_prefix = details[0].get(str(net.ip_version)).get("new_prefix")
                     else:
-                        new_prefix = 31 if net.ip_version == "v4" else 127
+                        new_prefix = 27 if net.ip_version == "v4" else 64
                     network = {
                         'ip_version': net.ip_version,
                         'network_type': net.id_network_type.id,
@@ -307,7 +294,7 @@ class RackEnvironment:
                 'min_num_vlan_1': env.min_num_vlan_1,
                 'max_num_vlan_1': env.max_num_vlan_1,
                 'vrf': env.vrf,
-                'father_environment': father_id,
+                'father_environment': env.id,
                 'default_vrf': env.default_vrf.id,
                 'configs': config_subnet,
                 'fabric_id': self.rack.dcroom.id
@@ -370,7 +357,7 @@ class RackEnvironment:
         fabenv.sort(key=operator.itemgetter('min_num_vlan_1'))
         log.debug("Order by min_num_vlan: %s" % str(fabenv))
 
-        for idx, amb in enumerate(fabenv):
+        for amb in fabenv:
             log.debug("amb: %s" % amb)
             try:
                 id_div = models_env.DivisaoDc().get_by_name(amb.get("name")).id
@@ -381,29 +368,16 @@ class RackEnvironment:
                 id_div = div_dict.id
                 pass
 
-            config_subnet = []
-            for net in env.configs:
-                for net_dict in amb.get("config"):
-                    if net_dict.get("type") == net.ip_version:
-                        cidr = IPNetwork(net.network)
-                        prefixo = net_dict.get("mask")
-                        initial_prefix = 20 if net.ip_version == "v4" else 56
-
-                        if not idx:
-                            bloco = list(cidr.subnet(int(prefixo)))[0]
-                            log.debug(str(bloco))
-                        else:
-                            bloco1 = list(cidr.subnet(int(initial_prefix)))[1]
-                            bloco = list(bloco1.subnet(int(prefixo)))[int(idx) - 1]
-                            log.debug(str(bloco))
-                        network = {
-                            'ip_version': str(net.ip_version),
-                            'network_type': int(net.id_network_type.id),
-                            'subnet_mask': int(net_dict.get("new_prefix")),
-                            'network': str(bloco)
-                        }
-                        config_subnet.append(network)
-
+            config_subnet = list()
+            for net_dict in amb.get("config"):
+                network = {
+                    'ip_version': net_dict.get("type"),
+                    'network_type': int(net_dict.get("network_type")),
+                    'subnet_mask': int(net_dict.get("new_prefix")),
+                    'network_mask': int(net_dict.get("mask"))
+                }
+                config_subnet.append(network)
+            log.debug("config: %s" % config_subnet)
             obj = {
                 'grupo_l3': env.grupo_l3.id,
                 'ambiente_logico': env.ambiente_logico.id,

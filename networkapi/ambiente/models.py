@@ -1958,7 +1958,7 @@ class EnvCIDR(BaseModel):
 
         return environments
 
-    def searchNextAvailableCIDR(self, subnets):
+    def searchNextAvailableCIDR(self, subnets, network_mask=None):
         """
         Method that search next availacle cidr.
         :param subnets: all subnets of environment.
@@ -1967,36 +1967,45 @@ class EnvCIDR(BaseModel):
         log.debug("searchNextAvailableCIDR")
 
         for idx in range(len(subnets)-1):
-            if int(subnets[idx].network_last_ip) + 1 is not int(subnets[idx+1].network_first_ip):
-                subnet = subnets[idx].network
-                new_subnet = NETADDR(subnet).next()
-                if not ipaddr.IPNetwork(new_subnet).overlaps(ipaddr.IPNetwork(subnets[idx+1].network)):
-                    return str(new_subnet)
+            step = int(subnets[idx+1].network_first_ip) - int(subnets[idx].network_last_ip) - 1
+            if step >= 2 ** (32-int(network_mask)):
+                subnet = NETADDR(str(NETADDR(subnets[idx].network).next().ip) + "/" + network_mask)
+                if subnet.ip == subnet.network and \
+                        not ipaddr.IPNetwork(subnet).overlaps(ipaddr.IPNetwork(subnets[idx+1].network)):
+                    return str(subnet)
+
         return ""
 
-    def nextAvailableCIDR(self, subnets, network):
-        """
-        Try to aloccate
-        :param subnets:
-        :param network:
-        :return:
-        """
+    def nextAvailableCIDR(self, subnets, network, network_mask=None):
+        """"""
         log.debug("nextAvailableCIDR")
 
         if not subnets:
-            subnet = list(NETADDR(network.network).subnet(int(network.subnet_mask)))[0]
+            subnet = list(NETADDR(network.network).subnet(int(network_mask)))[0]
             return str(subnet)
 
-        subnet = NETADDR(str(NETADDR(subnets.latest('id').network).broadcast + 1)+"/"+network.subnet_mask)
-        log.debug("mask %s" % network.subnet_mask)
+        last_subnet = NETADDR(subnets.latest("network_last_ip").network)
+        log.debug("Last Subnet: %s" % last_subnet)
+        log.debug("Subnet mask: %s" % network_mask)
+
+        if int(network_mask) > last_subnet.prefixlen:
+            subnet = list(last_subnet.next().subnet(int(network_mask)))[0]
+        elif int(network_mask) == last_subnet.prefixlen:
+            subnet = last_subnet.next()
+        else:
+            subnet = NETADDR(str(last_subnet.next().ip) + "/" + network_mask)
+            if not subnet.ip == subnet.network:
+                subnet = subnet.next()
+
         if ipaddr.IPNetwork(subnet).overlaps(ipaddr.IPNetwork(network.network)):
             return str(subnet)
 
-        return self.searchNextAvailableCIDR(subnets)
+        return self.searchNextAvailableCIDR(subnets, network_mask)
 
-    def checkAvailableCIDR(self, environment_id, ip_version=None):
+    def checkAvailableCIDR(self, environment_id, ip_version=None, network_mask=None):
         """"""
         log.debug("checkAvailableCIDR")
+
         environment = Ambiente.get_by_pk(environment_id)
 
         try:
@@ -2007,35 +2016,33 @@ class EnvCIDR(BaseModel):
 
         env_father_cidrs = EnvCIDR.objects.filter(id_env=father_environment,
                                                   ip_version=ip_version)
-        msg = ""
-        next_available_cidr = ""
 
         if not env_father_cidrs:
             raise ValidationAPIException(
                 "The Environment Father doesnt have an allocated CIDR block")
 
         for cidr in env_father_cidrs:
+            mask = cidr.subnet_mask if not network_mask else network_mask
+
             env_subnets = EnvCIDR.objects.filter(
                 network_first_ip__gte=cidr.network_first_ip,
                 network_last_ip__lte=cidr.network_last_ip,
                 id_env__father_environment__id=cidr.id_env.id).exclude(
                 id=cidr.id).order_by(
                 "network_first_ip")
-            log.debug("CIDR: %s" % cidr.network)
-            log.debug("Number of Subnets: %s" % len(env_subnets))
 
-            # if len(env_subnets) == 2**(int(cidr.subnet_mask) - int(cidr.network_mask)):
-            #     msg += "There's no available network in this environment. CIDR: %s" % cidr.network
-            #     log.info(msg)
-            # else:
+            log.debug("Father`s CIDR: %s" % cidr.network)
+            log.debug("Subnets: %s" % len(env_subnets))
 
-            next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr)
+            next_available_cidr = self.nextAvailableCIDR(env_subnets, cidr, mask)
             if next_available_cidr:
-                msg = "Next available subnet: %s." % next_available_cidr
-                log.info(msg)
+                msg = "Subnet available: %s." % next_available_cidr
                 return next_available_cidr, msg
 
-        return next_available_cidr, "There's no subnet available."
+        raise CIDRErrorV3("Out of address space. It was not possible to allocate the subnet with "
+                          "prefix length %s for the environment %s. "
+                          "Please register a new CIDR on the father environment."
+                          % (network_mask, environment.name))
 
     def post(self, env_cidr):
 
@@ -2059,13 +2066,10 @@ class EnvCIDR(BaseModel):
 
             environment = Ambiente().get_by_pk(int(env_cidr.get('environment')))
             self.id_env = environment
-
             self.id_network_type = TipoRede().get_by_pk(int(env_cidr.get('network_type')))
-
             self.save()
         except Exception as e:
             raise CIDRErrorV3(e)
-
         return self.id
 
     def put(self, env_cidr):
