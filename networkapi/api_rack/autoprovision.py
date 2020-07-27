@@ -22,7 +22,8 @@ def replace(filein, fileout, dicionario):
         file_handle = open(filein, 'r')
         file_string = file_handle.read()
         file_handle.close()
-    except:
+    except Exception as e:
+        log.error("Erro abrindo roteiro: %s. Error: %s" % (str(filein), e))
         raise RackConfigError(None, None, "Erro abrindo roteiro: %s." % str(filein))
 
     try:
@@ -30,7 +31,8 @@ def replace(filein, fileout, dicionario):
             # Use RE package to allow for replacement (also allowing for (multiline) REGEX)
             log.debug("variavel: %s, valor: %s" % (str(key), str(dicionario[key])))
             file_string = (re.sub(key, dicionario[key], file_string))
-    except:
+    except Exception as e:
+        log.error("Erro atualizando as variáveis no roteiro: %s. Error: %s" % (filein, e))
         raise RackConfigError(None, None, "Erro atualizando as variáveis no roteiro: %s." % filein)
 
     try:
@@ -39,7 +41,8 @@ def replace(filein, fileout, dicionario):
         file_handle = open(fileout, 'w')
         file_handle.write(file_string)
         file_handle.close()
-    except:
+    except Exception as e:
+        log.error("Erro salvando arquivo de configuração: %s. Error: %s" % (fileout, e))
         raise RackConfigError(None, None, "Erro salvando arquivo de configuração: %s." % fileout)
 
 
@@ -213,18 +216,25 @@ def autoprovision_splf(rack, equips):
 
     # get fathers environments
     spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                  father_environment__isnull=True,
+                                                  grupo_l3__nome=str(rack.dcroom.name),
+                                                  # father_environment__isnull=True,
                                                   ambiente_logico__nome="SPINES")
+    log.debug("spn_envs %s" % spn_envs)
 
     prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                   father_environment__isnull=True,
+                                                   # father_environment__isnull=True,
+                                                   grupo_l3__nome=str(rack.dcroom.name),
                                                    ambiente_logico__nome="PRODUCAO",
-                                                   divisao_dc__nome__in=["BE", "FE", "BO_DSR", "BOCACHOS-A", "BOCACHOS-B"])
+                                                   divisao_dc__nome__in=["BE", "FE", "BO_DSR",
+                                                                         "BORDACACHOS_A", "BORDACACHOS_B"])
+    log.debug("prod_envs %s" % prod_envs)
 
     lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                divisao_dc__nome="BE",
                                                 grupo_l3__nome=str(rack.dcroom.name),
+                                                divisao_dc__nome="BE",
                                                 ambiente_logico__nome="LEAF-LEAF").uniqueResult()
+    log.debug("lf_env %s" % lf_env)
+
     for spn in spn_envs:
         if spn.divisao_dc.nome[:2] == "BE":
             VLANBE = spn.min_num_vlan_1
@@ -442,7 +452,6 @@ def autoprovision_splf(rack, equips):
         variablestochangeleaf1["IPNEIGHSPINE1IPV6"] = str(IPSPINEipv6[numero_rack][spn])
         variablestochangeleaf1["IPNEIGHSPINE2IPV6"] = str(IPSPINEipv6[numero_rack][spn+1])
 
-
         if equip.get("nome")[-1] == "1":
             log.debug("lf-name: %s. Ip: %s" % (equip.get("nome"), IPSIBGPipv4[numero_rack][1]))
             variablestochangeleaf1["IPNEIGHIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][1])
@@ -481,7 +490,7 @@ def autoprovision_splf(rack, equips):
 
         for i in equip.get("interfaces"):
             log.info("for i in equip")
-            log.info(str(type(i.get("nome")[:3])))
+            log.info(str(i))
 
             if i.get("nome")[:3] == prefixlf:
                 variablestochangeleaf1["LFNEIGH_HOSTNAME"] = i.get("nome")
@@ -523,10 +532,8 @@ def autoprovision_splf(rack, equips):
 
         fileinleaf1 = path_to_guide + equip.get("roteiro")
         fileoutleaf1 = path_to_config + equip.get("nome")+".cfg"
-
         replace(fileinleaf1, fileoutleaf1, variablestochangeleaf1)
         variablestochangeleaf1 = dict()
-
     return True
 
 

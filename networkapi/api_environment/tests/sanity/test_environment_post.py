@@ -131,6 +131,7 @@ class EnvironmentPostOneSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['configs'][0]['id']
+        del data['environments'][0]['configs'][0]['environment']
         del data['environments'][0]['name']
         del data['environments'][0]['sdn_controllers']
 
@@ -270,10 +271,12 @@ class EnvironmentPostTwoSuccessTestCase(NetworkApiTestCase):
         data = response.data
         del data['environments'][0]['id']
         del data['environments'][0]['configs'][0]['id']
+        del data['environments'][0]['configs'][0]['environment']
         del data['environments'][0]['name']
         del data['environments'][0]['sdn_controllers']
         del data['environments'][1]['id']
         del data['environments'][1]['configs'][0]['id']
+        del data['environments'][1]['configs'][0]['environment']
         del data['environments'][1]['name']
         del data['environments'][1]['sdn_controllers']
 
