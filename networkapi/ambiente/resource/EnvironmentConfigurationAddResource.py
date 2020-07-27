@@ -80,28 +80,27 @@ class EnvironmentConfigurationAddResource(RestResource):
 
             self._validate_prefix_by_net_type(prefix, ip_version)
 
-            environment = Ambiente().get_by_pk(id_environment)
+            # environment = Ambiente().get_by_pk(id_environment)
 
             network_type = TipoRede.get_by_pk(network_type)
 
-            ip_config = IPConfig()
-            ip_config.subnet = network
-            ip_config.new_prefix = prefix
-            ip_config.type = ip_version
-            ip_config.network_type = network_type
-
-            ip_config.save()
-
-            config_environment = ConfigEnvironment()
-            config_environment.environment = environment
-            config_environment.ip_config = ip_config
-
-            config_environment.save()
+            # ip_config = IPConfig()
+            # ip_config.subnet = network
+            # ip_config.new_prefix = prefix
+            # ip_config.type = ip_version
+            # ip_config.network_type = network_type
+            #
+            # ip_config.save()
+            #
+            # config_environment = ConfigEnvironment()
+            # config_environment.environment = environment
+            # config_environment.ip_config = ip_config
+            #
+            # config_environment.save()
 
             # save on cidr table
             logging.debug("EnvironmentConfigurationAddResource - save on cidr table")
             data = dict()
-            data['config_id'] = ip_config.id
             data['type'] = ip_version
             data['new_prefix'] = prefix
             data['network_type'] = network_type.id

@@ -492,17 +492,21 @@ def cache_function(length, equipment=False):
     @param length: time in seconds to stay in cache
     """
     def _decorated(func):
-
+        logging.debug("30")
         def _cache(*args, **kwargs):
-
+            logging.debug("31")
             if equipment is True:
+                logging.debug(equipment)
+                logging.debug(args)
                 key = sha1(str(args[0].id) + 'equipment').hexdigest()
                 print str(args[0].id) + 'equipment'
             else:
                 key = sha1(str(args[0].id)).hexdigest()
                 print str(args[0].id)
-
+            logging.debug("32")
             # Search in cache if it exists
+            logging.debug("cache %s" % cache)
+            logging.debug("key %s" % key)
             if key in cache:
 
                 # Get value in cache
@@ -516,7 +520,7 @@ def cache_function(length, equipment=False):
                         value = cache.get(key)
                 # Return value of cache
                 return value
-
+                logging.debug("33")
             # If not exists in cache
             else:
                 # Function can be called several times before it finishes and is put into the cache,
@@ -537,9 +541,10 @@ def cache_function(length, equipment=False):
                 # Set in cache the keys
                 # key_list.append(key)
                 # cache.set(sha1('key_networkapi_vlans').hexdigest(), key_list)
+                logging.debug("34")
 
                 return result
-
+            logging.debug("35")
         return _cache
     return _decorated
 

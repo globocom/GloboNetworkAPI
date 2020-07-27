@@ -227,13 +227,29 @@ class RackConfigView(APIView):
 
 class RackEnvironmentView(APIView):
 
+    @permission_classes((IsAuthenticated, Write))
     @commit_on_success
     def post(self, request, *args, **kwargs):
         try:
             logging.getLogger('Alocando ambientes e vlans do rack')
 
             rack_id = kwargs.get("rack_id")
-            facade.rack_environments_vlans(rack_id, request.user)
+            # facade.rack_environments_vlans(rack_id, request.user)
+            facade.allocate_env_vlan(request.user, rack_id)
+
+            data = dict()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception, e:
+            raise api_exceptions.NetworkAPIException(e)
+
+    @permission_classes((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        try:
+            logging.getLogger('Remove environments and vlans.')
+
+            rack_id = kwargs.get("rack_id")
+            facade.deallocate_env_vlan(request.user, rack_id)
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
