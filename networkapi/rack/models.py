@@ -156,11 +156,9 @@ class DatacenterRooms(BaseModel):
     leafs = models.IntegerField(blank=True, null=True)
     config = models.CharField(max_length=255)
 
-
     class Meta(BaseModel.Meta):
         db_table = u'datacenterrooms'
         managed = True
-
 
     def get_dcrooms(self, idt=None, id_dc=None, name=None):
         """
