@@ -34,11 +34,12 @@ from networkapi.interface.models import Interface
 from networkapi.ip.models import IpEquipamento
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError
 from networkapi.api_rack import serializers as rack_serializers
-from networkapi.api_rack import exceptions, autoprovision
+from networkapi.api_rack import exceptions
 from networkapi.api_rack import provision
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
-from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, \
+    NetworkAPIException
 from networkapi.api_network.facade.v3 import networkv4 as facade_redev4_v3
 
 if int(get_variable('use_foreman')):
@@ -76,6 +77,12 @@ def listdc():
     return dc_sorted
 
 
+def delete_dc(dcs):
+    for dc_id in dcs:
+        dcroom_obj = Datacenter().get_dc(idt=dc_id)
+        dcroom_obj.del_dc()
+
+
 def save_dcrooms(dcrooms_dict):
 
     dcrooms = DatacenterRooms()
@@ -108,6 +115,13 @@ def edit_dcrooms(dcroom_id, dcrooms_dict):
 
     dcrooms.save_dcrooms()
     return dcrooms
+
+
+def delete_dcrooms(dcrooms):
+
+    for dcroom_id in dcrooms:
+        dcroom_obj = DatacenterRooms().get_dcrooms(idt=dcroom_id)
+        dcroom_obj.del_dcrooms()
 
 
 def get_fabric(idt=None, name=None, id_dc=None):
