@@ -403,7 +403,6 @@ def _create_spnlfenv(user, rack):
     log.debug("_create_spnlfenv")
 
     envfathers = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                    father_environment__isnull=True,
                                                     grupo_l3__nome=str(rack.dcroom.name),
                                                     ambiente_logico__nome="SPINES")
     log.debug("SPN environments"+str(envfathers))
@@ -479,7 +478,6 @@ def _create_spnlfvlans(rack, user):
     log.debug("_create_spnlfvlans")
 
     spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                     father_environment__isnull=False,
                                                      grupo_l3__nome=str(rack.dcroom.name),
                                                      ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                 "SPINE02LEAF",
@@ -532,11 +530,10 @@ def _create_prod_envs(rack, user):
     log.debug("_create_prod_envs")
 
     prod_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                   father_environment__isnull=True,
                                                    grupo_l3__nome=str(rack.dcroom.name),
                                                    ambiente_logico__nome="PRODUCAO"
                                                    ).exclude(divisao_dc__nome="BO_DMZ")
-    facade_env
+
     log.debug("PROD environments: "+str(prod_envs))
 
     try:
@@ -755,7 +752,6 @@ def _create_lflf_vlans(rack, user):
     log.debug("_create_lflf_vlans")
 
     env_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                father_environment__isnull=True,
                                                 grupo_l3__nome=str(rack.dcroom.name),
                                                 ambiente_logico__nome="LEAF-LEAF")
     log.debug("Leaf-leaf environments: "+str(env_lf))
@@ -850,7 +846,7 @@ def _create_oobvlans(rack, user):
 
 
 def rack_environments_vlans(rack_id, user):
-    log.info("Rack Environments")
+    log.info("Rack Environments - Old")
 
     rack = Rack().get_rack(idt=rack_id)
     if rack.create_vlan_amb:
@@ -877,7 +873,7 @@ def rack_environments_vlans(rack_id, user):
 
 
 def allocate_env_vlan(user, rack_id):
-    log.info("Rack Environments")
+    log.info("Rack Environments - Refactor")
 
     from networkapi.api_rack.rackenvironments import RackEnvironment
 
