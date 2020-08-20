@@ -12,7 +12,8 @@
             "environment": 1,
             "name": "VLAN 300 - AMBIENTE 1",
             "num_vlan": 300,
-            "vrf": null
+            "vrf": null,
+            "vxlan": false
         }
     ]
 }
