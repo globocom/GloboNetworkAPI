@@ -6,7 +6,6 @@
       "aws_vpc": null,
       "configs": [
         {
-          "environment": 18,
           "ip_version": "v4",
           "network": "192.168.0.0/16",
           "network_type": 2,
@@ -35,7 +34,6 @@
       "aws_vpc": null,
       "configs": [
         {
-          "environment": 19,
           "ip_version": "v4",
           "network": "192.168.0.0/16",
           "network_type": 2,

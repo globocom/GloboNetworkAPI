@@ -568,7 +568,6 @@ class NetworkIPv4(BaseModel):
 
                 # For each configuration founded in environment
                 for config in configs:
-
                     # If already get a network stop this
                     if stop:
                         break

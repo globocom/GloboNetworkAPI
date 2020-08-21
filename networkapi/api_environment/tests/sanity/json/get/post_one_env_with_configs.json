@@ -6,7 +6,6 @@
       "aws_vpc": null,
       "configs": [
         {
-          "environment": 14,
           "ip_version": "v4",
           "network": "192.168.0.0/16",
           "network_type": 2,

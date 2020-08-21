@@ -19,9 +19,9 @@ from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
 
-from networkapi.util.appcache import get_cached_search
-from networkapi.util.appcache import set_cache_search_with_list
-from networkapi.util.appcache import ENVIRONMENT_CACHE_ENTRY
+from networkapi.util.cachenew import get_cached_search
+from networkapi.util.cachenew import set_cache_search_with_list
+from networkapi.util.cachenew import ENVIRONMENT_CACHE_ENTRY
 
 
 log = logging.getLogger(__name__)
@@ -234,7 +234,10 @@ class EnvironmentDBView(CustomAPIView):
         )
 
         set_cache_search_with_list(
-            ENVIRONMENT_CACHE_ENTRY, request_identifier_to_cache, data, facade.get_environment_cache_time())
+            ENVIRONMENT_CACHE_ENTRY,
+            request_identifier_to_cache,
+            data,
+            facade.get_environment_cache_time())
         return Response(data, status=status.HTTP_200_OK)
 
     @logs_method_apiview

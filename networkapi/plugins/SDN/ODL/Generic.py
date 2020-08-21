@@ -297,7 +297,7 @@ class ODLPlugin(BaseSdnPlugin):
                 return
 
             try:
-                return json.loads(request.text)
+                return request.json()
             except Exception as exception:
                 log.error("Response received from uri '%s': \n%s",
 			  uri, request.text)

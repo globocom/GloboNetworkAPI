@@ -35,6 +35,7 @@ from networkapi.ip.models import IpEquipamento
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError
 from networkapi.api_rack import serializers as rack_serializers
 from networkapi.api_rack import exceptions, autoprovision
+from networkapi.api_rack import provision
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
 from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, NetworkAPIException
@@ -378,16 +379,22 @@ def gerar_arquivo_config(ids):
                     except:
                         pass
             except:
-                raise Exception("Erro ao buscar o roteiro de configuracao ou as interfaces associadas ao equipamento: "
-                                "%s." % equip.get("nome"))
+                raise Exception(
+                    "Erro ao buscar o roteiro de configuracao ou as interfaces associadas ao equipamento: %s."
+                    % equip.get("nome"))
             try:
                 equip["roteiro"] = _buscar_roteiro(equip.get("id"), "CONFIGURACAO")
                 equip["ip_mngt"] = _buscar_ip(equip.get("id"))
             except:
                 raise Exception("Erro ao buscar os roteiros do equipamento: %s" % equip.get("nome"))
 
-        autoprovision.autoprovision_splf(rack, equips)
-        autoprovision.autoprovision_coreoob(rack, equips)
+        # autoprovision.autoprovision_splf(rack, equips)
+        # autoprovision.autoprovision_coreoob(rack, equips)
+
+        auto = provision.Provision(rack.id)
+        auto.spine_provision(rack, equips)
+        auto.oob_provision(rack, equips)
+
 
     return True
 
@@ -396,7 +403,6 @@ def _create_spnlfenv(user, rack):
     log.debug("_create_spnlfenv")
 
     envfathers = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                    father_environment__isnull=True,
                                                     grupo_l3__nome=str(rack.dcroom.name),
                                                     ambiente_logico__nome="SPINES")
     log.debug("SPN environments"+str(envfathers))
@@ -472,7 +478,6 @@ def _create_spnlfvlans(rack, user):
     log.debug("_create_spnlfvlans")
 
     spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                     father_environment__isnull=False,
                                                      grupo_l3__nome=str(rack.dcroom.name),
                                                      ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                 "SPINE02LEAF",
@@ -525,7 +530,6 @@ def _create_prod_envs(rack, user):
     log.debug("_create_prod_envs")
 
     prod_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                   father_environment__isnull=True,
                                                    grupo_l3__nome=str(rack.dcroom.name),
                                                    ambiente_logico__nome="PRODUCAO"
                                                    ).exclude(divisao_dc__nome="BO_DMZ")
@@ -748,7 +752,6 @@ def _create_lflf_vlans(rack, user):
     log.debug("_create_lflf_vlans")
 
     env_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                father_environment__isnull=True,
                                                 grupo_l3__nome=str(rack.dcroom.name),
                                                 ambiente_logico__nome="LEAF-LEAF")
     log.debug("Leaf-leaf environments: "+str(env_lf))
@@ -843,7 +846,7 @@ def _create_oobvlans(rack, user):
 
 
 def rack_environments_vlans(rack_id, user):
-    log.info("Rack Environments")
+    log.info("Rack Environments - Old")
 
     rack = Rack().get_rack(idt=rack_id)
     if rack.create_vlan_amb:
@@ -867,6 +870,44 @@ def rack_environments_vlans(rack_id, user):
     rack.save()
 
     return rack
+
+
+def allocate_env_vlan(user, rack_id):
+    log.info("Rack Environments - Refactor")
+
+    from networkapi.api_rack.rackenvironments import RackEnvironment
+
+    rack_env = RackEnvironment(user, rack_id)
+
+    # spine x leaf
+    rack_env.spines_environment_save()
+    rack_env.spine_leaf_vlans_save()
+
+    # leaf x leaf
+    rack_env.leaf_leaf_vlans_save()
+
+    # producao/cloud
+    rack_env.prod_environment_save()
+    rack_env.children_prod_environment_save()
+
+    # redes de gerencia OOB
+    rack_env.manage_vlan_save()
+
+    rack_env.allocate()
+
+    return rack_env.rack
+
+
+def deallocate_env_vlan(user, rack_id):
+    log.info("Rack deallocate")
+
+    from networkapi.api_rack.rackenvironments import RackEnvironment
+
+    rack_env = RackEnvironment(user, rack_id)
+
+    rack_env.rack_vlans_remove()
+    rack_env.rack_environment_remove()
+    rack_env.deallocate()
 
 
 def api_foreman(rack):
