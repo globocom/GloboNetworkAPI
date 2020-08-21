@@ -1950,13 +1950,20 @@ class EnvCIDR(BaseModel):
         :return:
         """
 
-        if environment.father_environment:
-            id_env_father = environment.father_environment.id
-            environments = EnvCIDR.objects.filter(network=network).exclude(id_env=id_env_father)
-        else:
-            environments = EnvCIDR.objects.filter(network=network)
+        ids = self.get_parent_env(environment, [])
+        log.debug("fathers: %s" % ids)
+        environments = EnvCIDR.objects.filter(network=network).exclude(id_env__in=ids)
+        log.debug("duplicated envs: %s" % environments)
 
         return environments
+
+    def get_parent_env(self, environment, ids=[]):
+        log.debug("env: %s" % environment.id)
+        if environment.father_environment:
+            ids.append(environment.father_environment.id)
+            return self.get_parent_env(environment.father_environment, ids)
+        else:
+            return ids
 
     def searchNextAvailableCIDR(self, subnets, network_mask=None):
         """
