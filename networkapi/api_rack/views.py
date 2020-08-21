@@ -16,30 +16,22 @@
 
 import glob
 import logging
-import re
-import commands
-from django.core.exceptions import ObjectDoesNotExist
+
 from django.db.transaction import commit_on_success
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from networkapi.api_rack.permissions import Read, Write
+
+from networkapi.api_rack.permissions import Write
 from networkapi.api_rack import facade, exceptions
 from networkapi.api_rack.serializers import RackSerializer, DCSerializer, DCRoomSerializer
 from networkapi.api_rest import exceptions as api_exceptions
-from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente
-from networkapi.ip.models import Ip
-from networkapi.ip.models import IpEquipamento
-from networkapi.rack.models import Rack, Datacenter, DatacenterRooms
-from networkapi.rest import RestResource
-from networkapi.rest import UserNotAuthorizedError
+from networkapi.equipamento.models import Equipamento
 from networkapi.system.facade import get_value as get_variable
-from networkapi.system.facade import save_variable as save_variable
 from networkapi.system import exceptions as var_exceptions
 
 from networkapi.distributedlock import LOCK_EQUIPMENT_DEPLOY_CONFIG_USERSCRIPT
@@ -71,7 +63,7 @@ class RackView(APIView):
                 exceptions.InvalidInputException) as exception:
             log.exception(exception)
             raise exception
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
@@ -93,10 +85,11 @@ class RackView(APIView):
             data['rack'] = rack_serializer.data
 
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
+    @commit_on_success
     def get(self, user, *args, **kwargs):
         """Handles GET requests to list all Racks"""
 
@@ -117,10 +110,11 @@ class RackView(APIView):
 
             return Response(data, status=status.HTTP_200_OK)
 
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
+    @commit_on_success
     def delete(self, user, *args, **kwargs):
         """Handles DELETE requests to list all Racks
         URLs: /api/rack/<rack_id>
@@ -137,7 +131,7 @@ class RackView(APIView):
 
             return Response(data, status=status.HTTP_200_OK)
 
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
@@ -182,7 +176,7 @@ class RackDeployView(APIView):
                                 output = deploy_facade.deploy_config_in_equipment_synchronous(rel_filename, equip, lockvar)
 
                                 log.debug("equipment output: %s" % (output))
-                        except Exception, e:
+                        except Exception as e:
                             log.exception(e)
                             raise exceptions.RackAplError(e)
 
@@ -197,14 +191,14 @@ class RackDeployView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
-        except exceptions.RackNumberNotFoundError, e:
+        except exceptions.RackNumberNotFoundError as e:
             log.exception(e)
             raise exceptions.NetworkAPIException(e)
-        except var_exceptions.VariableDoesNotExistException, e:
+        except var_exceptions.VariableDoesNotExistException as e:
             log.error(e)
             raise api_exceptions.NetworkAPIException(
                 'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG. Erro: %s' % e)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
@@ -221,7 +215,7 @@ class RackConfigView(APIView):
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
+        except Exception as e:
             raise api_exceptions.NetworkAPIException(e)
 
 
@@ -239,7 +233,7 @@ class RackEnvironmentView(APIView):
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
+        except Exception as e:
             raise api_exceptions.NetworkAPIException(e)
 
     @permission_classes((IsAuthenticated, Write))
@@ -253,7 +247,7 @@ class RackEnvironmentView(APIView):
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
+        except Exception as e:
             raise api_exceptions.NetworkAPIException(e)
 
 
@@ -275,9 +269,8 @@ class DataCenterView(APIView):
 
             return Response(data, status=status.HTTP_201_CREATED)
 
-        except Exception, e:
+        except Exception as e:
             raise api_exceptions.NetworkAPIException(e)
-
 
     @commit_on_success
     def get(self, request, *args, **kwargs):
@@ -290,7 +283,25 @@ class DataCenterView(APIView):
             data['dc'] = dc
 
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
+        except Exception as e:
+            raise api_exceptions.NetworkAPIException(e)
+
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+
+        try:
+            log.info('Delete DC')
+
+            dc_id = kwargs.get("dc_id").split(";")
+
+            facade.delete_dc(dc_id)
+
+            data = dict()
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 
 
@@ -311,7 +322,7 @@ class FabricView(APIView):
             data['dcroom'] = dcroom_serializer.data
 
             return Response(data, status=status.HTTP_201_CREATED)
-        except Exception, e:
+        except Exception as e:
             raise api_exceptions.NetworkAPIException(e)
 
     @commit_on_success
@@ -336,9 +347,8 @@ class FabricView(APIView):
             data['fabric'] = fabric_serializer.data
 
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
+        except Exception as e:
             raise api_exceptions.NetworkAPIException(e)
-
 
     @commit_on_success
     def get(self, request, *args, **kwargs):
@@ -354,5 +364,23 @@ class FabricView(APIView):
             data['fabric'] = fabric
 
             return Response(data, status=status.HTTP_200_OK)
-        except Exception, e:
+        except Exception as e:
+            raise api_exceptions.NetworkAPIException(e)
+
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+
+        try:
+            log.info('Delete Fabric')
+
+            fabric_id = kwargs.get("fabric_id").split(";")
+
+            facade.delete_dcrooms(fabric_id)
+
+            data = dict()
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            log.exception(e)
             raise api_exceptions.NetworkAPIException(e)

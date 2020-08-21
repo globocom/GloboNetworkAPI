@@ -120,9 +120,9 @@ class Datacenter(BaseModel):
             if address:
                 return Datacenter.objects.filter(address=address)
             return Datacenter.objects.all()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise Exception(u'Datacenter doesnt exist. %s'  % e)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Failure to get datacenter. %s' % e)
             raise Exception(e, u'Failure to get datacenter. %s' % e)
 
@@ -132,16 +132,22 @@ class Datacenter(BaseModel):
 
         try:
             self.save()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error trying to insert DatacenterRooms: %s.' %e)
 
     def del_dc(self):
 
         try:
+            self.check_fabric()
             self.delete()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error trying to remove Datacenter: %s.' %e)
             raise Exception(u'Error trying to remove Datacenter: %s.' %e)
+
+    def check_fabric(self):
+        if DatacenterRooms().get_dcrooms(id_dc=self.id):
+            raise Exception(
+                "The datacenter %s could not be deleted. There is a Fabric associated with it." % self.dcname)
 
 
 class DatacenterRooms(BaseModel):
@@ -156,11 +162,9 @@ class DatacenterRooms(BaseModel):
     leafs = models.IntegerField(blank=True, null=True)
     config = models.CharField(max_length=255)
 
-
     class Meta(BaseModel.Meta):
         db_table = u'datacenterrooms'
         managed = True
-
 
     def get_dcrooms(self, idt=None, id_dc=None, name=None):
         """
@@ -179,9 +183,9 @@ class DatacenterRooms(BaseModel):
                 return DatacenterRooms.objects.filter(dc=id_dc)
 
             return DatacenterRooms.objects.all()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise Exception(u'Datacenter Rooms doesnt exist. %s'  % e)
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Failure to get datacenter room. %s' % e)
             raise Exception(u'Failure to get datacenter room. %s' % e)
 
@@ -190,17 +194,32 @@ class DatacenterRooms(BaseModel):
         '''
         try:
             self.save()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error trying to insert DatacenterRooms: %s.' %e)
             raise Exception(u'Error trying to insert DatacenterRooms: %s.' %e)
 
     def del_dcrooms(self):
 
         try:
+            self.check_racks()
+            self.dissociate_environments()
             self.delete()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error trying to remove DatacenterRooms: %s.' %e)
             raise Exception(u'Error trying to remove DatacenterRooms: %s.' %e)
+
+    def dissociate_environments(self):
+        from networkapi.ambiente.models import Ambiente
+
+        envs = Ambiente.objects.filter(dcroom=self.id)
+        for env in envs:
+            env.dcroom = None
+            env.save()
+
+    def check_racks(self):
+        if Rack().get_rack(dcroom_id=self.id):
+            raise Exception(
+                "The Fabric %s could not be deleted. There is Racks associated with it." % self.name)
 
 
 class Rack(BaseModel):
@@ -241,34 +260,37 @@ class Rack(BaseModel):
             if dc_id:
                 return Rack.objects.filter(dcroom__dc__id=dc_id)
             return Rack.objects.all()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise Exception('Rack does not exist. %s.' % e)
-        except Exception, e:
+        except Exception as e:
             raise Exception('Failure to search the Rack. %s' % e)
-
 
     def save_rack(self):
 
         if Rack.objects.filter(numero=self.numero, dcroom=self.dcroom):
-            raise Exception ('Numero de Rack %s ja existe na sala %s.' % (self.numero, self.dcroom.name))
+            raise Exception('Numero de Rack %s ja existe na sala %s.' % (self.numero, self.dcroom.name))
 
         if Rack.objects.filter(nome=self.nome, dcroom=self.dcroom):
-            raise Exception ('Já existe um rack com o nome %s na sala %s.' % (self.nome, self.dcroom.name))
+            raise Exception('Já existe um rack com o nome %s na sala %s.' % (self.nome, self.dcroom.name))
 
         try:
-            self.id_sw1 = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw1)) if self.id_sw1 is int  else self.id_sw1
-            self.id_sw2 = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw2)) if self.id_sw2 is int else self.id_sw2
-            self.id_ilo = networkapi.equipamento.Equipamento.get_by_pk(int(id_sw3)) if self.id_sw3 is int else self.id_sw3
-            self.dcroom = DatacenterRoom.get_dcrooms(int(dcroom)) if self.dcroom is int else self.dcroom
+            self.id_sw1 = networkapi.equipamento.Equipamento.get_by_pk(int(self.id_sw1)) \
+                if self.id_sw1 is int else self.id_sw1
+            self.id_sw2 = networkapi.equipamento.Equipamento.get_by_pk(int(self.id_sw2)) \
+                if self.id_sw2 is int else self.id_sw2
+            self.id_ilo = networkapi.equipamento.Equipamento.get_by_pk(int(self.id_sw3)) \
+                if self.id_sw3 is int else self.id_sw3
+            self.dcroom = DatacenterRoom().get_dcrooms(int(self.dcroom)) \
+                if self.dcroom is int else self.dcroom
             return self.save()
-        except Exception, e:
+        except Exception as e:
             raise Exception('Falha ao inserir Rack. %s' % e)
 
     def del_rack(self):
 
         try:
             self.delete()
-        except Exception, e:
+        except Exception as e:
             raise Exception(u'Error trying to remove Rack: %s.' %e)
 
     def get_by_pk(cls, idt):
@@ -281,10 +303,10 @@ class Rack(BaseModel):
         """
         try:
             return Rack.objects.filter(id=idt).uniqueResult()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise RackNumberNotFoundError(
                 e, u'Dont there is a Rack by pk = %s.' % idt)
-        except Exception, e:
+        except Exception as e:
             cls.log.error(u'Failure to search the Rack.')
             raise RackError(e, u'Failure to search the Rack.')
 
@@ -298,10 +320,10 @@ class Rack(BaseModel):
         """
         try:
             return Rack.objects.filter(nome=name).uniqueResult()
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise RackNumberNotFoundError(
                 e, u'Dont there is the Rack %s.' % name)
-        except Exception, e:
+        except Exception as e:
             cls.log.error(u'Failure to search the Rack.')
             raise RackError(e, u'Failure to search the Rack.')
 
@@ -315,10 +337,10 @@ class Rack(BaseModel):
         """
         try:
             return Rack.objects.get(numero__iexact=number)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise RackNumberNotFoundError(
-                e, u'Dont there is a Rack by pk = %s.' % idt)
-        except Exception, e:
+                e, u'Dont there is a Rack by pk = %s.' % number)
+        except Exception as e:
             cls.log.error(u'Failure to search the Rack.')
             raise RackError(e, u'Failure to search the Rack.')
 
@@ -326,20 +348,20 @@ class Rack(BaseModel):
         try:
             Rack.objects.get(numero__iexact=self.numero)
             raise RackNumberDuplicatedValueError(
-                None, u'Numero de Rack %s ja existe.' % (self.numero))
-        except ObjectDoesNotExist, e:
+                None, u'Numero de Rack %s ja existe.' % self.numero)
+        except ObjectDoesNotExist as e:
             pass
 
         try:
             Rack.objects.get(nome__iexact=self.nome)
             raise RackNameDuplicatedError(
-                None, u'Nome %s ja existe.' % (self.nome))
-        except ObjectDoesNotExist, e:
+                None, u'Nome %s ja existe.' % self.nome)
+        except ObjectDoesNotExist as e:
             pass
 
         try:
             return self.save()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Falha ao inserir Rack.')
             raise RackError(e, u'Falha ao inserir Rack.')
 
@@ -410,7 +432,7 @@ class EnvironmentRack(BaseModel):
 
         try:
             self.save()
-        except Exception, e:
+        except Exception as e:
             self.log.error(u'Error trying to insert EnvironmentRack: %s/%s.' %
                            (self.rack.id, self.ambiente.id))
             raise EnvironmentRackError(
@@ -419,10 +441,10 @@ class EnvironmentRack(BaseModel):
     def get_by_rack_environment(self, rack_id, environment_id):
         try:
             return EnvironmentRack.objects.get(ambiente__id=environment_id, rack__id=rack_id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise EnvironmentRackNotFoundError(
                 e, u'There is no EnvironmentRack with rack = %s and environment = %s.' % (rack_id, environment_id))
-        except Exception, e:
+        except Exception as e:
             self.log.error(
                 u'Error trying to search EnvironmentRack %s/%s.' % (rack_id, environment_id))
             raise EnvironmentRackError(
@@ -435,9 +457,9 @@ class EnvironmentRack(BaseModel):
         """
         try:
             return EnvironmentRack.objects.filter(rack=rack_id)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             raise RackError(
                 e, u'Dont there is a Environment by rack = %s.' % rack_id)
-        except Exception, e:
+        except Exception as e:
             cls.log.error(u'Failure to search the Environment.')
-            raise AmbienteError(e, u'Failure to search the Environment.')
+            raise Exception(e, u'Failure to search the Environment.')
