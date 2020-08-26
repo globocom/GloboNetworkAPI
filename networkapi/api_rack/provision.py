@@ -486,7 +486,7 @@ class Provision:
 
         return True
 
-    def oob_provision(self, rack, equips):
+    def oob_provision(self, equips):
         log.info("AutoprovisionOOB")
 
         variablestochangecore1 = dict()
@@ -498,7 +498,7 @@ class Provision:
         fileincore2 = None
         fileoutcore2 = None
 
-        dcroom = model_to_dict(rack.dcroom)
+        dcroom = model_to_dict(self.rack.dcroom)
         log.debug("type: %s" % str(type(dcroom.get("config"))))
         fabricconfig = dcroom.get("config")
 
@@ -571,12 +571,12 @@ class Provision:
                     variablestochangecore1['IPCORE'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).broadcast-2)
                     variablestochangecore1['IPHSRP'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).ip+1)
                     variablestochangecore1['NUM_CHANNEL'] = str(BASE_CHANNEL + int(self.rack.numero))
-                    if (1 + int(rack.numero)) % 2 == 0:
+                    if (1 + int(self.rack.numero)) % 2 == 0:
                         variablestochangecore1["HSRP_PRIORITY"] = "100"
                     else:
                         variablestochangecore1["HSRP_PRIORITY"] = "101"
                     fileincore1 = path_to_guide + roteiro
-                    fileoutcore1 = path_to_add_config + nome + "-ADD-" + str(rack.nome) + ".cfg"
+                    fileoutcore1 = path_to_add_config + nome + "-ADD-" + str(self.rack.nome) + ".cfg"
                 elif nome[-1] == "2":
                     log.info(str(nome))
                     variablestochangeoob["INT_OOBC2_UPLINK"] = intoob
@@ -584,13 +584,13 @@ class Provision:
                     variablestochangeoob["HOSTNAME_CORE2"] = nome
                     variablestochangecore2["INT_OOB_UPLINK"] = intoob
                     variablestochangecore2["INTERFACE_CORE"] = intcore
-                    variablestochangecore2["HOSTNAME_RACK"] = rack.nome
+                    variablestochangecore2["HOSTNAME_RACK"] = self.rack.nome
                     variablestochangecore2["SO_HOSTNAME_OOB"] = "SO_" + str(self.rack.nome)
                     variablestochangecore2["VLAN_SO"] = str(vlan.num_vlan)
                     variablestochangecore2['IPCORE'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).broadcast-1)
                     variablestochangecore2['IPHSRP'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).ip+1)
                     variablestochangecore2['NUM_CHANNEL'] = str(BASE_CHANNEL + int(self.rack.numero))
-                    if (2 + int(rack.numero)) % 2 == 0:
+                    if (2 + int(self.rack.numero)) % 2 == 0:
                         variablestochangecore2["HSRP_PRIORITY"] = "100"
                     else:
                         variablestochangecore2["HSRP_PRIORITY"] = "101"
