@@ -75,12 +75,6 @@ class Provision:
         IPSIBGPipv6 = dict()
         ASLEAF = dict()
 
-        VLANBE = dict()
-        VLANFE = dict()
-        VLANBORDA = dict()
-        VLANBORDACACHOS = dict()
-        VLANBORDACACHOSBLEAF = dict()
-
         PODSBEipv4 = dict()
         redesPODSBEipv4 = dict()
 
@@ -104,16 +98,22 @@ class Provision:
         redesPODSFEipv4 = dict()
         redesPODSFEipv6 = dict()
 
+        VLANBELEAF = dict()
+        VLANFELEAF = dict()
+        VLANBORDALEAF = dict()
+        VLANBORDACACHOSLEAF = dict()
+        VLANBORDACACHOSBLEAF = dict()
+
         IPSPINEipv4[numero_rack] = list()
         IPSPINEipv6[numero_rack] = list()
         IPLEAFipv4[numero_rack] = list()
         IPLEAFipv6[numero_rack] = list()
         IPSIBGPipv4[numero_rack] = list()
         IPSIBGPipv6[numero_rack] = list()
-        VLANBE[numero_rack] = list()
-        VLANFE[numero_rack] = list()
-        VLANBORDA[numero_rack] = list()
-        VLANBORDACACHOS[numero_rack] = list()
+        VLANBELEAF[numero_rack] = list()
+        VLANFELEAF[numero_rack] = list()
+        VLANBORDALEAF[numero_rack] = list()
+        VLANBORDACACHOSLEAF[numero_rack] = list()
         VLANBORDACACHOSBLEAF[numero_rack] = list()
         ASLEAF[numero_rack] = list()
 
@@ -148,12 +148,12 @@ class Provision:
         VLANBORDACACHOS = None
         VLANBORDACACHOSB = None
 
-        CIDRBEipv4 = None
+        CIDRBEipv4 = list()
         CIDRBO_DSRipv4interno = None
         CIDRBO_DSRipv6interno = None
         CIDRBOCAAipv4interno = None
 
-        CIDRBEipv6 = None
+        CIDRBEipv6 = list()
         CIDRBOCAAipv6interno = None
         CIDRBOCABipv4interno = None
         CIDRBOCABipv6interno = None
@@ -197,14 +197,19 @@ class Provision:
         BASE_AS_LFS = int(BGP.get("leafs"))
 
         # get fathers environments
-        spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                      grupo_l3__nome=str(self.rack.nome),
-                                                      ambiente_logico__nome__in=["SPINE01LEAF",
-                                                                                 "SPINE02LEAF",
-                                                                                 "SPINE03LEAF",
-                                                                                 "SPINE04LEAF"]
-                                                      ).order_by("min_num_vlan_1")
-        log.debug("spn_envs %s" % spn_envs)
+        dc_name = ["BE", "FE", "BO", "BOCACHOS-A", "BOCACHOS-B"]
+        vlan_name = list()
+        for env in dc_name:
+            for spn in range(1, 5):
+                name = "VLAN_" + env + "_SPINE0" + str(spn) + "LEAF_" + self.rack.nome
+                vlan_name.append(name)
+
+        spn_vlan = models_vlan.Vlan.objects.filter(nome__in=vlan_name).order_by("nome")
+
+        # spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
+        #                                               grupo_l3__nome=str(rack.dcroom.name),
+        #                                               ambiente_logico__nome="SPINES")
+        log.debug("spn_vlan %s" % spn_vlan)
 
         prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
                                                        grupo_l3__nome=str(self.rack.nome),
@@ -219,34 +224,25 @@ class Provision:
                                                     ambiente_logico__nome="LEAF-LEAF").uniqueResult()
         log.debug("lf_env %s" % lf_env)
 
-        for spn in spn_envs:
-            if spn.divisao_dc.nome[:2] == "BE":
-                VLANBE.append(spn.min_num_vlan_1)
-                log.debug("spn_configs %s" % spn.configs)
-                for net in spn.configs:
-                    if net.ip_version == "v4":
-                        CIDRBEipv4 = IPNetwork(str(net.network))
-                        prefixBEV4 = int(net.subnet_mask)
-                    else:
-                        log.debug(str(net.network))
-                        CIDRBEipv6 = IPNetwork(str(net.network))
-                        prefixBEV6 = int(net.subnet_mask)
-            elif spn.divisao_dc.nome[:2] == "FE":
-                VLANFE.append(spn.min_num_vlan_1)
-            #     for net in spn.configs:
-            #         if net.ip_version == "v4":
-            #             CIDRFEipv4 = IPNetwork(str(net.network))
-            #             prefixFEV4 = int(net.subnet_mask)
-            #         else:
-            #             log.debug(str(net.network))
-            #             CIDRFEipv6 = IPNetwork(str(net.network))
-            #             prefixFEV6 = int(net.subnet_mask)
-            elif spn.divisao_dc.nome == "BO":
-                VLANBORDA.append(spn.min_num_vlan_1)
-            elif spn.divisao_dc.nome == "BOCACHOS-A":
-                VLANBORDACACHOS.append(spn.min_num_vlan_1)
-            elif spn.divisao_dc.nome == "BOCACHOS-B":
-                VLANBORDACACHOSB.append(spn.min_num_vlan_1)
+        vlanBE = list()
+        vlanFE = list()
+        vlanBO = list()
+        vlanBOCA = list()
+        vlanBOCAB = list()
+
+        for vlan in spn_vlan:
+            if "_BE_" in vlan.nome:
+                vlanBE.append(vlan.num_vlan)
+                CIDRBEipv4.append(IPNetwork(vlan.networks_ipv4[0].networkv4))
+                CIDRBEipv6.append(IPNetwork(vlan.networks_ipv6[0].networkv6))
+            elif "_FE_" in vlan.nome:
+                vlanFE.append(vlan.num_vlan)
+            elif "_BO_" in vlan.nome:
+                vlanBO.append(vlan.num_vlan)
+            elif "_BOCACHOS-A_" in vlan.nome:
+                vlanBOCA.append(vlan.num_vlan)
+            elif "_BOCACHOS-B_" in vlan.nome:
+                vlanBOCAB.append(vlan.num_vlan)
 
         for prod in prod_envs:
             if prod.divisao_dc.nome[:2] == "BE":
@@ -288,96 +284,73 @@ class Provision:
             elif netlf.ip_version == "v6":
                 IBGPToRLxLipv6 = IPNetwork(str(netlf.network))
 
-        log.debug("split")
-        SPINE1ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 0)
-        SPINE2ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 1)
-        SPINE3ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 2)
-        SPINE4ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 3)
-        SPINE1ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 0)
-        SPINE2ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 1)
-        SPINE3ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 2)
-        SPINE4ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 3)
-        log.debug("vlt")
         id_vlt = [envconfig.get("VLT").get("id_vlt_lf1"), envconfig.get("VLT").get("id_vlt_lf2")]
         priority_vlt = [envconfig.get("VLT").get("priority_vlt_lf1"), envconfig.get("VLT").get("priority_vlt_lf2")]
 
-        log.debug("spine subnet")
-        subSPINE1ipv4 = list(SPINE1ipv4.subnet(31))
-        subSPINE2ipv4 = list(SPINE2ipv4.subnet(31))
-        subSPINE3ipv4 = list(SPINE3ipv4.subnet(31))
-        subSPINE4ipv4 = list(SPINE4ipv4.subnet(31))
-        subSPINE1ipv6 = list(SPINE1ipv6.subnet(127))
-        subSPINE2ipv6 = list(SPINE2ipv6.subnet(127))
-        subSPINE3ipv6 = list(SPINE3ipv6.subnet(127))
-        subSPINE4ipv6 = list(SPINE4ipv6.subnet(127))
-        log.debug("ibgp subnet")
-
         subIBGPToRLxLipv4 = list(IBGPToRLxLipv4.subnet(31))
         subIBGPToRLxLipv6 = list(IBGPToRLxLipv6.subnet(127))
-        log.debug("ip subnet")
 
-        IPSPINEipv4[numero_rack].append(subSPINE1ipv4[numero_rack][0])
-        IPSPINEipv4[numero_rack].append(subSPINE2ipv4[numero_rack][0])
-        IPSPINEipv4[numero_rack].append(subSPINE3ipv4[numero_rack][0])
-        IPSPINEipv4[numero_rack].append(subSPINE4ipv4[numero_rack][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[0][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[1][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[2][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[3][0])
         #
-        IPLEAFipv4[numero_rack].append(subSPINE1ipv4[numero_rack][1])
-        IPLEAFipv4[numero_rack].append(subSPINE2ipv4[numero_rack][1])
-        IPLEAFipv4[numero_rack].append(subSPINE3ipv4[numero_rack][1])
-        IPLEAFipv4[numero_rack].append(subSPINE4ipv4[numero_rack][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[0][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[1][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[2][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[3][1])
         #
         IPSIBGPipv4[numero_rack].append(subIBGPToRLxLipv4[numero_rack][0])
         IPSIBGPipv4[numero_rack].append(subIBGPToRLxLipv4[numero_rack][1])
         #
-        IPSPINEipv6[numero_rack].append(subSPINE1ipv6[numero_rack][0])
-        IPSPINEipv6[numero_rack].append(subSPINE2ipv6[numero_rack][0])
-        IPSPINEipv6[numero_rack].append(subSPINE3ipv6[numero_rack][0])
-        IPSPINEipv6[numero_rack].append(subSPINE4ipv6[numero_rack][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[0][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[1][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[2][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[3][0])
         #
-        IPLEAFipv6[numero_rack].append(subSPINE1ipv6[numero_rack][1])
-        IPLEAFipv6[numero_rack].append(subSPINE2ipv6[numero_rack][1])
-        IPLEAFipv6[numero_rack].append(subSPINE3ipv6[numero_rack][1])
-        IPLEAFipv6[numero_rack].append(subSPINE4ipv6[numero_rack][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[0][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[1][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[2][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[3][1])
         #
         IPSIBGPipv6[numero_rack].append(subIBGPToRLxLipv6[numero_rack][0])
         IPSIBGPipv6[numero_rack].append(subIBGPToRLxLipv6[numero_rack][1])
         #
         log.debug("vlan subnet")
-        log.debug(VLANBE)
+        log.debug(vlanBE)
         log.debug(BASE_RACK)
         log.debug(numero_rack)
-        log.debug(VLANFE)
-        log.debug(VLANBORDA)
-        log.debug(VLANBORDACACHOS)
-        log.debug(VLANBORDACACHOSB)
+        log.debug(vlanFE)
+        log.debug(vlanBO)
+        log.debug(vlanBOCA)
+        log.debug(vlanBOCAB)
+        log.debug(CIDRBEipv4)
+        log.debug(CIDRBEipv6)
 
-        #
         log.debug("as")
         log.debug(BASE_AS_LFS)
         log.debug(numero_rack)
         ASLEAF[numero_rack].append(BASE_AS_LFS + numero_rack)
 
         for equip, spn, j in zip(equips_sorted[:2], [0, 2], [0, 1]):
-            # lf 1/2
-            log.info("for equip spn j")
             variablestochangeleaf1["IPLEAFSP1IPV4"] = str(IPLEAFipv4[numero_rack][spn])
             variablestochangeleaf1["IPLEAFSP2IPV4"] = str(IPLEAFipv4[numero_rack][spn + 1])
             variablestochangeleaf1["IPIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][j])
             variablestochangeleaf1["IPLEAFSP1IPV6"] = str(IPLEAFipv6[numero_rack][spn])
             variablestochangeleaf1["IPLEAFSP2IPV6"] = str(IPLEAFipv6[numero_rack][spn + 1])
             variablestochangeleaf1["IPIBGPIPV6"] = str(IPSIBGPipv6[numero_rack][j])
-
-            variablestochangeleaf1["VLANBELEAFSP1"] = str(VLANBE[spn])
-            variablestochangeleaf1["VLANBELEAFSP2"] = str(VLANBE[spn + 1])
-            variablestochangeleaf1["VLANFELEAFSP1"] = str(VLANFE[spn])
-            variablestochangeleaf1["VLANFELEAFSP2"] = str(VLANFE[spn + 1])
-            variablestochangeleaf1["VLANBORDALEAFSP1"] = str(VLANBORDA[spn])
-            variablestochangeleaf1["VLANBORDALEAFSP2"] = str(VLANBORDA[spn + 1])
-            variablestochangeleaf1["VLANBORDACACHOSLEAFSP1"] = str(VLANBORDACACHOS[spn])
-            variablestochangeleaf1["VLANBORDACACHOSLEAFSP2"] = str(VLANBORDACACHOS[spn + 1])
-            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP1"] = str(VLANBORDACACHOSB[spn])
-            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP2"] = str(VLANBORDACACHOSB[spn + 1])
-
+            log.debug("1")
+            variablestochangeleaf1["VLANBELEAFSP1"] = str(vlanBE[spn])
+            variablestochangeleaf1["VLANBELEAFSP2"] = str(vlanBE[spn + 1])
+            variablestochangeleaf1["VLANFELEAFSP1"] = str(vlanBE[spn])
+            variablestochangeleaf1["VLANFELEAFSP2"] = str(vlanBE[spn + 1])
+            variablestochangeleaf1["VLANBORDALEAFSP1"] = str(vlanBO[spn])
+            variablestochangeleaf1["VLANBORDALEAFSP2"] = str(vlanBO[spn + 1])
+            variablestochangeleaf1["VLANBORDACACHOSLEAFSP1"] = str(vlanBOCA[spn])
+            variablestochangeleaf1["VLANBORDACACHOSLEAFSP2"] = str(vlanBOCA[spn + 1])
+            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP1"] = str(vlanBOCAB[spn])
+            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP2"] = str(vlanBOCAB[spn + 1])
+            log.debug("2")
             variablestochangeleaf1["ASLEAF"] = str(ASLEAF[numero_rack][0])
 
             variablestochangeleaf1["IPNEIGHSPINE1IPV4"] = str(IPSPINEipv4[numero_rack][spn])
@@ -406,8 +379,9 @@ class Provision:
                 variablestochangeleaf1["NET_HOST_BOCAA_IPV4"] = CIDRBOCAAipv4interno
             if CIDRBOCABipv4interno:
                 variablestochangeleaf1["NET_HOST_BOCAB_IPV4"] = CIDRBOCABipv4interno
-            variablestochangeleaf1["NET_SPINE1_LF_IPV4"] = str(subSPINE1ipv4[numero_rack])
-            variablestochangeleaf1["NET_SPINE2_LF_IPV4"] = str(subSPINE2ipv4[numero_rack])
+            log.debug("3")
+            variablestochangeleaf1["NET_SPINE1_LF_IPV4"] = str(CIDRBEipv4[0])
+            variablestochangeleaf1["NET_SPINE2_LF_IPV4"] = str(CIDRBEipv4[1])
             variablestochangeleaf1["NET_LF_LF_IPV4"] = str(subIBGPToRLxLipv4[numero_rack])
 
             try:
@@ -422,18 +396,16 @@ class Provision:
                 variablestochangeleaf1["NET_HOST_BOCAA_IPV6"] = CIDRBOCAAipv6interno
             if CIDRBOCABipv6interno:
                 variablestochangeleaf1["NET_HOST_BOCAB_IPV6"] = CIDRBOCABipv6interno
-            variablestochangeleaf1["NET_SPINE1_LF_IPV6"] = str(subSPINE1ipv6[numero_rack])
-            variablestochangeleaf1["NET_SPINE2_LF_IPV6"] = str(subSPINE2ipv6[numero_rack])
+            log.debug("4")
+            variablestochangeleaf1["NET_SPINE1_LF_IPV6"] = str(CIDRBEipv6[0])
+            variablestochangeleaf1["NET_SPINE2_LF_IPV6"] = str(CIDRBEipv6[1])
             variablestochangeleaf1["NET_LF_LF_IPV6"] = str(subIBGPToRLxLipv6[numero_rack])
 
             variablestochangeleaf1["ID_LEAF"] = str(equip.get("sw"))  # lf1 ou lf2
             variablestochangeleaf1["OWN_IP_MGMT"] = equip.get("ip_mngt")
             variablestochangeleaf1["LF_HOSTNAME"] = equip.get("nome")
-
+            log.debug("5")
             for i in equip.get("interfaces"):
-                log.info("for i in equip")
-                log.info(str(i))
-
                 if i.get("nome")[:3] == self.leaf_prefix:
                     variablestochangeleaf1["LFNEIGH_HOSTNAME"] = i.get("nome")
                     variablestochangeleaf1["LFNEIGH_IP_MGMT"] = i.get("ip_mngt")
@@ -446,16 +418,15 @@ class Provision:
                     log.debug("ok if spn")
                     variablestochangespine1["IPSPINEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num - 1])
                     variablestochangespine1["IPSPINEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBELEAF"] = str(VLANBE[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANFELEAF"] = str(VLANFE[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBORDALEAF"] = str(VLANBORDA[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBORDACACHOSLEAF"] = str(
-                        VLANBORDACACHOS[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBORDACACHOSB"] = str(
-                        VLANBORDACACHOSB[numero_rack][spine_num - 1])
+                    variablestochangespine1["VLANBELEAF"] = str(vlanBE[spine_num - 1])
+                    variablestochangespine1["VLANFELEAF"] = str(vlanFE[spine_num - 1])
+                    variablestochangespine1["VLANBORDALEAF"] = str(vlanBO[spine_num - 1])
+                    variablestochangespine1["VLANBORDACACHOSLEAF"] = str(vlanBOCA[spine_num - 1])
+                    variablestochangespine1["VLANBORDACACHOSB"] = str(vlanBOCAB[spine_num - 1])
                     variablestochangespine1["ASLEAF"] = str(ASLEAF[numero_rack][0])
                     variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 1])
                     variablestochangespine1["IPNEIGHLEAFIPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 1])
+
                     if spine_num in [1, 3]:
                         variablestochangeleaf1["SP1_HOSTNAME"] = i.get("nome")
                         variablestochangeleaf1["INTERFACE_SP1"] = i.get("interface")
@@ -464,12 +435,12 @@ class Provision:
                         variablestochangeleaf1["SP2_HOSTNAME"] = i.get("nome")
                         variablestochangeleaf1["INTERFACE_SP2"] = i.get("interface")
                         variablestochangeleaf1["ASSPINE2"] = str(BASE_AS_SPN + spine_num - 1)
-                    log.debug("path to guide")
+
                     fileinspine1 = path_to_guide + i.get("roteiro")
                     fileoutspine1 = path_to_add_config + i.get("nome") + "-ADD-" + rack.nome + ".cfg"
-                    log.debug("replace")
                     self.replace_file(fileinspine1, fileoutspine1, variablestochangespine1)
                     variablestochangespine1 = dict()
+
                 elif i.get("nome")[:3] == self.oob_prefix:
                     variablestochangeleaf1["HOSTNAME_OOB"] = i.get("nome")
                     variablestochangeleaf1["INTERFACE_OOB"] = i.get("interface")
@@ -477,11 +448,11 @@ class Provision:
             variablestochangeleaf1["ID_VLT"] = str(id_vlt[j])
             variablestochangeleaf1["PRIORITY_VLT"] = str(priority_vlt[j])
 
-            log.debug("ok")
             fileinleaf1 = path_to_guide + equip.get("roteiro")
             fileoutleaf1 = path_to_config + equip.get("nome") + ".cfg"
-            log.debug("replace")
+
             self.replace_file(fileinleaf1, fileoutleaf1, variablestochangeleaf1)
+            log.debug(fileoutleaf1)
             variablestochangeleaf1 = dict()
 
         return True
