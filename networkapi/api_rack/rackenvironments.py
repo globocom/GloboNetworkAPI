@@ -123,7 +123,6 @@ class RackEnvironment:
         log.debug("_create_spnlfvlans")
 
         spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
-                                                         father_environment__isnull=False,
                                                          grupo_l3__nome=str(self.rack.dcroom.name),
                                                          ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                     "SPINE02LEAF",
