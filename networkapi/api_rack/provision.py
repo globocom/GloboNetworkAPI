@@ -206,9 +206,6 @@ class Provision:
 
         spn_vlan = models_vlan.Vlan.objects.filter(nome__in=vlan_name).order_by("nome")
 
-        # spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-        #                                               grupo_l3__nome=str(rack.dcroom.name),
-        #                                               ambiente_logico__nome="SPINES")
         log.debug("spn_vlan %s" % spn_vlan)
 
         prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
@@ -219,7 +216,7 @@ class Provision:
         log.debug("prod_envs %s" % prod_envs)
 
         lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                    grupo_l3__nome=str(self.rack.dcroom.name),
+                                                    grupo_l3__nome=str(self.rack.nome),
                                                     divisao_dc__nome="BE",
                                                     ambiente_logico__nome="LEAF-LEAF").uniqueResult()
         log.debug("lf_env %s" % lf_env)
@@ -287,9 +284,6 @@ class Provision:
         id_vlt = [envconfig.get("VLT").get("id_vlt_lf1"), envconfig.get("VLT").get("id_vlt_lf2")]
         priority_vlt = [envconfig.get("VLT").get("priority_vlt_lf1"), envconfig.get("VLT").get("priority_vlt_lf2")]
 
-        subIBGPToRLxLipv4 = list(IBGPToRLxLipv4.subnet(31))
-        subIBGPToRLxLipv6 = list(IBGPToRLxLipv6.subnet(127))
-
         IPSPINEipv4[numero_rack].append(CIDRBEipv4[0][0])
         IPSPINEipv4[numero_rack].append(CIDRBEipv4[1][0])
         IPSPINEipv4[numero_rack].append(CIDRBEipv4[2][0])
@@ -300,8 +294,8 @@ class Provision:
         IPLEAFipv4[numero_rack].append(CIDRBEipv4[2][1])
         IPLEAFipv4[numero_rack].append(CIDRBEipv4[3][1])
         #
-        IPSIBGPipv4[numero_rack].append(subIBGPToRLxLipv4[numero_rack][0])
-        IPSIBGPipv4[numero_rack].append(subIBGPToRLxLipv4[numero_rack][1])
+        IPSIBGPipv4[numero_rack].append(IBGPToRLxLipv4[0])
+        IPSIBGPipv4[numero_rack].append(IBGPToRLxLipv4[1])
         #
         IPSPINEipv6[numero_rack].append(CIDRBEipv6[0][0])
         IPSPINEipv6[numero_rack].append(CIDRBEipv6[1][0])
@@ -313,8 +307,8 @@ class Provision:
         IPLEAFipv6[numero_rack].append(CIDRBEipv6[2][1])
         IPLEAFipv6[numero_rack].append(CIDRBEipv6[3][1])
         #
-        IPSIBGPipv6[numero_rack].append(subIBGPToRLxLipv6[numero_rack][0])
-        IPSIBGPipv6[numero_rack].append(subIBGPToRLxLipv6[numero_rack][1])
+        IPSIBGPipv6[numero_rack].append(IBGPToRLxLipv6[0])
+        IPSIBGPipv6[numero_rack].append(IBGPToRLxLipv6[1])
         #
         log.debug("vlan subnet")
         log.debug(vlanBE)
@@ -382,7 +376,7 @@ class Provision:
             log.debug("3")
             variablestochangeleaf1["NET_SPINE1_LF_IPV4"] = str(CIDRBEipv4[0])
             variablestochangeleaf1["NET_SPINE2_LF_IPV4"] = str(CIDRBEipv4[1])
-            variablestochangeleaf1["NET_LF_LF_IPV4"] = str(subIBGPToRLxLipv4[numero_rack])
+            variablestochangeleaf1["NET_LF_LF_IPV4"] = str(IBGPToRLxLipv4)
 
             try:
                 variablestochangeleaf1["NET_HOST_BE_IPV6"] = CIDRBEipv6interno
@@ -399,7 +393,7 @@ class Provision:
             log.debug("4")
             variablestochangeleaf1["NET_SPINE1_LF_IPV6"] = str(CIDRBEipv6[0])
             variablestochangeleaf1["NET_SPINE2_LF_IPV6"] = str(CIDRBEipv6[1])
-            variablestochangeleaf1["NET_LF_LF_IPV6"] = str(subIBGPToRLxLipv6[numero_rack])
+            variablestochangeleaf1["NET_LF_LF_IPV6"] = str(IBGPToRLxLipv6)
 
             variablestochangeleaf1["ID_LEAF"] = str(equip.get("sw"))  # lf1 ou lf2
             variablestochangeleaf1["OWN_IP_MGMT"] = equip.get("ip_mngt")
