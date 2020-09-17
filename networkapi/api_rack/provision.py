@@ -208,15 +208,13 @@ class Provision:
 
         log.debug("spn_vlan %s" % spn_vlan)
 
-        prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                       grupo_l3__nome=str(self.rack.nome),
+        prod_envs = models_env.Ambiente.objects.filter(grupo_l3__nome=str(self.rack.nome),
                                                        ambiente_logico__nome="PRODUCAO",
                                                        divisao_dc__nome__in=["BE", "FE", "BO_DSR",
                                                                              "BOCACHOS-A", "BOCACHOS-B"])
         log.debug("prod_envs %s" % prod_envs)
 
-        lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                    grupo_l3__nome=str(self.rack.nome),
+        lf_env = models_env.Ambiente.objects.filter(grupo_l3__nome=str(self.rack.nome),
                                                     divisao_dc__nome="BE",
                                                     ambiente_logico__nome="LEAF-LEAF").uniqueResult()
         log.debug("lf_env %s" % lf_env)
@@ -489,8 +487,19 @@ class Provision:
         except ObjectDoesNotExist:
             raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_GUIDE")
 
-        vlan_name = "VLAN_GERENCIA_" + self.rack.nome
-        vlan = models_vlan.Vlan.objects.filter(nome=vlan_name).uniqueResult()
+        try:
+            vlan_name = "VLAN_GERENCIA_" + self.rack.nome
+            vlan = models_vlan.Vlan.objects.filter(nome=vlan_name).uniqueResult()
+        except Exception as e:
+            log.debug("Error while getting %s. Error: %s" % (vlan_name, e))
+            vlan = False
+
+        if not vlan:
+            try:
+                vlan_name = "OOB_SO_" + self.rack.nome
+                vlan = models_vlan.Vlan.objects.filter(nome=vlan_name).uniqueResult()
+            except Exception as e:
+                raise Exception("O rack não tem vlan de gerencia. Error: %s" % e)
 
         log.debug("Vlan OOB: %s" % vlan.nome)
         log.debug("Rede OOB: %s" % IPNetwork(vlan.networks_ipv4[0].networkv4))
