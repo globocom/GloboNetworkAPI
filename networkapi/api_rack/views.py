@@ -253,8 +253,8 @@ class RackEnvironmentView(APIView):
             logging.getLogger('Alocando ambientes e vlans do rack')
 
             rack_id = kwargs.get("rack_id")
-            facade.rack_environments_vlans(rack_id, request.user)
-            # facade.allocate_env_vlan(request.user, rack_id)
+            # facade.rack_environments_vlans(rack_id, request.user)
+            facade.allocate_env_vlan(request.user, rack_id)
 
             data = dict()
             return Response(data, status=status.HTTP_200_OK)

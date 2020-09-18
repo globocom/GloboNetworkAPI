@@ -123,7 +123,6 @@ class RackEnvironment:
         log.debug("_create_spnlfvlans")
 
         spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
-                                                         father_environment__isnull=False,
                                                          grupo_l3__nome=str(self.rack.dcroom.name),
                                                          ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                     "SPINE02LEAF",
@@ -177,7 +176,6 @@ class RackEnvironment:
         log.debug("_create_lflf_vlans")
 
         env_lf = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
-                                                    father_environment__isnull=True,
                                                     grupo_l3__nome=str(self.rack.dcroom.name),
                                                     ambiente_logico__nome="LEAF-LEAF")
         log.debug("Leaf-leaf environments: " + str(env_lf))
@@ -202,15 +200,15 @@ class RackEnvironment:
             except:
                 log.debug("debug lfxlf")
                 for net in env.configs:
-                    bloco = net.ip_config.subnet
+                    bloco = net.network
                     prefix = bloco.split('/')[-1]
                     network = {
                         'prefix': prefix,
                         'network_type': id_network_type
                     }
-                    if str(net.ip_config.type)[-1] is "4":
+                    if str(net.ip_version)[-1] is "4":
                         create_networkv4 = network
-                    elif str(net.ip_config.type)[-1] is "6":
+                    elif str(net.ip_version)[-1] is "6":
                         create_networkv6 = network
                 obj = {
                     'name': vlan_name,
@@ -222,6 +220,56 @@ class RackEnvironment:
                     'create_networkv6': create_networkv6 if create_networkv6 else None
                 }
                 facade_vlan_v3.create_vlan(obj, self.user)
+
+    def leaf_leaf_envs_save(self):
+        log.debug("_create_lflf_envs")
+
+        env_lf = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
+                                                    grupo_l3__nome=str(self.rack.dcroom.name),
+                                                    ambiente_logico__nome="LEAF-LEAF")
+        log.debug("Leaf-leaf environments: " + str(env_lf))
+
+        try:
+            id_l3 = models_env.GrupoL3().get_by_name(self.rack.nome).id
+        except:
+            l3_dict = models_env.GrupoL3()
+            l3_dict.nome = self.rack.nome
+            l3_dict.save()
+            id_l3 = l3_dict.id
+            pass
+
+        for env in env_lf:
+            config_subnet = []
+            for net in env.configs:
+                cidr = list(IPNetwork(net.network).subnet(int(net.subnet_mask)))[self.rack.numero]
+                network = {
+                    'network': str(cidr),
+                    'ip_version': str(net.ip_version),
+                    'network_type': int(net.id_network_type.id),
+                    'subnet_mask': int(net.subnet_mask)
+                }
+                config_subnet.append(network)
+
+            obj = {
+                'grupo_l3': id_l3,
+                'ambiente_logico': env.ambiente_logico.id,
+                'divisao_dc': env.divisao_dc.id,
+                'acl_path': env.acl_path,
+                'ipv4_template': env.ipv4_template,
+                'ipv6_template': env.ipv6_template,
+                'link': env.link,
+                'min_num_vlan_2': env.min_num_vlan_1,
+                'max_num_vlan_2': env.max_num_vlan_1,
+                'min_num_vlan_1': env.min_num_vlan_1,
+                'max_num_vlan_1': env.max_num_vlan_1,
+                'vrf': env.vrf,
+                'father_environment': env.id,
+                'default_vrf': env.default_vrf.id,
+                'configs': config_subnet,
+                'fabric_id': self.rack.dcroom.id
+            }
+            environment = facade_env.create_environment(obj)
+            log.debug("Environment object: %s" % str(environment))
 
     def prod_environment_save(self):
         log.debug("_create_prod_envs")

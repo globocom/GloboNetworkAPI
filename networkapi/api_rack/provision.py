@@ -10,6 +10,7 @@ from django.forms.models import model_to_dict
 from netaddr import IPNetwork
 from networkapi.rack.models import Rack, RackConfigError
 from networkapi.ambiente import models as models_env
+from networkapi.vlan import models as models_vlan
 from networkapi.system.facade import get_value as get_variable
 from networkapi.system import exceptions as var_exceptions
 
@@ -20,6 +21,9 @@ class Provision:
 
     def __init__(self, rack_id):
         self.rack = Rack().get_by_pk(rack_id)
+        self.spine_prefix = "SPN"
+        self.leaf_prefix = "LF-"
+        self.oob_prefix = "OOB"
 
     @staticmethod
     def replace_file(filein, fileout, dicionario):
@@ -61,10 +65,7 @@ class Provision:
 
         log.info("AutoprovisionSPN-LF")
 
-        numero_rack = rack.numero
-        prefixspn = "SPN"
-        prefixlf = "LF-"
-        prefixoob = "OOB"
+        numero_rack = self.rack.numero
 
         IPSPINEipv4 = dict()
         IPSPINEipv6 = dict()
@@ -73,18 +74,12 @@ class Provision:
         IPSIBGPipv4 = dict()
         IPSIBGPipv6 = dict()
         ASLEAF = dict()
-        #
-        VLANBELEAF = dict()
-        VLANFELEAF = dict()
-        VLANBORDALEAF = dict()
-        VLANBORDACACHOSLEAF = dict()
-        VLANBORDACACHOSBLEAF = dict()
-        #
+
         PODSBEipv4 = dict()
         redesPODSBEipv4 = dict()
-        #
+
         subnetsRackBEipv4 = dict()
-        #
+
         PODSBEipv6 = dict()
         redesPODSBEipv6 = dict()
         PODSBEFEipv6 = dict()
@@ -99,18 +94,16 @@ class Provision:
         redeHostsBOipv6 = dict()
         redeHostsCAipv6 = dict()
         redeHostsFILERipv6 = dict()
-        subnetsRackBEipv6 = dict()
-        subnetsRackFEipv4 = dict()
-        subnetsRackBO_DSRipv4 = dict()
-        subnetsRackBOCAAipv4 = dict()
-        subnetsRackBOCABipv4 = dict()
+
         redesPODSFEipv4 = dict()
-        subnetsRackFEipv6 = dict()
-        subnetsRackBO_DSRipv6 = dict()
-        subnetsRackBOCAAipv6 = dict()
-        subnetsRackBOCABipv6 = dict()
         redesPODSFEipv6 = dict()
-        #
+
+        VLANBELEAF = dict()
+        VLANFELEAF = dict()
+        VLANBORDALEAF = dict()
+        VLANBORDACACHOSLEAF = dict()
+        VLANBORDACACHOSBLEAF = dict()
+
         IPSPINEipv4[numero_rack] = list()
         IPSPINEipv6[numero_rack] = list()
         IPLEAFipv4[numero_rack] = list()
@@ -123,12 +116,12 @@ class Provision:
         VLANBORDACACHOSLEAF[numero_rack] = list()
         VLANBORDACACHOSBLEAF[numero_rack] = list()
         ASLEAF[numero_rack] = list()
-        #
+
         PODSBEipv4[numero_rack] = list()
         redesPODSBEipv4[numero_rack] = list()
-        #
+
         subnetsRackBEipv4[numero_rack] = list()
-        #
+
         PODSBEipv6[numero_rack] = list()
         redesPODSBEipv6[numero_rack] = list()
         PODSBEFEipv6[numero_rack] = list()
@@ -143,16 +136,7 @@ class Provision:
         redeHostsBOipv6[numero_rack] = list()
         redeHostsCAipv6[numero_rack] = list()
         redeHostsFILERipv6[numero_rack] = list()
-        subnetsRackBEipv6[numero_rack] = list()
-        subnetsRackFEipv4[numero_rack] = list()
-        subnetsRackBO_DSRipv4[numero_rack] = list()
-        subnetsRackBOCAAipv4[numero_rack] = list()
-        subnetsRackBOCABipv4[numero_rack] = list()
         redesPODSFEipv4[numero_rack] = list()
-        subnetsRackFEipv6[numero_rack] = list()
-        subnetsRackBO_DSRipv6[numero_rack] = list()
-        subnetsRackBOCAAipv6[numero_rack] = list()
-        subnetsRackBOCABipv6[numero_rack] = list()
         redesPODSFEipv6[numero_rack] = list()
 
         variablestochangespine1 = dict()
@@ -162,21 +146,17 @@ class Provision:
         VLANFE = None
         VLANBORDA = None
         VLANBORDACACHOS = None
-        CIDRBEipv4 = None
-        CIDRBEipv6 = None
+        VLANBORDACACHOSB = None
 
-        CIDRBO_DSRipv4interno = ""
-        prefixInternoBO_DSRV4 = ""
-        CIDRBO_DSRipv6interno = ""
-        prefixInternoBO_DSRV6 = ""
-        CIDRBOCAAipv4interno = ""
-        prefixInternoBOCAAV4 = ""
-        CIDRBOCAAipv6interno = ""
-        prefixInternoBOCAAV6 = ""
-        CIDRBOCABipv4interno = ""
-        prefixInternoBOCABV4 = ""
-        CIDRBOCABipv6interno = ""
-        prefixInternoBOCABV6 = ""
+        CIDRBEipv4 = list()
+        CIDRBO_DSRipv4interno = None
+        CIDRBO_DSRipv6interno = None
+        CIDRBOCAAipv4interno = None
+
+        CIDRBEipv6 = list()
+        CIDRBOCAAipv6interno = None
+        CIDRBOCABipv4interno = None
+        CIDRBOCABipv6interno = None
 
         try:
             path_to_guide = get_variable("path_to_guide")
@@ -217,258 +197,152 @@ class Provision:
         BASE_AS_LFS = int(BGP.get("leafs"))
 
         # get fathers environments
-        spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                      grupo_l3__nome=str(rack.dcroom.name),
-                                                      ambiente_logico__nome="SPINES")
-        log.debug("spn_envs %s" % spn_envs)
+        dc_name = ["BE", "FE", "BO", "BOCACHOS-A", "BOCACHOS-B"]
+        vlan_name = list()
+        for env in dc_name:
+            for spn in range(1, 5):
+                name = "VLAN_" + env + "_SPINE0" + str(spn) + "LEAF_" + self.rack.nome
+                vlan_name.append(name)
 
-        prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                       grupo_l3__nome=str(rack.dcroom.name),
+        spn_vlan = models_vlan.Vlan.objects.filter(nome__in=vlan_name).order_by("nome")
+
+        log.debug("spn_vlan %s" % spn_vlan)
+
+        prod_envs = models_env.Ambiente.objects.filter(grupo_l3__nome=str(self.rack.nome),
                                                        ambiente_logico__nome="PRODUCAO",
                                                        divisao_dc__nome__in=["BE", "FE", "BO_DSR",
-                                                                             "BORDACACHOS_A", "BORDACACHOS_B"])
+                                                                             "BOCACHOS-A", "BOCACHOS-B"])
         log.debug("prod_envs %s" % prod_envs)
 
-        lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                    grupo_l3__nome=str(rack.dcroom.name),
+        lf_env = models_env.Ambiente.objects.filter(grupo_l3__nome=str(self.rack.nome),
                                                     divisao_dc__nome="BE",
                                                     ambiente_logico__nome="LEAF-LEAF").uniqueResult()
         log.debug("lf_env %s" % lf_env)
 
-        for spn in spn_envs:
-            if spn.divisao_dc.nome[:2] == "BE":
-                VLANBE = spn.min_num_vlan_1
-                log.debug("spn_configs %s" % spn.configs)
-                for net in spn.configs:
-                    if net.ip_version == "v4":
-                        CIDRBEipv4 = IPNetwork(str(net.network))
-                        prefixBEV4 = int(net.subnet_mask)
-                    else:
-                        log.debug(str(net.network))
-                        CIDRBEipv6 = IPNetwork(str(net.network))
-                        prefixBEV6 = int(net.subnet_mask)
-            elif spn.divisao_dc.nome[:2] == "FE":
-                VLANFE = spn.min_num_vlan_1
-            #     for net in spn.configs:
-            #         if net.ip_version == "v4":
-            #             CIDRFEipv4 = IPNetwork(str(net.network))
-            #             prefixFEV4 = int(net.subnet_mask)
-            #         else:
-            #             log.debug(str(net.network))
-            #             CIDRFEipv6 = IPNetwork(str(net.network))
-            #             prefixFEV6 = int(net.subnet_mask)
-            elif spn.divisao_dc.nome == "BO":
-                VLANBORDA = spn.min_num_vlan_1
-            elif spn.divisao_dc.nome == "BOCACHOS-A":
-                VLANBORDACACHOS = spn.min_num_vlan_1
-            elif spn.divisao_dc.nome == "BOCACHOS-B":
-                VLANBORDACACHOSB = spn.min_num_vlan_1
+        vlanBE = list()
+        vlanFE = list()
+        vlanBO = list()
+        vlanBOCA = list()
+        vlanBOCAB = list()
+
+        for vlan in spn_vlan:
+            if "_BE_" in vlan.nome:
+                vlanBE.append(vlan.num_vlan)
+                CIDRBEipv4.append(IPNetwork(vlan.networks_ipv4[0].networkv4))
+                CIDRBEipv6.append(IPNetwork(vlan.networks_ipv6[0].networkv6))
+            elif "_FE_" in vlan.nome:
+                vlanFE.append(vlan.num_vlan)
+            elif "_BO_" in vlan.nome:
+                vlanBO.append(vlan.num_vlan)
+            elif "_BOCACHOS-A_" in vlan.nome:
+                vlanBOCA.append(vlan.num_vlan)
+            elif "_BOCACHOS-B_" in vlan.nome:
+                vlanBOCAB.append(vlan.num_vlan)
 
         for prod in prod_envs:
             if prod.divisao_dc.nome[:2] == "BE":
                 for net in prod.configs:
-                    #
                     if net.ip_version == "v4":
-                        CIDRBEipv4interno = IPNetwork(str(net.network))
-                        prefixInternoV4 = int(net.subnet_mask)
+                        CIDRBEipv4interno = str(net.network)
                     else:
-                        log.debug(str(net.network))
-                        CIDRBEipv6interno = IPNetwork(str(net.network))
-                        prefixInternoV6 = int(net.subnet_mask)
+                        CIDRBEipv6interno = str(net.network)
             elif prod.divisao_dc.nome[:2] == "FE":
                 for net in prod.configs:
                     if net.ip_version == "v4":
-                        CIDRFEipv4interno = IPNetwork(str(net.network))
-                        prefixInternoFEV4 = int(net.subnet_mask)
+                        CIDRFEipv4interno = str(net.network)
                     else:
-                        log.debug(str(net.network))
-                        CIDRFEipv6interno = IPNetwork(str(net.network))
-                        prefixInternoFEV6 = int(net.subnet_mask)
+                        CIDRFEipv6interno = str(net.network)
 
             elif prod.divisao_dc.nome == "BO_DSR":
                 for net in prod.configs:
                     if net.ip_version == "v4":
-                        CIDRBO_DSRipv4interno = IPNetwork(str(net.network))
-                        prefixInternoBO_DSRV4 = int(net.subnet_mask)
+                        CIDRBO_DSRipv4interno = str(net.network)
                     else:
-                        log.debug(str(net.network))
-                        CIDRBO_DSRipv6interno = IPNetwork(str(net.network))
-                        prefixInternoBO_DSRV6 = int(net.subnet_mask)
+                        CIDRBO_DSRipv6interno = str(net.network)
 
             elif prod.divisao_dc.nome == "BOCACHOS-A":
                 for net in prod.configs:
                     if net.ip_version == "v4":
-                        CIDRBOCAAipv4interno = IPNetwork(str(net.network))
-                        prefixInternoBOCAAV4 = int(net.subnet_mask)
+                        CIDRBOCAAipv4interno = str(net.network)
                     else:
-                        log.debug(str(net.network))
-                        CIDRBOCAAipv6interno = IPNetwork(str(net.network))
-                        prefixInternoBOCAAV6 = int(net.subnet_mask)
+                        CIDRBOCAAipv6interno = str(net.network)
             elif prod.divisao_dc.nome == "BOCACHOS-B":
                 for net in prod.configs:
                     if net.ip_version == "v4":
-                        CIDRBOCABipv4interno = IPNetwork(str(net.network))
-                        prefixInternoBOCABV4 = int(net.subnet_mask)
+                        CIDRBOCABipv4interno = str(net.network)
                     else:
-                        log.debug(str(net.network))
-                        CIDRBOCABipv6interno = IPNetwork(str(net.network))
-                        prefixInternoBOCABV6 = int(net.subnet_mask)
+                        CIDRBOCABipv6interno = str(net.network)
 
-        log.debug(str(lf_env))
         for netlf in lf_env.configs:
             if netlf.ip_version == "v4":
                 IBGPToRLxLipv4 = IPNetwork(str(netlf.network))
             elif netlf.ip_version == "v6":
                 IBGPToRLxLipv6 = IPNetwork(str(netlf.network))
 
-        log.debug("split")
-        SPINE1ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 0)
-        SPINE2ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 1)
-        SPINE3ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 2)
-        SPINE4ipv4 = self.split_network(CIDRBEipv4, prefixBEV4, 3)
-        SPINE1ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 0)
-        SPINE2ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 1)
-        SPINE3ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 2)
-        SPINE4ipv6 = self.split_network(CIDRBEipv6, prefixBEV6, 3)
-        log.debug("vlt")
         id_vlt = [envconfig.get("VLT").get("id_vlt_lf1"), envconfig.get("VLT").get("id_vlt_lf2")]
         priority_vlt = [envconfig.get("VLT").get("priority_vlt_lf1"), envconfig.get("VLT").get("priority_vlt_lf2")]
 
-        log.debug("spine subnet")
-        subSPINE1ipv4 = list(SPINE1ipv4.subnet(31))
-        subSPINE2ipv4 = list(SPINE2ipv4.subnet(31))
-        subSPINE3ipv4 = list(SPINE3ipv4.subnet(31))
-        subSPINE4ipv4 = list(SPINE4ipv4.subnet(31))
-        subSPINE1ipv6 = list(SPINE1ipv6.subnet(127))
-        subSPINE2ipv6 = list(SPINE2ipv6.subnet(127))
-        subSPINE3ipv6 = list(SPINE3ipv6.subnet(127))
-        subSPINE4ipv6 = list(SPINE4ipv6.subnet(127))
-        log.debug("ibgp subnet")
-
-        subIBGPToRLxLipv4 = list(IBGPToRLxLipv4.subnet(31))
-        subIBGPToRLxLipv6 = list(IBGPToRLxLipv6.subnet(127))
-        log.debug("ip subnet")
-
-        IPSPINEipv4[numero_rack].append(subSPINE1ipv4[numero_rack][0])
-        IPSPINEipv4[numero_rack].append(subSPINE2ipv4[numero_rack][0])
-        IPSPINEipv4[numero_rack].append(subSPINE3ipv4[numero_rack][0])
-        IPSPINEipv4[numero_rack].append(subSPINE4ipv4[numero_rack][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[0][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[1][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[2][0])
+        IPSPINEipv4[numero_rack].append(CIDRBEipv4[3][0])
         #
-        IPLEAFipv4[numero_rack].append(subSPINE1ipv4[numero_rack][1])
-        IPLEAFipv4[numero_rack].append(subSPINE2ipv4[numero_rack][1])
-        IPLEAFipv4[numero_rack].append(subSPINE3ipv4[numero_rack][1])
-        IPLEAFipv4[numero_rack].append(subSPINE4ipv4[numero_rack][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[0][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[1][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[2][1])
+        IPLEAFipv4[numero_rack].append(CIDRBEipv4[3][1])
         #
-        IPSIBGPipv4[numero_rack].append(subIBGPToRLxLipv4[numero_rack][0])
-        IPSIBGPipv4[numero_rack].append(subIBGPToRLxLipv4[numero_rack][1])
+        IPSIBGPipv4[numero_rack].append(IBGPToRLxLipv4[0])
+        IPSIBGPipv4[numero_rack].append(IBGPToRLxLipv4[1])
         #
-        IPSPINEipv6[numero_rack].append(subSPINE1ipv6[numero_rack][0])
-        IPSPINEipv6[numero_rack].append(subSPINE2ipv6[numero_rack][0])
-        IPSPINEipv6[numero_rack].append(subSPINE3ipv6[numero_rack][0])
-        IPSPINEipv6[numero_rack].append(subSPINE4ipv6[numero_rack][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[0][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[1][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[2][0])
+        IPSPINEipv6[numero_rack].append(CIDRBEipv6[3][0])
         #
-        IPLEAFipv6[numero_rack].append(subSPINE1ipv6[numero_rack][1])
-        IPLEAFipv6[numero_rack].append(subSPINE2ipv6[numero_rack][1])
-        IPLEAFipv6[numero_rack].append(subSPINE3ipv6[numero_rack][1])
-        IPLEAFipv6[numero_rack].append(subSPINE4ipv6[numero_rack][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[0][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[1][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[2][1])
+        IPLEAFipv6[numero_rack].append(CIDRBEipv6[3][1])
         #
-        IPSIBGPipv6[numero_rack].append(subIBGPToRLxLipv6[numero_rack][0])
-        IPSIBGPipv6[numero_rack].append(subIBGPToRLxLipv6[numero_rack][1])
+        IPSIBGPipv6[numero_rack].append(IBGPToRLxLipv6[0])
+        IPSIBGPipv6[numero_rack].append(IBGPToRLxLipv6[1])
         #
         log.debug("vlan subnet")
-        log.debug(VLANBE)
+        log.debug(vlanBE)
         log.debug(BASE_RACK)
         log.debug(numero_rack)
-        log.debug(VLANFE)
-        log.debug(VLANBORDA)
-        log.debug(VLANBORDACACHOS)
-        log.debug(VLANBORDACACHOSB)
-        VLANBELEAF[numero_rack].append(VLANBE + numero_rack)
-        VLANBELEAF[numero_rack].append(VLANBE + numero_rack + BASE_RACK)
-        VLANBELEAF[numero_rack].append(VLANBE + numero_rack + 2 * BASE_RACK)
-        VLANBELEAF[numero_rack].append(VLANBE + numero_rack + 3 * BASE_RACK)
-        #
-        VLANFELEAF[numero_rack].append(VLANFE + numero_rack)
-        VLANFELEAF[numero_rack].append(VLANFE + numero_rack + BASE_RACK)
-        VLANFELEAF[numero_rack].append(VLANFE + numero_rack + 2 * BASE_RACK)
-        VLANFELEAF[numero_rack].append(VLANFE + numero_rack + 3 * BASE_RACK)
-        #
-        VLANBORDALEAF[numero_rack].append(VLANBORDA + numero_rack)
-        VLANBORDALEAF[numero_rack].append(VLANBORDA + numero_rack + BASE_RACK)
-        VLANBORDALEAF[numero_rack].append(VLANBORDA + numero_rack + 2 * BASE_RACK)
-        VLANBORDALEAF[numero_rack].append(VLANBORDA + numero_rack + 3 * BASE_RACK)
-        #
-        VLANBORDACACHOSLEAF[numero_rack].append(VLANBORDACACHOS + numero_rack)
-        VLANBORDACACHOSLEAF[numero_rack].append(VLANBORDACACHOS + numero_rack + BASE_RACK)
-        VLANBORDACACHOSLEAF[numero_rack].append(VLANBORDACACHOS + numero_rack + 2 * BASE_RACK)
-        VLANBORDACACHOSLEAF[numero_rack].append(VLANBORDACACHOS + numero_rack + 3 * BASE_RACK)
-        #
-        VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB + numero_rack)
-        VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB + numero_rack + BASE_RACK)
-        VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB + numero_rack + 2 * BASE_RACK)
-        VLANBORDACACHOSBLEAF[numero_rack].append(VLANBORDACACHOSB + numero_rack + 3 * BASE_RACK)
-        #
+        log.debug(vlanFE)
+        log.debug(vlanBO)
+        log.debug(vlanBOCA)
+        log.debug(vlanBOCAB)
+        log.debug(CIDRBEipv4)
+        log.debug(CIDRBEipv6)
+
         log.debug("as")
         log.debug(BASE_AS_LFS)
         log.debug(numero_rack)
         ASLEAF[numero_rack].append(BASE_AS_LFS + numero_rack)
-        #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
-        # Redes p/ rack => 10.128.0.0/19, 10.128.32.0/19 , ... ,10.143.224.0/19
-        log.debug("split 2")
-        subnetsRackBEipv4[numero_rack] = self.split_network(CIDRBEipv4interno, prefixInternoV4, numero_rack)
-        subnetsRackBEipv6[numero_rack] = self.split_network(CIDRBEipv6interno, prefixInternoV6, numero_rack)
-        # PODS BE => /20
-        #    ::::::::::::::::::::::::::::::::::: FRONTEND
-        #          ::::::: SUBNETING FOR RACK NETWORKS - /19 :::::::
-        # Sumário do rack => 172.20.0.0/21
-        subnetsRackFEipv4[numero_rack] = self.split_network(CIDRFEipv4interno, prefixInternoFEV4, numero_rack)
-        subnetsRackFEipv6[numero_rack] = self.split_network(CIDRFEipv6interno, prefixInternoFEV6, numero_rack)
-        #
-        log.debug("cidrbo interno")
-
-        if CIDRBO_DSRipv4interno:
-            subnetsRackBO_DSRipv4[numero_rack] = self.split_network(CIDRBO_DSRipv4interno, prefixInternoBO_DSRV4,
-                                                                    numero_rack)
-            subnetsRackBO_DSRipv6[numero_rack] = self.split_network(CIDRBO_DSRipv6interno, prefixInternoBO_DSRV6,
-                                                                    numero_rack)
-        #
-        if CIDRBOCAAipv4interno:
-            subnetsRackBOCAAipv4[numero_rack] = self.split_network(CIDRBOCAAipv4interno, prefixInternoBOCAAV4,
-                                                                   numero_rack)
-            subnetsRackBOCAAipv6[numero_rack] = self.split_network(CIDRBOCAAipv6interno, prefixInternoBOCAAV6,
-                                                                   numero_rack)
-        #
-        if CIDRBOCABipv4interno:
-            subnetsRackBOCABipv4[numero_rack] = self.split_network(CIDRBOCABipv4interno, prefixInternoBOCABV4,
-                                                                   numero_rack)
-            subnetsRackBOCABipv6[numero_rack] = self.split_network(CIDRBOCABipv6interno, prefixInternoBOCABV6,
-                                                                   numero_rack)
-        #          ::::::: SUBNETING EACH RACK NETWORK:::::::
-        # PODS FE => 128 redes /28 ; 128 redes /64
-        # redesPODSBEipv4[numero_rack] = list(subnetsRackFEipv4[numero_rack].subnet(28))
-        # redesPODSBEipv6[numero_rack] = list(subnetsRackFEipv6[numero_rack].subnet(64))
 
         for equip, spn, j in zip(equips_sorted[:2], [0, 2], [0, 1]):
-            # lf 1/2
-            log.info("for equip spn j")
             variablestochangeleaf1["IPLEAFSP1IPV4"] = str(IPLEAFipv4[numero_rack][spn])
             variablestochangeleaf1["IPLEAFSP2IPV4"] = str(IPLEAFipv4[numero_rack][spn + 1])
             variablestochangeleaf1["IPIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][j])
             variablestochangeleaf1["IPLEAFSP1IPV6"] = str(IPLEAFipv6[numero_rack][spn])
             variablestochangeleaf1["IPLEAFSP2IPV6"] = str(IPLEAFipv6[numero_rack][spn + 1])
             variablestochangeleaf1["IPIBGPIPV6"] = str(IPSIBGPipv6[numero_rack][j])
-
-            variablestochangeleaf1["VLANBELEAFSP1"] = str(VLANBELEAF[numero_rack][spn])
-            variablestochangeleaf1["VLANBELEAFSP2"] = str(VLANBELEAF[numero_rack][spn + 1])
-            variablestochangeleaf1["VLANFELEAFSP1"] = str(VLANFELEAF[numero_rack][spn])
-            variablestochangeleaf1["VLANFELEAFSP2"] = str(VLANFELEAF[numero_rack][spn + 1])
-            variablestochangeleaf1["VLANBORDALEAFSP1"] = str(VLANBORDALEAF[numero_rack][spn])
-            variablestochangeleaf1["VLANBORDALEAFSP2"] = str(VLANBORDALEAF[numero_rack][spn + 1])
-            variablestochangeleaf1["VLANBORDACACHOSLEAFSP1"] = str(VLANBORDACACHOSLEAF[numero_rack][spn])
-            variablestochangeleaf1["VLANBORDACACHOSLEAFSP2"] = str(VLANBORDACACHOSLEAF[numero_rack][spn + 1])
-            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP1"] = str(VLANBORDACACHOSBLEAF[numero_rack][spn])
-            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP2"] = str(VLANBORDACACHOSBLEAF[numero_rack][spn + 1])
-
+            log.debug("1")
+            variablestochangeleaf1["VLANBELEAFSP1"] = str(vlanBE[spn])
+            variablestochangeleaf1["VLANBELEAFSP2"] = str(vlanBE[spn + 1])
+            variablestochangeleaf1["VLANFELEAFSP1"] = str(vlanFE[spn])
+            variablestochangeleaf1["VLANFELEAFSP2"] = str(vlanFE[spn + 1])
+            variablestochangeleaf1["VLANBORDALEAFSP1"] = str(vlanBO[spn])
+            variablestochangeleaf1["VLANBORDALEAFSP2"] = str(vlanBO[spn + 1])
+            variablestochangeleaf1["VLANBORDACACHOSLEAFSP1"] = str(vlanBOCA[spn])
+            variablestochangeleaf1["VLANBORDACACHOSLEAFSP2"] = str(vlanBOCA[spn + 1])
+            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP1"] = str(vlanBOCAB[spn])
+            variablestochangeleaf1["VLANBORDACACHOSBLEAFSP2"] = str(vlanBOCAB[spn + 1])
+            log.debug("2")
             variablestochangeleaf1["ASLEAF"] = str(ASLEAF[numero_rack][0])
 
             variablestochangeleaf1["IPNEIGHSPINE1IPV4"] = str(IPSPINEipv4[numero_rack][spn])
@@ -485,41 +359,49 @@ class Provision:
                 variablestochangeleaf1["IPNEIGHIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][0])
                 variablestochangeleaf1["IPNEIGHIBGPIPV6"] = str(IPSIBGPipv6[numero_rack][0])
 
-            variablestochangeleaf1["NET_HOST_BE_IPV4"] = str(subnetsRackBEipv4[numero_rack])
-            variablestochangeleaf1["NET_HOST_FE_IPV4"] = str(subnetsRackFEipv4[numero_rack])
+            try:
+                variablestochangeleaf1["NET_HOST_BE_IPV4"] = CIDRBEipv4interno
+                variablestochangeleaf1["NET_HOST_FE_IPV4"] = CIDRFEipv4interno
+            except Exception as e:
+                raise Exception("Error while getting IPv4 CIDR from BE or FE production environment. E: %s" % e)
+
             if CIDRBO_DSRipv4interno:
-                variablestochangeleaf1["NET_HOST_BO_DSR_IPV4"] = str(subnetsRackBO_DSRipv4[numero_rack])
+                variablestochangeleaf1["NET_HOST_BO_DSR_IPV4"] = CIDRBO_DSRipv4interno
             if CIDRBOCAAipv4interno:
-                variablestochangeleaf1["NET_HOST_BOCAA_IPV4"] = str(subnetsRackBOCAAipv4[numero_rack])
+                variablestochangeleaf1["NET_HOST_BOCAA_IPV4"] = CIDRBOCAAipv4interno
             if CIDRBOCABipv4interno:
-                variablestochangeleaf1["NET_HOST_BOCAB_IPV4"] = str(subnetsRackBOCABipv4[numero_rack])
-            variablestochangeleaf1["NET_SPINE1_LF_IPV4"] = str(subSPINE1ipv4[numero_rack])
-            variablestochangeleaf1["NET_SPINE2_LF_IPV4"] = str(subSPINE2ipv4[numero_rack])
-            variablestochangeleaf1["NET_LF_LF_IPV4"] = str(subIBGPToRLxLipv4[numero_rack])
-            variablestochangeleaf1["NET_HOST_BE_IPV6"] = str(subnetsRackBEipv6[numero_rack])
-            variablestochangeleaf1["NET_HOST_FE_IPV6"] = str(subnetsRackFEipv6[numero_rack])
+                variablestochangeleaf1["NET_HOST_BOCAB_IPV4"] = CIDRBOCABipv4interno
+            log.debug("3")
+            variablestochangeleaf1["NET_SPINE1_LF_IPV4"] = str(CIDRBEipv4[0])
+            variablestochangeleaf1["NET_SPINE2_LF_IPV4"] = str(CIDRBEipv4[1])
+            variablestochangeleaf1["NET_LF_LF_IPV4"] = str(IBGPToRLxLipv4)
+
+            try:
+                variablestochangeleaf1["NET_HOST_BE_IPV6"] = CIDRBEipv6interno
+                variablestochangeleaf1["NET_HOST_FE_IPV6"] = CIDRFEipv6interno
+            except Exception as e:
+                raise Exception("Error while getting IPv6 CIDR from BE or FE production environment. E: %s" % e)
+
             if CIDRBO_DSRipv6interno:
-                variablestochangeleaf1["NET_HOST_BO_DSR_IPV6"] = str(subnetsRackBO_DSRipv6[numero_rack])
+                variablestochangeleaf1["NET_HOST_BO_DSR_IPV6"] = CIDRBO_DSRipv6interno
             if CIDRBOCAAipv6interno:
-                variablestochangeleaf1["NET_HOST_BOCAA_IPV6"] = str(subnetsRackBOCAAipv6[numero_rack])
+                variablestochangeleaf1["NET_HOST_BOCAA_IPV6"] = CIDRBOCAAipv6interno
             if CIDRBOCABipv6interno:
-                variablestochangeleaf1["NET_HOST_BOCAB_IPV6"] = str(subnetsRackBOCABipv6[numero_rack])
-            variablestochangeleaf1["NET_SPINE1_LF_IPV6"] = str(subSPINE1ipv6[numero_rack])
-            variablestochangeleaf1["NET_SPINE2_LF_IPV6"] = str(subSPINE2ipv6[numero_rack])
-            variablestochangeleaf1["NET_LF_LF_IPV6"] = str(subIBGPToRLxLipv6[numero_rack])
+                variablestochangeleaf1["NET_HOST_BOCAB_IPV6"] = CIDRBOCABipv6interno
+            log.debug("4")
+            variablestochangeleaf1["NET_SPINE1_LF_IPV6"] = str(CIDRBEipv6[0])
+            variablestochangeleaf1["NET_SPINE2_LF_IPV6"] = str(CIDRBEipv6[1])
+            variablestochangeleaf1["NET_LF_LF_IPV6"] = str(IBGPToRLxLipv6)
 
             variablestochangeleaf1["ID_LEAF"] = str(equip.get("sw"))  # lf1 ou lf2
             variablestochangeleaf1["OWN_IP_MGMT"] = equip.get("ip_mngt")
             variablestochangeleaf1["LF_HOSTNAME"] = equip.get("nome")
-
+            log.debug("5")
             for i in equip.get("interfaces"):
-                log.info("for i in equip")
-                log.info(str(i))
-
-                if i.get("nome")[:3] == prefixlf:
+                if i.get("nome")[:3] == self.leaf_prefix:
                     variablestochangeleaf1["LFNEIGH_HOSTNAME"] = i.get("nome")
                     variablestochangeleaf1["LFNEIGH_IP_MGMT"] = i.get("ip_mngt")
-                elif i.get("nome")[:3] == prefixspn:
+                elif i.get("nome")[:3] == self.spine_prefix:
                     spine_num = int(i.get("nome")[-1])
                     variablestochangespine1["ASSPINE"] = str(BASE_AS_SPN + spine_num - 1)
                     variablestochangespine1["INTERFACE"] = i.get("interface")
@@ -528,16 +410,15 @@ class Provision:
                     log.debug("ok if spn")
                     variablestochangespine1["IPSPINEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num - 1])
                     variablestochangespine1["IPSPINEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBELEAF"] = str(VLANBELEAF[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANFELEAF"] = str(VLANFELEAF[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBORDALEAF"] = str(VLANBORDALEAF[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBORDACACHOSLEAF"] = str(
-                        VLANBORDACACHOSLEAF[numero_rack][spine_num - 1])
-                    variablestochangespine1["VLANBORDACACHOSBLEAF"] = str(
-                        VLANBORDACACHOSBLEAF[numero_rack][spine_num - 1])
+                    variablestochangespine1["VLANBELEAF"] = str(vlanBE[spine_num - 1])
+                    variablestochangespine1["VLANFELEAF"] = str(vlanFE[spine_num - 1])
+                    variablestochangespine1["VLANBORDALEAF"] = str(vlanBO[spine_num - 1])
+                    variablestochangespine1["VLANBORDACACHOSLEAF"] = str(vlanBOCA[spine_num - 1])
+                    variablestochangespine1["VLANBORDACACHOSB"] = str(vlanBOCAB[spine_num - 1])
                     variablestochangespine1["ASLEAF"] = str(ASLEAF[numero_rack][0])
                     variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 1])
                     variablestochangespine1["IPNEIGHLEAFIPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 1])
+
                     if spine_num in [1, 3]:
                         variablestochangeleaf1["SP1_HOSTNAME"] = i.get("nome")
                         variablestochangeleaf1["INTERFACE_SP1"] = i.get("interface")
@@ -546,39 +427,41 @@ class Provision:
                         variablestochangeleaf1["SP2_HOSTNAME"] = i.get("nome")
                         variablestochangeleaf1["INTERFACE_SP2"] = i.get("interface")
                         variablestochangeleaf1["ASSPINE2"] = str(BASE_AS_SPN + spine_num - 1)
-                    log.debug("path to guide")
+
                     fileinspine1 = path_to_guide + i.get("roteiro")
                     fileoutspine1 = path_to_add_config + i.get("nome") + "-ADD-" + rack.nome + ".cfg"
-                    log.debug("replace")
                     self.replace_file(fileinspine1, fileoutspine1, variablestochangespine1)
                     variablestochangespine1 = dict()
-                elif i.get("nome")[:3] == prefixoob:
+
+                elif i.get("nome")[:3] == self.oob_prefix:
                     variablestochangeleaf1["HOSTNAME_OOB"] = i.get("nome")
                     variablestochangeleaf1["INTERFACE_OOB"] = i.get("interface")
 
             variablestochangeleaf1["ID_VLT"] = str(id_vlt[j])
             variablestochangeleaf1["PRIORITY_VLT"] = str(priority_vlt[j])
 
-            log.debug("ok")
             fileinleaf1 = path_to_guide + equip.get("roteiro")
             fileoutleaf1 = path_to_config + equip.get("nome") + ".cfg"
-            log.debug("replace")
+
             self.replace_file(fileinleaf1, fileoutleaf1, variablestochangeleaf1)
+            log.debug(fileoutleaf1)
             variablestochangeleaf1 = dict()
 
         return True
 
-    def oob_provision(self, rack, equips):
+    def oob_provision(self, equips):
         log.info("AutoprovisionOOB")
 
         variablestochangecore1 = dict()
         variablestochangecore2 = dict()
         variablestochangeoob = dict()
 
-        prefixlf = "LF-"
-        prefixoob = "OOB"
+        fileincore1 = None
+        fileoutcore1 = None
+        fileincore2 = None
+        fileoutcore2 = None
 
-        dcroom = model_to_dict(rack.dcroom)
+        dcroom = model_to_dict(self.rack.dcroom)
         log.debug("type: %s" % str(type(dcroom.get("config"))))
         fabricconfig = dcroom.get("config")
 
@@ -604,34 +487,36 @@ class Provision:
         except ObjectDoesNotExist:
             raise var_exceptions.VariableDoesNotExistException("Erro buscando a variável PATH_TO_GUIDE")
 
-        environment = models_env.Ambiente.objects.filter(dcroom=rack.dcroom.id,
-                                                         grupo_l3__nome=str(rack.dcroom.name),
-                                                         ambiente_logico__nome="GERENCIA",
-                                                         divisao_dc__nome="OOB").uniqueResult()
-        log.debug("environment: %s " % str(environment))
+        try:
+            vlan_name = "VLAN_GERENCIA_" + self.rack.nome
+            vlan = models_vlan.Vlan.objects.filter(nome=vlan_name).uniqueResult()
+        except Exception as e:
+            log.debug("Error while getting %s. Error: %s" % (vlan_name, e))
+            vlan = False
+
+        if not vlan:
+            try:
+                vlan_name = "OOB_SO_" + self.rack.nome
+                vlan = models_vlan.Vlan.objects.filter(nome=vlan_name).uniqueResult()
+            except Exception as e:
+                raise Exception("O rack não tem vlan de gerencia. Error: %s" % e)
+
+        log.debug("Vlan OOB: %s" % vlan.nome)
+        log.debug("Rede OOB: %s" % IPNetwork(vlan.networks_ipv4[0].networkv4))
         log.debug("equips: %s" % str(equips))
-        vlan_base = environment.min_num_vlan_1
 
-        for net in environment.configs:
-            if net.ip_version == "v4":
-                redev4 = IPNetwork(str(net.network))
-                prefixv4 = int(net.subnet_mask)
-                subredev4 = list(redev4.subnet(prefixv4))
+        if not vlan.networks_ipv4:
+            raise Exception("Vlan de OOB do rack não possui rede associada.")
 
-        if not vlan_base:
-            raise Exception("Range de Vlans do ambiente de gerencia do fabric não encontrado.")
-        if not subredev4:
-            raise Exception("Rede ipv4 do ambiente OOB do fabric não encontrado.")
-
-        vlan_so = str(int(vlan_base) + int(rack.numero))
-        variablestochangeoob["VLAN_SO"] = vlan_so
+        variablestochangeoob["VLAN_SO"] = str(vlan.num_vlan)
 
         equips_sorted = sorted(equips, key=operator.itemgetter('sw'))
         oob = equips_sorted[-1]
 
         variablestochangeoob["OWN_IP_MGMT"] = oob.get("ip_mngt")
         variablestochangeoob["HOSTNAME_OOB"] = oob.get("nome")
-        variablestochangeoob["HOSTNAME_RACK"] = rack.nome
+        variablestochangeoob["HOSTNAME_RACK"] = self.rack.nome
+
         fileinoob = path_to_guide + oob.get("roteiro")
         fileoutoob = path_to_config + oob.get("nome") + ".cfg"
 
@@ -639,60 +524,52 @@ class Provision:
             nome = equip.get("nome")
             log.debug(str(nome))
             roteiro = equip.get("roteiro")
-            if nome[:3] == prefixlf:
+            if nome[:3] == self.leaf_prefix:
                 if nome[-1] == "1":
                     variablestochangeoob["HOSTNAME_LF1"] = nome
                 else:
                     variablestochangeoob["HOSTNAME_LF2"] = nome
-            elif nome[:3] == prefixoob:
+            elif nome[:3] == self.oob_prefix:
                 intoob = equip.get("eq_interface")
                 intcore = equip.get("interface")
                 if nome[-1] == "1":
-                    log.info("oob01")
                     log.info(str(nome))
-                    hostname_core1 = nome
-                    core = int(hostname_core1.split('-')[-1])
-                    ip = 124 + core
                     variablestochangeoob["INT_OOBC1_UPLINK"] = intoob
                     variablestochangeoob["INTERFACE_CORE1"] = intcore
                     variablestochangeoob["HOSTNAME_CORE1"] = nome
                     variablestochangecore1["INT_OOB_UPLINK"] = intoob
                     variablestochangecore1["INTERFACE_CORE"] = intcore
-                    variablestochangecore1["HOSTNAME_RACK"] = rack.nome
-                    variablestochangecore1["SO_HOSTNAME_OOB"] = "SO_" + str(rack.nome)
-                    variablestochangecore1["VLAN_SO"] = vlan_so
-                    variablestochangecore1['IPCORE'] = str(subredev4[rack.numero][ip])
-                    variablestochangecore1['IPHSRP'] = str(subredev4[rack.numero][1])
-                    variablestochangecore1['NUM_CHANNEL'] = str(BASE_CHANNEL + int(rack.numero))
-                    if (1 + int(rack.numero)) % 2 == 0:
+                    variablestochangecore1["HOSTNAME_RACK"] = self.rack.nome
+                    variablestochangecore1["SO_HOSTNAME_OOB"] = "SO_" + str(self.rack.nome)
+                    variablestochangecore1["VLAN_SO"] = str(vlan.num_vlan)
+                    variablestochangecore1['IPCORE'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).broadcast-2)
+                    variablestochangecore1['IPHSRP'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).ip+1)
+                    variablestochangecore1['NUM_CHANNEL'] = str(BASE_CHANNEL + int(self.rack.numero))
+                    if (1 + int(self.rack.numero)) % 2 == 0:
                         variablestochangecore1["HSRP_PRIORITY"] = "100"
                     else:
                         variablestochangecore1["HSRP_PRIORITY"] = "101"
                     fileincore1 = path_to_guide + roteiro
-                    fileoutcore1 = path_to_add_config + nome + "-ADD-" + str(rack.nome) + ".cfg"
+                    fileoutcore1 = path_to_add_config + nome + "-ADD-" + str(self.rack.nome) + ".cfg"
                 elif nome[-1] == "2":
-                    log.info("oob02")
                     log.info(str(nome))
-                    hostname_core2 = nome
-                    core = int(hostname_core2.split('-')[-1])
-                    ip = 124 + core
                     variablestochangeoob["INT_OOBC2_UPLINK"] = intoob
                     variablestochangeoob["INTERFACE_CORE2"] = intcore
                     variablestochangeoob["HOSTNAME_CORE2"] = nome
                     variablestochangecore2["INT_OOB_UPLINK"] = intoob
                     variablestochangecore2["INTERFACE_CORE"] = intcore
-                    variablestochangecore2["HOSTNAME_RACK"] = rack.nome
-                    variablestochangecore2["SO_HOSTNAME_OOB"] = "SO_" + str(rack.nome)
-                    variablestochangecore2["VLAN_SO"] = vlan_so
-                    variablestochangecore2['IPCORE'] = str(subredev4[rack.numero][ip])
-                    variablestochangecore2['IPHSRP'] = str(subredev4[rack.numero][1])
-                    variablestochangecore2['NUM_CHANNEL'] = str(BASE_CHANNEL + int(rack.numero))
-                    if (2 + int(rack.numero)) % 2 == 0:
+                    variablestochangecore2["HOSTNAME_RACK"] = self.rack.nome
+                    variablestochangecore2["SO_HOSTNAME_OOB"] = "SO_" + str(self.rack.nome)
+                    variablestochangecore2["VLAN_SO"] = str(vlan.num_vlan)
+                    variablestochangecore2['IPCORE'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).broadcast-1)
+                    variablestochangecore2['IPHSRP'] = str(IPNetwork(vlan.networks_ipv4[0].networkv4).ip+1)
+                    variablestochangecore2['NUM_CHANNEL'] = str(BASE_CHANNEL + int(self.rack.numero))
+                    if (2 + int(self.rack.numero)) % 2 == 0:
                         variablestochangecore2["HSRP_PRIORITY"] = "100"
                     else:
                         variablestochangecore2["HSRP_PRIORITY"] = "101"
                     fileincore2 = path_to_guide + roteiro
-                    fileoutcore2 = path_to_add_config + nome + "-ADD-" + str(rack.nome) + ".cfg"
+                    fileoutcore2 = path_to_add_config + nome + "-ADD-" + str(self.rack.nome) + ".cfg"
 
         self.replace_file(fileincore1, fileoutcore1, variablestochangecore1)
         self.replace_file(fileincore2, fileoutcore2, variablestochangecore2)
