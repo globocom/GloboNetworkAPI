@@ -176,9 +176,12 @@ class RackDeployView(APIView):
                                 output = deploy_facade.deploy_config_in_equipment_synchronous(rel_filename, equip, lockvar)
 
                                 log.debug("equipment output: %s" % (output))
-                        except Exception, e:
+                        except Exception as e:
                             log.exception(e)
                             raise exceptions.RackAplError(e)
+
+            # Create Foreman entries for rack switches
+            facade.api_foreman(rack)
 
             datas = dict()
             success_map = dict()
@@ -188,40 +191,14 @@ class RackDeployView(APIView):
 
             return Response(datas, status=status.HTTP_201_CREATED)
 
-        except exceptions.RackNumberNotFoundError, e:
+        except exceptions.RackNumberNotFoundError as e:
             log.exception(e)
             raise exceptions.NetworkAPIException(e)
-        except var_exceptions.VariableDoesNotExistException, e:
+        except var_exceptions.VariableDoesNotExistException as e:
             log.error(e)
             raise api_exceptions.NetworkAPIException(
                 'Erro buscando a variável PATH_TO_ADD_CONFIG ou REL_PATH_TO_ADD_CONFIG. Erro: %s' % e)
-        except Exception, e:
-            log.exception(e)
-            raise api_exceptions.NetworkAPIException(e)
-
-
-class RackForeman (APIView):
-    def post(self, *args, **kwargs):
-        try:
-            log.info('RACK Foreman.')
-
-            rack_id = kwargs.get('rack_id')
-            rack = facade.get_by_pk(rack_id)
-            # Create Foreman entries for rack switches
-            facade.api_foreman(rack)
-            raise api_exceptions.NetworkAPIException('chegou')
-            return Response(datas, status=status.HTTP_201_CREATED)
-
-        except exceptions.RackNumberNotFoundError, e:
-            log.exception(e)
-            raise exceptions.NetworkAPIException(e)
-
-        except var_exceptions.VariableDoesNotExistException, e:
-            log.error(e)
-            raise api_exceptions.NetworkAPIException(
-            'Erro ao registrar o Switch no Foreman. Erro: %s' % e)
-
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             raise api_exceptions.NetworkAPIException(e)
 

@@ -11,7 +11,6 @@ from networkapi.api_rack.views import RackView
 
 urlpatterns = patterns('',
     url(r'^rack/(?P<rack_id>\d+)/equipments/$', rack_views.RackDeployView.as_view()),
-    url(r'^rack/foreman/(?P<rack_id>\d+)/$', rack_views.RackForeman.as_view()),
     url(r'^rack/fabric/(?P<fabric_id>\d+)[/]$', rack_views.RackView.as_view()),
     url(r'^rack/$', rack_views.RackView.as_view()),
     url(r'^rack/(?P<rack_id>\d+)/$', rack_views.RackView.as_view()),
