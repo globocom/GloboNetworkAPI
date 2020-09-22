@@ -22,7 +22,8 @@ def replace(filein, fileout, dicionario):
         file_handle = open(filein, 'r')
         file_string = file_handle.read()
         file_handle.close()
-    except:
+    except Exception as e:
+        log.error("Erro abrindo roteiro: %s. Error: %s" % (str(filein), e))
         raise RackConfigError(None, None, "Erro abrindo roteiro: %s." % str(filein))
 
     try:
@@ -30,7 +31,8 @@ def replace(filein, fileout, dicionario):
             # Use RE package to allow for replacement (also allowing for (multiline) REGEX)
             log.debug("variavel: %s, valor: %s" % (str(key), str(dicionario[key])))
             file_string = (re.sub(key, dicionario[key], file_string))
-    except:
+    except Exception as e:
+        log.error("Erro atualizando as variáveis no roteiro: %s. Error: %s" % (filein, e))
         raise RackConfigError(None, None, "Erro atualizando as variáveis no roteiro: %s." % filein)
 
     try:
@@ -39,7 +41,8 @@ def replace(filein, fileout, dicionario):
         file_handle = open(fileout, 'w')
         file_handle.write(file_string)
         file_handle.close()
-    except:
+    except Exception as e:
+        log.error("Erro salvando arquivo de configuração: %s. Error: %s" % (fileout, e))
         raise RackConfigError(None, None, "Erro salvando arquivo de configuração: %s." % fileout)
 
 
@@ -213,39 +216,47 @@ def autoprovision_splf(rack, equips):
 
     # get fathers environments
     spn_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                  father_environment__isnull=True,
+                                                  grupo_l3__nome=str(rack.dcroom.name),
+                                                  # father_environment__isnull=True,
                                                   ambiente_logico__nome="SPINES")
+    log.debug("spn_envs %s" % spn_envs)
 
     prod_envs = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                   father_environment__isnull=True,
+                                                   # father_environment__isnull=True,
+                                                   grupo_l3__nome=str(rack.dcroom.name),
                                                    ambiente_logico__nome="PRODUCAO",
-                                                   divisao_dc__nome__in=["BE", "FE", "BO_DSR", "BOCACHOS-A", "BOCACHOS-B"])
+                                                   divisao_dc__nome__in=["BE", "FE", "BO_DSR",
+                                                                         "BORDACACHOS_A", "BORDACACHOS_B"])
+    log.debug("prod_envs %s" % prod_envs)
 
     lf_env = models_env.Ambiente.objects.filter(dcroom=dcroom.get("id"),
-                                                divisao_dc__nome="BE",
                                                 grupo_l3__nome=str(rack.dcroom.name),
+                                                divisao_dc__nome="BE",
                                                 ambiente_logico__nome="LEAF-LEAF").uniqueResult()
+    log.debug("lf_env %s" % lf_env)
+
     for spn in spn_envs:
         if spn.divisao_dc.nome[:2] == "BE":
             VLANBE = spn.min_num_vlan_1
+            log.debug("spn_configs %s" % spn.configs)
             for net in spn.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBEipv4 = IPNetwork(str(net.ip_config.subnet))
-                    prefixBEV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBEipv4 = IPNetwork(str(net.network))
+                    prefixBEV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBEipv6 = IPNetwork(str(net.ip_config.subnet))
-                    prefixBEV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBEipv6 = IPNetwork(str(net.network))
+                    prefixBEV6 = int(net.subnet_mask)
         elif spn.divisao_dc.nome[:2] == "FE":
             VLANFE = spn.min_num_vlan_1
             for net in spn.configs:
-                if net.ip_config.type=="v4":
-                    CIDRFEipv4 = IPNetwork(str(net.ip_config.subnet))
-                    prefixFEV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRFEipv4 = IPNetwork(str(net.network))
+                    prefixFEV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRFEipv6 = IPNetwork(str(net.ip_config.subnet))
-                    prefixFEV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRFEipv6 = IPNetwork(str(net.network))
+                    prefixFEV6 = int(net.subnet_mask)
         elif spn.divisao_dc.nome == "BO":
             VLANBORDA = spn.min_num_vlan_1
         elif spn.divisao_dc.nome == "BOCACHOS-A":
@@ -256,56 +267,59 @@ def autoprovision_splf(rack, equips):
     for prod in prod_envs:
         if prod.divisao_dc.nome[:2] == "BE":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBEipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoV4 = int(net.ip_config.new_prefix)
+                #
+                if net.ip_version == "v4":
+                    CIDRBEipv4interno = IPNetwork(str(net.network))
+                    prefixInternoV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBEipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBEipv6interno = IPNetwork(str(net.network))
+                    prefixInternoV6 = int(net.subnet_mask)
         elif prod.divisao_dc.nome[:2] == "FE":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRFEipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoFEV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRFEipv4interno = IPNetwork(str(net.network))
+                    prefixInternoFEV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRFEipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoFEV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRFEipv6interno = IPNetwork(str(net.network))
+                    prefixInternoFEV6 = int(net.subnet_mask)
+
         elif prod.divisao_dc.nome == "BO_DSR":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBO_DSRipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBO_DSRV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBO_DSRipv4interno = IPNetwork(str(net.network))
+                    prefixInternoBO_DSRV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBO_DSRipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBO_DSRV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBO_DSRipv6interno = IPNetwork(str(net.network))
+                    prefixInternoBO_DSRV6 = int(net.subnet_mask)
+
         elif prod.divisao_dc.nome == "BOCACHOS-A":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBOCAAipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCAAV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBOCAAipv4interno = IPNetwork(str(net.network))
+                    prefixInternoBOCAAV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBOCAAipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCAAV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBOCAAipv6interno = IPNetwork(str(net.network))
+                    prefixInternoBOCAAV6 = int(net.subnet_mask)
         elif prod.divisao_dc.nome == "BOCACHOS-B":
             for net in prod.configs:
-                if net.ip_config.type=="v4":
-                    CIDRBOCABipv4interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCABV4 = int(net.ip_config.new_prefix)
+                if net.ip_version == "v4":
+                    CIDRBOCABipv4interno = IPNetwork(str(net.network))
+                    prefixInternoBOCABV4 = int(net.subnet_mask)
                 else:
-                    log.debug(str(net.ip_config.subnet))
-                    CIDRBOCABipv6interno = IPNetwork(str(net.ip_config.subnet))
-                    prefixInternoBOCABV6 = int(net.ip_config.new_prefix)
+                    log.debug(str(net.network))
+                    CIDRBOCABipv6interno = IPNetwork(str(net.network))
+                    prefixInternoBOCABV6 = int(net.subnet_mask)
 
     log.debug(str(lf_env))
     for netlf in lf_env.configs:
-        if netlf.ip_config.type=="v4":
-            IBGPToRLxLipv4 = IPNetwork(str(netlf.ip_config.subnet))
-        elif netlf.ip_config.type=="v6":
-            IBGPToRLxLipv6 = IPNetwork(str(netlf.ip_config.subnet))
+        if netlf.ip_version == "v4":
+            IBGPToRLxLipv4 = IPNetwork(str(netlf.network))
+        elif netlf.ip_version == "v6":
+            IBGPToRLxLipv6 = IPNetwork(str(netlf.network))
 
     SPINE1ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 0)
     SPINE2ipv4 = splitnetworkbyrack(CIDRBEipv4, prefixBEV4, 1)
@@ -438,7 +452,6 @@ def autoprovision_splf(rack, equips):
         variablestochangeleaf1["IPNEIGHSPINE1IPV6"] = str(IPSPINEipv6[numero_rack][spn])
         variablestochangeleaf1["IPNEIGHSPINE2IPV6"] = str(IPSPINEipv6[numero_rack][spn+1])
 
-
         if equip.get("nome")[-1] == "1":
             log.debug("lf-name: %s. Ip: %s" % (equip.get("nome"), IPSIBGPipv4[numero_rack][1]))
             variablestochangeleaf1["IPNEIGHIBGPIPV4"] = str(IPSIBGPipv4[numero_rack][1])
@@ -477,7 +490,7 @@ def autoprovision_splf(rack, equips):
 
         for i in equip.get("interfaces"):
             log.info("for i in equip")
-            log.info(str(type(i.get("nome")[:3])))
+            log.info(str(i))
 
             if i.get("nome")[:3] == prefixlf:
                 variablestochangeleaf1["LFNEIGH_HOSTNAME"] = i.get("nome")
@@ -519,10 +532,8 @@ def autoprovision_splf(rack, equips):
 
         fileinleaf1 = path_to_guide + equip.get("roteiro")
         fileoutleaf1 = path_to_config + equip.get("nome")+".cfg"
-
         replace(fileinleaf1, fileoutleaf1, variablestochangeleaf1)
         variablestochangeleaf1 = dict()
-
     return True
 
 
@@ -573,9 +584,9 @@ def autoprovision_coreoob(rack, equips):
     vlan_base = environment.min_num_vlan_1
 
     for net in environment.configs:
-        if net.ip_config.type == "v4":
-            redev4 = IPNetwork(str(net.ip_config.subnet))
-            prefixv4 = int(net.ip_config.new_prefix)
+        if net.ip_version == "v4":
+            redev4 = IPNetwork(str(net.network))
+            prefixv4 = int(net.subnet_mask)
             subredev4 = list(redev4.subnet(prefixv4))
 
     if not vlan_base:

@@ -265,7 +265,7 @@ MEDIA_URL = ''
 ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'ry@zgop%w80_nu83#!tbz)m&7*i@1)d-+ki@5^d#%6-&^216sg'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', '')
 
 VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
@@ -637,6 +637,18 @@ SPECS = {
     'simple_env_post': os.path.join(
         PROJECT_ROOT_PATH,
         'api_environment/specs/simple_env_post.json'
+    ),
+    'cidr_post': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_environment/specs/cidr_post.json'
+    ),
+    'cidr_post_auto': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_environment/specs/cidr_post_auto.json'
+    ),
+    'cidr_put': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_environment/specs/cidr_put.json'
     )
 }
 

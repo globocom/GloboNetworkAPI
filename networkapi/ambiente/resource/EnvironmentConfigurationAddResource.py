@@ -26,22 +26,16 @@ from networkapi.ambiente.models import IP_VERSION
 from networkapi.ambiente.models import IPConfig
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
-from networkapi.grupo.models import GrupoError
 from networkapi.grupo.models import PermissionError
 from networkapi.infrastructure.ipaddr import IPNetwork
 from networkapi.infrastructure.xml_utils import dumps_networkapi
 from networkapi.infrastructure.xml_utils import loads
 from networkapi.infrastructure.xml_utils import XMLError
-from networkapi.ip.models import IpError
-from networkapi.ip.models import NetworkIPRangeEnvError
-from networkapi.ip.models import NetworkIPv4Error
-from networkapi.ip.models import NetworkIPv6Error
 from networkapi.rest import RestResource
 from networkapi.util import is_valid_int_greater_zero_param
 from networkapi.util import is_valid_int_param
 from networkapi.util import is_valid_version_ip
 from networkapi.vlan.models import TipoRede
-from networkapi.vlan.models import VlanError
 from networkapi.vlan.resource.VlanFindResource import break_network
 
 
@@ -86,23 +80,35 @@ class EnvironmentConfigurationAddResource(RestResource):
 
             self._validate_prefix_by_net_type(prefix, ip_version)
 
-            environment = Ambiente().get_by_pk(id_environment)
+            # environment = Ambiente().get_by_pk(id_environment)
 
             network_type = TipoRede.get_by_pk(network_type)
 
-            ip_config = IPConfig()
-            ip_config.subnet = network
-            ip_config.new_prefix = prefix
-            ip_config.type = ip_version
-            ip_config.network_type = network_type
+            # ip_config = IPConfig()
+            # ip_config.subnet = network
+            # ip_config.new_prefix = prefix
+            # ip_config.type = ip_version
+            # ip_config.network_type = network_type
+            #
+            # ip_config.save()
+            #
+            # config_environment = ConfigEnvironment()
+            # config_environment.environment = environment
+            # config_environment.ip_config = ip_config
+            #
+            # config_environment.save()
 
-            ip_config.save()
+            # save on cidr table
+            logging.debug("EnvironmentConfigurationAddResource - save on cidr table")
+            data = dict()
+            data['type'] = ip_version
+            data['new_prefix'] = prefix
+            data['network_type'] = network_type.id
+            data['environment'] = id_environment
+            data['subnet'] = network
 
-            config_environment = ConfigEnvironment()
-            config_environment.environment = environment
-            config_environment.ip_config = ip_config
-
-            config_environment.save()
+            env = Ambiente()
+            env.create_cidr(configs=[data])
 
             return self.response(dumps_networkapi({'network': network_map}))
 

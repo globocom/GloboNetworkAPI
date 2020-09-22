@@ -81,7 +81,7 @@ def get_networkipv4_by_search(search=dict()):
         return net_map
 
 
-def create_networkipv4(networkv4, user, force=False):
+def create_networkipv4(networkv4, user=None, force=False):
     """Creates a NetworkIPv4."""
 
     try:

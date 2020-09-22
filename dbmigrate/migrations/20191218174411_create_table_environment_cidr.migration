@@ -1,0 +1,45 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+
+CREATE TABLE `environment_cidr` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `id_network_type` INT(10) UNSIGNED NOT NULL,
+  `id_env` INT(10) UNSIGNED NOT NULL,
+  `network_first_ip` varchar(40) NOT NULL,
+  `network_last_ip` varchar(40) NOT NULL,
+  `network_mask` varchar(3) NOT NULL,
+  `ip_version` enum('v6','v4') NOT NULL,
+  `subnet_mask` varchar(3) NOT NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `environment_cidr`
+ADD INDEX `fk_environment_cidr_fk1_idx` (`id_network_type` ASC)  COMMENT '',
+ADD INDEX `fk_environment_cidr_fk2_idx` (`id_env` ASC)  COMMENT '';
+
+ALTER TABLE `environment_cidr`
+ADD CONSTRAINT `fk_environment_cidr_fk1`
+  FOREIGN KEY (`id_network_type`)
+  REFERENCES `tipo_rede` (`id_tipo_rede`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_environment_cidr_fk2`
+  FOREIGN KEY (`id_env`)
+  REFERENCES `ambiente` (`id_ambiente`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+"""
+
+SQL_DOWN = u"""
+
+ALTER TABLE `environment_cidr`
+DROP FOREIGN KEY `fk_environment_cidr_fk1`,
+DROP FOREIGN KEY `fk_environment_cidr_fk2`;
+
+ALTER TABLE `environment_cidr`
+DROP INDEX `fk_environment_cidr_fk1_idx` ,
+DROP INDEX `fk_environment_cidr_fk2_idx` ;
+
+DROP TABLE `environment_cidr`;
+
+"""

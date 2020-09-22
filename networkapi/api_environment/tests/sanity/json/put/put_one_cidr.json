@@ -1,0 +1,11 @@
+{
+  "cidr": [{
+    "id": 2,
+    "network": "10.255.0.0/24",
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "network_type_name": "Network of Equipments",
+    "environment": 1
+  }]
+}

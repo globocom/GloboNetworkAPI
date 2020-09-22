@@ -4,21 +4,6 @@
       "acl_path": "",
       "ambiente_logico": 1,
       "aws_vpc": null,
-      "configs": [
-        {
-          "id": 1,
-          "network_type": 1,
-          "new_prefix": "24",
-          "subnet": "192.168.0.0/8",
-          "type": "v4"
-        },
-        {
-          "network_type": 2,
-          "new_prefix": "24",
-          "subnet": "192.168.0.0/16",
-          "type": "v4"
-        }
-      ],
       "dcroom": 1,
       "default_vrf": 1,
       "divisao_dc": 1,

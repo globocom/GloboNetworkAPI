@@ -34,10 +34,13 @@ from networkapi.interface.models import Interface
 from networkapi.ip.models import IpEquipamento
 from networkapi.rack.models import Rack, Datacenter, DatacenterRooms, RackConfigError
 from networkapi.api_rack import serializers as rack_serializers
-from networkapi.api_rack import exceptions, autoprovision
+from networkapi.api_rack import exceptions
+from networkapi.api_rack import provision
+from networkapi.api_rack import autoprovision
 from networkapi.system import exceptions as var_exceptions
 from networkapi.system.facade import get_value as get_variable
-from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, NetworkAPIException
+from networkapi.api_rest.exceptions import ValidationAPIException, ObjectDoesNotExistException, \
+    NetworkAPIException
 from networkapi.api_network.facade.v3 import networkv4 as facade_redev4_v3
 
 if int(get_variable('use_foreman')):
@@ -75,6 +78,12 @@ def listdc():
     return dc_sorted
 
 
+def delete_dc(dcs):
+    for dc_id in dcs:
+        dcroom_obj = Datacenter().get_dc(idt=dc_id)
+        dcroom_obj.del_dc()
+
+
 def save_dcrooms(dcrooms_dict):
 
     dcrooms = DatacenterRooms()
@@ -107,6 +116,13 @@ def edit_dcrooms(dcroom_id, dcrooms_dict):
 
     dcrooms.save_dcrooms()
     return dcrooms
+
+
+def delete_dcrooms(dcrooms):
+
+    for dcroom_id in dcrooms:
+        dcroom_obj = DatacenterRooms().get_dcrooms(idt=dcroom_id)
+        dcroom_obj.del_dcrooms()
 
 
 def get_fabric(idt=None, name=None, id_dc=None):
@@ -378,16 +394,21 @@ def gerar_arquivo_config(ids):
                     except:
                         pass
             except:
-                raise Exception("Erro ao buscar o roteiro de configuracao ou as interfaces associadas ao equipamento: "
-                                "%s." % equip.get("nome"))
+                raise Exception(
+                    "Erro ao buscar o roteiro de configuracao ou as interfaces associadas ao equipamento: %s."
+                    % equip.get("nome"))
             try:
                 equip["roteiro"] = _buscar_roteiro(equip.get("id"), "CONFIGURACAO")
                 equip["ip_mngt"] = _buscar_ip(equip.get("id"))
             except:
                 raise Exception("Erro ao buscar os roteiros do equipamento: %s" % equip.get("nome"))
 
-        autoprovision.autoprovision_splf(rack, equips)
-        autoprovision.autoprovision_coreoob(rack, equips)
+        # autoprovision.autoprovision_splf(rack, equips)
+        # autoprovision.autoprovision_coreoob(rack, equips)
+
+        auto = provision.Provision(rack.id)
+        auto.spine_provision(rack, equips)
+        auto.oob_provision(equips)
 
     return True
 
@@ -396,21 +417,18 @@ def _create_spnlfenv(user, rack):
     log.debug("_create_spnlfenv")
 
     envfathers = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                    father_environment__isnull=True,
                                                     grupo_l3__nome=str(rack.dcroom.name),
                                                     ambiente_logico__nome="SPINES")
     log.debug("SPN environments"+str(envfathers))
 
-    environment_spn_lf = None
     environment_spn_lf_list = list()
     spines = int(rack.dcroom.spines)
-    fabric = rack.dcroom.name
 
     try:
-        id_grupo_l3 = models_env.GrupoL3().get_by_name(fabric).id
+        id_grupo_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
     except:
         grupo_l3_dict = models_env.GrupoL3()
-        grupo_l3_dict.nome = fabric
+        grupo_l3_dict.nome = rack.nome
         grupo_l3_dict.save()
         id_grupo_l3 = grupo_l3_dict.id
         pass
@@ -419,12 +437,12 @@ def _create_spnlfenv(user, rack):
         config_subnet = list()
         for net in env.configs:
             # verificar se o ambiente possui range associado.
-            cidr = IPNetwork(net.ip_config.subnet)
-            prefix = int(net.ip_config.new_prefix)
+            cidr = IPNetwork(net.network)
+            prefix = int(net.subnet_mask)
             network = {
                 'cidr': list(cidr.subnet(prefix)),
-                'type': net.ip_config.type,
-                'network_type': net.ip_config.network_type.id
+                'type': net.ip_version,
+                'network_type': net.id_network_type.id
             }
             config_subnet.append(network)
         for spn in range(spines):
@@ -464,6 +482,7 @@ def _create_spnlfenv(user, rack):
                 'configs': config,
                 'fabric_id': rack.dcroom.id
             }
+            # obj_env = facade_env.create_environment(obj)
 
     return environment_spn_lf_list
 
@@ -472,7 +491,6 @@ def _create_spnlfvlans(rack, user):
     log.debug("_create_spnlfvlans")
 
     spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                     father_environment__isnull=False,
                                                      grupo_l3__nome=str(rack.dcroom.name),
                                                      ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                 "SPINE02LEAF",
@@ -492,19 +510,28 @@ def _create_spnlfvlans(rack, user):
         pass
     for env in spn_lf_envs:
         env_id = env.id
+        try:
+            base_rack = int(rack.dcroom.racks)
+            spn = int(env.ambiente_logico.nome[6])
+        except:
+            spn = 1
+            base_rack = 1
         vlan_base = env.min_num_vlan_1
-        vlan_number = int(vlan_base) + int(rack_number)
+        vlan_number = int(vlan_base) + int(rack_number) + (spn-1)*base_rack
         vlan_name = "VLAN_" + env.divisao_dc.nome + "_" + env.ambiente_logico.nome + "_" + rack.nome
 
         for net in env.configs:
-            prefix = int(net.ip_config.new_prefix)
+            prefix = int(net.subnet_mask)
+            block = list(IPNetwork(net.network).subnet(int(net.subnet_mask)))
             network = {
-                'prefix': prefix,  # str(list(cidr.subnet(prefix))[rack_number]),
-                'network_type': id_network_type
+                'network': str(block[rack_number]),
+                'prefix': prefix,
+                'network_type': id_network_type,
+                'ip_version': str(net.ip_version)
             }
-            if str(net.ip_config.type)[-1] is "4":
+            if str(net.ip_version)[-1] is "4":
                 create_networkv4 = network
-            elif str(net.ip_config.type)[-1] is "6":
+            elif str(net.ip_version)[-1] is "6":
                 create_networkv6 = network
         obj = {
             'name': vlan_name,
@@ -525,7 +552,6 @@ def _create_prod_envs(rack, user):
     log.debug("_create_prod_envs")
 
     prod_envs = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                   father_environment__isnull=True,
                                                    grupo_l3__nome=str(rack.dcroom.name),
                                                    ambiente_logico__nome="PRODUCAO"
                                                    ).exclude(divisao_dc__nome="BO_DMZ")
@@ -565,35 +591,32 @@ def _create_prod_envs(rack, user):
 
         details = None
         for fab in fabricconfig.get("Ambiente"):
-            if int(fab.get("id"))==int(father_id):
+            if int(fab.get("id")) == int(father_id):
                 details = fab.get("details")
 
         config_subnet = []
         for net in env.configs:
-            cidr = IPNetwork(str(net.ip_config.subnet))
-            prefix = int(net.ip_config.new_prefix)
+            cidr = IPNetwork(str(net.network))
+            prefix = int(net.subnet_mask)
             subnet_list = list(cidr.subnet(int(prefix)))
-
             try:
                 bloco = subnet_list[int(rack.numero)]
-            except IndexError as err:
+            except IndexError:
                 msg = "Rack number %d is greater than the maximum number of " \
-                      "subnets available with prefix %d from %s subnet" % (
-                    rack.numero, prefix, cidr
-                )
+                      "subnets available with prefix %d from %s subnet" % \
+                      (rack.numero, prefix, cidr)
                 raise Exception(msg)
 
             if isinstance(details, list) and len(details) > 0:
-
-                if details[0].get(str(net.ip_config.type)):
-                    new_prefix = details[0].get(str(net.ip_config.type)).get("new_prefix")
+                if details[0].get(str(net.ip_version)):
+                    new_prefix = details[0].get(str(net.ip_version)).get("new_prefix")
                 else:
-                    new_prefix = 31 if net.ip_config.type=="v4" else 127
+                    new_prefix = 31 if net.ip_version == "v4" else 127
                 network = {
-                    'subnet': str(bloco),
-                    'type': net.ip_config.type,
-                    'network_type': net.ip_config.network_type.id,
-                    'new_prefix': new_prefix
+                    'network': str(bloco),
+                    'ip_version': net.ip_version,
+                    'network_type': net.id_network_type.id,
+                    'subnet_mask': new_prefix
                 }
                 config_subnet.append(network)
 
@@ -635,13 +658,15 @@ def _create_prod_envs(rack, user):
 def _create_prod_vlans(rack, user):
     log.debug("_create_prod_vlans")
 
-    env = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                             divisao_dc__nome="BE",
-                                             grupo_l3__nome=str(rack.nome),
-                                             ambiente_logico__nome="PRODUCAO"
-                                             ).uniqueResult()
-
-    log.debug("BE environments: "+str(env))
+    try:
+        env = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                 divisao_dc__nome="BE",
+                                                 grupo_l3__nome=str(rack.nome),
+                                                 ambiente_logico__nome="PRODUCAO"
+                                                 ).uniqueResult()
+        log.debug("BE environments: %s" % env)
+    except Exception as e:
+        raise Exception("Erro: %s" % e)
 
     if rack.dcroom.config:
         fabricconfig = rack.dcroom.config
@@ -690,10 +715,10 @@ def _create_prod_vlans(rack, user):
         for net in env.configs:
             for net_dict in amb.get("config"):
 
-                if net_dict.get("type") == net.ip_config.type:
-                    cidr = IPNetwork(net.ip_config.subnet)
+                if net_dict.get("type") == net.ip_version:
+                    cidr = IPNetwork(net.network)
 
-                    initial_prefix  = 20 if net.ip_config.type=="v4" else 56
+                    initial_prefix = 20 if net.ip_version == "v4" else 56
                     prefixo = net_dict.get("mask")
                     if not idx:
                         bloco = list(cidr.subnet(int(prefixo)))[0]
@@ -703,10 +728,10 @@ def _create_prod_vlans(rack, user):
                         bloco = list(bloco1.subnet(int(prefixo)))[idx-1]
                         log.debug(str(bloco))
                     network = {
-                        'subnet': str(bloco),
-                        'type': str(net.ip_config.type),
-                        'network_type': int(net.ip_config.network_type.id),
-                        'new_prefix': int(net_dict.get("new_prefix"))
+                        'network': str(bloco),
+                        'ip_version': str(net.ip_version),
+                        'network_type': int(net.id_network_type.id),
+                        'subnet_mask': int(net_dict.get("new_prefix"))
                     }
                     config_subnet.append(network)
 
@@ -744,11 +769,60 @@ def _create_prod_vlans(rack, user):
     return environment
 
 
+def _create_lflf_envs(rack):
+    log.debug("_create_lflf_envs")
+    env_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                grupo_l3__nome=str(rack.dcroom.name),
+                                                ambiente_logico__nome="LEAF-LEAF")
+    log.debug("Leaf-leaf environments: "+str(env_lf))
+
+    try:
+        id_l3 = models_env.GrupoL3().get_by_name(rack.nome).id
+    except:
+        l3_dict = models_env.GrupoL3()
+        l3_dict.nome = rack.nome
+        l3_dict.save()
+        id_l3 = l3_dict.id
+        pass
+
+    for env in env_lf:
+        config_subnet = []
+        for net in env.configs:
+            cidr = list(IPNetwork(net.network).subnet(int(net.subnet_mask)))[rack.numero]
+            network = {
+                'network': str(cidr),
+                'ip_version': str(net.ip_version),
+                'network_type': int(net.id_network_type.id),
+                'subnet_mask': int(net.subnet_mask)
+            }
+            config_subnet.append(network)
+
+        obj = {
+            'grupo_l3': id_l3,
+            'ambiente_logico': env.ambiente_logico.id,
+            'divisao_dc': env.divisao_dc.id,
+            'acl_path': env.acl_path,
+            'ipv4_template': env.ipv4_template,
+            'ipv6_template': env.ipv6_template,
+            'link': env.link,
+            'min_num_vlan_2': env.min_num_vlan_1,
+            'max_num_vlan_2': env.max_num_vlan_1,
+            'min_num_vlan_1': env.min_num_vlan_1,
+            'max_num_vlan_1': env.max_num_vlan_1,
+            'vrf': env.vrf,
+            'father_environment': env.id,
+            'default_vrf': env.default_vrf.id,
+            'configs': config_subnet,
+            'fabric_id': rack.dcroom.id
+        }
+        environment = facade_env.create_environment(obj)
+        log.debug("Environment object: %s" % str(environment))
+
+
 def _create_lflf_vlans(rack, user):
     log.debug("_create_lflf_vlans")
 
     env_lf = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
-                                                father_environment__isnull=True,
                                                 grupo_l3__nome=str(rack.dcroom.name),
                                                 ambiente_logico__nome="LEAF-LEAF")
     log.debug("Leaf-leaf environments: "+str(env_lf))
@@ -773,15 +847,15 @@ def _create_lflf_vlans(rack, user):
         except:
             log.debug("debug lfxlf")
             for net in env.configs:
-                bloco = net.ip_config.subnet
+                bloco = net.network
                 prefix = bloco.split('/')[-1]
                 network = {
                     'prefix': prefix,
                     'network_type': id_network_type
                 }
-                if str(net.ip_config.type)[-1] is "4":
+                if str(net.ip_version)[-1] is "4":
                     create_networkv4 = network
-                elif str(net.ip_config.type)[-1] is "6":
+                elif str(net.ip_version)[-1] is "6":
                     create_networkv6 = network
             obj = {
                 'name': vlan_name,
@@ -826,8 +900,8 @@ def _create_oobvlans(rack, user):
         network = dict()
         for config in env.configs:
             log.debug("Configs: "+str(config))
-            new_prefix = config.ip_config.new_prefix
-            redev4 = IPNetwork(config.ip_config.subnet)
+            new_prefix = config.subnet_mask
+            redev4 = IPNetwork(config.network)
             new_v4 = list(redev4.subnet(int(new_prefix)))[int(rack.numero)]
             oct1, oct2, oct3, var = str(new_v4).split('.')
             oct4, prefix = var.split('/')
@@ -835,7 +909,7 @@ def _create_oobvlans(rack, user):
             mask1, mask2, mask3, mask4 = netmask.split('.')
             network = dict(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, prefix=prefix, mask_oct1=mask1, mask_oct2=mask2,
                            mask_oct3=mask3, mask_oct4=mask4, cluster_unit=None, vlan=vlan.id,
-                           network_type=config.ip_config.network_type.id, environmentvip=None)
+                           network_type=config.id_network_type.id, environmentvip=None)
             log.debug("Network allocated: "+ str(network))
         facade_redev4_v3.create_networkipv4(network, user)
 
@@ -843,7 +917,7 @@ def _create_oobvlans(rack, user):
 
 
 def rack_environments_vlans(rack_id, user):
-    log.info("Rack Environments")
+    log.info("Rack Environments - Old")
 
     rack = Rack().get_rack(idt=rack_id)
     if rack.create_vlan_amb:
@@ -855,6 +929,7 @@ def rack_environments_vlans(rack_id, user):
 
     # leaf x leaf
     _create_lflf_vlans(rack, user)
+    _create_lflf_envs(rack)
 
     # producao/cloud
     _create_prod_envs(rack, user)
@@ -867,6 +942,45 @@ def rack_environments_vlans(rack_id, user):
     rack.save()
 
     return rack
+
+
+def allocate_env_vlan(user, rack_id):
+    log.info("Rack Environments - Refactor")
+
+    from networkapi.api_rack.rackenvironments import RackEnvironment
+
+    rack_env = RackEnvironment(user, rack_id)
+
+    # spine x leaf
+    rack_env.spines_environment_save()
+    rack_env.spine_leaf_vlans_save()
+
+    # leaf x leaf
+    rack_env.leaf_leaf_vlans_save()
+    rack_env.leaf_leaf_envs_save()
+
+    # producao/cloud
+    rack_env.prod_environment_save()
+    rack_env.children_prod_environment_save()
+
+    # redes de gerencia OOB
+    rack_env.manage_vlan_save()
+
+    rack_env.allocate()
+
+    return rack_env.rack
+
+
+def deallocate_env_vlan(user, rack_id):
+    log.info("Rack deallocate")
+
+    from networkapi.api_rack.rackenvironments import RackEnvironment
+
+    rack_env = RackEnvironment(user, rack_id)
+
+    rack_env.rack_vlans_remove()
+    rack_env.rack_environment_remove()
+    rack_env.deallocate()
 
 
 def api_foreman(rack):

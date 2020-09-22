@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "cidr": {
+      "items": {
+        "properties": {
+          "environment": {
+            "type": "integer"
+          },
+          "subnet_mask": {
+            "type": "string"
+          },
+          "network": {
+            "type": "string"
+          },
+          "ip_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip_version",
+          "subnet_mask",
+          "network_type",
+          "environment"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "cidr"
+  ],
+  "title": "CIDR Post",
+  "type": "object"
+}

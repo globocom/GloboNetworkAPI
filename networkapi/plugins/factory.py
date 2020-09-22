@@ -55,6 +55,9 @@ class PluginFactory(object):
             if re.search('ACE30', modelo.upper(), re.DOTALL):
                 from .Cisco.ACE.plugin import ACE
                 return ACE
+            if re.search('C9500', modelo.upper(), re.DOTALL):
+                from .Cisco.IOS.plugin import IOS
+                return IOS
 
         if 'marca' in kwargs:
             marca = kwargs.get('marca')

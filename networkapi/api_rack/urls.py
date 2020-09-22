@@ -7,10 +7,12 @@ from networkapi.api_rack import facade as rack_facade
 
 
 from networkapi.api_rack.views import RackDeployView
+from networkapi.api_rack.views import RackForeman
 from networkapi.api_rack.views import RackView
 
 urlpatterns = patterns('',
     url(r'^rack/(?P<rack_id>\d+)/equipments/$', rack_views.RackDeployView.as_view()),
+    url(r'^rack/foreman/(?P<rack_id>\d+)/', rack_views.RackForeman.as_view()),
     url(r'^rack/fabric/(?P<fabric_id>\d+)[/]$', rack_views.RackView.as_view()),
     url(r'^rack/$', rack_views.RackView.as_view()),
     url(r'^rack/(?P<rack_id>\d+)/$', rack_views.RackView.as_view()),
@@ -19,7 +21,9 @@ urlpatterns = patterns('',
     url(r'^rack/list/all/$', rack_views.RackView.as_view()),
     url(r'^rack/next/', rack_facade.available_rack_number),
 
+    url(r'^dc/(?P<dc_id>\d+)/$', rack_views.DataCenterView.as_view()),
     url(r'^dc/$', rack_views.DataCenterView.as_view()),
+    url(r'^dcrooms/(?P<fabric_id>\d+)/$', rack_views.FabricView.as_view()),
     url(r'^dcrooms/$', rack_views.FabricView.as_view()),
     url(r'^dcrooms/id/(?P<fabric_id>\d+)/$', rack_views.FabricView.as_view()),
     url(r'^dcrooms/name/(?P<fabric_name>\s+)/$', rack_views.FabricView.as_view()),

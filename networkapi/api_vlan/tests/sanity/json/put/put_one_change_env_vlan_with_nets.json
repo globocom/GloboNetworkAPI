@@ -13,7 +13,8 @@
             "id": 4,
             "name": "VLAN NUM 4 - RACK-1",
             "num_vlan": 4,
-            "vrf": null
+            "vrf": null,
+            "vxlan": false
         }
     ]
 }

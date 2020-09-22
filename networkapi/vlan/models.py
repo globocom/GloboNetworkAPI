@@ -2,6 +2,7 @@
 from __future__ import with_statement
 
 import logging
+import re
 
 from _mysql_exceptions import OperationalError
 from django.core.exceptions import ObjectDoesNotExist
@@ -109,6 +110,14 @@ class VlanNetworkAddressNotAvailableError(VlanError):
 class VlanNameDuplicatedError(VlanError):
 
     """Retorna exceção porque já existe uma VLAN cadastrada com o mesmo nome."""
+
+    def __init__(self, cause, message=None):
+        VlanError.__init__(self, cause, message)
+
+
+class VlanNameInvalid(VlanError):
+
+    """Retorna exceção porque o nome da VLAN tem caracter especial ou quebra de linha."""
 
     def __init__(self, cause, message=None):
         VlanError.__init__(self, cause, message)
@@ -405,6 +414,16 @@ class Vlan(BaseModel):
             self.log.error(u'Failure to search the Vlans.')
             raise VlanError(e, u'Failure to search the Vlans.')
 
+    def valid_vlan_name(self, name):
+
+        if name is None or name == '':
+            return False
+
+        regex_for_breakline = re.compile('\r|\n\r|\n')
+        regex_for_special_characters = re.compile('[@!#$%^&*()<>?/\\\|}{~:]')
+
+        return False if regex_for_breakline.search(name) or regex_for_special_characters.search(name) else True
+
     def search(self, environment_id=None):
         try:
             v = Vlan.objects.all()
@@ -567,6 +586,11 @@ class Vlan(BaseModel):
 
         @return: nothing
         """
+
+        # Validate Name VLAN
+        if not self.valid_vlan_name(self.nome):
+            raise VlanNameInvalid(None, 'Name VLAN can not have special characters or breakline.')
+
         if self.nome is not None:
             self.nome = self.nome.upper()
 
@@ -626,6 +650,11 @@ class Vlan(BaseModel):
 
         @raise VlanError: Erro não esperado ao executar o save.
         """
+
+        # Validate Name VLAN
+        if not self.valid_vlan_name(self.nome):
+            raise VlanNameInvalid(None, 'Name VLAN can not have special characters or breakline.')
+
         if self.nome is not None:
             self.nome = self.nome.upper()
 
@@ -803,6 +832,10 @@ class Vlan(BaseModel):
         if self.exist_vlan_name_in_environment():
             raise VlanNameDuplicatedError(
                 None, 'Name VLAN can not be duplicated in the environment.')
+
+        # Validate Name VLAN
+        if not self.valid_vlan_name(self.nome):
+            raise VlanNameInvalid(None, 'Name VLAN can not have special characters or breakline.')
 
         try:
             return self.save()
@@ -1008,6 +1041,10 @@ class Vlan(BaseModel):
         if self.exist_vlan_name_in_environment(self.id):
             msg = 'Name VLAN can not be duplicated in the environment.'
             self.log.error(msg)
+            raise VlanErrorV3(msg)
+
+        if not self.valid_vlan_name(self.nome):
+            msg = 'Name VLAN can not have special characters or breakline.'
             raise VlanErrorV3(msg)
 
         # Validate Number of vlan in environment related
@@ -1481,10 +1518,10 @@ class Vlan(BaseModel):
 
         for net in netv4:
             configsv4 = configs.filter(
-                ip_config__type='v4'
+                ip_version='v4'
             )
 
-            nts = [IPNetwork(config.ip_config.subnet) for config in configsv4]
+            nts = [IPNetwork(config.network) for config in configsv4]
 
             net_ip = [IPNetwork(net.networkv4)]
 
@@ -1498,10 +1535,10 @@ class Vlan(BaseModel):
 
         for net in netv6:
             configsv6 = configs.filter(
-                ip_config__type='v6'
+                ip_version='v6'
             )
 
-            nts = [IPNetwork(config.ip_config.subnet) for config in configsv6]
+            nts = [IPNetwork(config.network) for config in configsv6]
 
             net_ip = [IPNetwork(net.networkv6)]
 
