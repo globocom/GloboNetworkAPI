@@ -35,16 +35,16 @@ class Junos:
 
     def exec_command(self, command):
         print("\tLocking configuration ...")
-        self.__lock_configuration()
+        self._lock_configuration()
 
         print("\tLoad configuration ...")
-        self.__load_configuration(data=command, format_type='set')
+        self._load_configuration(data=command, format_type='set')
 
         print("\tCommit ...")
-        self.__commit()
+        self._commit()
 
         print("\tUnlocking configuration ...")
-        self.__unlock_configuration()
+        self._unlock_configuration()
 
     def close(self):
         try:
@@ -54,7 +54,7 @@ class Junos:
         except Exception, e:
             print("An error occurred to close connect: {0}".format(e))
 
-    def __load_configuration(self, data, format_type):
+    def _load_configuration(self, data, format_type):
         # Ps.: If syntax error found, it will be excepted here
         try:
             self.configuration.load(data, format=format_type)
@@ -64,7 +64,7 @@ class Junos:
         except Exception, e:
             print("An error occurred to load configuration: {0}".format(e))
 
-    def __lock_configuration(self):
+    def _lock_configuration(self):
         try:
             # Guarantee a clean configuration (lock then clean)
             self.configuration.lock()
@@ -75,7 +75,7 @@ class Junos:
         except Exception, e:
             print("An error occurred to lock configuration: {0}".format(e))
 
-    def __unlock_configuration(self):
+    def _unlock_configuration(self):
         try:
             self.configuration.unlock()
         except UnlockError as e:
@@ -84,7 +84,7 @@ class Junos:
         except Exception, e:
             print("An error occurred to unlock configuration: {0}".format(e))
 
-    def __commit(self):
+    def _commit(self):
         try:
             if self.configuration.commit_check():
                 self.configuration.commit()
@@ -104,7 +104,7 @@ def main(device, username, password):
     plugin.connect()  # In the future, the connect function will send an equipment (to validate maintenance)
 
     print("Execute configuration ...")
-    plugin.exec_command(command='set interfaces gr-0/0/0 description "Some description 6 for gr-0/0/0"')
+    plugin.exec_command(command='set interfaces gr-0/0/0 description "Some description 8 for gr-0/0/0"')
 
     print("Close connection ...")
     plugin.close()
