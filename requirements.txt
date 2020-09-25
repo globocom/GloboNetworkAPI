@@ -1,4 +1,3 @@
-laura
 amqp==1.4.9
 anyjson==0.3.3
 bigsuds==1.0.4
