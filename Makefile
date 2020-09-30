@@ -4,7 +4,7 @@
 
 
 # Docker image version
-NETAPI_IMAGE_VERSION := 2.1.0
+NETAPI_IMAGE_VERSION := 3.1.0
 
 # Gets git current branch
 curr_branch := $(shell git symbolic-ref --short -q HEAD)
@@ -35,14 +35,17 @@ help:
 	@echo "  test       to execute tests using containers. Use app variable"
 	@echo "  status     to show containers status"
 	@echo "  clean      to clean garbage left by builds and installation"
+	@echo "  clean_all  to remove and recreate everything"
 	@echo "  fixture    to generate fixtures from a given model"
 	@echo "  tag        to create a new tag based on the current versioni"
 	@echo
 	@echo "Build:"
-	@echo "  build_img  to build docker images"
+	@echo "  submodule  to install DevOps submodules - This must be the first step when you are creating a local NAPI environment"
+	@echo "  build_img  to build docker images - This could be the second step if you don't want start the docker images"
+	@echo "  build      to build without installing"
+	@echo "  recreate_img   to build again recreating all stuffs"
 	@echo "  docs       to create documentation files"
 	@echo "  compile    to compile .py files (just to check for syntax errors)"
-	@echo "  build      to build without installing"
 	@echo "  install    to install"
 	@echo "  dist       to create egg for distribution"
 	@echo
@@ -81,6 +84,16 @@ clean:
 	@find . \( -name '*.pyc' -o -name '**/*.pyc' -o -name '*~' \) -delete
 
 
+clean_all:
+	@echo "Stopping and removing all conatainers and images"
+	@echo "Cleaning..."
+	@rm -rf build dist *.egg-info
+	@rm -rf docs/_build
+	@find . \( -name '*.pyc' -o -name '**/*.pyc' -o -name '*~' \) -delete
+	@docker-compose down --remove-orphans 
+	@docker-compose up --force-recreate 
+
+
 docs: clean
 	@(cd docs && make html)
 
@@ -90,6 +103,8 @@ compile: clean
 	@python -tt -m compileall .
 	#@pep8 --format=pylint --statistics networkapiclient setup.py
 
+submodule:
+	@git submodule update --init --recursive
 
 install:
 	@python setup.py install
@@ -105,6 +120,48 @@ db:
 
 build:
 	@docker-compose up --build -d
+
+
+recreate_img:
+	@docker rmi $(docker images -q)
+	@docker-compose up --force-recreate
+
+
+
+dist: clean
+
+docs: clean
+	@(cd docs && make html)
+
+
+compile: clean
+	@echo "Compiling source code..."
+	@python -tt -m compileall .
+	#@pep8 --format=pylint --statistics networkapiclient setup.py
+
+submodule:
+	@git submodule update --init --recursive
+
+install:
+	@python setup.py install
+
+
+api:
+	@docker exec -it netapi_app sh
+
+
+db: 
+	@docker exec -it netapi_db bash
+
+
+build:
+	@docker-compose up --build -d
+
+
+recreate_img:
+	@docker rmi $(docker images -q)
+	@docker-compose up --force-recreate
+
 
 
 dist: clean
