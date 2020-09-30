@@ -1,9 +1,16 @@
 #
 # Base stage
 #
-FROM alpine:latest as base
+FROM alpine:3.7 as base
+
+RUN apk update
 
 RUN apk add --update --no-cache py2-pip \
+                                libffi-dev \
+                                py-pynacl \
+                                libressl-dev \ 
+                                musl-dev \
+                                libffi-dev \
                                 libldap \
                                 libssl1.0 \
                                 mysql-client \
@@ -12,10 +19,15 @@ RUN apk add --update --no-cache py2-pip \
                                 iputils \
                                 bind-tools \
                                 ncurses5-libs \
+                                libxslt-dev \
+                                gcc \
+                                libc-dev \
+                                python-dev \ 
                                 curl
 
 RUN pip install --no-cache --upgrade pip
 RUN pip install --no-cache virtualenv
+RUN pip install --no-cache junos-eznc
 
 RUN mkdir -p /netapi
 

@@ -32,3 +32,4 @@ Sphinx==1.2.2
 sphinx-rtd-theme==0.1.6
 sure==1.2.7
 urllib3==1.21.1
+junos-eznc==2.5.3
