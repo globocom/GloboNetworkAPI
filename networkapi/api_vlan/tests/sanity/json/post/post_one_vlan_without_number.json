@@ -11,7 +11,8 @@
             "description": "",
             "environment": 1,
             "name": "VLAN AUTO - AMBIENTE 1",
-            "vrf": null
+            "vrf": null,
+            "vxlan": false
         }
     ]
 }

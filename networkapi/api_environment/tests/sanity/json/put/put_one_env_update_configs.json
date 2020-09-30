@@ -6,11 +6,11 @@
       "aws_vpc": null,
       "configs": [
         {
-          "id": 1,
           "network_type": 1,
-          "new_prefix": "25",
-          "subnet": "192.168.0.0/8",
-          "type": "v4"
+          "subnet_mask": "25",
+          "network": "192.168.0.0/8",
+          "ip_version": "v4",
+          "environment": 1
         }
       ],
       "dcroom": 1,

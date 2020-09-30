@@ -26,6 +26,8 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         'networkapi/api_environment/fixtures/initial_base_environment.json',
         'networkapi/api_environment/fixtures/initial_environment.json',
         'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/api_environment/fixtures/initial_cidr.json',
+
     ]
 
     json_path = 'api_environment/tests/sanity/json/put/%s'
@@ -103,6 +105,7 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
 
         name_file = self.json_path % 'put_one_env_add_configs.json'
         get_file = self.comp_path % 'put_one_env_add_configs.json'
+        config_file = self.comp_path % 'put_one_env_add_configs-configs.json'
 
         # Does put request
         response = self.client.put(
@@ -121,10 +124,9 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
 
-        # Removes property name
         data = response.data
         del data['environments'][0]['name']
-        del data['environments'][0]['configs'][1]['id']
+        del data['environments'][0]['configs']
         del data['environments'][0]['sdn_controllers']
 
         self.compare_json(get_file, data)
@@ -155,6 +157,7 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         # Removes property name
         data = response.data
         del data['environments'][0]['name']
+        del data['environments'][0]['configs'][0]['id']
         del data['environments'][0]['sdn_controllers']
         self.compare_json(get_file, data)
 

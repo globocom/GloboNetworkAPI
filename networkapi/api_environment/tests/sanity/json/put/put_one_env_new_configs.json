@@ -7,9 +7,10 @@
       "configs": [
         {
           "network_type": 2,
-          "new_prefix": "26",
-          "subnet": "192.168.0.0/16",
-          "type": "v4"
+          "subnet_mask": "26",
+          "network": "201.7.0.0/16",
+          "ip_version": "v4",
+          "environment": 1
         }
       ],
       "dcroom": 1,

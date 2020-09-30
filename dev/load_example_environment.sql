@@ -705,6 +705,46 @@ VALUES
       17, 13, 17
    )
 ;
+-- Dumping data for table `environment_cidr`
+INSERT INTO
+   `environment_cidr` (id, network, subnet_mask, ip_version, id_network_type, id_env, network_first_ip, network_last_ip, network_mask)
+VALUES
+   (
+      5, '10.0.1.0/28', '28', 'v4', 2, 1, 167772416, 167772431, 28
+   )
+,
+   (
+      10, '10.42.0.0/24', '24', 'v4', 2, 1, 170524672, 170524927, 24
+   )
+,
+   (
+      11, '192.168.104.0/22', '27', 'v4', 2, 9, 3232262144, 3232263167, 22
+   )
+,
+   (
+      12, 'fdbe:bebe:bebe:11c0:0000:0000:0000:0000/58', '64', 'v6', 2, 9, 337285088106912836215476086841679020032, 337285088106912837396067707559090323455, 58
+   )
+,
+   (
+      13, '10.237.128.0/18', '28', 'v4', 2, 10, 183336960, 183353343, 18
+   )
+,
+   (
+      14, 'fdbe:bebe:bebe:1200:0:0:0:0/57', '64', 'v6', 2, 10, 337285088106912837396067707559090323456, 337285088106912839757250948993912930303, 57
+   )
+,
+   (
+      15, '10.16.0.0/16', '24', 'v4', 2, 11, 168820736, 168886271, 16
+   )
+,
+   (
+      16, '10.0.0.0/16', '24', 'v4', 2, 12, 167772160, 167837695, 16
+   )
+,
+   (
+      17, '10.1.0.0/16', '24', 'v4', 2, 13, 167837696, 167903231, 16
+   )
+;
 -- Dumping data for table `vlans`
 INSERT INTO
    `vlans` (id_vlan, nome, num_vlan, id_ambiente, descricao, acl_file_name, acl_valida, ativada, acl_file_name_v6, acl_valida_v6, acl_draft, acl_draft_v6, vrf)
@@ -762,39 +802,39 @@ INSERT INTO
    `equipamentos` (id_equip, id_tipo_equipamento, id_modelo, nome, maintenance)
 VALUES
    (
-      1, 1, 1, 'Switch R1', 0
+      1, 1, 1, 'SWITCH-R1', 0
    )
 ,
    (
-      2, 1, 1, 'Switch R2', 0
+      2, 1, 1, 'SWITCH-R2', 0
    )
 ,
    (
-      3, 1, 1, 'Switch R3', 0
+      3, 1, 1, 'SWITCH-R3', 0
    )
 ,
    (
-      4, 1, 1, 'Switch B1', 0
+      4, 1, 1, 'SWITCH-B1', 0
    )
 ,
    (
-      5, 1, 1, 'Switch B2', 0
+      5, 1, 1, 'SWITCH-B2', 0
    )
 ,
    (
-      6, 1, 1, 'Switch B3', 0
+      6, 1, 1, 'SWITCH-B3', 0
    )
 ,
    (
-      7, 1, 1, 'Switch 01', 0
+      7, 1, 1, 'SWITCH-01', 0
    )
 ,
    (
-      8, 1, 1, 'Switch 02', 0
+      8, 1, 1, 'SWITCH-02', 0
    )
 ,
    (
-      9, 1, 1, 'Switch 03', 0
+      9, 1, 1, 'SWITCH-03', 0
    )
 ,
    (
@@ -806,67 +846,67 @@ VALUES
    )
 ,
    (
-      12, 3, 1, 'Router', 0
+      12, 3, 1, 'ROUTER', 0
    )
 ,
    (
-      13, 2, 1, 'Server S1', 0
+      13, 2, 1, 'SERVER-S1', 0
    )
 ,
    (
-      14, 2, 1, 'Server P1', 0
+      14, 2, 1, 'SERVER-P1', 0
    )
 ,
    (
-      15, 2, 1, 'Server P2', 0
+      15, 2, 1, 'SERVER-P2', 0
    )
 ,
    (
-      16, 2, 1, 'Server P3', 0
+      16, 2, 1, 'SERVER-P3', 0
    )
 ,
    (
-      17, 2, 1, 'Server P4', 0
+      17, 2, 1, 'SERVER-P4', 0
    )
 ,
    (
-      18, 2, 1, 'Server P5', 0
+      18, 2, 1, 'SERVER-P5', 0
    )
 ,
    (
-      19, 5, 1, 'Load-Balancer', 0
+      19, 5, 1, 'LOAD-BALANCER', 0
    )
 ,
    (
-      20, 2, 1, 'Server Space 1', 0
+      20, 2, 1, 'SERVER-SPACE-1', 0
    )
 ,
    (
-      21, 2, 1, 'Server Space 2', 0
+      21, 2, 1, 'SERVER-SPACE-2', 0
    )
 ,
    (
-      22, 1, 1, 'TOR 1 Space 1', 0
+      22, 1, 1, 'TOR-1-SPACE-1', 0
    )
 ,
    (
-      23, 1, 1, 'TOR 2 Space 1', 0
+      23, 1, 1, 'TOR-2-SPACE-1', 0
    )
 ,
    (
-      24, 1, 1, 'TOR 1 Space 2', 0
+      24, 1, 1, 'TOR-1-SPACE-2', 0
    )
 ,
    (
-      25, 1, 1, 'TOR 2 Space 2', 0
+      25, 1, 1, 'TOR-2-SPACE-2', 0
    )
 ,
    (
-      26, 3, 1, 'Fabric router 0', 0
+      26, 3, 1, 'FABRIC-ROUTER-0', 0
    )
 ,
    (
-      27, 3, 1, 'Fabric router 1', 0
+      27, 3, 1, 'FABRIC-ROUTER-1', 0
    )
 ;
 
@@ -1013,11 +1053,11 @@ VALUES
    )
 ,
    (
-      2, 2, 0, 168, 192, 'Router', 1
+      2, 2, 0, 168, 192, 'ROUTER', 1
    )
 ,
    (
-      3, 1, 1, 168, 192, 'Router', 2
+      3, 1, 1, 168, 192, 'ROUTER', 2
    )
 ,
    (
@@ -1025,11 +1065,11 @@ VALUES
    )
 ,
    (
-      5, 6, 0, 16, 172, 'Server S1', 3
+      5, 6, 0, 16, 172, 'SERVER-S1', 3
    )
 ,
    (
-      6, 6, 0, 0, 10, 'Server S1', 4
+      6, 6, 0, 0, 10, 'SERVER-S1', 4
    )
 ,
    (

@@ -72,7 +72,8 @@
       "id": 1,
       "name": "VLAN NUM 2 - RACK-1",
       "num_vlan": 2,
-      "vrf": null
+      "vrf": null,
+      "vxlan": false
     }
   ]
 }

@@ -221,6 +221,23 @@ def is_valid_string_minsize(param, minsize=None, required=True):
     return True
 
 
+def is_valid_vlan_name(vlan_name):
+    """Checks if the parameter is a valid string for Vlan's name, without special characters and breaklines
+
+    @param vlan_name: Value to be validated.
+
+    @return True if the parameter hasn't a special character, or False otherwise.
+    """
+
+    if vlan_name is None or vlan_name == '':
+        return False
+
+    regex_for_breakline = re.compile('\r|\n\r|\n')
+    regex_for_special_characters = re.compile('[@!#$%^&*()<>?/\\\|}{~:]')
+
+    return False if regex_for_breakline.search(vlan_name) or regex_for_special_characters.search(vlan_name) else True
+
+
 def is_valid_boolean_param(param, required=True):
     """Checks if the parameter is a valid boolean.
 
@@ -286,7 +303,8 @@ def is_valid_uri(param):
 
 
 def is_valid_text(param, required=True):
-    """Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
+    """Checks if the parameter is a valid field text and should follow the format of [A-Za-z]
+    and special characters hyphen and underline.
 
     @param param: Value to be validated.
     @param required: Check if the value can be None
@@ -305,7 +323,8 @@ def is_valid_text(param, required=True):
 
 
 def is_valid_pool_identifier_text(param, required=True):
-    """Checks if the parameter is a valid field text and should follow the format of [A-Za-z] and special characters hyphen and underline.
+    """Checks if the parameter is a valid field text and should follow the format of [A-Za-z]
+    and special characters hyphen and underline.
 
     @param param: Value to be validated.
     @param required: Check if the value can be None
@@ -324,7 +343,8 @@ def is_valid_pool_identifier_text(param, required=True):
 
 
 def is_valid_option(param):
-    """Checks if the parameter is a valid field text and 0-9 and should follow the format of [A-Za-z] and special characters hyphen, underline and point.
+    """Checks if the parameter is a valid field text and 0-9 and should follow the format of [A-Za-z]
+    and special characters hyphen, underline and point.
 
     @param param: Value to be validated.
 
@@ -472,17 +492,21 @@ def cache_function(length, equipment=False):
     @param length: time in seconds to stay in cache
     """
     def _decorated(func):
-
+        logging.debug("30")
         def _cache(*args, **kwargs):
-
+            logging.debug("31")
             if equipment is True:
+                logging.debug(equipment)
+                logging.debug(args)
                 key = sha1(str(args[0].id) + 'equipment').hexdigest()
                 print str(args[0].id) + 'equipment'
             else:
                 key = sha1(str(args[0].id)).hexdigest()
                 print str(args[0].id)
-
+            logging.debug("32")
             # Search in cache if it exists
+            logging.debug("cache %s" % cache)
+            logging.debug("key %s" % key)
             if key in cache:
 
                 # Get value in cache
@@ -496,7 +520,7 @@ def cache_function(length, equipment=False):
                         value = cache.get(key)
                 # Return value of cache
                 return value
-
+                logging.debug("33")
             # If not exists in cache
             else:
                 # Function can be called several times before it finishes and is put into the cache,
@@ -517,9 +541,10 @@ def cache_function(length, equipment=False):
                 # Set in cache the keys
                 # key_list.append(key)
                 # cache.set(sha1('key_networkapi_vlans').hexdigest(), key_list)
+                logging.debug("34")
 
                 return result
-
+            logging.debug("35")
         return _cache
     return _decorated
 

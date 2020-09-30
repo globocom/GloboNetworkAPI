@@ -19,8 +19,27 @@ def cache_enabled():
         if int(get_value('use_cache')):
             return 1
         return 0
-    except Exception as e:
+    except Exception as ERROR:
+        log.error(ERROR)
         return 0
+
+      
+def set_cache(key, data, timeout):
+    try:
+        djangocache.set(key, data, timeout)
+        log.debug('Key cached successfully for key %s' % key)
+    except Exception as ERROR:
+        log.error(ERROR)
+
+
+def get_cache(key):
+    try:
+        data = djangocache.get(key)
+        if data:
+            log.debug("Got cached data for key %s" % key)
+        return data
+    except Exception as ERROR:
+        log.error(ERROR)
 
 
 def get_cached_search(prefix, search):
@@ -29,9 +48,7 @@ def get_cached_search(prefix, search):
         try:
             search_md5 = hashlib.md5(str(search)).hexdigest()
             key = prefix+search_md5
-            data = djangocache.get(key)
-            if data:
-                log.debug("Got cached data for key %s" % key)
+            data = get_cache(key)
             return data
         except Exception as e:
             log.error(e)
@@ -47,7 +64,7 @@ def set_cache_search_with_list(prefix, search, data, timeout=DEFAULT_CACHE_TIMEO
                 key = prefix+search_md5
                 djangocache.set(key, data, timeout)
 
-                cached_search_md5_list = djangocache.get(prefix)
+                cached_search_md5_list = get_cache(prefix)
                 if not cached_search_md5_list:
                     cached_search_md5_list = []
 
@@ -67,7 +84,7 @@ def delete_cached_searches_list(prefix):
     if cache_enabled():
         with distributedlock(prefix):
             try:
-                cached_search_md5_list = djangocache.get(prefix)
+                cached_search_md5_list = get_cache(prefix)
                 if cached_search_md5_list:
                     for cached_search_md5 in cached_search_md5_list:
                         key = str(prefix)+str(cached_search_md5)

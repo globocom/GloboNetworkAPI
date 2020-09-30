@@ -142,6 +142,32 @@ class NetworkIPRangeEnvError(NetworkIPvXError):
         return msg.encode('utf-8', 'replace')
 
 
+class NetworkSubnetRange(NetworkIPvXError):
+
+    """Exception for a network that does not be a subnet of de environment network."""
+
+    def __init__(self, cause, message=None):
+        self.cause = cause
+        self.message = message
+
+    def __str__(self):
+        msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
+        return msg.encode('utf-8', 'replace')
+
+
+class NetworkEnvironmentError(NetworkIPvXError):
+
+    """Exception for a environment that does not have a network."""
+
+    def __init__(self, cause, message=None):
+        self.cause = cause
+        self.message = message
+
+    def __str__(self):
+        msg = u'Caused by: %s, Message: %s' % (self.cause, self.message)
+        return msg.encode('utf-8', 'replace')
+
+
 class IpErrorV3(Exception):
 
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com IP."""
@@ -509,6 +535,8 @@ class NetworkIPv4(BaseModel):
         """
         configenvironment = get_model('ambiente', 'ConfigEnvironment')
         vlan_model = get_model('vlan', 'Vlan')
+        models = get_model("ambiente", "EnvCIDR")
+
         self.vlan = vlan_model().get_by_pk(id_vlan)
 
         network_found = None
@@ -518,9 +546,9 @@ class NetworkIPv4(BaseModel):
 
         try:
 
-            # Find all configs type v4 in environment
-            configs = configenvironment.get_by_environment(
-                self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv4[0])
+            env_id = self.vlan.ambiente.id
+            configs = models().get(env_id=env_id).filter(
+                ip_version=IP_VERSION.IPv4[0])
 
             # If not found, an exception is thrown
             if len(configs) == 0:
@@ -540,20 +568,19 @@ class NetworkIPv4(BaseModel):
 
                 # For each configuration founded in environment
                 for config in configs:
-
                     # If already get a network stop this
                     if stop:
                         break
 
                     # Need to be IPv4
-                    if config.ip_config.type == IP_VERSION.IPv4[0]:
+                    if config.ip_version == IP_VERSION.IPv4[0]:
 
-                        net4 = IPv4Network(config.ip_config.subnet)
+                        net4 = IPv4Network(config.network)
 
                         if prefix is not None:
                             new_prefix = int(prefix)
                         else:
-                            new_prefix = int(config.ip_config.new_prefix)
+                            new_prefix = int(config.subnet_mask)
 
                         self.log.info(
                             u'Prefix that will be used: %s' % new_prefix)
@@ -580,8 +607,8 @@ class NetworkIPv4(BaseModel):
 
                                 if network_type:
                                     internal_network_type = network_type
-                                elif config.ip_config.network_type is not None:
-                                    internal_network_type = config.ip_config.network_type
+                                elif config.id_network_type is not None:
+                                    internal_network_type = config.id_network_type
                                 else:
                                     self.log.error(
                                         u'Parameter tipo_rede is invalid. Value: %s', network_type)
@@ -984,12 +1011,13 @@ class NetworkIPv4(BaseModel):
 
     def validate_v3(self):
         """Validate networkIPv4."""
-
+        models = get_model("ambiente", "EnvCIDR")
         if not self.network_type:
             raise NetworkIPv4ErrorV3('Network type can not null')
 
         # validate if network if allow in environment
-        configs = self.vlan.ambiente.configs.all()
+        env_id = self.vlan.ambiente.id
+        configs = models().get(env_id=env_id)
         self.vlan.allow_networks_environment(configs, [self], [])
 
     def activate_v3(self):
@@ -1088,6 +1116,8 @@ class NetworkIPv4(BaseModel):
         """
 
         vlan_model = get_model('vlan', 'Vlan')
+        cidr_model = get_model('ambiente', 'EnvCIDR')
+
         self.vlan = vlan_model().get_by_pk(id_vlan)
 
         nets_envs, netv6 = network.get_networks_related(
@@ -1099,19 +1129,19 @@ class NetworkIPv4(BaseModel):
         network_found = None
 
         try:
-
-            configs = self.vlan.ambiente.configs.filter(
-                ip_config__type=IP_VERSION.IPv4[0])
+            env_id = self.vlan.ambiente.id
+            configs = cidr_model().get(env_id=env_id).filter(
+                ip_version=IP_VERSION.IPv4[0])
 
             # For each configuration founded in environment
             for config in configs:
 
-                net4 = IPNetwork(config.ip_config.subnet)
+                net4 = IPNetwork(config.network)
 
                 if prefix is not None:
                     new_prefix = int(prefix)
                 else:
-                    new_prefix = int(config.ip_config.new_prefix)
+                    new_prefix = int(config.subnet_mask)
 
                 self.log.info(
                     u'Prefix that will be used: %s' % new_prefix)
@@ -1139,7 +1169,7 @@ class NetworkIPv4(BaseModel):
                         self.mask_oct4 = mask[3]
 
                         if not self.network_type:
-                            self.network_type = config.ip_config.network_type
+                            self.network_type = config.id_network_type
 
                         return
 
@@ -2787,6 +2817,8 @@ class NetworkIPv6(BaseModel):
         @raise InvalidValueError: Network type does not exist.
         """
         configenvironment = get_model('ambiente', 'ConfigEnvironment')
+        models = get_model("ambiente", "EnvCIDR")
+
         vlan_model = get_model('vlan', 'Vlan')
         self.vlan = vlan_model().get_by_pk(id_vlan)
 
@@ -2797,9 +2829,9 @@ class NetworkIPv6(BaseModel):
 
         try:
 
-            # Find all configs type v6 in environment
-            configs = configenvironment.get_by_environment(
-                self.vlan.ambiente.id).filter(ip_config__type=IP_VERSION.IPv6[0])
+            env_id = self.vlan.ambiente.id
+            configs = models().get(env_id=env_id).filter(
+                ip_version=IP_VERSION.IPv6[0])
 
             # If not found, an exception is thrown
             if len(configs) == 0:
@@ -2825,14 +2857,14 @@ class NetworkIPv6(BaseModel):
                     break
 
                 # Need to be IPv6
-                if config.ip_config.type == IP_VERSION.IPv6[0]:
+                if config.ip_version == IP_VERSION.IPv6[0]:
 
-                    net6 = IPv6Network(config.ip_config.subnet)
+                    net6 = IPv6Network(config.network)
 
                     if prefix is not None:
                         new_prefix = int(prefix)
                     else:
-                        new_prefix = int(config.ip_config.new_prefix)
+                        new_prefix = int(config.subnet_mask)
 
                     self.log.info(u'Prefix that will be used: %s' % new_prefix)
 
@@ -2852,8 +2884,8 @@ class NetworkIPv6(BaseModel):
 
                             if network_type:
                                 internal_network_type = network_type
-                            elif config.ip_config.network_type is not None:
-                                internal_network_type = config.ip_config.network_type
+                            elif config.id_network_type is not None:
+                                internal_network_type = config.id_network_type
                             else:
                                 self.log.error(
                                     u'Parameter tipo_rede is invalid. Value: %s', network_type)
@@ -3294,7 +3326,11 @@ class NetworkIPv6(BaseModel):
         if not self.network_type:
             raise NetworkIPv6ErrorV3('Network type can not null')
         # validate if network if allow in environment
-        configs = self.vlan.ambiente.configs.all()
+        models = get_model("ambiente", "EnvCIDR")
+
+        env_id = self.vlan.ambiente.id
+        configs = models().get(env_id=env_id)
+
         self.vlan.allow_networks_environment(configs, [], [self])
 
     def activate_v3(self):
@@ -3392,6 +3428,8 @@ class NetworkIPv6(BaseModel):
         """
 
         vlan_model = get_model('vlan', 'Vlan')
+        models = get_model("ambiente", "EnvCIDR")
+
         self.vlan = vlan_model().get_by_pk(id_vlan)
 
         netv4, nets_envs = network.get_networks_related(
@@ -3403,19 +3441,19 @@ class NetworkIPv6(BaseModel):
         network_found = None
 
         try:
-
-            configs = self.vlan.ambiente.configs.filter(
-                ip_config__type=IP_VERSION.IPv6[0])
+            env_id = self.vlan.ambiente.id
+            configs = models().get(env_id=env_id).filter(
+                ip_version=IP_VERSION.IPv6[0])
 
             # For each configuration founded in environment
             for config in configs:
 
-                net6 = IPNetwork(config.ip_config.subnet)
+                net6 = IPNetwork(config.network)
 
                 if prefix is not None:
                     new_prefix = int(prefix)
                 else:
-                    new_prefix = int(config.ip_config.new_prefix)
+                    new_prefix = int(config.subnet_mask)
 
                 self.log.info(
                     u'Prefix that will be used: %s' % new_prefix)
@@ -3450,7 +3488,7 @@ class NetworkIPv6(BaseModel):
                         self.mask7 = mask[6]
                         self.mask8 = mask[7]
                         if not self.network_type:
-                            self.network_type = config.ip_config.network_type
+                            self.network_type = config.network_type
                         return
 
             # Checks if found any available network

@@ -184,15 +184,15 @@ def check_obj(obj, user):
         neighbor['local_asn'] = obj.get('neighbor_local').get('asn').get('id')
     else:
         neighbor['local_asn'] = save_new_asn(obj.get('neighbor_local').get('asn').get('name'))
-        link_asn_equipment(neighbor['local_asn'], local_equipment)
+        link_asn_equipment(neighbor.get("local_asn"), local_equipment)
 
     log.debug('local asn %s' % neighbor['local_asn'])
 
     if obj.get('neighbor_remote').get('asn').get('id'):
-        neighbor['remote_asn'] = obj.get('neighbor_remote').get('asn').get('id')
+        link_asn_equipment(neighbor.get("remote_asn"), remote_equipment)
     else:
         neighbor['remote_asn'] = save_new_asn(obj.get('neighbor_remote').get('asn').get('name'))
-        link_asn_equipment(neighbor['remote_asn'], remote_equipment)
+        link_asn_equipment(neighbor.get("local_asn"), remote_equipment)
 
     log.debug('remote_asn %s' % neighbor['remote_asn'])
 

@@ -1,0 +1,8 @@
+{
+  "cidr": [{
+    "ip_version": "v4",
+    "network_type": 1,
+    "subnet_mask": "27",
+    "environment": 12
+  }]
+}
