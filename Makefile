@@ -4,7 +4,7 @@
 
 
 # Docker image version
-NETAPI_IMAGE_VERSION := 2.1.0
+NETAPI_IMAGE_VERSION := 3.1.0
 
 # Gets git current branch
 curr_branch := $(shell git symbolic-ref --short -q HEAD)
