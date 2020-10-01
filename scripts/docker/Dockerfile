@@ -1,7 +1,9 @@
 #
 # Base stage
 #
-FROM alpine:latest as base
+FROM alpine:3.7 as base
+
+RUN apk update
 
 RUN apk add --update --no-cache py2-pip \
                                 libldap \
@@ -12,7 +14,15 @@ RUN apk add --update --no-cache py2-pip \
                                 iputils \
                                 bind-tools \
                                 ncurses5-libs \
-                                curl
+                                curl \
+                                libffi-dev \
+                                py-pynacl \
+                                libffi-dev \
+                                libxslt-dev \
+                                gcc \
+                                libc-dev \
+                                python-dev
+
 
 RUN pip install --no-cache --upgrade pip
 RUN pip install --no-cache virtualenv
