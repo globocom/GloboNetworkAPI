@@ -90,6 +90,9 @@ class PluginFactory(object):
                 if re.search('CUMULUS', modelo.upper(), re.DOTALL):
                     from .Cumulus.plugin import Cumulus
                     return Cumulus
+            if re.search('JUNOS', marca.upper(), re.DOTALL):
+                from .Juniper.JUNOS.plugin import JUNOS
+                return JUNOS
         raise NotImplementedError('plugin not implemented')
 
     @classmethod
