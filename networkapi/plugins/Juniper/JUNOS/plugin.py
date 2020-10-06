@@ -248,39 +248,3 @@ class JUNOS(BasePlugin):
                 time.sleep(self.seconds_to_wait_to_try_lock)
 
         return False
-
-    def create_svi(self, svi_number, svi_description='no description'):
-        pass
-
-    def remove_svi(self, svi_number):
-        pass
-
-    def get_state_member(self, status):
-        pass
-
-    def set_state_member(self, status):
-        pass
-
-    def create_member(self, status):
-        pass
-
-    def remove_member(self, status):
-        pass
-
-    def get_restrictions(self, status):
-        pass
-
-    def partial_update_vip(self, **kwargs):
-        pass
-
-    def get_name_eqpt(self, **kwargs):
-        pass
-
-    def update_pool(self, **kwargs):
-        pass
-
-    def create_pool(self, **kwargs):
-        pass
-
-    def delete_pool(self, **kwargs):
-        pass
