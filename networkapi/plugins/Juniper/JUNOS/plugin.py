@@ -54,6 +54,9 @@ class JUNOS(BasePlugin):
 
         """
         Connects to equipment via ssh using PyEz  and create connection with invoked shell object.
+
+        :returns:
+            True if success and False if fail
         """
 
         # Collect the credentials (user and password) for equipment
@@ -65,6 +68,8 @@ class JUNOS(BasePlugin):
                 log.error("{} Access type {} not found for equipment {}.".format(
                     self.log_tag, 'ssh', self.equipment.nome))
                 raise exceptions.InvalidEquipmentAccessException()
+
+        log.info("{} Trying to connect on host {} ... ".format(self.log_tag, self.equipment_access.fqdn))
 
         try:
             self.remote_conn = Device(
@@ -84,16 +89,25 @@ class JUNOS(BasePlugin):
                 self.log_tag, self.equipment_access.fqdn, e))
             raise Exception(e)
 
+        if self.remote_conn.connected:
+            log.info("{} The connection on host {} was opened successfully!".format(
+                self.log_tag, self.equipment_access.fqdn))
+        else:
+            log.error("{} An unknown error occurred to connect host {}. Connection result: {}".format(
+                self.log_tag, self.equipment_access.fqdn, self.remote_conn.connected))
+
+        return self.remote_conn.connected
+
     def close(self):
 
         """
         Disconnect to equipment via ssh using PyEz.
 
-        Raises:
-            ConnectClosedError: if PyEz lib cannot close connection
-            IOError: if cannot connect to host
-            Exception: for other unhandled exceptions
+        :returns:
+            True if close successfully or false if fail it
         """
+
+        log.info("{} Trying to close connection on host {} ... ".format(self.log_tag, self.equipment_access.fqdn))
 
         try:
             self.remote_conn.close()
@@ -103,6 +117,17 @@ class JUNOS(BasePlugin):
         except Exception, e:
             log.error("{} Found an unexpected error at closing connection on host {}: {}".format(
                 self.log_tag, self.equipment_access.fqdn, e))
+
+        if not self.remote_conn.connected:
+            log.info("{} The connection was closed successfully! Host: {} ".format(
+                self.log_tag, self.equipment_access.fqdn, self.remote_conn.connected))
+            return True
+        else:
+            log.error(
+                "{} An unknown error occurred to close de connection on host {}. Connection close result: {} ".format(
+                    self.log_tag, self.equipment_access.fqdn, self.remote_conn.connected))
+
+            return False
 
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
 
@@ -120,6 +145,9 @@ class JUNOS(BasePlugin):
 
         command = None
 
+        log.info("{} Trying to load configuration from file to be executed on host {} ... ".format(
+            self.log_tag, self.equipment_access.fqdn))
+
         try:
             command_file = open(filename, "r")
             command = command_file.read()
@@ -129,6 +157,12 @@ class JUNOS(BasePlugin):
         except Exception, e:
             log.error("{} Unexpected error occurred {}: {}".format(self.log_tag, filename, e))
             self.close()
+
+        if command is not None:
+            log.info("{} Load configuration from file {} successfully!".format(self.log_tag, filename))
+        else:
+            log.error("{} An unknown error occurred to load configuration file {} for host {}".format(
+                self.log_tag, filename, self.equipment_access.fqdn))
 
         return self.exec_command(command)
 
@@ -145,6 +179,9 @@ class JUNOS(BasePlugin):
         :returns:
             String message of result (in result_message variable)
         """
+
+        log.info("{} Trying to execute a configuration on host {} ... ".format(
+            self.log_tag, self.equipment_access.fqdn))
 
         result_message = None
 
@@ -205,6 +242,10 @@ class JUNOS(BasePlugin):
             self.configuration.unlock()
             self.close()
 
+        log.info(
+            "{} Execute configuration on host {}. Result message: '{}'".format(
+                self.log_tag, self.equipment_access.fqdn, result_message))
+
         return result_message
 
     def ensure_privilege_level(self, privilege_level=None):
@@ -213,6 +254,9 @@ class JUNOS(BasePlugin):
         Ensure privilege level.
         This function only verify is the current user is a super-user, otherwise raises an exception
         """
+
+        log.info("{} Trying to ensure privilege level for user {} on host {} ... ".format(
+            self.log_tag, self.equipment_access.user, self.equipment_access.fqdn))
 
         # Note about StartShell timeout: duration of time in seconds must wait for the expected result
         ss = StartShell(self.remote_conn, timeout=2)
@@ -227,7 +271,11 @@ class JUNOS(BasePlugin):
         if current_user_class != 'super-user':
             log.error("{} {} {}".format(self.log_tag, "User has no privileges", self.equipment_access.fqdn))
             self.close()
-            raise Exception
+            return False
+        else:
+            log.info("{} The privilege for user {}, on host {}, was satisfied! ".format(
+                self.log_tag, self.equipment_access.user, self.equipment_access.fqdn))
+            return True
 
     def plugin_try_lock(self):
 
