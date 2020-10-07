@@ -40,7 +40,6 @@ class JUNOS(BasePlugin):
     configuration = None
     quantity_of_times_to_try_lock = 3
     seconds_to_wait_to_try_lock = 10
-    log_tag = "[JUNOS PLUGIN]"  # Used to help the syslog filtering
 
     def __init__(self, **kwargs):
         super(JUNOS, self).__init__(connect_port=830, **kwargs)
@@ -65,11 +64,10 @@ class JUNOS(BasePlugin):
                 self.equipment_access = EquipamentoAcesso.search(
                     None, self.equipment, 'ssh').uniqueResult()
             except Exception:
-                log.error("{} Access type {} not found for equipment {}.".format(
-                    self.log_tag, 'ssh', self.equipment.nome))
+                log.error("Access type {} not found for equipment {}.".format('ssh', self.equipment.nome))
                 raise exceptions.InvalidEquipmentAccessException()
 
-        log.info("{} Trying to connect on host {} ... ".format(self.log_tag, self.equipment_access.fqdn))
+        log.info("Trying to connect on host {} ... ".format(self.equipment_access.fqdn))
 
         try:
             self.remote_conn = Device(
@@ -81,20 +79,18 @@ class JUNOS(BasePlugin):
             self.configuration = Config(self.remote_conn)
 
         except ConnectError as e:
-            log.error("{} Could not connect to juniper host {}: {}".format(
-                self.log_tag, self.equipment_access.fqdn, e))
+            log.error("Could not connect to juniper host {}: {}".format(
+                self.equipment_access.fqdn, e))
             raise exceptions.ConnectionException(self.equipment_access.fqdn)
         except Exception, e:
-            log.error("{} Error connecting to host {}: {}".format(
-                self.log_tag, self.equipment_access.fqdn, e))
+            log.error("Error connecting to host {}: {}".format(self.equipment_access.fqdn, e))
             raise Exception(e)
 
         if self.remote_conn.connected:
-            log.info("{} The connection on host {} was opened successfully!".format(
-                self.log_tag, self.equipment_access.fqdn))
+            log.info("The connection on host {} was opened successfully!".format(self.equipment_access.fqdn))
         else:
-            log.error("{} An unknown error occurred to connect host {}. Connection result: {}".format(
-                self.log_tag, self.equipment_access.fqdn, self.remote_conn.connected))
+            log.error("An unknown error occurred to connect host {}. Connection result: {}".format(
+                self.equipment_access.fqdn, self.remote_conn.connected))
 
         return self.remote_conn.connected
 
@@ -107,25 +103,24 @@ class JUNOS(BasePlugin):
             True if close successfully or false if fail it
         """
 
-        log.info("{} Trying to close connection on host {} ... ".format(self.log_tag, self.equipment_access.fqdn))
+        log.info("Trying to close connection on host {} ... ".format(self.equipment_access.fqdn))
 
         try:
             self.remote_conn.close()
         except ConnectClosedError, e:
-            log.error("{} Cannot close connection on host {}: {}".format(
-                self.log_tag, self.equipment_access.fqdn, e))
+            log.error("Cannot close connection on host {}: {}".format(self.equipment_access.fqdn, e))
         except Exception, e:
-            log.error("{} Found an unexpected error at closing connection on host {}: {}".format(
-                self.log_tag, self.equipment_access.fqdn, e))
+            log.error("Found an unexpected error at closing connection on host {}: {}".format(
+                self.equipment_access.fqdn, e))
 
         if not self.remote_conn.connected:
-            log.info("{} The connection was closed successfully! Host: {} ".format(
-                self.log_tag, self.equipment_access.fqdn, self.remote_conn.connected))
+            log.info("The connection was closed successfully! Host: {} ".format(
+                self.equipment_access.fqdn, self.remote_conn.connected))
             return True
         else:
             log.error(
-                "{} An unknown error occurred to close de connection on host {}. Connection close result: {} ".format(
-                    self.log_tag, self.equipment_access.fqdn, self.remote_conn.connected))
+                "An unknown error occurred to close de connection on host {}. Connection close result: {} ".format(
+                    self.equipment_access.fqdn, self.remote_conn.connected))
 
             return False
 
@@ -145,24 +140,24 @@ class JUNOS(BasePlugin):
 
         command = None
 
-        log.info("{} Trying to load configuration from file to be executed on host {} ... ".format(
-            self.log_tag, self.equipment_access.fqdn))
+        log.info("Trying to load configuration from file to be executed on host {} ... ".format(
+            self.equipment_access.fqdn))
 
         try:
             command_file = open(filename, "r")
             command = command_file.read()
         except IOError, e:
-            log.error("{} File not found {}: {}".format(self.log_tag, filename, e))
+            log.error("File not found {}: {}".format(filename, e))
             self.close()
         except Exception, e:
-            log.error("{} Unexpected error occurred {}: {}".format(self.log_tag, filename, e))
+            log.error("Unexpected error occurred {}: {}".format(filename, e))
             self.close()
 
         if command is not None:
-            log.info("{} Load configuration from file {} successfully!".format(self.log_tag, filename))
+            log.info("Load configuration from file {} successfully!".format(filename))
         else:
-            log.error("{} An unknown error occurred to load configuration file {} for host {}".format(
-                self.log_tag, filename, self.equipment_access.fqdn))
+            log.error("An unknown error occurred to load configuration file {} for host {}".format(
+                filename, self.equipment_access.fqdn))
 
         return self.exec_command(command)
 
@@ -180,19 +175,18 @@ class JUNOS(BasePlugin):
             String message of result (in result_message variable)
         """
 
-        log.info("{} Trying to execute a configuration on host {} ... ".format(
-            self.log_tag, self.equipment_access.fqdn))
+        log.info("Trying to execute a configuration on host {} ... ".format(self.equipment_access.fqdn))
 
         result_message = None
 
         if not self.plugin_try_lock():
             result_message = "Configuration could not be locked. Anybody else locked?"
-            log.error("{} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn))
+            log.error("{} {}".format(result_message, self.equipment_access.fqdn))
             self.close()
             return result_message
         else:
-            log.info("{} Configuration was locked in host {} successfully".format(
-                self.log_tag, self.equipment_access.fqdn))
+            log.info("Configuration was locked in host {} successfully".format(
+                self.equipment_access.fqdn))
 
         try:
             # self.configuration.lock()  #
@@ -204,47 +198,47 @@ class JUNOS(BasePlugin):
 
             result_message = "Configuration junos was executed successfully on host {}".format(
                 self.equipment_access.fqdn)
-            log.info("{} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn))
+            log.info("{} {}".format(result_message, self.equipment_access.fqdn))
 
         except LockError as e:
             result_message = "Configuration could not be locked on host {}.".format(self.equipment_access.fqdn)
-            log.error("{} {} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn, e))
+            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
             self.close()
         except UnlockError as e:
             result_message = "Configuration could not be unlocked on host {}. " \
                              "A rollback will be executed".format(self.equipment_access.fqdn)
-            log.error("{} {} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn, e))
+            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.close()
         except ConfigLoadError as e:
             result_message = "Configuration could not be loaded on host {}. " \
                              "A rollback and unlock will be executed.".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn, e))
+            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
         except CommitError as e:
             result_message = "Configuration could not be commited on host {}. " \
                              "A rollback and unlock will be executed.".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn, e))
+            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
         except RpcError as e:
             result_message = "Configuration database locked on host {}".format(self.equipment_access.fqdn)
-            log.error("{} {} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn, e))
+            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
             self.close()
         except Exception as e:
             result_message = "An unexpected error occurred during configuration on host {}. " \
                              "A rollback and unlock will be executed.".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(self.log_tag, result_message, self.equipment_access.fqdn, e))
+            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
 
         log.info(
-            "{} Execute configuration on host {}. Result message: '{}'".format(
-                self.log_tag, self.equipment_access.fqdn, result_message))
+            "Execute configuration on host {}. Result message: '{}'".format(
+                self.equipment_access.fqdn, result_message))
 
         return result_message
 
@@ -255,8 +249,8 @@ class JUNOS(BasePlugin):
         This function only verify is the current user is a super-user, otherwise raises an exception
         """
 
-        log.info("{} Trying to ensure privilege level for user {} on host {} ... ".format(
-            self.log_tag, self.equipment_access.user, self.equipment_access.fqdn))
+        log.info("Trying to ensure privilege level for user {} on host {} ... ".format(
+            self.equipment_access.user, self.equipment_access.fqdn))
 
         # Note about StartShell timeout: duration of time in seconds must wait for the expected result
         ss = StartShell(self.remote_conn, timeout=2)
@@ -269,12 +263,12 @@ class JUNOS(BasePlugin):
         result = output[1].split('\n')  # get the target part and split it by \n
         current_user_class = result[1].split("'")[3]  # get the target part, split again by ' and get the target part
         if current_user_class != 'super-user':
-            log.error("{} {} {}".format(self.log_tag, "User has no privileges", self.equipment_access.fqdn))
+            log.error("{} {}".format("User {} has no privileges", self.equipment_access.user, self.equipment_access.fqdn))
             self.close()
             return False
         else:
-            log.info("{} The privilege for user {}, on host {}, was satisfied! ".format(
-                self.log_tag, self.equipment_access.user, self.equipment_access.fqdn))
+            log.info("The privilege for user {}, on host {}, was satisfied! ".format(
+                self.equipment_access.user, self.equipment_access.fqdn))
             return True
 
     def plugin_try_lock(self):
@@ -286,13 +280,13 @@ class JUNOS(BasePlugin):
             except (LockError, RpcError, Exception), e:
                 # Keep looping ...
                 log.warning(
-                    "{} Configuration still could not be locked on host {}. "
-                    "Automatic try in {} seconds - {}/{} ".format(
-                        e, self.log_tag,
+                    "Configuration still could not be locked on host {}. "
+                    "Automatic try in {} seconds - {}/{} {}".format(
                         self.equipment_access.fqdn,
                         self.seconds_to_wait_to_try_lock,
                         x+1,
-                        self.quantity_of_times_to_try_lock))
+                        self.quantity_of_times_to_try_lock,
+                        e))
                 time.sleep(self.seconds_to_wait_to_try_lock)
 
         return False
