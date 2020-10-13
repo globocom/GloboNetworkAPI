@@ -69,6 +69,7 @@ class JUNOS(BasePlugin):
 
         log.info("Trying to connect on host {} ... ".format(self.equipment_access.fqdn))
 
+        result = False
         try:
             self.remote_conn = Device(
                 host=self.equipment_access.fqdn,
@@ -78,13 +79,13 @@ class JUNOS(BasePlugin):
             self.remote_conn.open()
             self.configuration = Config(self.remote_conn)
 
+            if self.remote_conn.connected:
+                result = True
         except ConnectError as e:
             log.error("Could not connect to juniper host {}: {}".format(
                 self.equipment_access.fqdn, e))
-            raise exceptions.ConnectionException(self.equipment_access.fqdn)
         except Exception, e:
             log.error("Error connecting to host {}: {}".format(self.equipment_access.fqdn, e))
-            raise Exception(e)
 
         if self.remote_conn.connected:
             log.info("The connection on host {} was opened successfully!".format(self.equipment_access.fqdn))
@@ -92,7 +93,7 @@ class JUNOS(BasePlugin):
             log.error("An unknown error occurred to connect host {}. Connection result: {}".format(
                 self.equipment_access.fqdn, self.remote_conn.connected))
 
-        return self.remote_conn.connected
+        return result
 
     def close(self):
 
