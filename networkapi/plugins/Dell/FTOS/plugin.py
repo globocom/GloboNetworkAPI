@@ -34,7 +34,7 @@ class FTOS(BasePlugin):
     WAIT_FOR_CLI_RETURN = 1
     CURRENTLY_BUSY_WAIT = 'Currently busy with copying a file'
     INVALID_REGEX = '([Ii]nvalid)|overlaps with'
-    WARNING_REGEX = 'config ignored|Warning'
+    WARNING_REGEX = 'config ignored|Warning|Dynamic member cannot be statically removed'
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 
     admin_privileges = 15
