@@ -68,6 +68,7 @@ class ODLPlugin(BaseSdnPlugin):
             builder = AclFlowBuilder(data, self.environment, version=self.version)
 
             flows_set = builder.build()
+
         try:
             for flows in flows_set:
                 for flow in flows['flow']:
@@ -82,8 +83,15 @@ class ODLPlugin(BaseSdnPlugin):
 
 
     def del_flow(self, flow_id=0, nodes_ids=[]):
-        return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
+        "Insert a try except to avoid code breakage when removing a non-existent acl"
 
+        try:
+            return self._flow(flow_id=flow_id, method='delete', nodes_ids=nodes_ids)
+
+        except Exception as e:
+            message = self._parse_errors(e.response.json())
+            log.error("ERROR while removing a flow: %s" % message)
+            pass
 
     def update_all_flows(self, data, flow_type=FlowTypes.ACL):
         current_flows = self.get_flows()
@@ -95,7 +103,6 @@ class ODLPlugin(BaseSdnPlugin):
                 builder = AclFlowBuilder(data, self.environment, version=self.version)
                 new_flows_set = builder.build()
 
-            #Makes a diff
             operations = self._diff_flows(current_flows[node], new_flows_set)
 
             try:
@@ -297,7 +304,7 @@ class ODLPlugin(BaseSdnPlugin):
                 return
 
             try:
-                return json.loads(request.text)
+                return request.json()
             except Exception as exception:
                 log.error("Response received from uri '%s': \n%s",
 			  uri, request.text)

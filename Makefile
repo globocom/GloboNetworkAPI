@@ -4,7 +4,7 @@
 
 
 # Docker image version
-NETAPI_IMAGE_VERSION := 2.1.0
+NETAPI_IMAGE_VERSION := 3.1.0
 
 # Gets git current branch
 curr_branch := $(shell git symbolic-ref --short -q HEAD)
@@ -28,7 +28,7 @@ help:
 	@echo
 	@echo "Local:"
 	@echo "  api	    To get a shell of network_app container"
-	@echo "  db	    To get a shell of network_db container"
+	@echo "  db	        To get a shell of network_db container"
 	@echo "  start      to run project through docker compose"
 	@echo "  stop       to stop all containers from docker composition"
 	@echo "  logs       to follow logs on application container"
@@ -49,7 +49,8 @@ help:
 	@echo "Remote:"
 	@echo "  publish    to publish the package to PyPI"
 	@echo "  push_img   to push image to docker hub"
-	@echo "  test_ci    Used by Travis CI to run tests on django applications"
+	@echo "  test_ci    Used by Travis CI to run tests on django applications. The app name must be provided. Ex. ''make test_ci app=networkapi/api_environment'"
+	@echo "  test_ci_travis    To locally run the same Travis CI tests"
 	@echo
 
 
@@ -119,11 +120,12 @@ publish: clean
 # Containers based target rules
 #
 
-start: docker-compose.yml
-	@docker-compose up -d
+start: docker-compose-sdn.yml docker-compose.yml
+	docker-compose up --force-recreate --remove-orphans -d
+	docker-compose --file $< up --force-recreate -d
 
 
-stop: docker-compose.yml
+stop: docker-compose-sdn.yml docker-compose.yml
 	@docker-compose down --remove-orphans
 
 
@@ -145,6 +147,10 @@ test_ci:
 	@echo "Running NetAPI tests for app '${app}'"
 	time docker exec -it netapi_app ./fast_start_test.sh ${app}
 
+
+test_ci_travis:
+	@echo "Running the same NetAPI tests enabled on travis"
+	time docker exec -it netapi_app ./thesame_tests_travis_does.sh
 
 fixture:
 ifeq (${model},)

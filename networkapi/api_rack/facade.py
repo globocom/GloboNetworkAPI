@@ -917,7 +917,7 @@ def _create_oobvlans(rack, user):
 
 
 def rack_environments_vlans(rack_id, user):
-    log.info("Rack Environments - old")
+    log.info("Rack Environments - Old")
 
     rack = Rack().get_rack(idt=rack_id)
     if rack.create_vlan_amb:
@@ -945,7 +945,7 @@ def rack_environments_vlans(rack_id, user):
 
 
 def allocate_env_vlan(user, rack_id):
-    log.info("Rack Environments - refactor")
+    log.info("Rack Environments - Refactor")
 
     from networkapi.api_rack.rackenvironments import RackEnvironment
 
