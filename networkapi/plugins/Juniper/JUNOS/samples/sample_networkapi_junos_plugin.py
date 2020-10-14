@@ -48,19 +48,18 @@ equipment_access = EquipamentoAcesso(host, user, password)
 equip_plugin = JUNOS(equipment_access=equipment_access)
 
 """ OPEN CONNECTION """
-log.debug('%s Open connection ...' % log_test_prefix)
-equip_plugin.connect()
+print("Open connection {}...".format(host))
+print("Connection result: {}".format(equip_plugin.connect()))
 
 """ CHECK PRIVILEGES """
-log.debug('%s Check privilege ...' % log_test_prefix)
-equip_plugin.ensure_privilege_level()
+print("Check privilege {}...".format(host))
+print("Privilege result: {}".format(equip_plugin.ensure_privilege_level()))
 
 """ EXECUTE CONFIGURATION """
-log.debug('%s Execute configuration file...' % log_test_prefix)
+print("Execute configuration file {}...".format(host))
 # equip_plugin.exec_command(command='set interfaces gr-0/0/0 description "Some description teste3 for gr-0/0/0 at "')
-result = equip_plugin.copyScriptFileToConfig(filename="networkapi/plugins/Juniper/JUNOS/samples/sample_command.txt")
-log.debug('Result: %s' % result)
+print("Execute configuration result: {}".format(equip_plugin.copyScriptFileToConfig(filename="networkapi/plugins/Juniper/JUNOS/samples/sample_command.txt")))
 
 """ CLOSE CONNECTION """
-log.debug('%s Close connection ...' % log_test_prefix)
-equip_plugin.close()
+print("Close connection {}...".format(host))
+print("Close connection result: {}".format(equip_plugin.close()))
