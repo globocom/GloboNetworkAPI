@@ -138,7 +138,7 @@ class AsnEquipment(BaseModel):
         managed = True
 
     @classmethod
-    def get_by_pk(cls, id):
+    def get_by_pk(cls, ids=None, asn=None, equipment=None):
         """Get AsnEquipment by id.
 
         :return: AsnEquipment.
@@ -148,7 +148,15 @@ class AsnEquipment(BaseModel):
         :raise OperationalError: Lock wait timeout exceeded
         """
         try:
-            return AsnEquipment.objects.get(id=id)
+            if ids:
+                return AsnEquipment.objects.get(id=ids)
+            elif asn:
+                return AsnEquipment.objects.get(asn__id=int(asn))
+            elif equipment:
+                return AsnEquipment.objects.get(equipment__id=equipment)
+
+            return AsnEquipment.objects.all()
+
         except ObjectDoesNotExist:
             cls.log.error(u'AsnEquipment not found. pk {}'.format(id))
             raise exceptions.AsnEquipmentNotFoundError(id)

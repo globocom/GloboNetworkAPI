@@ -4,6 +4,7 @@ import logging
 from django.core.exceptions import FieldError
 
 from networkapi.api_asn.models import Asn
+from networkapi.api_asn.models import AsnEquipment
 from networkapi.api_asn.v4 import exceptions
 from networkapi.api_asn.v4.exceptions import AsnErrorV4
 from networkapi.api_asn.v4.exceptions import AsnNotFoundError, AsnError
@@ -116,3 +117,75 @@ def delete_as(as_ids):
         except Exception, e:
             raise NetworkAPIException(str(e))
 
+
+def get_as_equipment_by_search(search=dict()):
+    """Return a list of ASEquipment's by dict."""
+
+    try:
+        as_equipment = AsnEquipment.get_by_pk()
+        as_map = build_query_to_datatable_v3(as_equipment, search)
+    except FieldError as e:
+        raise ValidationAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+    else:
+        return as_map
+
+
+def get_as_equipment_by_id(as_equipment_id=None):
+    """Return an ASEquipment by id.
+
+    Args:
+        as_equipment_id: Id of ASEquipment
+
+    """
+
+    try:
+        as_equipment_list = list()
+        for asn in as_equipment_id:
+            as_equipment = AsnEquipment.get_by_pk(ids=asn)
+            as_equipment_list.append(as_equipment)
+    except AsnNotFoundError, e:
+        raise exceptions.AsnDoesNotExistException(str(e))
+
+    return as_equipment_list
+
+
+def get_as_equipment_by_asn(asn_id=None):
+    """Return an ASEquipment by asn id.
+
+    Args:
+        asn_id: Id of ASN
+
+    """
+
+    try:
+        as_equipment_list = list()
+        for asn in asn_id:
+            as_equipment = AsnEquipment.get_by_pk(asn=asn)
+            as_equipment_list.append(as_equipment)
+
+    except AsnNotFoundError, e:
+        raise exceptions.AsnDoesNotExistException(str(e))
+
+    return as_equipment_list
+
+
+def get_as_equipment_by_equip(equipment_id=None):
+    """Return an ASEquipment by equipment id.
+
+    Args:
+        equipment_id: Id of Equipment
+
+    """
+
+    try:
+        as_equipment_list = list()
+        for equip in equipment_id:
+            as_equipment = AsnEquipment.get_by_pk(equipment=equip)
+            as_equipment_list.append(as_equipment)
+
+    except AsnNotFoundError, e:
+        raise exceptions.AsnDoesNotExistException(str(e))
+
+    return as_equipment_list
