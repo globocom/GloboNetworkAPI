@@ -1,0 +1,28 @@
+{
+  "title": "ASNEquipment Post",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "asn_equipment"
+  ],
+  "properties": {
+    "networks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "asn": {
+            "type": "integer"
+          },
+          "equipment": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "asn",
+          "equipment"
+        ]
+      }
+    }
+  }
+}

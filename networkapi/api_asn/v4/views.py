@@ -151,10 +151,25 @@ class AsEquipmentDBView(CustomAPIView):
 
         data = render_to_json(
             serializer_as,
-            main_property='asn_equipments',
+            main_property='asn_equipment',
             obj_model=obj_model,
             request=request,
             only_main_property=only_main_property
         )
 
         return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('asn_equipment_post_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new ASNEquipment."""
+
+        as_s = request.DATA
+        json_validate(SPECS.get('asn_equipment_post_v4')).validate(as_s)
+        response = list()
+        for as_ in as_s['asn_equipment']:
+            response = facade.create_asn_equipment(as_)
+
+        return Response(response, status=status.HTTP_201_CREATED)

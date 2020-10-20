@@ -546,6 +546,10 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_asn/v4/specs/as_put.json'
     ),
+    'asn_equipment_post_v4': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_asn/v4/specs/asn_equipment_post.json'
+    ),
     'equipment_post_v4': os.path.join(
         PROJECT_ROOT_PATH,
         'api_equipment/v4/specs/equipment_post.json'

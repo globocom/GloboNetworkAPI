@@ -189,3 +189,27 @@ def get_as_equipment_by_equip(equipment_id=None):
         raise exceptions.AsnDoesNotExistException(str(e))
 
     return as_equipment_list
+
+
+def create_asn_equipment(asn_equipment):
+    """Create ASNEquipment."""
+
+    try:
+        asn_equipment_list = list()
+
+        for equipment in asn_equipment.get("equipment"):
+            obj = dict()
+            obj["equipment"] = equipment
+            obj["asn"] = asn_equipment.get("asn")
+            as_obj = AsnEquipment()
+            as_obj.create_v4(obj)
+            asn_equipment_list.append({'id': as_obj.id})
+
+    except AsnErrorV4, e:
+        raise ValidationAPIException(str(e))
+    except ValidationAPIException, e:
+        raise ValidationAPIException(str(e))
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    return asn_equipment_list
