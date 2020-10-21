@@ -31,6 +31,11 @@ class JunosPluginTest(NetworkApiTestCase):
         self.mock_equipment_access = mock_equipment_access
 
     def test_create_junos_with_super_class(self):
+
+        """
+        test_create_junos_with_super_class - test if Junos plugin is the BasePlugin
+        """
+
         plugin = JUNOS()
         self.assertIsInstance(plugin, BasePlugin)
 
@@ -38,7 +43,7 @@ class JunosPluginTest(NetworkApiTestCase):
     def test_connect_success(self, mock_device):
 
         """
-        Simulate connect success using Junos Device mock.
+        test_connect_success - Simulate connect success using Junos Device mock.
 
         Note: All internal functions in Device Class are mocked, raising no exceptions on it
 
@@ -62,7 +67,7 @@ class JunosPluginTest(NetworkApiTestCase):
     def test_exec_command_success(self, mock_config):
 
         """
-        This test asserts the success of the complete workflow of executing any command.
+        test_exec_command_success - This test asserts the success of the complete workflow of executing any command.
         Note: All internal functions in Config Class are mocked, raising no exceptions on it
         """
 
@@ -83,10 +88,24 @@ class JunosPluginTest(NetworkApiTestCase):
         plugin.configuration.unlock.assert_called_once_with()
         self.assertIsNotNone(exec_command_response)
 
-    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS', autospec=True)
-    def test_call_close(self, mock_junos_plugin):
-        mock_junos_plugin.close()
-        mock_junos_plugin.close.assert_called_with()
+    @patch('jnpr.junos.Device')
+    def test_call_close_success(self, mock_device):
+
+        """
+        test_call_close_success - Test if the plugin junos plugin close a connection with the expected asserts
+        """
+
+        # Mocking
+        mock_device.connected = False
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        # Close to a real test:
+        close_response = plugin.close()
+
+        # Asserts
+        plugin.remote_conn.close.assert_called_once_with()
+        self.assertTrue(close_response, True)
 
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS', autospec=True)
     def test_call_copyScriptFileToConfig(self, mock_junos_plugin):
