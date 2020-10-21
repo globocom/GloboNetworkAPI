@@ -36,7 +36,6 @@ log = logging.getLogger(__name__)
 
 
 class JUNOS(BasePlugin):
-
     configuration = None
     quantity_of_times_to_try_lock = 3
     seconds_to_wait_to_try_lock = 10
@@ -55,12 +54,12 @@ class JUNOS(BasePlugin):
         Connects to equipment via ssh using PyEz  and create connection with invoked shell object.
 
         :returns:
-            True if success and False if fail
+            True on success or raise an exception on any fail (will NOT return a false result, due project decision).
         """
 
-        # Collect the credentials (user and password) for equipment
         if self.equipment_access is None:
             try:
+                # Collect the credentials (user and password) for equipment
                 self.equipment_access = EquipamentoAcesso.search(
                     None, self.equipment, 'ssh').uniqueResult()
             except Exception:
@@ -69,7 +68,6 @@ class JUNOS(BasePlugin):
 
         log.info("Trying to connect on host {} ... ".format(self.equipment_access.fqdn))
 
-        result = False
         try:
             self.remote_conn = Device(
                 host=self.equipment_access.fqdn,
@@ -80,20 +78,16 @@ class JUNOS(BasePlugin):
             self.configuration = Config(self.remote_conn)
 
             if self.remote_conn.connected:
-                result = True
+                log.info("The connection on host {} was opened successfully!".format(self.equipment_access.fqdn))
+                return True
+
         except ConnectError as e:
-            log.error("Could not connect to juniper host {}: {}".format(
-                self.equipment_access.fqdn, e))
+            log.error("Could not connect to Juniper host {}: {}".format(self.equipment_access.fqdn, e))
+            raise ConnectError
+
         except Exception, e:
             log.error("Error connecting to host {}: {}".format(self.equipment_access.fqdn, e))
-
-        if self.remote_conn.connected:
-            log.info("The connection on host {} was opened successfully!".format(self.equipment_access.fqdn))
-        else:
-            log.error("An unknown error occurred to connect host {}. Connection result: {}".format(
-                self.equipment_access.fqdn, self.remote_conn.connected))
-
-        return result
+            raise Exception
 
     def close(self):
 
@@ -101,29 +95,23 @@ class JUNOS(BasePlugin):
         Disconnect to equipment via ssh using PyEz.
 
         :returns:
-            True if close successfully or false if fail it
+            True on success or raise an exception on any fail (will NOT return a false result, due project decision).
         """
 
         log.info("Trying to close connection on host {} ... ".format(self.equipment_access.fqdn))
 
         try:
             self.remote_conn.close()
+            log.info("The connection was closed successfully on host {}!".format(self.equipment_access.fqdn))
+            return True
+
         except ConnectClosedError, e:
             log.error("Cannot close connection on host {}: {}".format(self.equipment_access.fqdn, e))
+            raise ConnectClosedError
+
         except Exception, e:
-            log.error("Found an unexpected error at closing connection on host {}: {}".format(
-                self.equipment_access.fqdn, e))
-
-        if not self.remote_conn.connected:
-            log.info("The connection was closed successfully! Host: {} ".format(
-                self.equipment_access.fqdn, self.remote_conn.connected))
-            return True
-        else:
-            log.error(
-                "An unknown error occurred to close de connection on host {}. Connection close result: {} ".format(
-                    self.equipment_access.fqdn, self.remote_conn.connected))
-
-            return False
+            log.error("Unexpected error at closing connection on host {}: {}".format(self.equipment_access.fqdn, e))
+            raise Exception
 
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
 
@@ -136,31 +124,26 @@ class JUNOS(BasePlugin):
         :param str destination: not used
 
         :returns:
-            String message of result
+            Returns a success message, otherwise, raise an exception. That means will NOT return a false result.
         """
 
-        command = None
-
-        log.info("Trying to load configuration from file to be executed on host {} ... ".format(
-            self.equipment_access.fqdn))
+        log.info("Trying to load file configuration for host {} ...".format(self.equipment_access.fqdn))
 
         try:
             command_file = open(filename, "r")
             command = command_file.read()
+            log.info("Load configuration from file {} successfully!".format(filename))
+            return self.exec_command(command)
+
         except IOError, e:
             log.error("File not found {}: {}".format(filename, e))
             self.close()
+            raise IOError
+
         except Exception, e:
             log.error("Unexpected error occurred {}: {}".format(filename, e))
             self.close()
-
-        if command is not None:
-            log.info("Load configuration from file {} successfully!".format(filename))
-        else:
-            log.error("An unknown error occurred to load configuration file {} for host {}".format(
-                filename, self.equipment_access.fqdn))
-
-        return self.exec_command(command)
+            raise Exception
 
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
 
@@ -173,121 +156,140 @@ class JUNOS(BasePlugin):
         :param str error_regex: not used
 
         :returns:
-            String message of result (in result_message variable)
+            Returns a success message, otherwise, raise an exception. That means will NOT return a false result.
         """
 
         log.info("Trying to execute a configuration on host {} ... ".format(self.equipment_access.fqdn))
 
-        result_message = None
-
-        if not self.plugin_try_lock():
-            result_message = "Configuration could not be locked. Anybody else locked?"
-            log.error("{} {}".format(result_message, self.equipment_access.fqdn))
-            self.close()
-            return result_message
-        else:
-            log.info("Configuration was locked in host {} successfully".format(
-                self.equipment_access.fqdn))
-
         try:
-            # self.configuration.lock()  #
-            self.configuration.rollback()  # For a clean configuration
+            self.__try_lock()
+            self.configuration.rollback()
             self.configuration.load(command, format='set')
             self.configuration.commit_check()
             self.configuration.commit()
             self.configuration.unlock()
 
-            result_message = "Configuration junos was executed successfully on host {}".format(
-                self.equipment_access.fqdn)
-            log.info("{} {}".format(result_message, self.equipment_access.fqdn))
+            result_message = "Configuration junos was executed successfully on {}".format(self.equipment_access.fqdn)
+            log.info(result_message)
+            return result_message
 
         except LockError as e:
-            result_message = "Configuration could not be locked on host {}.".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
+            log.error("Couldn't lock host {} "
+                      "(close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.close()
+            raise LockError
+
         except UnlockError as e:
-            result_message = "Configuration could not be unlocked on host {}. " \
-                             "A rollback will be executed".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
+            log.error("Couldn't unlock host {} "
+                      "(rollback and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.close()
+            raise UnlockError
+
         except ConfigLoadError as e:
-            result_message = "Configuration could not be loaded on host {}. " \
-                             "A rollback and unlock will be executed.".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
+            log.error("Couldn't load configuration on host {} "
+                      "(rollback, unlock and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
+            raise ConfigLoadError
+
         except CommitError as e:
-            result_message = "Configuration could not be commited on host {}. " \
-                             "A rollback and unlock will be executed.".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
+            log.error("Couldn't commit configuration on {} "
+                      "(rollback, unlock and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
+            raise CommitError
+
         except RpcError as e:
-            result_message = "Configuration database locked on host {}".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
+            log.error("A remote procedure call exception occurred on host {} "
+                      "(close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.close()
+            raise RpcError
+
         except Exception as e:
-            result_message = "An unexpected error occurred during configuration on host {}. " \
-                             "A rollback and unlock will be executed.".format(self.equipment_access.fqdn)
-            log.error("{} {} {}".format(result_message, self.equipment_access.fqdn, e))
+            log.error("An exception error occurred during configuration execution on host {} "
+                      "(rollback, unlock and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
-
-        log.info(
-            "Execute configuration on host {}. Result message: '{}'".format(
-                self.equipment_access.fqdn, result_message))
-
-        return result_message
+            raise Exception
 
     def ensure_privilege_level(self, privilege_level=None):
 
         """
-        Ensure privilege level.
-        This function only verify is the current user is a super-user, otherwise raises an exception
+        Ensure privilege level verifying if the current user is super-user.
+
+        :returns:
+            Returns True if success, otherwise, raise an exception (it will NOT return a false result)
         """
 
         log.info("Trying to ensure privilege level for user {} on host {} ... ".format(
             self.equipment_access.user, self.equipment_access.fqdn))
 
-        # Note about StartShell timeout: duration of time in seconds must wait for the expected result
-        ss = StartShell(self.remote_conn, timeout=2)
-        ss.open()
-        output = ss.run('cli -c "show cli authorization"')
+        try:
+            # timeout: duration of time in seconds must wait for the expected result
+            ss = StartShell(self.remote_conn, timeout=2)
+            ss.open()
+            output = ss.run('cli -c "show cli authorization"')
 
-        # output is a tuple [bool, string], example:
-        # (False, u'cli -c "show cli authorization"\r\r\nCurrent user: \'root        \' class \'super-user\ ....)
-        # This string will be parsed to get the user class:
-        result = output[1].split('\n')  # get the target part and split it by \n
-        current_user_class = result[1].split("'")[3]  # get the target part, split again by ' and get the target part
-        if current_user_class != 'super-user':
-            log.error("{} {}".format("User {} has no privileges", self.equipment_access.user, self.equipment_access.fqdn))
+            # output is a tuple [bool, string], example:
+            # (False, u'cli -c "show cli authorization"\r\r\nCurrent user: \'root        \' class \'super-user\ ....)
+            # This string will be parsed to get the user class:
+
+            # get the target part and split it by \n
+            result = output[1].split('\n')
+
+            # get the target part; split by '; and get the target part
+            current_user_class = result[1].split("'")[3]
+
+            if current_user_class != 'super-user':
+                log.error("Couldn't validate user {} privileges on host {}. "
+                          "User class is '{}' and need to be 'super-user'. "
+                          "(close connection will be executed for safety)"
+                          .format(self.equipment_access.user, self.equipment_access.fqdn, current_user_class))
+                self.close()
+                raise Exception
+            else:
+                log.info("The privilege for user {} ('super-user') was satisfied on host {}!".format(
+                    self.equipment_access.user, self.equipment_access.fqdn))
+                return True
+
+        except Exception as e:
+            log.error("An exception error occurred during the user privilege verification on host {} "
+                      "(close connection will be executed for safety): {}".format(self.equipment_access.fqdn, e))
             self.close()
-            return False
-        else:
-            log.info("The privilege for user {}, on host {}, was satisfied! ".format(
-                self.equipment_access.user, self.equipment_access.fqdn))
-            return True
+            raise Exception
 
-    def plugin_try_lock(self):
+    def __try_lock(self):
+
+        """
+        Try to lock equipment.
+
+        :returns:
+            Returns True if success, otherwise, raise an exception. That means will NOT return a false result.
+        """
 
         for x in range(self.quantity_of_times_to_try_lock):
             try:
                 self.configuration.lock()
+                log.info("Host {} was locked successfully!".format(self.equipment_access.fqdn))
                 return True
             except (LockError, RpcError, Exception), e:
+
+                count = x + 1
                 # Keep looping ...
                 log.warning(
-                    "Configuration still could not be locked on host {}. "
-                    "Automatic try in {} seconds - {}/{} {}".format(
+                    "Configuration still could not be locked on host {}. Automatic try in {} seconds - {}/{} {}".format(
                         self.equipment_access.fqdn,
                         self.seconds_to_wait_to_try_lock,
-                        x+1,
+                        count,
                         self.quantity_of_times_to_try_lock,
                         e))
-                time.sleep(self.seconds_to_wait_to_try_lock)
 
-        return False
+                if count == self.quantity_of_times_to_try_lock:
+                    log.error("Host {} couldn't be locked: {}".format(self.equipment_access.fqdn, e))
+                    raise Exception
+                else:
+                    time.sleep(self.seconds_to_wait_to_try_lock)
