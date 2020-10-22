@@ -173,3 +173,38 @@ class AsEquipmentDBView(CustomAPIView):
             response = facade.create_asn_equipment(as_)
 
         return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Delete AS."""
+
+        obj_ids = kwargs['obj_ids'].split(';')
+        log.debug(obj_ids)
+
+        facade.delete_as_equipment(obj_ids)
+
+        return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    # @raise_json_validate('as_put_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Update AS."""
+
+        asn_equipment = request.DATA
+        # json_validate(SPECS.get('as_put_v4')).validate(as_s)
+        response = list()
+
+        if not kwargs.get('asn_ids'):
+            for as_ in asn_equipment['asn_equipment']:
+                as_obj = facade.update_asn_equipment(as_)
+                response.append({'id': as_obj.id})
+        else:
+            for as_ in asn_equipment['asn_equipment']:
+                response = facade.update_asn_equipment_by_asn(
+                    kwargs.get('asn_ids'), as_)
+
+        return Response(response, status=status.HTTP_200_OK)
