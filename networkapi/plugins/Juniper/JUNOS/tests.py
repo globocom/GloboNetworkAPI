@@ -1,6 +1,7 @@
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.base import BasePlugin
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
+import mock
 from mock import patch, MagicMock
 
 
@@ -116,3 +117,35 @@ class JunosPluginTest(NetworkApiTestCase):
     def test_call_ensure_privilege_level(self, mock_junos_plugin):
         mock_junos_plugin.ensure_privilege_level()
         mock_junos_plugin.ensure_privilege_level.assert_called_with()
+
+    @patch('os.path.isfile')
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.get_value')
+    def test_check_configuration_file_exists_from_system_variable(self, mock_get_value, mock_is_file):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        mock_get_value.return_value = "/any_base_variable_path/"
+        mock_is_file.return_value = True
+
+        # isfile.return_value = True
+        result = plugin.check_configuration_file_exists("any_configuration_path_with_file_name")
+        self.assertEqual(result, "/any_base_variable_path/any_configuration_path_with_file_name")
+
+    @patch('os.path.isfile')
+    def test_check_configuration_file_exists_from_static_variable(self, mock_is_file):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        mock_is_file.return_value = True
+        first_alternative_static_base_path = plugin.alternative_static_base_path_list[0]
+
+        result = plugin.check_configuration_file_exists("any_configuration_path_with_file_name")
+        self.assertEqual(result, first_alternative_static_base_path+"any_configuration_path_with_file_name")
+
+    @patch('os.path.isfile')
+    def test_check_configuration_file_exists_from_relative_path(self, mock_is_file):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+
+        # The function is_file(...), inside check_configuration_file_exists, is used two times.
+        # The proposed test need that function is_file(...) returns two different values at different places.
+        # Returning True at first and False at second time, where the principal test is executed
+        mock_is_file.side_effect = [False, True]
+
+        result = plugin.check_configuration_file_exists("any_configuration_path_with_file_name")
+        self.assertEqual(result, "any_configuration_path_with_file_name")  # Must be the same

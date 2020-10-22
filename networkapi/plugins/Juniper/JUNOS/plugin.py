@@ -16,10 +16,14 @@
 
 import logging
 import time
+import os.path
 from exceptions import IOError
 from networkapi.plugins.base import BasePlugin
 from networkapi.plugins import exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
+from networkapi.system.facade import get_value
+from networkapi.system.exceptions import VariableDoesNotExistException
+from django.db.utils import DatabaseError
 from jnpr.junos import Device
 from jnpr.junos.utils.config import Config
 from jnpr.junos.utils.start_shell import StartShell
@@ -39,6 +43,8 @@ class JUNOS(BasePlugin):
     configuration = None
     quantity_of_times_to_try_lock = 3
     seconds_to_wait_to_try_lock = 10
+    alternative_variable_base_path_list = ['path_to_tftpboot']
+    alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
 
     def __init__(self, **kwargs):
         super(JUNOS, self).__init__(connect_port=830, **kwargs)
@@ -63,7 +69,7 @@ class JUNOS(BasePlugin):
                 self.equipment_access = EquipamentoAcesso.search(
                     None, self.equipment, 'ssh').uniqueResult()
             except Exception:
-                log.error("Access type {} not found for equipment {}.".format('ssh', self.equipment.nome))
+                log.error("Unknown error while accessing equipment {} in database.".format(self.equipment.nome))
                 raise exceptions.InvalidEquipmentAccessException()
 
         log.info("Trying to connect on host {} ... ".format(self.equipment_access.fqdn))
@@ -86,7 +92,7 @@ class JUNOS(BasePlugin):
             raise ConnectError
 
         except Exception, e:
-            log.error("Error connecting to host {}: {}".format(self.equipment_access.fqdn, e))
+            log.error("Unknown error while connecting to host {}: {}".format(self.equipment_access.fqdn, e))
             raise Exception
 
     def close(self):
@@ -110,7 +116,7 @@ class JUNOS(BasePlugin):
             raise ConnectClosedError
 
         except Exception, e:
-            log.error("Unexpected error at closing connection on host {}: {}".format(self.equipment_access.fqdn, e))
+            log.error("Unknown error while closing connection on host {}: {}".format(self.equipment_access.fqdn, e))
             raise Exception
 
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
@@ -129,19 +135,24 @@ class JUNOS(BasePlugin):
 
         log.info("Trying to load file configuration for host {} ...".format(self.equipment_access.fqdn))
 
+        # 'filename' was defined in super class, but in plugin junos the 'file_path' will be used instead
+        file_path = filename
+        file_path = self.check_configuration_file_exists(file_path)
+
         try:
-            command_file = open(filename, "r")
+
+            command_file = open(file_path, "r")
             command = command_file.read()
-            log.info("Load configuration from file {} successfully!".format(filename))
+            log.info("Load configuration from file {} successfully!".format(file_path))
             return self.exec_command(command)
 
         except IOError, e:
-            log.error("File not found {}: {}".format(filename, e))
+            log.error("File not found {}: {}".format(file_path, e))
             self.close()
             raise IOError
 
         except Exception, e:
-            log.error("Unexpected error occurred {}: {}".format(filename, e))
+            log.error("Unknown error while accessing configuration file {}: {}".format(file_path, e))
             self.close()
             raise Exception
 
@@ -209,7 +220,7 @@ class JUNOS(BasePlugin):
             raise RpcError
 
         except Exception as e:
-            log.error("An exception error occurred during configuration execution on host {} "
+            log.error("Unknown error while executing configuration on host {} "
                       "(rollback, unlock and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.configuration.unlock()
@@ -257,7 +268,7 @@ class JUNOS(BasePlugin):
                 return True
 
         except Exception as e:
-            log.error("An exception error occurred during the user privilege verification on host {} "
+            log.error("Unknown error while verifying user privilege on host {} "
                       "(close connection will be executed for safety): {}".format(self.equipment_access.fqdn, e))
             self.close()
             raise Exception
@@ -271,6 +282,8 @@ class JUNOS(BasePlugin):
             Returns True if success, otherwise, raise an exception. That means will NOT return a false result.
         """
 
+        log.info("Trying to lock host {} ...".format(self.equipment_access.fqdn))
+
         for x in range(self.quantity_of_times_to_try_lock):
             try:
                 self.configuration.lock()
@@ -281,7 +294,7 @@ class JUNOS(BasePlugin):
                 count = x + 1
                 # Keep looping ...
                 log.warning(
-                    "Configuration still could not be locked on host {}. Automatic try in {} seconds - {}/{} {}".format(
+                    "Host {} could not be locked. Automatic try in {} seconds - {}/{} {}".format(
                         self.equipment_access.fqdn,
                         self.seconds_to_wait_to_try_lock,
                         count,
@@ -289,7 +302,59 @@ class JUNOS(BasePlugin):
                         e))
 
                 if count == self.quantity_of_times_to_try_lock:
-                    log.error("Host {} couldn't be locked: {}".format(self.equipment_access.fqdn, e))
+                    log.error("An error occurred while trying to lock host {}".format(self.equipment_access.fqdn))
                     raise Exception
                 else:
                     time.sleep(self.seconds_to_wait_to_try_lock)
+
+    def check_configuration_file_exists(self, file_path):
+
+        """
+        This function try to find and build (if necessary) the configuration file path. The priorities are:
+        (1) build the full path from system variable base and relative file path ('file_path'); or
+        (2) build the full path from static variable base and relative file path ('file_path'); or
+        (3) return the relative path it self ('file_path')
+
+        :param str file_path: Relative path, examples:
+            'networkapi/plugins/Juniper/JUNOS/samples/sample_command.txt' or
+            'networkapi/generated_config/interface/int-d_24823_config_ROR9BX3ATQG93TALJAMO2G'
+
+        :return: Return a valid configuration file path string. Ex.:
+        'networkapi/plugins/Juniper/JUNOS/samples/sample_command.txt' or
+        '/mnt/scripts/tftpboot/networkapi/generated_config/interface/int-d_24823_config_ROR9BX3ATQG93TALJAMO2G'
+        """
+
+        log.info("Checking configuration file exist: {}".format(file_path))
+
+        # Check in system variables
+        for variable in self.alternative_variable_base_path_list:
+            try:
+                base_path = get_value(variable)
+                if base_path != "":
+                    result_path = base_path + file_path
+                    if os.path.isfile(result_path):
+                        log.info("Configuration file {} was found by system variable {}!".format(result_path, variable))
+                        return result_path
+            except (DatabaseError, VariableDoesNotExistException):
+                # DatabaseError means that variable table do not exist
+                pass
+            except Exception, e:
+                log.warning("Unknown error while calling networkapi.system.facade.get_value({}): {} {} ".format(
+                    variable, e.__class__, e))
+
+        # Check possible static variables
+        for static_path in self.alternative_static_base_path_list:
+            result_path = static_path + file_path
+            if os.path.isfile(result_path):
+                log.info("Configuration file {} was found by static variable {}!".format(result_path, static_path))
+                return result_path
+
+        # Check if relative path is valid (for dev tests)
+        if os.path.isfile(file_path):
+            log.info("Configuration file {} was found by relative path".format(file_path))
+            return file_path
+
+        log.error("An error occurred while finding configuration file in: "
+                  "relative path ('{}') or system variables ({}) or static paths ({})"
+                  .format(file_path, self.alternative_variable_base_path_list, self.alternative_static_base_path_list))
+        raise Exception
