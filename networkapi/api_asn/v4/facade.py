@@ -254,6 +254,8 @@ def update_asn_equipment(as_):
 
     try:
         as_obj = AsnEquipment()
+        if not as_.get('id'):
+            raise Exception("The object do not have the id.")
         asn_equipment = as_obj.get_by_pk(ids=as_.get('id'))
         asn_equipment.update_v4(as_)
     except AsnErrorV4 as e:
@@ -265,7 +267,7 @@ def update_asn_equipment(as_):
     except Exception as e:
         raise NetworkAPIException(str(e))
 
-    return as_obj
+    return asn_equipment
 
 
 def update_asn_equipment_by_asn(asn_id, as_):
