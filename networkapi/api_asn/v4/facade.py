@@ -213,26 +213,44 @@ def create_asn_equipment(asn_equipment):
     return asn_equipment_list
 
 
-def delete_as_equipment(as_ids):
+def delete_asn_equipment(as_ids):
     """Delete ASNEquipment."""
 
-    for as_id in as_ids:
-        try:
-            as_obj = get_as_equipment_by_id(as_id)[0]
-            log.debug(as_obj)
-            as_obj.delete_v4()
-        except exceptions.AsnDoesNotExistException as e:
-            raise ObjectDoesNotExistException(str(e))
-        except exceptions.AsnAssociatedToEquipmentError as e:
-            raise ValidationAPIException(str(e))
-        except AsnError as e:
-            raise NetworkAPIException(str(e))
-        except Exception as e:
-            raise NetworkAPIException(str(e))
+    try:
+        asn_equipment = AsnEquipment()
+        obj = asn_equipment.get_by_pk(ids=as_ids)
+        obj.delete_v4()
+    except exceptions.AsnDoesNotExistException as e:
+        raise ObjectDoesNotExistException(str(e))
+    except exceptions.AsnAssociatedToEquipmentError as e:
+        raise ValidationAPIException(str(e))
+    except AsnError as e:
+        raise NetworkAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+
+def delete_asn_equipment_by_asn(asn_id):
+    """Delete ASNEquipment."""
+
+    try:
+        asn_obj = AsnEquipment()
+        asn_equipment = asn_obj.get_by_pk(asn=asn_id)
+        for obj in asn_equipment:
+            obj.delete_v4()
+
+    except exceptions.AsnDoesNotExistException as e:
+        raise ObjectDoesNotExistException(str(e))
+    except exceptions.AsnAssociatedToEquipmentError as e:
+        raise ValidationAPIException(str(e))
+    except AsnError as e:
+        raise NetworkAPIException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
 
 
 def update_asn_equipment(as_):
-    """Update AS."""
+    """Update ASNEquipment."""
 
     try:
         as_obj = AsnEquipment()
@@ -251,13 +269,14 @@ def update_asn_equipment(as_):
 
 
 def update_asn_equipment_by_asn(asn_id, as_):
-    """Update AS. Return new asn_equipments new ids"""
+    """
+    Update ASNEquipment.
+    Return new asn_equipments new ids
+    """
 
     try:
         as_obj = AsnEquipment()
         asn_equipment = as_obj.get_by_pk(asn=asn_id)
-        log.debug(asn_equipment)
-        log.debug(type(asn_equipment))
         for obj in asn_equipment:
             obj.delete_v4()
 

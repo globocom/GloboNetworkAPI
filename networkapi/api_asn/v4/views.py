@@ -180,10 +180,15 @@ class AsEquipmentDBView(CustomAPIView):
     def delete(self, request, *args, **kwargs):
         """Delete AS."""
 
-        obj_ids = kwargs['obj_ids'].split(';')
-        log.debug(obj_ids)
+        if not kwargs.get('asn_ids'):
 
-        facade.delete_as_equipment(obj_ids)
+            obj_ids = kwargs['obj_ids'].split(';')
+            for obj in obj_ids:
+                facade.delete_asn_equipment(obj)
+        else:
+            obj_ids = kwargs['asn_ids'].split(';')
+            for obj in obj_ids:
+                facade.delete_asn_equipment_by_asn(obj)
 
         return Response({}, status=status.HTTP_200_OK)
 
