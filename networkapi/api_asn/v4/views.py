@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
+import logging
 from django.db.transaction import commit_on_success
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +18,9 @@ from networkapi.util.decorators import prepare_search
 from networkapi.util.geral import render_to_json
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
+
+
+log = logging.getLogger(__name__)
 
 
 class AsDBView(CustomAPIView):
@@ -106,3 +110,106 @@ class AsDBView(CustomAPIView):
         facade.delete_as(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)
+
+
+class AsEquipmentDBView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('')
+    @permission_classes_apiview((IsAuthenticated, Read))
+    @prepare_search
+    def get(self, request, *args, **kwargs):
+        """Returns a list of AS's by ids ou dict."""
+
+        if not kwargs.get('obj_ids') and\
+            not kwargs.get('asn_ids') and\
+            not kwargs.get('equip_ids'):
+            obj_model = facade.get_as_equipment_by_search(self.search)
+            as_s = obj_model['query_set']
+            only_main_property = False
+        else:
+            obj_model = None
+            only_main_property = True
+            if kwargs.get('obj_ids'):
+                as_ids = kwargs.get('obj_ids').split(';')
+                as_s = facade.get_as_equipment_by_id(as_ids)
+            elif kwargs.get('asn_ids'):
+                as_ids = kwargs.get('asn_ids').split(';')
+                as_s = facade.get_as_equipment_by_asn(as_ids)
+            elif kwargs.get('equip_ids'):
+                as_ids = kwargs.get('equip_ids').split(';')
+                as_s = facade.get_as_equipment_by_equip(as_ids)
+
+        serializer_as = serializers.AsnEquipmentV4Serializer(
+            as_s,
+            many=True,
+            fields=self.fields,
+            include=self.include,
+            exclude=self.exclude,
+            kind=self.kind
+        )
+
+        data = render_to_json(
+            serializer_as,
+            main_property='asn_equipment',
+            obj_model=obj_model,
+            request=request,
+            only_main_property=only_main_property
+        )
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    @raise_json_validate('asn_equipment_post_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create new ASNEquipment."""
+
+        as_s = request.DATA
+        json_validate(SPECS.get('asn_equipment_post_v4')).validate(as_s)
+        response = list()
+        for as_ in as_s['asn_equipment']:
+            response = facade.create_asn_equipment(as_)
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Delete AS."""
+
+        if not kwargs.get('asn_ids'):
+
+            obj_ids = kwargs['obj_ids'].split(';')
+            for obj in obj_ids:
+                facade.delete_asn_equipment(obj)
+        else:
+            obj_ids = kwargs['asn_ids'].split(';')
+            for obj in obj_ids:
+                facade.delete_asn_equipment_by_asn(obj)
+
+        return Response({}, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
+    # @raise_json_validate('as_put_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def put(self, request, *args, **kwargs):
+        """Update AS."""
+
+        asn_equipment = request.DATA
+        # json_validate(SPECS.get('as_put_v4')).validate(as_s)
+        response = list()
+
+        if not kwargs.get('asn_ids'):
+            for as_ in asn_equipment['asn_equipment']:
+                as_obj = facade.update_asn_equipment(as_)
+                response.append({'id': as_obj.id})
+        else:
+            for as_ in asn_equipment['asn_equipment']:
+                response = facade.update_asn_equipment_by_asn(
+                    kwargs.get('asn_ids'), as_)
+
+        return Response(response, status=status.HTTP_200_OK)
