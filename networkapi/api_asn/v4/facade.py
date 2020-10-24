@@ -45,6 +45,21 @@ def get_as_by_id(as_id):
     return as_
 
 
+def get_as_by_asn(asn_):
+    """Return an AS by id.
+
+    Args:
+        asn: ASN
+    """
+
+    try:
+        as_ = Asn.get_by_asn(asn_)
+    except AsnNotFoundError as e:
+        raise exceptions.AsnDoesNotExistException(str(e))
+
+    return as_
+
+
 def get_as_by_ids(autonomous_systems_ids):
     """Return AS list by ids.
 

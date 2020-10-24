@@ -61,6 +61,28 @@ class Asn(BaseModel):
             cls.log.error(u'Failure to search the ASN.')
             raise exceptions.AsnError(u'Failure to search the ASN.')
 
+    def get_by_asn(cls, asn):
+        """Get AS by id.
+
+        :return: AS.
+
+        :raise AsnNotFoundError: As not registered.
+        :raise AsnError: Failed to search for the As.
+        :raise OperationalError: Lock wait timeout exceeded
+        """
+        try:
+            return Asn.objects.get(asn=asn)
+        except ObjectDoesNotExist:
+            cls.log.error(u'ASN not found. pk {}'.format(id))
+            raise exceptions.AsnNotFoundError(id)
+        except OperationalError:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError()
+        except Exception:
+            cls.log.error(u'Failure to search the ASN.')
+            raise exceptions.AsnError(u'Failure to search the ASN.')
+
+
     def create_v4(self, as_map):
         """Create ASN."""
 
