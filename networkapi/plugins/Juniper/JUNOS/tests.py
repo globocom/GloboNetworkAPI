@@ -113,10 +113,28 @@ class JunosPluginTest(NetworkApiTestCase):
         mock_junos_plugin.copyScriptFileToConfig("any file path")
         mock_junos_plugin.copyScriptFileToConfig.assert_called_with("any file path")
 
-    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS', autospec=True)
-    def test_call_ensure_privilege_level(self, mock_junos_plugin):
-        mock_junos_plugin.ensure_privilege_level()
-        mock_junos_plugin.ensure_privilege_level.assert_called_with()
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.StartShell')
+    def test_call_ensure_privilege_level_success(self, mock_start_shell):
+
+        """
+        test_call_ensure_privilege_level_success
+
+        Note: The shell run function expects an array as a return value,
+        and ensure_privilege_level() parse it to ensure the privilege.
+        """
+
+        mock_start_shell.return_value.run.return_value = [
+            False,
+            u'cli -c "show cli authorization"\r\r\nCurrent user: \'root        \' class \'super-user\'\r']
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        result = plugin.ensure_privilege_level()
+        self.assertTrue(result)
+
+    def test_call_ensure_privilege_level_fail(self):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        with self.assertRaises(Exception):
+            plugin.ensure_privilege_level()
 
     @patch('os.path.isfile')
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.get_value')
