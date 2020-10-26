@@ -23,6 +23,8 @@ class RackEnvironment:
     def __init__(self, user, rack_id):
         self.rack = Rack().get_by_pk(rack_id)
         self.user = user
+        self.dcroom_config = self._get_config_file()
+        self.rack_asn = self._get_rack_asn()
 
     @staticmethod
     def save_environment(self, env):
@@ -290,22 +292,7 @@ class RackEnvironment:
             id_grupo_l3 = grupo_l3_dict.id
             pass
 
-        if self.rack.dcroom.config:
-            fabricconfig = self.rack.dcroom.config
-        else:
-            log.debug("sem configuracoes do fabric %s" % str(self.rack.dcroom.id))
-            fabricconfig = list()
-
-        try:
-            fabricconfig = json.loads(fabricconfig)
-        except:
-            pass
-
-        try:
-            fabricconfig = ast.literal_eval(fabricconfig)
-            log.debug("config -ast: %s" % str(fabricconfig))
-        except:
-            pass
+        fabricconfig = self.dcroom_config
 
         environment = list()
         for env in prod_envs:
@@ -376,18 +363,7 @@ class RackEnvironment:
         except Exception as e:
             raise Exception("Erro: %s" % e)
 
-        if self.rack.dcroom.config:
-            fabricconfig = self.rack.dcroom.config
-        else:
-            log.debug("No fabric configurations %s" % str(self.rack.dcroom.id))
-            fabricconfig = list()
-
-        try:
-            fabricconfig = json.loads(fabricconfig)
-            fabricconfig = ast.literal_eval(fabricconfig)
-            log.debug("config -ast: %s" % str(fabricconfig))
-        except:
-            log.debug("Error loading fabric json.")
+        fabricconfig = self.dcroom_config
 
         environment = None
         father_id = env.id
@@ -519,3 +495,66 @@ class RackEnvironment:
             vlan.delete_v3()
 
         log.debug("Vlans: %s. total: %s" % (vlans, len(vlans)))
+
+    def rack_asn_remove(self):
+        from networkapi.api_asn.models import Asn
+        from networkapi.api_asn.v4 import facade
+
+        if self.rack_asn:
+            asn = facade.get_as_by_asn(self.rack_asn)
+            asn_equipment = facade.get_as_equipment_by_asn([asn])
+            log.debug(asn_equipment)
+            for obj in asn_equipment:
+                obj.delete_v4()
+
+            Asn.delete_as([asn])
+
+    def create_asn_equipment(self):
+        from networkapi.api_asn.v4 import facade
+
+        if self.rack_asn:
+            try:
+                asn_obj = dict(name=self.rack_asn, description=self.rack.nome)
+                asn = facade.create_as(asn_obj)
+
+                obj = dict(asn=asn.id, equipment=[self.rack.id_sw1.id,
+                                                  self.rack.id_sw2.id,
+                                                  self.rack.id_ilo.id])
+                facade.create_asn_equipment(obj)
+            except Exception as e:
+                log.debug("Error while trying to create the asn %s for rack %s. "
+                          "E: %s" % (self.rack_asn, self.rack.nome, e))
+
+    def _get_rack_asn(self):
+
+        if self.dcroom_config:
+            BGP = self.dcroom_config.get("BGP")
+            BASE_AS_LFS = int(BGP.get("leafs"))
+            rack_as = BASE_AS_LFS + self.rack.numero
+
+            if rack_as:
+                return rack_as
+            else:
+                return None
+
+    def _get_config_file(self):
+
+        fabricconfig = self.rack.dcroom.config
+
+        try:
+            fabricconfig = json.loads(fabricconfig)
+            log.debug("type -ast: %s" % str(type(fabricconfig)))
+        except:
+            pass
+
+        try:
+            fabricconfig = ast.literal_eval(fabricconfig)
+            log.debug("config -ast: %s" % str(fabricconfig))
+        except:
+            pass
+
+        if fabricconfig:
+            return fabricconfig
+        else:
+            log.debug("sem configuracoes do fabric %s" % str(self.rack.dcroom.id))
+            return list()
