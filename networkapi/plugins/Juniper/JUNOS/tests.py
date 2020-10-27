@@ -1,8 +1,8 @@
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.base import BasePlugin
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
-import mock
 from mock import patch, MagicMock
+from jnpr.junos.exception import ConnectError, LockError
 
 
 class JunosPluginTest(NetworkApiTestCase):
@@ -63,6 +63,16 @@ class JunosPluginTest(NetworkApiTestCase):
         plugin.remote_conn.open.assert_called_with()
         self.assertIsNotNone(plugin.configuration)
         self.assertEqual(connection_response, True)
+
+    def test_connect_wrong_data_exception(self):
+
+        """
+        test_connect_wrong_data_exception
+        """
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        with self.assertRaises(ConnectError):
+            plugin.connect()
 
     @patch('jnpr.junos.utils.config.Config')
     def test_exec_command_success(self, mock_config):

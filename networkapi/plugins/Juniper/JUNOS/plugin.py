@@ -91,7 +91,7 @@ class JUNOS(BasePlugin):
 
         except ConnectError as e:
             log.error("Could not connect to Juniper host {}: {}".format(self.equipment_access.fqdn, e))
-            raise ConnectError
+            raise ConnectError(e)
 
         except Exception, e:
             log.error("Unknown error while connecting to host {}: {}".format(self.equipment_access.fqdn, e))
