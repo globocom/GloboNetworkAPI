@@ -41,6 +41,13 @@ log = logging.getLogger(__name__)
 
 class JUNOS(BasePlugin):
 
+    configuration = None
+    quantity_of_times_to_try_lock = 3
+    seconds_to_wait_to_try_lock = 10
+    alternative_variable_base_path_list = ['path_to_tftpboot']
+    alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
+    ignore_warning_list = ['statement not found']
+
     def __init__(self, **kwargs):
         super(JUNOS, self).__init__(connect_port=830, **kwargs)
         if 'quantity_of_times_to_try_lock' in kwargs:
@@ -48,13 +55,6 @@ class JUNOS(BasePlugin):
 
         if 'seconds_to_wait_to_try_lock' in kwargs:
             self.seconds_to_wait_to_try_lock = kwargs.get('seconds_to_wait_to_try_lock')
-
-        self.configuration = None
-        self.quantity_of_times_to_try_lock = 3
-        self.seconds_to_wait_to_try_lock = 10
-        self.alternative_variable_base_path_list = ['path_to_tftpboot']
-        self.alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
-        self.ignore_warning_list = ['statement not found']
 
     def connect(self):
 
