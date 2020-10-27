@@ -64,7 +64,7 @@ class JunosPluginTest(NetworkApiTestCase):
         self.assertIsNotNone(plugin.configuration)
         self.assertEqual(connection_response, True)
 
-    @patch('jnpr.junos.utils.config.Config', autospec=True)
+    @patch('jnpr.junos.utils.config.Config')
     def test_exec_command_success(self, mock_config):
 
         """
@@ -82,11 +82,11 @@ class JunosPluginTest(NetworkApiTestCase):
         exec_command_response = plugin.exec_command("any command")
 
         # Assert
-        plugin.configuration.rollback.assert_called_once_with()
-        plugin.configuration.load.assert_called_once_with("any command", format='set')
-        plugin.configuration.commit_check.assert_called_once_with()
-        plugin.configuration.commit.assert_called_once_with()
-        plugin.configuration.unlock.assert_called_once_with()
+        plugin.configuration.rollback.assert_called_once()
+        plugin.configuration.load.assert_called_once()
+        plugin.configuration.commit_check.assert_called_once()
+        plugin.configuration.commit.assert_called_once()
+        plugin.configuration.unlock.assert_called_once()
         self.assertIsNotNone(exec_command_response)
 
     @patch('jnpr.junos.Device')

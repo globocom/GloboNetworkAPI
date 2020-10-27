@@ -35,7 +35,7 @@ try:
     rollback_response = conf.rollback()
     print("Rollback config ... {}".format(rollback_response))
 
-    load_result = conf.load(command, format='set')
+    load_result = conf.load(command, format='set', ignore_warning=['statement not found'])
     load_result_tostring = etree.tostring(load_result, encoding='unicode', pretty_print=True)
     print("Load command ... \n{}".format(load_result_tostring))
 

@@ -40,11 +40,6 @@ log = logging.getLogger(__name__)
 
 
 class JUNOS(BasePlugin):
-    configuration = None
-    quantity_of_times_to_try_lock = 3
-    seconds_to_wait_to_try_lock = 10
-    alternative_variable_base_path_list = ['path_to_tftpboot']
-    alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
 
     def __init__(self, **kwargs):
         super(JUNOS, self).__init__(connect_port=830, **kwargs)
@@ -53,6 +48,13 @@ class JUNOS(BasePlugin):
 
         if 'seconds_to_wait_to_try_lock' in kwargs:
             self.seconds_to_wait_to_try_lock = kwargs.get('seconds_to_wait_to_try_lock')
+
+        self.configuration = None
+        self.quantity_of_times_to_try_lock = 3
+        self.seconds_to_wait_to_try_lock = 10
+        self.alternative_variable_base_path_list = ['path_to_tftpboot']
+        self.alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
+        self.ignore_warning_list = ['statement not found']
 
     def connect(self):
 
@@ -119,7 +121,7 @@ class JUNOS(BasePlugin):
             log.error("Unknown error while closing connection on host {}: {}".format(self.equipment_access.fqdn, e))
             raise Exception
 
-    def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
+    def copyScriptFileToConfig(self, filename):
 
         """
         Receives the file path (usually in /mnt/scripts/tftpboot/networkapi/generated_config/interface/)
@@ -156,7 +158,7 @@ class JUNOS(BasePlugin):
             self.close()
             raise Exception
 
-    def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
+    def exec_command(self, command):
 
         """
         Execute a junos command 'set' in the equipment.
@@ -175,7 +177,7 @@ class JUNOS(BasePlugin):
         try:
             self.__try_lock()
             self.configuration.rollback()
-            self.configuration.load(command, format='set')
+            self.configuration.load(command, format='set', ignore_warning=self.ignore_warning_list)
             self.configuration.commit_check()
             self.configuration.commit()
             self.configuration.unlock()
@@ -227,7 +229,7 @@ class JUNOS(BasePlugin):
             self.close()
             raise Exception
 
-    def ensure_privilege_level(self, privilege_level=None):
+    def ensure_privilege_level(self):
 
         """
         Ensure privilege level verifying if the current user is super-user.
