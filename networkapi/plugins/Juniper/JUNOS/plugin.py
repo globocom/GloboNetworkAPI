@@ -121,7 +121,7 @@ class JUNOS(BasePlugin):
             log.error("Unknown error while closing connection on host {}: {}".format(self.equipment_access.fqdn, e))
             raise Exception
 
-    def copyScriptFileToConfig(self, filename):
+    def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
 
         """
         Receives the file path (usually in /mnt/scripts/tftpboot/networkapi/generated_config/interface/)
@@ -158,7 +158,7 @@ class JUNOS(BasePlugin):
             self.close()
             raise Exception
 
-    def exec_command(self, command):
+    def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
 
         """
         Execute a junos command 'set' in the equipment.
@@ -229,7 +229,7 @@ class JUNOS(BasePlugin):
             self.close()
             raise Exception
 
-    def ensure_privilege_level(self):
+    def ensure_privilege_level(self, privilege_level=None):
 
         """
         Ensure privilege level verifying if the current user is super-user.
