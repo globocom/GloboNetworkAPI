@@ -61,6 +61,28 @@ class Asn(BaseModel):
             cls.log.error(u'Failure to search the ASN.')
             raise exceptions.AsnError(u'Failure to search the ASN.')
 
+    def get_by_asn(cls, asn):
+        """Get AS by id.
+
+        :return: AS.
+
+        :raise AsnNotFoundError: As not registered.
+        :raise AsnError: Failed to search for the As.
+        :raise OperationalError: Lock wait timeout exceeded
+        """
+        try:
+            return Asn.objects.get(asn=asn)
+        except ObjectDoesNotExist:
+            cls.log.error(u'ASN not found. pk {}'.format(id))
+            raise exceptions.AsnNotFoundError(id)
+        except OperationalError:
+            cls.log.error(u'Lock wait timeout exceeded.')
+            raise OperationalError()
+        except Exception:
+            cls.log.error(u'Failure to search the ASN.')
+            raise exceptions.AsnError(u'Failure to search the ASN.')
+
+
     def create_v4(self, as_map):
         """Create ASN."""
 
@@ -138,7 +160,7 @@ class AsnEquipment(BaseModel):
         managed = True
 
     @classmethod
-    def get_by_pk(cls, id):
+    def get_by_pk(cls, ids=None, asn=None, equipment=None):
         """Get AsnEquipment by id.
 
         :return: AsnEquipment.
@@ -148,16 +170,26 @@ class AsnEquipment(BaseModel):
         :raise OperationalError: Lock wait timeout exceeded
         """
         try:
-            return AsnEquipment.objects.get(id=id)
+            logging.info("get asn_equipment by id, asn or equipment")
+            if ids:
+                return AsnEquipment.objects.get(id=int(ids))
+            elif asn:
+                return AsnEquipment.objects.filter(asn=int(asn))
+            elif equipment:
+                return AsnEquipment.objects.filter(equipment__id=int(equipment))
+
+            return AsnEquipment.objects.all()
+
         except ObjectDoesNotExist:
             cls.log.error(u'AsnEquipment not found. pk {}'.format(id))
             raise exceptions.AsnEquipmentNotFoundError(id)
         except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded.')
             raise OperationalError()
-        except Exception:
-            cls.log.error(u'Failure to search the AS.')
-            raise exceptions.AsnEquipmentError(u'Failure to search the AS.')
+        except Exception as e:
+            cls.log.error(u'Failure to search the ASNEquipment. E: %s' % e)
+            raise exceptions.AsnEquipmentError(
+                u'Failure to search the ASNEquipment. E: %s' % e)
 
     def create_v4(self, as_equipment):
         """Create AsnEquipment relationship."""
@@ -176,3 +208,15 @@ class AsnEquipment(BaseModel):
         """Delete AsnEquipment relationship."""
 
         super(AsnEquipment, self).delete()
+
+    def update_v4(self, asn_equipment):
+        """Update ASNEquipment """
+
+        equipment = get_model('equipamento', 'Equipamento')
+
+        self.equipment = equipment().get_by_pk(
+            asn_equipment.get('equipment')[0])
+        self.asn = Asn().get_by_pk(asn_equipment.get('asn'))
+        self.save()
+
+        return self

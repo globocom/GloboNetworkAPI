@@ -179,7 +179,6 @@ class RackDeployView(APIView):
                         except Exception as e:
                             log.exception(e)
                             raise exceptions.RackAplError(e)
-            # SEPARAR AQUI!
 
             datas = dict()
             success_map = dict()
@@ -227,7 +226,6 @@ class RackForeman (APIView):
             raise api_exceptions.NetworkAPIException(e)
 
 
-#===============================================@====================================================
 class RackConfigView(APIView):
 
     @commit_on_success
