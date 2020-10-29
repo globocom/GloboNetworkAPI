@@ -20,6 +20,8 @@ user = args.user
 password = args.password
 command = args.command
 
+open_result = None
+
 try:
 
     dev = Device(host=device, user=user, password=password, gather_facts=False)
@@ -56,5 +58,7 @@ try:
 except Exception, e:
 
     print(e)
-    close_response = dev.close()
-    print("Closed connection? {}".format(not open_result.connected))
+
+    if open_result is not None:
+        close_response = dev.close()
+        print("Closed connection? {}".format(not open_result.connected))

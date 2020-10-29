@@ -91,7 +91,7 @@ class JUNOS(BasePlugin):
 
         except ConnectError as e:
             log.error("Could not connect to Juniper host {}: {}".format(self.equipment_access.fqdn, e))
-            raise ConnectError(e)
+            raise ConnectError(self.remote_conn)
 
         except Exception, e:
             log.error("Unknown error while connecting to host {}: {}".format(self.equipment_access.fqdn, e))
@@ -109,19 +109,22 @@ class JUNOS(BasePlugin):
         log.info("Trying to close connection on host {} ... ".format(self.equipment_access.fqdn))
 
         try:
-            self.remote_conn.close()
-            log.info("The connection was closed successfully on host {}!".format(self.equipment_access.fqdn))
-            return True
+            if self.remote_conn is not None:
+                self.remote_conn.close()
+                log.info("The connection was closed successfully on host {}!".format(self.equipment_access.fqdn))
+                return True
+            else:
+                log.warning("To connection couldn't be closed because object is None")
 
         except ConnectClosedError, e:
             log.error("Cannot close connection on host {}: {}".format(self.equipment_access.fqdn, e))
-            raise ConnectClosedError
+            raise ConnectClosedError(self.remote_conn)
 
         except Exception, e:
             log.error("Unknown error while closing connection on host {}: {}".format(self.equipment_access.fqdn, e))
             raise Exception
 
-    def copyScriptFileToConfig(self, filename):
+    def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
 
         """
         Receives the file path (usually in /mnt/scripts/tftpboot/networkapi/generated_config/interface/)
@@ -158,7 +161,7 @@ class JUNOS(BasePlugin):
             self.close()
             raise Exception
 
-    def exec_command(self, command):
+    def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
 
         """
         Execute a junos command 'set' in the equipment.
@@ -190,14 +193,14 @@ class JUNOS(BasePlugin):
             log.error("Couldn't lock host {} "
                       "(close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.close()
-            raise LockError
+            raise LockError(rsp=None)
 
         except UnlockError as e:
             log.error("Couldn't unlock host {} "
                       "(rollback and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.configuration.rollback()
             self.close()
-            raise UnlockError
+            raise UnlockError(rsp=None)
 
         except ConfigLoadError as e:
             log.error("Couldn't load configuration on host {} "
@@ -205,7 +208,7 @@ class JUNOS(BasePlugin):
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
-            raise ConfigLoadError
+            raise ConfigLoadError(rsp=None)
 
         except CommitError as e:
             log.error("Couldn't commit configuration on {} "
@@ -213,7 +216,7 @@ class JUNOS(BasePlugin):
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
-            raise CommitError
+            raise CommitError(rsp=None)
 
         except RpcError as e:
             log.error("A remote procedure call exception occurred on host {} "
@@ -223,13 +226,11 @@ class JUNOS(BasePlugin):
 
         except Exception as e:
             log.error("Unknown error while executing configuration on host {} "
-                      "(rollback, unlock and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
-            self.configuration.rollback()
-            self.configuration.unlock()
+                      "(close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.close()
             raise Exception
 
-    def ensure_privilege_level(self):
+    def ensure_privilege_level(self, privilege_level=None):
 
         """
         Ensure privilege level verifying if the current user is super-user.
@@ -291,23 +292,23 @@ class JUNOS(BasePlugin):
                 self.configuration.lock()
                 log.info("Host {} was locked successfully!".format(self.equipment_access.fqdn))
                 return True
-            except (LockError, RpcError, Exception), e:
-
+            except LockError, e:
                 count = x + 1
-                # Keep looping ...
                 log.warning(
-                    "Host {} could not be locked. Automatic try in {} seconds - {}/{} {}".format(
+                    "Host {} could not be locked. Automatic try in {} seconds ({}/{}): {}".format(
                         self.equipment_access.fqdn,
                         self.seconds_to_wait_to_try_lock,
                         count,
                         self.quantity_of_times_to_try_lock,
                         e))
+                time.sleep(self.seconds_to_wait_to_try_lock)
 
-                if count == self.quantity_of_times_to_try_lock:
-                    log.error("An error occurred while trying to lock host {}".format(self.equipment_access.fqdn))
-                    raise Exception
-                else:
-                    time.sleep(self.seconds_to_wait_to_try_lock)
+            except Exception, e:
+                log.error("Unknown error while trying to lock c the equipment on host {}: {}".format(
+                    self.equipment_access.fqdn, e))
+
+        log.error("Occurred error on all tries to lock host {}".format(self.equipment_access.fqdn))
+        raise LockError(rsp=None)
 
     def check_configuration_file_exists(self, file_path):
 
