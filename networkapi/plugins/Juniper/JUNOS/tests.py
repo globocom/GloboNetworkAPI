@@ -99,6 +99,23 @@ class JunosPluginTest(NetworkApiTestCase):
         plugin.configuration.unlock.assert_called_once()
         self.assertIsNotNone(exec_command_response)
 
+    @patch('jnpr.junos.utils.config.Config')
+    @patch('time.sleep')
+    def test_exec_command_fail_to_lock(self, time_sleep, mock_config):
+
+        """
+        test_exec_command_fail_to_lock
+        """
+
+        time_sleep.return_value = None  # mocked to be executed instantly
+        mock_config.lock.side_effect = LockError('')
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.configuration = mock_config
+
+        with self.assertRaises(LockError):
+            plugin.exec_command("any command")
+
     @patch('jnpr.junos.Device')
     def test_call_close_success(self, mock_device):
 
