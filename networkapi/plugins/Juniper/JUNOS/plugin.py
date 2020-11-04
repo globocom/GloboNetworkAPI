@@ -68,11 +68,11 @@ class JUNOS(BasePlugin):
         if self.equipment_access is None:
             try:
                 # Collect the credentials (user and password) for equipment
-                self.equipment_access = EquipamentoAcesso.search(
-                    None, self.equipment, 'ssh').uniqueResult()
-            except Exception:
-                log.error("Unknown error while accessing equipment {} in database.".format(self.equipment.nome))
-                raise exceptions.InvalidEquipmentAccessException()
+                self.equipment_access = EquipamentoAcesso.search(None, self.equipment, 'ssh').uniqueResult()
+            except Exception as e:
+                message = "Unknown error while accessing equipment {} in database.".format(self.equipment.nome)
+                log.error("{}: {}".format(message, e))
+                raise exceptions.APIException(message)
 
         log.info("Trying to connect on host {} ... ".format(self.equipment_access.fqdn))
 
@@ -90,12 +90,14 @@ class JUNOS(BasePlugin):
                 return True
 
         except ConnectError as e:
-            log.error("Could not connect to Juniper host {}: {}".format(self.equipment_access.fqdn, e))
-            raise ConnectError(self.remote_conn)
+            message = "Authentication failed trying to connect host {}.".format(self.equipment_access.fqdn)
+            log.error("{}: {}".format(message, e))
+            raise exceptions.ConnectionException(message)
 
-        except Exception, e:
-            log.error("Unknown error while connecting to host {}: {}".format(self.equipment_access.fqdn, e))
-            raise Exception
+        except Exception as e:
+            message = "Unknown error while connecting to host {}.".format(self.equipment_access.fqdn)
+            log.error("{}: {}".format(message, e))
+            raise exceptions.APIException(message)
 
     def close(self):
 
@@ -116,13 +118,15 @@ class JUNOS(BasePlugin):
             else:
                 log.warning("To connection couldn't be closed because object is None")
 
-        except ConnectClosedError, e:
-            log.error("Cannot close connection on host {}: {}".format(self.equipment_access.fqdn, e))
-            raise ConnectClosedError(self.remote_conn)
+        except ConnectClosedError as e:
+            message = "Cannot close connection on juniper host {}.".format(self.equipment_access.fqdn)
+            log.error("{}: {}".format(message, e))
+            raise exceptions.APIException(message)
 
-        except Exception, e:
-            log.error("Unknown error while closing connection on host {}: {}".format(self.equipment_access.fqdn, e))
-            raise Exception
+        except Exception as e:
+            message = "Unknown error while closing connection on host {}.".format(self.equipment_access.fqdn)
+            log.error("{}: {}".format(message, e))
+            raise exceptions.APIException(message)
 
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
 
@@ -151,15 +155,12 @@ class JUNOS(BasePlugin):
             log.info("Load configuration from file {} successfully!".format(file_path))
             return self.exec_command(command)
 
-        except IOError, e:
-            log.error("File not found {}: {}".format(file_path, e))
+        except IOError as e:
             self.close()
-            raise IOError
-
-        except Exception, e:
-            log.error("Unknown error while accessing configuration file {}: {}".format(file_path, e))
-            self.close()
-            raise Exception
+            message = "Configuration file not found."  # Message to client
+            log.error("{} {}: {}".format(message, file_path, e))  # Message to log
+            raise exceptions.APIException(message)
+        # Caution using generic exception here (like Exception). May cause unexpected exception overlaps
 
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
 
@@ -190,45 +191,42 @@ class JUNOS(BasePlugin):
             return result_message
 
         except LockError as e:
-            log.error("Couldn't lock host {} "
-                      "(close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
             self.close()
-            raise LockError(rsp=None)
+            message = "Couldn't lock host {}.".format(self.equipment_access.fqdn)
+            log.error("{}: {}".format(message, e))
+            raise exceptions.APIException(message)
 
         except UnlockError as e:
-            log.error("Couldn't unlock host {} "
-                      "(rollback and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
+            message = "Couldn't unlock host {}.".format(self.equipment_access.fqdn)
+            log.error("{} (rollback and close will be tried for safety): {}".format(message, e))
             self.configuration.rollback()
             self.close()
-            raise UnlockError(rsp=None)
+            raise exceptions.APIException(message)
 
         except ConfigLoadError as e:
-            log.error("Couldn't load configuration on host {} "
-                      "(rollback, unlock and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
+            message = "Couldn't load configuration on host {}. Please check template syntax.".format(
+                self.equipment_access.fqdn)
+            log.error("{} (rollback, unlock and close will be tried for safety): {}".format(message, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
-            raise ConfigLoadError(rsp=None)
+            raise exceptions.APIException(message)
 
         except CommitError as e:
-            log.error("Couldn't commit configuration on {} "
-                      "(rollback, unlock and close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
+            message = "Couldn't commit configuration on host {}.".format(self.equipment_access.fqdn)
+            log.error("{} (rollback, unlock and close will be tried for safety): {}".format(message, e))
             self.configuration.rollback()
             self.configuration.unlock()
             self.close()
-            raise CommitError(rsp=None)
+            raise exceptions.APIException(message)
 
         except RpcError as e:
-            log.error("A remote procedure call exception occurred on host {} "
-                      "(close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
+            message = "A remote procedure call exception occurred on host {} ".format(self.equipment_access.fqdn)
+            log.error("{} (close will be tried for safety): {}".format(message, e))
             self.close()
-            raise RpcError
-
-        except Exception as e:
-            log.error("Unknown error while executing configuration on host {} "
-                      "(close will be tried for safety): {}".format(self.equipment_access.fqdn, e))
-            self.close()
-            raise Exception
+            raise exceptions.APIException(message)
+        # Caution to use generic exception here, may cause overlaps in specific exceptions in try_lock()
+        # except Exception, e:
 
     def ensure_privilege_level(self, privilege_level=None):
 
@@ -259,22 +257,22 @@ class JUNOS(BasePlugin):
             current_user_class = result[1].split("'")[3]
 
             if current_user_class != 'super-user':
-                log.error("Couldn't validate user {} privileges on host {}. "
-                          "User class is '{}' and need to be 'super-user'. "
+                message = "Couldn't validate user privileges on host {}.".format(self.equipment_access.fqdn)
+                log.error("{}. User {} class is '{}' and need to be 'super-user'"
                           "(close connection will be executed for safety)"
-                          .format(self.equipment_access.user, self.equipment_access.fqdn, current_user_class))
+                          .format(message, self.equipment_access.user, current_user_class))
                 self.close()
-                raise Exception
+                raise exceptions.APIException(message)
             else:
                 log.info("The privilege for user {} ('super-user') was satisfied on host {}!".format(
                     self.equipment_access.user, self.equipment_access.fqdn))
                 return True
 
         except Exception as e:
-            log.error("Unknown error while verifying user privilege on host {} "
-                      "(close connection will be executed for safety): {}".format(self.equipment_access.fqdn, e))
+            message = "Unknown error while verifying user privilege on host {} ".format(self.equipment_access.fqdn)
+            log.error("(close connection will be executed for safety): {}".format(message, e))
             self.close()
-            raise Exception
+            raise exceptions.APIException(message)
 
     def __try_lock(self):
 
@@ -292,7 +290,7 @@ class JUNOS(BasePlugin):
                 self.configuration.lock()
                 log.info("Host {} was locked successfully!".format(self.equipment_access.fqdn))
                 return True
-            except LockError, e:
+            except LockError as e:
                 count = x + 1
                 log.warning(
                     "Host {} could not be locked. Automatic try in {} seconds ({}/{}): {}".format(
@@ -303,12 +301,13 @@ class JUNOS(BasePlugin):
                         e))
                 time.sleep(self.seconds_to_wait_to_try_lock)
 
-            except Exception, e:
+            except Exception as e:
                 log.error("Unknown error while trying to lock c the equipment on host {}: {}".format(
                     self.equipment_access.fqdn, e))
 
-        log.error("Occurred error on all tries to lock host {}".format(self.equipment_access.fqdn))
-        raise LockError(rsp=None)
+        message = "Errors occurred in all attempts to lock {}. Anybody has locked?".format(self.equipment_access.fqdn)
+        log.error(message)
+        raise exceptions.APIException(message)
 
     def check_configuration_file_exists(self, file_path):
 
@@ -341,7 +340,7 @@ class JUNOS(BasePlugin):
             except (DatabaseError, VariableDoesNotExistException):
                 # DatabaseError means that variable table do not exist
                 pass
-            except Exception, e:
+            except Exception as e:
                 log.warning("Unknown error while calling networkapi.system.facade.get_value({}): {} {} ".format(
                     variable, e.__class__, e))
 
@@ -357,7 +356,7 @@ class JUNOS(BasePlugin):
             log.info("Configuration file {} was found by relative path".format(file_path))
             return file_path
 
-        log.error("An error occurred while finding configuration file in: "
-                  "relative path ('{}') or system variables ({}) or static paths ({})"
-                  .format(file_path, self.alternative_variable_base_path_list, self.alternative_static_base_path_list))
-        raise Exception
+        message = "An error occurred while finding configuration file."
+        log.error("{} Could not find in: relative path ('{}'), system variables ({}) or static paths ({})".format(
+            message, file_path, self.alternative_variable_base_path_list, self.alternative_static_base_path_list))
+        raise exceptions.APIException(message)

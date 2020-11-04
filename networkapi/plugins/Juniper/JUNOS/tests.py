@@ -1,8 +1,9 @@
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.base import BasePlugin
+from networkapi.plugins import exceptions
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from mock import patch, MagicMock
-from jnpr.junos.exception import ConnectError, LockError
+from jnpr.junos.exception import LockError
 
 
 class JunosPluginTest(NetworkApiTestCase):
@@ -71,7 +72,7 @@ class JunosPluginTest(NetworkApiTestCase):
         """
 
         plugin = JUNOS(equipment_access=self.mock_equipment_access)
-        with self.assertRaises(ConnectError):
+        with self.assertRaises(exceptions.ConnectionException):
             plugin.connect()
 
     @patch('jnpr.junos.utils.config.Config')
@@ -113,7 +114,7 @@ class JunosPluginTest(NetworkApiTestCase):
         plugin = JUNOS(equipment_access=self.mock_equipment_access)
         plugin.configuration = mock_config
 
-        with self.assertRaises(LockError):
+        with self.assertRaises(exceptions.APIException):
             plugin.exec_command("any command")
 
     @patch('jnpr.junos.Device')
@@ -155,6 +156,11 @@ class JunosPluginTest(NetworkApiTestCase):
             u'cli -c "show cli authorization"\r\r\nCurrent user: \'root        \' class \'super-user\'\r']
 
         plugin = JUNOS(equipment_access=self.mock_equipment_access)
+
+        # Mock connection
+        plugin.remote_conn = MagicMock()
+        plugin.remote_conn.connected.return_value = True
+
         result = plugin.ensure_privilege_level()
         self.assertTrue(result)
 
