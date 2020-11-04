@@ -1,7 +1,9 @@
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.base import BasePlugin
+from networkapi.plugins import exceptions
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from mock import patch, MagicMock
+from jnpr.junos.exception import LockError
 
 
 class JunosPluginTest(NetworkApiTestCase):
@@ -31,6 +33,11 @@ class JunosPluginTest(NetworkApiTestCase):
         self.mock_equipment_access = mock_equipment_access
 
     def test_create_junos_with_super_class(self):
+
+        """
+        test_create_junos_with_super_class - test if Junos plugin is the BasePlugin
+        """
+
         plugin = JUNOS()
         self.assertIsInstance(plugin, BasePlugin)
 
@@ -38,7 +45,7 @@ class JunosPluginTest(NetworkApiTestCase):
     def test_connect_success(self, mock_device):
 
         """
-        Simulate connect success using Junos Device mock.
+        test_connect_success - Simulate connect success using Junos Device mock.
 
         Note: All internal functions in Device Class are mocked, raising no exceptions on it
 
@@ -58,11 +65,21 @@ class JunosPluginTest(NetworkApiTestCase):
         self.assertIsNotNone(plugin.configuration)
         self.assertEqual(connection_response, True)
 
-    @patch('jnpr.junos.utils.config.Config', autospec=True)
+    def test_connect_wrong_data_exception(self):
+
+        """
+        test_connect_wrong_data_exception
+        """
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        with self.assertRaises(exceptions.ConnectionException):
+            plugin.connect()
+
+    @patch('jnpr.junos.utils.config.Config')
     def test_exec_command_success(self, mock_config):
 
         """
-        This test asserts the success of the complete workflow of executing any command.
+        test_exec_command_success - This test asserts the success of the complete workflow of executing any command.
         Note: All internal functions in Config Class are mocked, raising no exceptions on it
         """
 
@@ -76,24 +93,110 @@ class JunosPluginTest(NetworkApiTestCase):
         exec_command_response = plugin.exec_command("any command")
 
         # Assert
-        plugin.configuration.rollback.assert_called_once_with()
-        plugin.configuration.load.assert_called_once_with("any command", format='set')
-        plugin.configuration.commit_check.assert_called_once_with()
-        plugin.configuration.commit.assert_called_once_with()
-        plugin.configuration.unlock.assert_called_once_with()
+        plugin.configuration.rollback.assert_called_once()
+        plugin.configuration.load.assert_called_once()
+        plugin.configuration.commit_check.assert_called_once()
+        plugin.configuration.commit.assert_called_once()
+        plugin.configuration.unlock.assert_called_once()
         self.assertIsNotNone(exec_command_response)
 
-    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS', autospec=True)
-    def test_call_close(self, mock_junos_plugin):
-        mock_junos_plugin.close()
-        mock_junos_plugin.close.assert_called_with()
+    @patch('jnpr.junos.utils.config.Config')
+    @patch('time.sleep')
+    def test_exec_command_fail_to_lock(self, time_sleep, mock_config):
+
+        """
+        test_exec_command_fail_to_lock
+        """
+
+        time_sleep.return_value = None  # mocked to be executed instantly
+        mock_config.lock.side_effect = LockError('')
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.configuration = mock_config
+
+        with self.assertRaises(exceptions.APIException):
+            plugin.exec_command("any command")
+
+    @patch('jnpr.junos.Device')
+    def test_call_close_success(self, mock_device):
+
+        """
+        test_call_close_success - Test if the plugin junos plugin close a connection with the expected asserts
+        """
+
+        # Mocking
+        mock_device.connected = False
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        # Close to a real test:
+        close_response = plugin.close()
+
+        # Asserts
+        plugin.remote_conn.close.assert_called_once_with()
+        self.assertTrue(close_response, True)
 
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS', autospec=True)
     def test_call_copyScriptFileToConfig(self, mock_junos_plugin):
         mock_junos_plugin.copyScriptFileToConfig("any file path")
         mock_junos_plugin.copyScriptFileToConfig.assert_called_with("any file path")
 
-    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS', autospec=True)
-    def test_call_ensure_privilege_level(self, mock_junos_plugin):
-        mock_junos_plugin.ensure_privilege_level()
-        mock_junos_plugin.ensure_privilege_level.assert_called_with()
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.StartShell')
+    def test_call_ensure_privilege_level_success(self, mock_start_shell):
+
+        """
+        test_call_ensure_privilege_level_success
+
+        Note: The shell run function expects an array as a return value,
+        and ensure_privilege_level() parse it to ensure the privilege.
+        """
+
+        mock_start_shell.return_value.run.return_value = [
+            False,
+            u'cli -c "show cli authorization"\r\r\nCurrent user: \'root        \' class \'super-user\'\r']
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+
+        # Mock connection
+        plugin.remote_conn = MagicMock()
+        plugin.remote_conn.connected.return_value = True
+
+        result = plugin.ensure_privilege_level()
+        self.assertTrue(result)
+
+    def test_call_ensure_privilege_level_fail(self):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        with self.assertRaises(Exception):
+            plugin.ensure_privilege_level()
+
+    @patch('os.path.isfile')
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.get_value')
+    def test_check_configuration_file_exists_from_system_variable(self, mock_get_value, mock_is_file):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        mock_get_value.return_value = "/any_base_variable_path/"
+        mock_is_file.return_value = True
+
+        # isfile.return_value = True
+        result = plugin.check_configuration_file_exists("any_configuration_path_with_file_name")
+        self.assertEqual(result, "/any_base_variable_path/any_configuration_path_with_file_name")
+
+    @patch('os.path.isfile')
+    def test_check_configuration_file_exists_from_static_variable(self, mock_is_file):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        mock_is_file.return_value = True
+        first_alternative_static_base_path = plugin.alternative_static_base_path_list[0]
+
+        result = plugin.check_configuration_file_exists("any_configuration_path_with_file_name")
+        self.assertEqual(result, first_alternative_static_base_path+"any_configuration_path_with_file_name")
+
+    @patch('os.path.isfile')
+    def test_check_configuration_file_exists_from_relative_path(self, mock_is_file):
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+
+        # The function is_file(...), inside check_configuration_file_exists, is used two times.
+        # The proposed test need that function is_file(...) returns two different values at different places.
+        # Returning True at first and False at second time, where the principal test is executed
+        mock_is_file.side_effect = [False, True]
+
+        result = plugin.check_configuration_file_exists("any_configuration_path_with_file_name")
+        self.assertEqual(result, "any_configuration_path_with_file_name")  # Must be the same
