@@ -16,6 +16,7 @@
 import ast
 import logging
 import re
+import random
 
 from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
@@ -580,7 +581,69 @@ def _generate_dict(interface):
     else:
         key_dict['BOOL_INTERFACE_IN_CHANNEL'] = 0
 
+    key_dict['CHASSIS_ID_LEAF_NUMBER'] = __generate_chassis_id_leaf_number(interface.equipamento.nome)
+    key_dict['LACP_SYSTEM_ID_MAC'] = __generate_mac_address_based_on_name(interface.channel.nome)
+
+    log.info("_generate_dict return value (dict values): {}".format(key_dict))
+
     return key_dict
+
+
+def __generate_chassis_id_leaf_number(equipment_name):
+
+    """
+    This function build value for CHASSIS_ID_LEAF_NUMBER, and must result 0 or 1 value.
+    Generally used in the Junos Plugin.
+
+    :param str equipment_name:
+        last character must be 1 or 2, ex.: LF-LAB-JUN-01 and LF-LAB-JUN-02
+
+    :returns: 0 or 1 value. For example: LF-LAB-JUN-01 returns 0 and LF-LAB-JUN-02 returns 1
+    """
+
+    leaf_id_last_char = equipment_name[-1]
+    if leaf_id_last_char is '1' or '2':
+        leaf_id = int(leaf_id_last_char)
+        result = leaf_id - 1
+        log.info("__generate_chassis_id_leaf_number - equipment_name:{} result:{}".format(equipment_name, result))
+        return result
+
+    log.waring("Could not set CHASSIS_ID_LEAF_NUMBER from name {}. This name not ends with '1' or '2'!".format(
+        equipment_name))
+    return 'N/A'
+
+
+def __generate_mac_address_based_on_name(channel_name):
+
+    """
+    Generate mac address from equipment name.
+
+    :param str channel_name:
+        ex.: '123'
+
+    :returns:
+        ex.: '00:00:00:00:01:23'
+    """
+
+    # Put remaining zeros, ex.: 000000000123
+    equipment_name_zero_filled = channel_name.zfill(12)
+
+    # Run for equipment_name_zero_filled and generate the result with ":"s
+    mac_address_result = ""
+    i = 1
+    for char in equipment_name_zero_filled:
+        mac_address_result = mac_address_result + char
+        if i == 2:
+            mac_address_result = mac_address_result + ":"
+            i = 1
+            continue
+        i = i + 1
+
+    # At this point, the result has an extra character ":" (00:00:00:00:01:23:), and the code below will removed it.
+    mac_address_result = mac_address_result[:-1]
+    log.info("__generate_mac_address_based_on_name - channel_name:{} result:{}".format(
+        channel_name, mac_address_result))
+    return mac_address_result
 
 
 def get_vlan_range(interface):
