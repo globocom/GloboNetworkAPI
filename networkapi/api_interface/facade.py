@@ -16,7 +16,6 @@
 import ast
 import logging
 import re
-import random
 
 from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
