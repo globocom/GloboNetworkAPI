@@ -580,6 +580,7 @@ def _generate_dict(interface):
     else:
         key_dict['BOOL_INTERFACE_IN_CHANNEL'] = 0
 
+    # Normally used in junos plugin
     key_dict['CHASSIS_ID_LEAF_NUMBER'] = __generate_chassis_id_leaf_number(interface.equipamento.nome)
     key_dict['LACP_SYSTEM_ID_MAC'] = __generate_lacp_system_id_mac(interface.channel.nome)
 
@@ -595,9 +596,9 @@ def __generate_chassis_id_leaf_number(equipment_name):
     For example: LF-LAB-JUN-01 returns 0 and LF-LAB-JUN-02 returns 1
 
     :param str equipment_name:
-        last character must be 1 or 2, ex.: LF-LAB-JUN-01 and LF-LAB-JUN-02
+        ex.: LF-LAB-JUN-01 and LF-LAB-JUN-02 (last character must be 1 or 2)
 
-    :returns: 0, 1 or raise an exception.
+    :returns: 0, 1 or 'N/A' (to indicate information not available)
     """
 
     leaf_id_last_char = equipment_name[-1]
@@ -607,10 +608,10 @@ def __generate_chassis_id_leaf_number(equipment_name):
         log.info("__generate_chassis_id_leaf_number - equipment_name:{} result:{}".format(equipment_name, result))
         return result
     else:
-        error_message = "Could not set CHASSIS_ID_LEAF_NUMBER from name {}. This name not ends with '1' or '2'!".format(
+        message = "Could not set CHASSIS_ID_LEAF_NUMBER from name {}. This name not ends with '1' or '2'!".format(
             equipment_name)
-        log.error(error_message)
-        raise exceptions.APIException(error_message)
+        log.warning(message)
+        return 'N/A'
 
 
 def __generate_lacp_system_id_mac(channel_name):
@@ -622,7 +623,7 @@ def __generate_lacp_system_id_mac(channel_name):
         ex.: '123'
 
     :returns:
-        ex.: '00:00:00:00:01:23'
+        ex.: like '00:00:00:00:01:23' or 'N/A' (to indicate information not available)
     """
 
     try:
@@ -646,9 +647,9 @@ def __generate_lacp_system_id_mac(channel_name):
             channel_name, mac_address_result))
         return mac_address_result
     except Exception as e:
-        error_message = "Could not set LACP_SYSTEM_ID_MAC from name {}.".format(channel_name)
-        log.error("{} {}".format(error_message, e))
-        raise exceptions.APIException(error_message)
+        message = "Could not set LACP_SYSTEM_ID_MAC from name {}.".format(channel_name)
+        log.warning("{} {}".format(message, e))
+        return 'N/A'
 
 
 def get_vlan_range(interface):
