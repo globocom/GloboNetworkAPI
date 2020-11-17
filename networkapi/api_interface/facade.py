@@ -577,12 +577,13 @@ def _generate_dict(interface):
         else:
             key_dict['CHANNEL_LACP_MODE'] = 'on'
 
+        # Normally used in junos plugin:
+        key_dict['LACP_SYSTEM_ID_MAC'] = __generate_lacp_system_id_mac(interface.channel.nome)
     else:
         key_dict['BOOL_INTERFACE_IN_CHANNEL'] = 0
 
-    # Normally used in junos plugin
+    # Normally used in junos plugin:
     key_dict['CHASSIS_ID_LEAF_NUMBER'] = __generate_chassis_id_leaf_number(interface.equipamento.nome)
-    key_dict['LACP_SYSTEM_ID_MAC'] = __generate_lacp_system_id_mac(interface.channel.nome)
 
     log.info("_generate_dict return value (dict values): {}".format(key_dict))
 
