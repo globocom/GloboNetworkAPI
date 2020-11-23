@@ -3,7 +3,7 @@ from networkapi.plugins.base import BasePlugin
 from networkapi.plugins import exceptions
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from mock import patch, MagicMock
-from jnpr.junos.exception import LockError
+from jnpr.junos.exception import RPCError, RpcError, LockError, ConfigLoadError, CommitError
 
 
 class JunosPluginTest(NetworkApiTestCase):
@@ -108,14 +108,71 @@ class JunosPluginTest(NetworkApiTestCase):
         test_exec_command_fail_to_lock
         """
 
-        time_sleep.return_value = None  # mocked to be executed instantly
-        mock_config.lock.side_effect = LockError('')
+        # Mocks
+        time_sleep.return_value = None  # to be executed instantly
+        mock_config.lock.side_effect = LockError('')  # Forced exception here
 
+        # Create plugin
         plugin = JUNOS(equipment_access=self.mock_equipment_access)
-        plugin.configuration = mock_config
+        plugin.configuration = mock_config  # add mock to plugin instance
 
+        # Test
         with self.assertRaises(exceptions.APIException):
             plugin.exec_command("any command")
+        plugin.configuration.lock.assert_called_with()
+
+    @patch('jnpr.junos.utils.config.Config')
+    @patch('jnpr.junos.exception.RpcError')
+    def test_exec_command_fail_to_load(self, mock_rpc_error, mock_config):
+
+        # Mocks
+        config_load_error = ConfigLoadError('')
+        config_load_error.rpc_error = mock_rpc_error
+        mock_config.load.side_effect = config_load_error  # Forced exception here
+
+        # Create plugin
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.configuration = mock_config  # add mock to plugin instance
+
+        # Test
+        with self.assertRaises(exceptions.APIException):
+            plugin.exec_command("any command")
+        plugin.configuration.load.assert_called_with(
+            "any command", format='set', ignore_warning=plugin.ignore_warning_list)
+
+    @patch('jnpr.junos.utils.config.Config')
+    def test_exec_command_fail_to_commit_check(self, mock_config):
+
+        # Mocks
+        error = RpcError('')
+        mock_config.commit_check.side_effect = error  # Forced exception here
+
+        # Create plugin
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.configuration = mock_config  # add mock to plugin instance
+
+        # Tests
+        with self.assertRaises(exceptions.APIException):
+            plugin.exec_command("any command")
+        plugin.configuration.commit_check.assert_called_with()
+
+    @patch('jnpr.junos.utils.config.Config')
+    @patch('jnpr.junos.exception.RpcError')
+    def test_exec_command_fail_to_commit_check(self, mock_rpc_error, mock_config):
+
+        # Mocks
+        error = CommitError('')
+        error.rpc_error = mock_rpc_error
+        mock_config.commit.side_effect = error  # Forced exception here
+
+        # Create plugin
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.configuration = mock_config  # add mock to plugin instance
+
+        # Tests
+        with self.assertRaises(exceptions.APIException):
+            plugin.exec_command("any command")
+        plugin.configuration.commit.assert_called_with()
 
     @patch('jnpr.junos.Device')
     def test_call_close_success(self, mock_device):
