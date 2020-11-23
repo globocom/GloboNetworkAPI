@@ -60,9 +60,10 @@ class Generic(BasePlugin):
     WARNING_REGEX = 'config ignored|Warning'
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 
-    management_vrf = 'management'
+    management_vrf = 'BEVrf'
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
+    VALID_TFTP_PUT_MESSAGE_NXS6001 = 'Copy complete'
 
     def _deploy_pre_req(self, neighbor):
         # Concatenate RouteMapEntries Lists
@@ -452,16 +453,18 @@ class Generic(BasePlugin):
         self.channel.send('\n')
         recv = self._wait_string('>|#')
         self.channel.send('show privilege\n')
-        recv = self._wait_string('Current privilege level is')
-        level = re.search(
-            'Current privilege level is ([0-9]+).*', recv, re.DOTALL).group(1)
+        if not self.waitString('Feature privilege: Disabled'):
+            self.channel.send('show privilege\n')
+            recv = self._wait_string('Current privilege level is')
+            level = re.search(
+                'Current privilege level is ([0-9]+).*', recv, re.DOTALL).group(1)
 
-        level = (level.split(' '))[-1]
-        if int(level) < privilege_level:
-            self.channel.send('enable\n')
-            recv = self._wait_string('Password:')
-            self.channel.send('%s\n' % self.equipment_access.enable_pass)
-            recv = self._wait_string('#')
+            level = (level.split(' '))[-1]
+            if int(level) < privilege_level:
+                self.channel.send('enable\n')
+                recv = self._wait_string('Password:')
+                self.channel.send('%s\n' % self.equipment_access.enable_pass)
+                recv = self._wait_string('#')
 
     def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
                      wait_str_failed_regex=None):
@@ -509,6 +512,15 @@ class Generic(BasePlugin):
 
                     # test bug switch copying 0 bytes
                     if output_line == '0 bytes successfully copied':
+                        log.debug('Switch copied 0 bytes, need to try again.')
+                        raise plugin_exc.CurrentlyBusyErrorException()
+                    string_ok = 1
+                elif re.search(self.VALID_TFTP_PUT_MESSAGE_NXS6001, output_line):
+
+                    log.debug('Equipment output: %s' % output_line)
+
+                    # test bug switch copying 0 bytes
+                    if output_line == 'Copy failed':
                         log.debug('Switch copied 0 bytes, need to try again.')
                         raise plugin_exc.CurrentlyBusyErrorException()
                     string_ok = 1
