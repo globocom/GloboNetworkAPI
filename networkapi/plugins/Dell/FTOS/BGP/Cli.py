@@ -63,6 +63,7 @@ class Generic(BasePlugin):
 
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
+    VALID_TFTP_PUT_MESSAGE_OS10 = 'Copy succeeded'
 
     def _deploy_pre_req(self, neighbor):
         log.debug("_deploy_pre_req")
@@ -519,6 +520,15 @@ class Generic(BasePlugin):
 
                     # test bug switch copying 0 bytes
                     if output_line == '0 bytes successfully copied':
+                        log.debug('Switch copied 0 bytes, need to try again.')
+                        raise plugin_exc.CurrentlyBusyErrorException()
+                    string_ok = 1
+                elif re.search(self.VALID_TFTP_PUT_MESSAGE_OS10, output_line):
+
+                    log.debug('Equipment output: %s' % output_line)
+
+                    # test bug switch copying 0 bytes
+                    if output_line == 'Copy failed':
                         log.debug('Switch copied 0 bytes, need to try again.')
                         raise plugin_exc.CurrentlyBusyErrorException()
                     string_ok = 1
