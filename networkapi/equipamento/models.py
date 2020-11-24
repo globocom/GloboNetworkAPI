@@ -786,6 +786,9 @@ class Equipamento(BaseModel):
         for equipment_group in self.equipamentogrupo_set.all():
             equipment_group.delete()
 
+        for asn_equipment in self.asnequipment_set.all():
+            asn_equipment.delete()
+
         super(Equipamento, self).delete()
 
     def remove(self, authenticated_user, equip_id):
@@ -834,6 +837,9 @@ class Equipamento(BaseModel):
 
         for equipment_group in self.equipamentogrupo_set.all():
             equipment_group.delete()
+
+        for asn_equipment in self.asnequipment_set.all():
+            asn_equipment.delete()
 
         self.delete()
 
