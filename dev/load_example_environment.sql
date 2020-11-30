@@ -1900,8 +1900,8 @@ VALUES
 --
 -- Dumped data of the Interface types table
 --
-INSERT INTO `tipo_interface` (`tipo`)
-VALUES ("access"), ("trunk");
+INSERT INTO `tipo_interface` (`id_tipo_interface`, `tipo`) VALUES ('1', 'access');
+INSERT INTO `tipo_interface` (`id_tipo_interface`, `tipo`) VALUES ('2', 'trunk');
 
 
 
