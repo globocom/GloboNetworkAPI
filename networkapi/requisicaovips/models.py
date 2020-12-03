@@ -2553,8 +2553,10 @@ class ServerPool(BaseModel):
                     # Ip not found environment
                     if not amb:
                         raise pool_exceptions.IpNotFoundByEnvironment(
-                            'Environment of IP:%s(%s) and different of '
-                            'environment of server pool: %s' %
+                            'Environment of IP %s(%s) is different of '
+                            'environment of server pool  %s. '
+                            'Look the association of network of IP with '
+                            'pool environment.' %
                             (member['ip']['ip_formated'], member['ip']['id'],
                                 pool['identifier'])
                         )
@@ -2567,8 +2569,10 @@ class ServerPool(BaseModel):
                     # Ip not found environment
                     if not amb:
                         raise pool_exceptions.IpNotFoundByEnvironment(
-                            'Environment of IP:%s(%s) and different of '
-                            'environment of server pool: %s' %
+                            'Environment of IP %s(%s) is different of '
+                            'environment of server pool  %s. '
+                            'Look the association of network of IP with '
+                            'pool environment.' %
                             (member['ipv6']['ip_formated'], member['ipv6']['id'],
                                 pool['identifier'])
                         )
