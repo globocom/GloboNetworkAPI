@@ -39,6 +39,7 @@ class FTOS(BasePlugin):
 
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
+    VALID_TFTP_PUT_MESSAGE_OS10 = 'Copy succeeded'
 
     def bgp(self):
         return BGP(equipment=self.equipment)
@@ -202,8 +203,15 @@ class FTOS(BasePlugin):
                     raise exceptions.InvalidCommandException(file_name_string)
                 elif re.search(wait_str_ok_regex, output_line):
                     log.debug('Equipment output: %s' % output_line)
-                    # test bug switch copying 0 bytes
+
                     if output_line == '0 bytes successfully copied':
+                        log.debug('Switch copied 0 bytes, need to try again.')
+                        raise exceptions.CurrentlyBusyErrorException()
+                    string_ok = 1
+                elif re.search(self.VALID_TFTP_PUT_MESSAGE_OS10, output_line):
+                    log.debug('Equipment output: %s' % output_line)
+
+                    if output_line == 'Copy failed':
                         log.debug('Switch copied 0 bytes, need to try again.')
                         raise exceptions.CurrentlyBusyErrorException()
                     string_ok = 1
