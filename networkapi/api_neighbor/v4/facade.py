@@ -236,6 +236,24 @@ def create_neighbor(obj, user):
     return obj_to_create
 
 
+def create_neighbor_simple(obj, user):
+
+    neighbor_obj = dict(
+        community=obj.get('community', True),
+        soft_reconfiguration=obj.get('soft_reconfiguration', True),
+        remove_private_as=obj.get('remove_private_as', False),
+        next_hop_self=obj.get('next_hop_self', True),
+        kind=obj.get('kind', 'I'),
+        # remote_ip=obj.get('neighbor_remote').get('ip').get('id'),
+        # local_ip=obj.get('neighbor_local').get('ip').get('id'),
+        # local_asn=neighbor_local,
+        # remote_asn=neighbor_remote,
+        # peer_group=peer_group
+    )
+
+    create_neighbor(neighbor_obj, user)
+
+
 def create_neighbor_v4(obj, user):
     """Create NeighborV4."""
 
