@@ -238,20 +238,53 @@ def create_neighbor(obj, user):
 
 def create_neighbor_simple(obj, user):
 
-    neighbor_obj = dict(
-        community=obj.get('community', True),
-        soft_reconfiguration=obj.get('soft_reconfiguration', True),
-        remove_private_as=obj.get('remove_private_as', False),
-        next_hop_self=obj.get('next_hop_self', True),
-        kind=obj.get('kind', 'I'),
-        # remote_ip=obj.get('neighbor_remote').get('ip').get('id'),
-        # local_ip=obj.get('neighbor_local').get('ip').get('id'),
-        # local_asn=neighbor_local,
-        # remote_asn=neighbor_remote,
-        # peer_group=peer_group
-    )
+    from networkapi.ip.models import Ip
+    from networkapi.api_asn.models import AsnEquipment
 
-    create_neighbor(neighbor_obj, user)
+    rack_name = obj.get('network_equipment')
+    peer_equipment_ip = obj.get('peer_equipment_ip')
+    peer_equipment_id = obj.get('peer_equipment_id')
+    advertised_network = obj.get('advertised_network')
+
+    oct1, oct2, oct3, oct4 = peer_equipment_ip.split('.')
+    peer_obj_ip = Ip().get_by_octs_equipment(oct1, oct2, oct3, oct4,
+                                             peer_equipment_id)
+    peer_ip_id = peer_obj_ip.id
+
+    ips = Ip.objects.filter(networkipv4__id=peer_obj_ip.networkipv4.id)
+
+    asn1 = AsnEquipment().get_by_pk(equipment=peer_equipment_id)[0].asn.id
+    peer_asn = asn1 if asn1 else None
+
+    peer_group = _get_peer_group(advertised_network)
+
+    for local_ip in [ips[-1], ips[-2]]:
+
+        local_ip_id = local_ip.id
+        for local_equipment in local_ip.equipments:
+            if rack_name in local_equipment.name:
+                asn = AsnEquipment().get_by_pk(equipment=local_equipment.id)[0].asn.id
+                local_asn = asn if asn else None
+
+            neighbor_obj = dict(
+                community=obj.get('community', True),
+                soft_reconfiguration=obj.get('soft_reconfiguration', True),
+                remove_private_as=obj.get('remove_private_as', False),
+                next_hop_self=obj.get('next_hop_self', True),
+                kind=obj.get('kind', 'I'),
+                remote_ip=peer_ip_id,
+                local_ip=local_ip_id,
+                local_asn=local_asn,
+                remote_asn=peer_asn,
+                peer_group=peer_group
+            )
+
+        create_neighbor(neighbor_obj, user)
+
+
+def _get_peer_group(advertised_network=None):
+    peer_group_id = None
+    return peer_group_id
 
 
 def create_neighbor_v4(obj, user):
