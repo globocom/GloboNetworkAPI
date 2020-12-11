@@ -256,7 +256,12 @@ def create_neighbor_simple(obj, user):
     asn1 = AsnEquipment().get_by_pk(equipment=peer_equipment_id)[0].asn.id
     peer_asn = asn1 if asn1 else None
 
-    peer_group = _get_peer_group(advertised_network)
+    peer_group_id = obj.get('peer_group')
+    peer_group = peer_group_id if peer_group_id \
+        else _get_peer_group(advertised_network)
+
+    response = list()
+    neighbor_obj = dict()
 
     for local_ip in [ips[-1], ips[-2]]:
 
@@ -279,12 +284,38 @@ def create_neighbor_simple(obj, user):
                 peer_group=peer_group
             )
 
-        create_neighbor(neighbor_obj, user)
+        obj = create_neighbor(neighbor_obj, user)
+        response.append({'id': obj.id})
+
+    return response
 
 
 def _get_peer_group(advertised_network=None):
-    peer_group_id = None
-    return peer_group_id
+
+    from networkapi.api_peer_group.models import PeerGroup
+    from networkapi.api_list_config_bgp.models import ListConfigBGP
+    from networkapi.api_route_map.models import RouteMapEntry
+
+    list_configs = list()
+    for network in advertised_network:
+        list_configs += ListConfigBGP.objects.filter(config__contains=network).\
+            values_list('id', flat=True)
+
+    route_map_list = RouteMapEntry.objects.filter(
+        list_config_bgp__pk__in=list(list_configs)).distinct('id').\
+        values_list('id', flat=True)
+
+    if len(route_map_list) < 3:
+        peer_group = PeerGroup.objects.filter(route_map_in__pk__in=[route_map_list],
+                                              route_map_out_pk_in=[route_map_list])
+
+        if len(peer_group) == 1:
+            return peer_group
+        else:
+            raise Exception("Error while getting the peer group. "
+                            "More than one peer_group with the same route-maps.")
+    raise Exception("Error while getting the peer group. "
+                    "More than two route-maps with the same networks.")
 
 
 def create_neighbor_v4(obj, user):

@@ -80,9 +80,9 @@ class NeighborDBView(CustomAPIView):
         for obj in objects.get('neighbors'):
             if not simple:
                 created_obj = facade.create_neighbor(obj, request.user)
+                response.append({'id': created_obj.id})
             else:
-                created_obj = facade.create_neighbor_simple(obj, request.user)
-            response.append({'id': created_obj.id})
+                response += facade.create_neighbor_simple(obj, request.user)
 
         return Response(response, status=status.HTTP_201_CREATED)
 
