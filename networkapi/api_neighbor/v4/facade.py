@@ -189,7 +189,7 @@ def check_obj(obj, user):
     log.debug('local asn %s' % neighbor['local_asn'])
 
     if obj.get('neighbor_remote').get('asn').get('id'):
-        link_asn_equipment(neighbor.get("remote_asn"), remote_equipment)
+        neighbor['remote_asn'] = obj.get('neighbor_remote').get('asn').get('id')
     else:
         neighbor['remote_asn'] = save_new_asn(obj.get('neighbor_remote').get('asn').get('name'))
         link_asn_equipment(neighbor.get("local_asn"), remote_equipment)
@@ -249,27 +249,53 @@ def create_neighbor_simple(obj, user):
     oct1, oct2, oct3, oct4 = peer_equipment_ip.split('.')
     peer_obj_ip = Ip().get_by_octs_equipment(oct1, oct2, oct3, oct4,
                                              peer_equipment_id)
-    peer_ip_id = peer_obj_ip.id
 
-    ips = Ip.objects.filter(networkipv4__id=peer_obj_ip.networkipv4.id)
+    ips = Ip.objects.filter(networkipv4__id=peer_obj_ip.networkipv4.id).reverse()
 
-    asn1 = AsnEquipment().get_by_pk(equipment=peer_equipment_id)[0].asn.id
+    asn_equip = AsnEquipment().get_by_pk(equipment=peer_equipment_id)
+
+    if not asn_equip:
+        raise Exception("There`s no AS Number associated to the remote peer Equipment.")
+
+    asn1 = asn_equip[0].asn.id
     peer_asn = asn1 if asn1 else None
+    asn_remote = dict(id=peer_asn)
 
     peer_group_id = obj.get('peer_group')
-    peer_group = peer_group_id if peer_group_id \
+    peer_group_ = peer_group_id if peer_group_id \
         else _get_peer_group(advertised_network)
+
+    peer_group = dict(id=peer_group_)
 
     response = list()
     neighbor_obj = dict()
 
-    for local_ip in [ips[-1], ips[-2]]:
+    equipment_remote = dict(id=peer_equipment_id)
+    ip_remote = dict(id=peer_obj_ip.id)
+    neighbor_remote = dict(equipment=equipment_remote,
+                           ip=ip_remote,
+                           asn=asn_remote)
+
+    for local_ip in ips[:2]:
 
         local_ip_id = local_ip.id
         for local_equipment in local_ip.equipments:
-            if rack_name in local_equipment.name:
-                asn = AsnEquipment().get_by_pk(equipment=local_equipment.id)[0].asn.id
+            if rack_name in local_equipment.nome:
+
+                asn_equip_local = AsnEquipment().get_by_pk(equipment=local_equipment.id)
+
+                if not asn_equip_local:
+                    raise Exception("There`s no AS Number associated to the router.")
+
+                asn = asn_equip_local[0].asn.id
                 local_asn = asn if asn else None
+
+                asn_local = dict(id=local_asn)
+                equipment_local = dict(id=local_equipment.id)
+                ip_local = dict(id=local_ip_id)
+                neighbor_local = dict(equipment=equipment_local,
+                                      ip=ip_local,
+                                      asn=asn_local)
 
             neighbor_obj = dict(
                 community=obj.get('community', True),
@@ -277,15 +303,13 @@ def create_neighbor_simple(obj, user):
                 remove_private_as=obj.get('remove_private_as', False),
                 next_hop_self=obj.get('next_hop_self', True),
                 kind=obj.get('kind', 'I'),
-                remote_ip=peer_ip_id,
-                local_ip=local_ip_id,
-                local_asn=local_asn,
-                remote_asn=peer_asn,
-                peer_group=peer_group
+                peer_group=peer_group,
+                neighbor_remote=neighbor_remote,
+                neighbor_local=neighbor_local
             )
 
-        obj = create_neighbor(neighbor_obj, user)
-        response.append({'id': obj.id})
+        new_neighbor = create_neighbor(neighbor_obj, user)
+        response.append({'id': new_neighbor.id})
 
     return response
 
@@ -302,15 +326,15 @@ def _get_peer_group(advertised_network=None):
             values_list('id', flat=True)
 
     route_map_list = RouteMapEntry.objects.filter(
-        list_config_bgp__pk__in=list(list_configs)).distinct('id').\
+        list_config_bgp__pk__in=list(list_configs)).distinct().\
         values_list('id', flat=True)
 
     if len(route_map_list) < 3:
-        peer_group = PeerGroup.objects.filter(route_map_in__pk__in=[route_map_list],
-                                              route_map_out_pk_in=[route_map_list])
+        peer_group = PeerGroup.objects.filter(route_map_in__pk__in=list(route_map_list),
+                                              route_map_out__pk__in=list(route_map_list))
 
         if len(peer_group) == 1:
-            return peer_group
+            return peer_group[0].id
         else:
             raise Exception("Error while getting the peer group. "
                             "More than one peer_group with the same route-maps.")
