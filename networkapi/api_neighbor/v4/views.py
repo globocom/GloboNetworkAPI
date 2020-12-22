@@ -254,12 +254,17 @@ class NeighborV6DBView(CustomAPIView):
         """Create new NeighborV6."""
 
         objects = request.DATA
-        json_validate(SPECS.get('neighbor_v6_post_v4')).validate(objects)
+
+        simple = request.GET.get('simple', None)
+
         response = list()
         for obj in objects['neighbors']:
-
-            created_obj = facade.create_neighbor_v6(obj, request.user)
-            response.append({'id': created_obj.id})
+            if not simple:
+                json_validate(SPECS.get('neighbor_v6_post_v4')).validate(objects)
+                created_obj = facade.create_neighbor_v6(obj, request.user)
+                response.append({'id': created_obj.id})
+            else:
+                response += facade.create_neighbor_simple_v6(obj, request.user)
 
         return Response(response, status=status.HTTP_201_CREATED)
 
