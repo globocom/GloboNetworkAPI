@@ -215,7 +215,7 @@ class RouteMapEntry(BaseModel):
         managed = True
 
     @classmethod
-    def get_by_pk(cls, id):
+    def get_by_pk(cls, ids):
         """Get RouteMapEntry by id.
 
         :return: RouteMapEntry.
@@ -225,10 +225,10 @@ class RouteMapEntry(BaseModel):
         :raise OperationalError: Lock wait timeout exceeded
         """
         try:
-            return RouteMapEntry.objects.get(id=id)
+            return RouteMapEntry.objects.get(id=ids)
         except ObjectDoesNotExist:
-            cls.log.error(u'RouteMapEntry not found. pk {}'.format(id))
-            raise exceptions.RouteMapEntryNotFoundError(id)
+            cls.log.error(u'RouteMapEntry not found. pk {}'.format(ids))
+            raise exceptions.RouteMapEntryNotFoundError(ids)
         except OperationalError:
             cls.log.error(u'Lock wait timeout exceeded')
             raise OperationalError()
@@ -257,8 +257,6 @@ class RouteMapEntry(BaseModel):
 
     def update_v4(self, route_map_entry):
         """Update RouteMapEntry."""
-
-        listconfigbgp_model = get_model('api_list_config_bgp', 'ListConfigBGP')
 
         self.action = route_map_entry.get('action')
         self.action_reconfig = route_map_entry.get('action_reconfig')
