@@ -189,7 +189,7 @@ def check_obj(obj, user):
     log.debug('local asn %s' % neighbor['local_asn'])
 
     if obj.get('neighbor_remote').get('asn').get('id'):
-        link_asn_equipment(neighbor.get("remote_asn"), remote_equipment)
+        neighbor['remote_asn'] = obj.get('neighbor_remote').get('asn').get('id')
     else:
         neighbor['remote_asn'] = save_new_asn(obj.get('neighbor_remote').get('asn').get('name'))
         link_asn_equipment(neighbor.get("local_asn"), remote_equipment)
@@ -234,6 +234,195 @@ def create_neighbor(obj, user):
         raise api_rest_exceptions.NetworkAPIException(str(e))
 
     return obj_to_create
+
+
+def create_neighbor_simple(obj, user):
+
+    from networkapi.ip.models import Ip
+    from networkapi.api_asn.models import AsnEquipment
+
+    rack_name = obj.get('network_equipment')
+    peer_equipment_ip = obj.get('peer_equipment_ip')
+    peer_equipment_id = obj.get('peer_equipment_id')
+    advertised_network = obj.get('advertised_network')
+
+    oct1, oct2, oct3, oct4 = peer_equipment_ip.split('.')
+    peer_obj_ip = Ip().get_by_octs_equipment(oct1, oct2, oct3, oct4,
+                                             peer_equipment_id)
+
+    ips = Ip.objects.filter(networkipv4__id=peer_obj_ip.networkipv4.id).reverse()
+
+    asn_equip = AsnEquipment().get_by_pk(equipment=peer_equipment_id)
+
+    if not asn_equip:
+        raise Exception("There`s no AS Number associated to the remote peer Equipment.")
+
+    asn1 = asn_equip[0].asn.id
+    peer_asn = asn1 if asn1 else None
+    asn_remote = dict(id=peer_asn)
+
+    peer_group_id = obj.get('peer_group')
+    peer_group_ = peer_group_id if peer_group_id \
+        else _get_peer_group(advertised_network)
+
+    peer_group = dict(id=peer_group_)
+
+    response = list()
+    neighbor_obj = dict()
+
+    equipment_remote = dict(id=peer_equipment_id)
+    ip_remote = dict(id=peer_obj_ip.id)
+    neighbor_remote = dict(equipment=equipment_remote,
+                           ip=ip_remote,
+                           asn=asn_remote)
+
+    for local_ip in ips[:2]:
+
+        local_ip_id = local_ip.id
+        for local_equipment in local_ip.equipments:
+            if rack_name in local_equipment.nome:
+
+                asn_equip_local = AsnEquipment().get_by_pk(equipment=local_equipment.id)
+
+                if not asn_equip_local:
+                    raise Exception("There`s no AS Number associated to the router.")
+
+                asn = asn_equip_local[0].asn.id
+                local_asn = asn if asn else None
+
+                asn_local = dict(id=local_asn)
+                equipment_local = dict(id=local_equipment.id)
+                ip_local = dict(id=local_ip_id)
+                neighbor_local = dict(equipment=equipment_local,
+                                      ip=ip_local,
+                                      asn=asn_local)
+
+            neighbor_obj = dict(
+                community=obj.get('community', True),
+                soft_reconfiguration=obj.get('soft_reconfiguration', True),
+                remove_private_as=obj.get('remove_private_as', False),
+                next_hop_self=obj.get('next_hop_self', True),
+                kind=obj.get('kind', 'I'),
+                peer_group=peer_group,
+                neighbor_remote=neighbor_remote,
+                neighbor_local=neighbor_local
+            )
+
+        new_neighbor = create_neighbor(neighbor_obj, user)
+        response.append({'id': new_neighbor.id})
+
+    return response
+
+
+def create_neighbor_simple_v6(obj, user):
+
+    from networkapi.ip.models import Ipv6
+    from networkapi.api_asn.models import AsnEquipment
+
+    rack_name = obj.get('network_equipment')
+    peer_equipment_ip = obj.get('peer_equipment_ip')
+    peer_equipment_id = obj.get('peer_equipment_id')
+    advertised_network = obj.get('advertised_network')
+
+    oct1, oct2, oct3, oct4, oct5, oct6 = peer_equipment_ip.split(':')
+    peer_obj_ip = Ipv6().get_by_blocks_equipment(oct1, oct2, oct3,
+                                                 oct4, oct5, oct6,
+                                                 peer_equipment_id)
+
+    ips = Ipv6.objects.filter(networkipv6__id=peer_obj_ip.networkipv6.id
+                              ).reverse()
+
+    asn_equip = AsnEquipment().get_by_pk(equipment=peer_equipment_id)
+
+    if not asn_equip:
+        raise Exception("There`s no AS Number associated to the "
+                        "remote peer Equipment.")
+
+    asn1 = asn_equip[0].asn.id
+    peer_asn = asn1 if asn1 else None
+    asn_remote = dict(id=peer_asn)
+
+    peer_group_id = obj.get('peer_group')
+    peer_group_ = peer_group_id if peer_group_id \
+        else _get_peer_group(advertised_network)
+
+    peer_group = dict(id=peer_group_)
+
+    response = list()
+    neighbor_obj = dict()
+
+    equipment_remote = dict(id=peer_equipment_id)
+    ip_remote = dict(id=peer_obj_ip.id)
+    neighbor_remote = dict(equipment=equipment_remote,
+                           ip=ip_remote,
+                           asn=asn_remote)
+
+    for local_ip in ips[:2]:
+
+        local_ip_id = local_ip.id
+        for local_equipment in local_ip.equipments:
+            if rack_name in local_equipment.nome:
+
+                asn_equip_local = AsnEquipment().get_by_pk(
+                    equipment=local_equipment.id)
+
+                if not asn_equip_local:
+                    raise Exception(
+                        "There`s no AS Number associated to the router.")
+
+                asn = asn_equip_local[0].asn.id
+                local_asn = asn if asn else None
+
+                asn_local = dict(id=local_asn)
+                equipment_local = dict(id=local_equipment.id)
+                ip_local = dict(id=local_ip_id)
+                neighbor_local = dict(equipment=equipment_local,
+                                      ip=ip_local,
+                                      asn=asn_local)
+
+            neighbor_obj = dict(
+                community=obj.get('community', True),
+                soft_reconfiguration=obj.get('soft_reconfiguration', True),
+                remove_private_as=obj.get('remove_private_as', False),
+                next_hop_self=obj.get('next_hop_self', True),
+                kind=obj.get('kind', 'I'),
+                peer_group=peer_group,
+                neighbor_remote=neighbor_remote,
+                neighbor_local=neighbor_local
+            )
+
+        new_neighbor = create_neighbor_v6(neighbor_obj, user)
+        response.append({'id': new_neighbor.id})
+
+    return response
+
+
+def _get_peer_group(advertised_network=None):
+
+    from networkapi.api_peer_group.models import PeerGroup
+    from networkapi.api_list_config_bgp.models import ListConfigBGP
+    from networkapi.api_route_map.models import RouteMapEntry
+
+    list_configs = list()
+    for network in advertised_network:
+        list_configs += ListConfigBGP.objects.filter(config__contains=network).\
+            values_list('id', flat=True)
+
+    route_map_list = RouteMapEntry.objects.filter(
+        list_config_bgp__pk__in=list(list_configs)).distinct().\
+        values_list('id', flat=True)
+
+    if len(route_map_list) < 3:
+        peer_group = PeerGroup.objects.filter(route_map_in__pk__in=list(route_map_list),
+                                              route_map_out__pk__in=list(route_map_list))
+
+        if len(peer_group) == 1:
+            return peer_group[0].id
+        else:
+            raise Exception("Error while getting the peer group. "
+                            "More than one peer_group with the same route-maps.")
+    raise Exception("Error while getting the peer group. "
+                    "More than two route-maps with the same networks.")
 
 
 def create_neighbor_v4(obj, user):
@@ -366,7 +555,7 @@ def create_neighbor_v6(obj, user):
 
     try:
         obj_to_create = NeighborV6()
-        obj_to_create.create_v4(obj, user)
+        obj_to_create.create_v6(obj, user)
     except exceptions.NeighborV6Error as e:
         raise api_rest_exceptions.ValidationAPIException(str(e))
     except exceptions.DontHavePermissionForPeerGroupException as e:

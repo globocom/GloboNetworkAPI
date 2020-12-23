@@ -514,7 +514,7 @@ class NeighborV6(BaseModel):
             raise exceptions.NeighborV6Error(
                 u'Failure to search the NeighborV6')
 
-    def create_v4(self, neighbor, user):
+    def create_v6(self, neighbor, user):
         """Create NeighborV6."""
 
         asn_model = get_model('api_asn', 'Asn')
@@ -527,16 +527,16 @@ class NeighborV6(BaseModel):
         self.remote_ip = ipv6_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
-        self.password = neighbor_map.get('password')
-        self.maximum_hops = neighbor_map.get('maximum_hops')
-        self.timer_keepalive = neighbor_map.get('timer_keepalive')
-        self.timer_timeout = neighbor_map.get('timer_timeout')
-        self.description = neighbor_map.get('description')
-        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
-        self.community = neighbor_map.get('community')
-        self.remove_private_as = neighbor_map.get('remove_private_as')
-        self.next_hop_self = neighbor_map.get('next_hop_self')
-        self.kind = neighbor_map.get('kind')
+        self.password = neighbor.get('password')
+        self.maximum_hops = neighbor.get('maximum_hops')
+        self.timer_keepalive = neighbor.get('timer_keepalive')
+        self.timer_timeout = neighbor.get('timer_timeout')
+        self.description = neighbor.get('description')
+        self.soft_reconfiguration = neighbor.get('soft_reconfiguration')
+        self.community = neighbor.get('community')
+        self.remove_private_as = neighbor.get('remove_private_as')
+        self.next_hop_self = neighbor.get('next_hop_self')
+        self.kind = neighbor.get('kind')
 
         self.validate_neighbor_v6(user)
 
@@ -555,16 +555,16 @@ class NeighborV6(BaseModel):
         self.remote_ip = ipv6_model.get_by_pk(neighbor.get('remote_ip'))
         self.peer_group = peergroup_model.get_by_pk(neighbor.get('peer_group'))
         self.virtual_interface = neighbor.get('virtual_interface')
-        self.password = neighbor_map.get('password')
-        self.maximum_hops = neighbor_map.get('maximum_hops')
-        self.timer_keepalive = neighbor_map.get('timer_keepalive')
-        self.timer_timeout = neighbor_map.get('timer_timeout')
-        self.description = neighbor_map.get('description')
-        self.soft_reconfiguration = neighbor_map.get('soft_reconfiguration')
-        self.community = neighbor_map.get('community')
-        self.remove_private_as = neighbor_map.get('remove_private_as')
-        self.next_hop_self = neighbor_map.get('next_hop_self')
-        self.kind = neighbor_map.get('kind')
+        self.password = neighbor.get('password')
+        self.maximum_hops = neighbor.get('maximum_hops')
+        self.timer_keepalive = neighbor.get('timer_keepalive')
+        self.timer_timeout = neighbor.get('timer_timeout')
+        self.description = neighbor.get('description')
+        self.soft_reconfiguration = neighbor.get('soft_reconfiguration')
+        self.community = neighbor.get('community')
+        self.remove_private_as = neighbor.get('remove_private_as')
+        self.next_hop_self = neighbor.get('next_hop_self')
+        self.kind = neighbor.get('kind')
 
         self.validate_neighbor_v6(user)
 

@@ -51,7 +51,7 @@ class TestChannelRoutes(NetworkApiTestCase):
         """ Should receive method not allowed """
 
         response = self.client.get(
-            '/api/v3/interface/channel/1/deploy/',
+            '/api/v3/channel/1/deploy/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.auth)
 
@@ -62,8 +62,8 @@ class TestChannelRoutes(NetworkApiTestCase):
 
         with self.assertRaises(AuthenticationFailed):
 
-            response = self.client.put(
-                '/api/v3/interface/channel/1/deploy/',
+            self.client.put(
+                '/api/v3/channel/1/deploy/',
                 data=dumps({}),
                 content_type='application/json',
                 HTTP_AUTHORIZATION=self.get_http_authorization('fake'))
@@ -72,7 +72,7 @@ class TestChannelRoutes(NetworkApiTestCase):
         """ Should get a Channel by id """
 
         response = self.client.get(
-            '/api/v3/interface/channel/1/',
+            '/api/v3/channel/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.auth)
 
@@ -82,16 +82,16 @@ class TestChannelRoutes(NetworkApiTestCase):
         """ Should not get a Channel with an unexisting id """
 
         response = self.client.get(
-            '/api/v3/interface/channel/0/',
+            '/api/v3/channel/0/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.auth)
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(500, response.status_code)
 
     def test_should_get_a_channel_by_name(self):
         """ Should get a channel by Name """
         response = self.client.get(
-            '/api/v3/interface/channel/tor42/',
+            '/api/v3/channel/tor42/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.auth)
 
@@ -102,20 +102,18 @@ class TestChannelRoutes(NetworkApiTestCase):
     def test_should_not_get_a_channel_by_name(self):
         """ Should not get a channel with an unexisting Name """
         response = self.client.get(
-            '/api/v3/interface/channel/fakechannel/',
+            '/api/v3/channel/fakechannel/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.auth)
 
-        self.assertEqual(404, response.status_code)
-        channel = loads(response.content)
-        self.assertIn("error", channel)
+        self.assertEqual(500, response.status_code)
 
     @nottest
     def test_should_post_a_channel(self):
         """ Should post a Channel """
 
         response = self.client.post(
-            '/api/v3/interface/channel/1/',
+            '/api/v3/channel/1/',
             content_type='application/json',
             data=dumps({}),
             HTTP_AUTHORIZATION=self.auth)
@@ -127,7 +125,7 @@ class TestChannelRoutes(NetworkApiTestCase):
         """ Should update a Channel """
 
         response = self.client.put(
-            '/api/v3/interface/channel/1/',
+            '/api/v3/channel/1/',
             content_type='application/json',
             HTTP_AUTHORIZATION=self.auth)
 
@@ -137,16 +135,16 @@ class TestChannelRoutes(NetworkApiTestCase):
         """ Should not delete an unexistent channel """
 
         response = self.client.delete(
-            '/api/v3/interface/channel/0/',
+            '/api/v3/channel/0/',
             HTTP_AUTHORIZATION=self.auth)
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_should_delete_a_channel(self):
         """ Should delete a channel """
 
         response = self.client.delete(
-            '/api/v3/interface/channel/1/',
+            '/api/v3/channel/1/',
             HTTP_AUTHORIZATION=self.auth)
 
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(200, response.status_code)
