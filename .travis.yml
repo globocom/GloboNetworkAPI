@@ -56,6 +56,7 @@ jobs:
     - script: make test_ci app=networkapi/api_list_config_bgp
     - script: make test_ci app=networkapi/api_rack
     - script: make test_ci app=networkapi/api_pools
+    - script: make test_ci app=networkapi/api_vip_request
 
 
 # If any job fail run the following commands to help debug
