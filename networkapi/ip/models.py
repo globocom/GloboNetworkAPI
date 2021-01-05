@@ -1990,15 +1990,17 @@ class Ip(BaseModel):
                 if ip4_object not in ipsv4:
 
                     if ip4_object in net4:
+                        # allow to allocate the first and last ip
+                        flag = True
 
-                        first_ip_network = int(net4.network)
-                        bcast_ip_network = int(net4.broadcast)
-
-                        ipv4_network = int(ip4_object)
-
+                        # first_ip_network = int(net4.network)
+                        # bcast_ip_network = int(net4.broadcast)
+                        #
+                        # ipv4_network = int(ip4_object)
+                        #
                         # First and last ip are reserved in network
-                        if first_ip_network <= ipv4_network < bcast_ip_network:
-                            flag = True
+                        # if first_ip_network <= ipv4_network < bcast_ip_network:
+                        #     flag = True
 
                 if flag is False:
                     raise IpNotAvailableError(
