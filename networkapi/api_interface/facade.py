@@ -377,7 +377,7 @@ def generate_and_deploy_interface_config_sync(user, id_interface):
     file_to_deploy = _generate_config_file(interfaces)
 
     # TODO Deploy config file
-    lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % (interface.equipamento.id)
+    lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % interface.equipamento.id
     status_deploy = deploy_config_in_equipment_synchronous(
         file_to_deploy, interface.equipamento, lockvar)
 
@@ -554,9 +554,7 @@ def _generate_dict(interface):
     key_dict['NATIVE_VLAN'] = interface.vlan_nativa
     key_dict['USE_MCLAG'] = 1
     key_dict['INTERFACE_NAME'] = interface.interface
-    key_dict['INTERFACE_DESCRIPTION'] = str(
-        interface.ligacao_front.equipamento.nome
-    ) + ' ' + str(interface.ligacao_front.interface)
+    key_dict['INTERFACE_DESCRIPTION'] = interface.descricao
     key_dict['INTERFACE_TYPE'] = interface.tipo.tipo
     if key_dict['INTERFACE_TYPE'] in 'trunk':
         vlan_range_results = get_vlan_range(interface)
