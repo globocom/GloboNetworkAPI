@@ -74,7 +74,7 @@ class ChannelV3(object):
         for interface in interfaces:
 
             iface = Interface.objects.get(id=interface)
-            type_obj = TipoInterface.objects.get(tipo=int_type)
+            type_obj = TipoInterface.objects.get(tipo=int_type.lower())
 
             if iface.channel:
                 raise InterfaceError(
