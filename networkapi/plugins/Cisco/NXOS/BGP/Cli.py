@@ -60,7 +60,7 @@ class Generic(BasePlugin):
     WARNING_REGEX = 'config ignored|Warning'
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 
-    management_vrf = 'BEVrf'
+    management_vrf = 'management'
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
     VALID_TFTP_PUT_MESSAGE_NXS6001 = 'Copy complete'
@@ -421,12 +421,16 @@ class Generic(BasePlugin):
         By default, plugin should apply file in running configuration (active)
         """
 
+        vrf = self.equipment.equipamentoacesso_set.all()[0].vrf.internal_name \
+            if self.equipment.equipamentoacesso_set.all()[0].vrf \
+            else self.management_vrf
+
         command = 'copy tftp://{}/{} {} vrf {}\n\n'.format(
-            self.tftpserver, filename, destination, self.management_vrf)
+            self.tftpserver, filename, destination, vrf)
 
         file_copied = 0
         retries = 0
-        while(not file_copied and retries < self.MAX_TRIES):
+        while not file_copied and retries < self.MAX_TRIES:
             if retries is not 0:
                 sleep(self.RETRY_WAIT_TIME)
 

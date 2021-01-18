@@ -856,14 +856,25 @@ class Interface(BaseModel):
 
         if link_a in "front":
             interface_a.ligacao_front = interface_b
+            interface_a.descricao = str(interface_a.ligacao_front.equipamento.nome
+                                        ) + ' ' + str(interface_a.ligacao_front.interface)
+
         elif link_a in "back":
             interface_a.ligacao_back = interface_b
+            interface_a.descricao = str(interface_a.ligacao_back.equipamento.nome
+                                        ) + ' ' + str(interface_a.ligacao_back.interface)
         interface_a.save()
 
         if link_b in "front":
             interface_b.ligacao_front = interface_a
+            interface_b.descricao = str(interface_b.ligacao_front.equipamento.nome
+                                        ) + ' ' + str(interface_b.ligacao_front.interface)
+
         elif link_b in "back":
             interface_b.ligacao_back = interface_a
+            interface_b.descricao = str(interface_b.ligacao_back.equipamento.nome
+                                        ) + ' ' + str(interface_b.ligacao_back.interface)
+
         interface_b.save()
 
     def disconnecting_interfaces(self, interfaces):
@@ -877,6 +888,7 @@ class Interface(BaseModel):
         if interface_a.ligacao_back:
             if interface_a.ligacao_back.id == interface_b.id:
                 interface_a.ligacao_back = None
+        interface_a.descricao = None
         interface_a.save()
 
         if interface_b.ligacao_front:
@@ -885,6 +897,7 @@ class Interface(BaseModel):
         if interface_b.ligacao_back:
             if interface_b.ligacao_back.id == interface_a.id:
                 interface_b.ligacao_back = None
+        interface_b.descricao = None
         interface_b.save()
 
     def remove_connection(self, front=None, back=None):

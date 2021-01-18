@@ -1483,6 +1483,7 @@ class Ip(BaseModel):
         equipamentoambiente = get_model('equipamento', 'EquipamentoAmbiente')
         equipamento = get_model('equipamento', 'Equipamento')
         filterequiptype = get_model('filterequiptype', 'FilterEquipType')
+
         try:
 
             already_ip = False
@@ -1491,7 +1492,7 @@ class Ip(BaseModel):
             net4 = IPv4Network(
                 '%d.%d.%d.%d/%d' % (net.oct1, net.oct2, net.oct3, net.oct4, net.block))
 
-            # Find all ips ralated to network
+            # Find all ips related to network
             ips = Ip.objects.filter(networkipv4__id=net.id)
 
             ip4_object = IPv4Address(
@@ -1499,24 +1500,24 @@ class Ip(BaseModel):
 
             # Cast all to API class
             ipsv4 = set(
-                [IPv4Address('%d.%d.%d.%d' % (ip.oct1, ip.oct2, ip.oct3, ip.oct4)) for ip in ips])
+                [IPv4Address('%d.%d.%d.%d' % (
+                    ip.oct1, ip.oct2, ip.oct3, ip.oct4)) for ip in ips])
 
             flag = False
 
             if ip4_object not in ipsv4:
 
                 if ip4_object in net4:
+                    # allow to allocate the first and last ip
+                    flag = True
 
-                    # Get configuration
-                    # conf = Configuration.get()
-
-                    first_ip_network = int(net4.network)
-                    bcast_ip_network = int(net4.broadcast)
-
-                    ipv4_network = int(ip4_object)
-
-                    if ipv4_network >= (first_ip_network) and ipv4_network < (bcast_ip_network):
-                        flag = True
+                    # first_ip_network = int(net4.network)
+                    # bcast_ip_network = int(net4.broadcast)
+                    #
+                    # ipv4_network = int(ip4_object)
+                    #
+                    # if bcast_ip_network > ipv4_network >= first_ip_network:
+                    #     flag = True
 
             else:
 
@@ -1524,9 +1525,12 @@ class Ip(BaseModel):
                     self.oct1, self.oct2, self.oct3, self.oct4, net.id)
                 try:
                     IpEquipamento.get_by_ip(ip_aux.id)
-                    raise IpEquipmentAlreadyAssociation(None, u'Ip %s.%s.%s.%s already has association with an Equipament. Try using the association screen for this Ip.' % (
+                    raise IpEquipmentAlreadyAssociation(
+                        None,
+                        u'Ip %s.%s.%s.%s already has association with an Equipament. '
+                        u'Try using the association screen for this Ip.' % (
                         self.oct1, self.oct2, self.oct3, self.oct4))
-                except IpEquipmentNotFoundError, e:
+                except IpEquipmentNotFoundError:
                     flag = True
                     already_ip = True
 
@@ -1546,8 +1550,8 @@ class Ip(BaseModel):
 
                 ip_equipment.equipamento = equipment
 
-                # # Filter case 2 - Adding new IpEquip for a equip that already have ip in other network with the same range ##
-
+                # Filter case 2 - Adding new IpEquip for a equip that already
+                # have ip in other network with the same range
                 # Get all IpEquipamento related to this equipment
                 ip_equips = IpEquipamento.objects.filter(
                     equipamento=equipment_id)
@@ -1561,22 +1565,30 @@ class Ip(BaseModel):
                             ip_test.networkipv4 != self.networkipv4:
 
                         # Filter testing
-                        if ip_test.networkipv4.vlan.ambiente.filter is None or self.networkipv4.vlan.ambiente.filter is None:
+                        if ip_test.networkipv4.vlan.ambiente.filter is None \
+                                or self.networkipv4.vlan.ambiente.filter is None:
                             raise IpRangeAlreadyAssociation(
-                                None, u'Equipment is already associated with another ip with the same ip range.')
+                                None, u'Equipment is already associated with another '
+                                      u'ip with the same ip range.')
                         else:
                             # Test both environment's filters
                             tp_equip_list_one = list()
-                            for fet in filterequiptype.objects.filter(filter=self.networkipv4.vlan.ambiente.filter.id):
+                            for fet in filterequiptype.objects.filter(
+                                    filter=self.networkipv4.vlan.ambiente.filter.id):
                                 tp_equip_list_one.append(fet.equiptype)
 
                             tp_equip_list_two = list()
-                            for fet in filterequiptype.objects.filter(filter=ip_test.networkipv4.vlan.ambiente.filter.id):
+                            for fet in filterequiptype.objects.filter(
+                                    filter=ip_test.networkipv4.vlan.ambiente.filter.id):
                                 tp_equip_list_two.append(fet.equiptype)
 
-                            if equipment.tipo_equipamento not in tp_equip_list_one or equipment.tipo_equipamento not in tp_equip_list_two:
+                            if equipment.tipo_equipamento not \
+                                    in tp_equip_list_one \
+                                    or equipment.tipo_equipamento not \
+                                    in tp_equip_list_two:
                                 raise IpRangeAlreadyAssociation(
-                                    None, u'Equipment is already associated with another ip with the same ip range.')
+                                    None, u'Equipment is already associated with '
+                                          u'another ip with the same ip range.')
 
                 # # Filter case 2 - end ##
 
@@ -1593,7 +1605,8 @@ class Ip(BaseModel):
                     pass
 
             else:
-                raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (
+                raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available '
+                                                u'for network %s.' % (
                     self.oct1, self.oct2, self.oct3, self.oct4, net.id))
 
         except IpRangeAlreadyAssociation, e:
@@ -1604,7 +1617,8 @@ class Ip(BaseModel):
             raise InvalidValueError(
                 None, 'ip', u'%s.%s.%s.%s' % (self.oct1, self.oct2, self.oct3, self.oct4))
         except IpNotAvailableError, e:
-            raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for network %s.' % (
+            raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for '
+                                            u'network %s.' % (
                 self.oct1, self.oct2, self.oct3, self.oct4, net.id))
         except (IpError, EquipamentoError), e:
             self.log.error(
@@ -1976,15 +1990,17 @@ class Ip(BaseModel):
                 if ip4_object not in ipsv4:
 
                     if ip4_object in net4:
+                        # allow to allocate the first and last ip
+                        flag = True
 
-                        first_ip_network = int(net4.network)
-                        bcast_ip_network = int(net4.broadcast)
-
-                        ipv4_network = int(ip4_object)
-
+                        # first_ip_network = int(net4.network)
+                        # bcast_ip_network = int(net4.broadcast)
+                        #
+                        # ipv4_network = int(ip4_object)
+                        #
                         # First and last ip are reserved in network
-                        if first_ip_network <= ipv4_network < bcast_ip_network:
-                            flag = True
+                        # if first_ip_network <= ipv4_network < bcast_ip_network:
+                        #     flag = True
 
                 if flag is False:
                     raise IpNotAvailableError(

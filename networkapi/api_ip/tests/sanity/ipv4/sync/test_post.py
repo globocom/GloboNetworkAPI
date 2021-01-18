@@ -102,7 +102,8 @@ class IPv4GetTestCase(NetworkApiTestCase):
                             response.data['ips'][0]['ip_formated'])
 
     def test_try_create_ip_in_full_network(self):
-        """Tests if NAPI deny an IPv4 manually creation in a full network."""
+        """ Tests if NAPI deny an IPv4 manually creation in a full network.
+            Refactor to allow create the ip."""
 
         name_file = 'api_ip/tests/sanity/ipv4/json/post/ipv4_10_0_4_1_net_8.json'
         response = self.client.post(
@@ -111,10 +112,7 @@ class IPv4GetTestCase(NetworkApiTestCase):
             content_type='application/json',
             HTTP_AUTHORIZATION=self.get_http_authorization('test'))
 
-        self.compare_status(400, response.status_code)
-        self.compare_values(
-            'Ip 10.0.4.1 not available for network 8.',
-            response.data['detail'])
+        self.compare_status(201, response.status_code)
 
     def test_try_create_out_of_range_ip_in_network(self):
         """Tests if NAPI deny out of range network IPv4 manually creation."""
