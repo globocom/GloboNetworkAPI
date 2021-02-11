@@ -20,6 +20,7 @@ import os.path
 from exceptions import IOError
 from networkapi.plugins.base import BasePlugin
 from networkapi.plugins import exceptions
+from networkapi.plugins.Juniper.JUNOS.BGP.Cli import Generic as BGP
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.system.facade import get_value
 from networkapi.system.exceptions import VariableDoesNotExistException
@@ -56,21 +57,29 @@ class JUNOS(BasePlugin):
         if 'seconds_to_wait_to_try_lock' in kwargs:
             self.seconds_to_wait_to_try_lock = kwargs.get('seconds_to_wait_to_try_lock')
 
+    def bgp(self):
+        return BGP(equipment=self.equipment)
+
     def connect(self):
 
         """
-        Connects to equipment via ssh using PyEz  and create connection with invoked shell object.
+        Connects to equipment via ssh using PyEz
+        and create connection with invoked shell object.
 
         :returns:
-            True on success or raise an exception on any fail (will NOT return a false result, due project decision).
+            True on success or raise an exception on any
+            fail (will NOT return a false result, due project decision).
         """
 
         if self.equipment_access is None:
             try:
                 # Collect the credentials (user and password) for equipment
-                self.equipment_access = EquipamentoAcesso.search(None, self.equipment, 'ssh').uniqueResult()
+                self.equipment_access = EquipamentoAcesso.search(None,
+                                                                 self.equipment,
+                                                                 'ssh').uniqueResult()
             except Exception as e:
-                message = "Unknown error while accessing equipment {} in database.".format(self.equipment.nome)
+                message = "Unknown error while accessing equipment {} in database.".format(
+                    self.equipment.nome)
                 log.error("{}: {}".format(message, e))
                 raise exceptions.APIException(message)
 
