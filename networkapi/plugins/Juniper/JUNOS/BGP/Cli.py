@@ -15,8 +15,6 @@
 # limitations under the License.
 import logging
 import os
-import re
-from time import sleep
 
 from django.db.models import Q
 from django.template import Context
@@ -52,19 +50,6 @@ class Generic(BasePlugin):
     TEMPLATE_ROUTE_MAP_ADD = 'route_map_add'
     TEMPLATE_ROUTE_MAP_REMOVE = 'route_map_remove'
 
-    MAX_TRIES = 10
-    RETRY_WAIT_TIME = 5
-    WAIT_FOR_CLI_RETURN = 1
-    CURRENTLY_BUSY_WAIT = 'Currently busy with copying a file'
-    INVALID_REGEX = '([Ii]nvalid)|overlaps with'
-    WARNING_REGEX = 'config ignored|Warning'
-    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|utility is occupied'
-
-    management_vrf = 'management'
-    admin_privileges = 15
-    VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
-    VALID_TFTP_PUT_MESSAGE_NXS6001 = 'Copy complete'
-
     def _deploy_pre_req(self, neighbor):
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
@@ -84,11 +69,11 @@ class Generic(BasePlugin):
             self.deploy_route_map(neighbor.peer_group.route_map_out)
 
     def _undeploy_pre_req(self, neighbor, ip_version):
+
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
         route_map_out = neighbor.peer_group.route_map_out
 
-        # Route Map IN
         neighbors_v4 = NeighborV4.objects.filter(Q(
             Q(peer_group__route_map_in=route_map_in) |
             Q(peer_group__route_map_out=route_map_in))
@@ -112,7 +97,6 @@ class Generic(BasePlugin):
             if route_map_in.equipments.filter(id=self.equipment.id):
                 self.undeploy_route_map(route_map_in)
 
-        # Route Map OUT
         neighbors_v4 = NeighborV4.objects.filter(Q(
             Q(peer_group__route_map_in=route_map_out) |
             Q(peer_group__route_map_out=route_map_out))
@@ -229,15 +213,12 @@ class Generic(BasePlugin):
     def _operate_equipment(self, types, template_type, config):
 
         self.connect()
-        self._ensure_privilege_level()
+        self.ensure_privilege_level()
         file_to_deploy = self._generate_config_file(
             types, template_type, config)
         self._deploy_config_in_equipment(file_to_deploy)
         self.close()
 
-    ############
-    # TEMPLATE #
-    ############
     def _generate_config_file(self, types, template_type, config):
         """Load a template and write a file with the rended output.
 
@@ -300,7 +281,8 @@ class Generic(BasePlugin):
             log.error('Template type %s not found. Error: %s' % (template_type, e))
             raise plugin_exc.BGPTemplateException()
 
-    def _generate_template_dict_neighbor(self, neighbor):
+    @staticmethod
+    def _generate_template_dict_neighbor(neighbor):
         """Make a dictionary to use in template"""
 
         key_dict = {
@@ -343,7 +325,8 @@ class Generic(BasePlugin):
             entry = {
                 'ACTION': action,
                 'ORDER': entry_obj.order,
-                'TYPE_MATCH': self._get_type_list(entry_obj.list_config_bgp.type)['route_map'],
+                'TYPE_MATCH': self._get_type_list(
+                    entry_obj.list_config_bgp.type)['route_map'],
                 'LIST': entry_obj.list_config_bgp.name,
                 'ACTION_RECONFIG': entry_obj.action_reconfig
             }
@@ -356,7 +339,8 @@ class Generic(BasePlugin):
 
         return key_dict
 
-    def _get_type_list(self, type):
+    @staticmethod
+    def _get_type_list(type_):
         types = {
             'P': {
                 'config_list': 'prefix-list',
@@ -367,9 +351,10 @@ class Generic(BasePlugin):
                 'route_map': ''
             },
         }
-        return types[type]
+        return types[type_]
 
-    def _read_config(self, filename):
+    @staticmethod
+    def _read_config(filename):
         """Return content from template_file"""
 
         try:
@@ -385,7 +370,8 @@ class Generic(BasePlugin):
 
         return template_content
 
-    def _save_config(self, filename, config):
+    @staticmethod
+    def _save_config(filename, config):
         """Write config in template file"""
 
         try:
@@ -396,9 +382,6 @@ class Generic(BasePlugin):
             log.error('Error writing to config file: %s' % filename)
             raise e
 
-    ##########
-    # DEPLOY #
-    ##########
     def _deploy_config_in_equipment(self, rel_filename):
 
         path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
@@ -412,122 +395,5 @@ class Generic(BasePlugin):
         if self.equipment.maintenance:
             raise AllEquipmentsAreInMaintenanceException()
 
-        self._copy_script_file_to_config(filename)
-
-    def _copy_script_file_to_config(self, filename,
-                                    destination='running-config'):
-        """
-        Copy file from TFTP server to destination
-        By default, plugin should apply file in running configuration (active)
-        """
-        recv = None
-
-        vrf = self.equipment.equipamentoacesso_set.all()[0].vrf.internal_name \
-            if self.equipment.equipamentoacesso_set.all()[0].vrf \
-            else self.management_vrf
-
-        command = 'copy tftp://{}/{} {} vrf {}\n\n'.format(
-            self.tftpserver, filename, destination, vrf)
-
-        file_copied = 0
-        retries = 0
-        while not file_copied and retries < self.MAX_TRIES:
-            if retries is not 0:
-                sleep(self.RETRY_WAIT_TIME)
-
-            try:
-                log.info('try: %s - sending command: %s' % (retries, command))
-                self.channel.send('%s\n' % command)
-                recv = self._wait_string(self.VALID_TFTP_PUT_MESSAGE)
-                file_copied = 1
-
-            except plugin_exc.CurrentlyBusyErrorException:
-                retries += 1
-
-        # not capable of configuring after max retries
-        if retries is self.MAX_TRIES:
-            raise plugin_exc.CurrentlyBusyErrorException()
-
-        return recv
-
-    def _ensure_privilege_level(self, privilege_level=None):
-
-        if privilege_level is None:
-            privilege_level = self.admin_privileges
-
-        self.channel.send('\n')
-        self._wait_string('>|#')
-        self.channel.send('show privilege\n')
-        if not self.waitString('Feature privilege: Disabled'):
-            self.channel.send('show privilege\n')
-            recv = self._wait_string('Current privilege level is')
-            level = re.search(
-                'Current privilege level is ([0-9]+).*', recv, re.DOTALL).group(1)
-
-            level = (level.split(' '))[-1]
-            if int(level) < privilege_level:
-                self.channel.send('enable\n')
-                self._wait_string('Password:')
-                self.channel.send('%s\n' % self.equipment_access.enable_pass)
-                self._wait_string('#')
-
-    def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
-                     wait_str_failed_regex=None):
-        """As equipment goes returning a string, makes a regex and verifies if string wished was returned."""
-
-        if wait_str_invalid_regex is None:
-            wait_str_invalid_regex = self.INVALID_REGEX
-
-        if wait_str_failed_regex is None:
-            wait_str_failed_regex = self.ERROR_REGEX
-
-        string_ok = 0
-        recv_string = ''
-
-        while not string_ok:
-
-            while not self.channel.recv_ready():
-                sleep(self.WAIT_FOR_CLI_RETURN)
-
-            recv_string = self.channel.recv(9999)
-            file_name_string = self.removeDisallowedChars(recv_string)
-
-            for output_line in recv_string.splitlines():
-
-                if re.search(self.CURRENTLY_BUSY_WAIT, output_line):
-                    log.warning('Need to wait - Switch busy: %s' % output_line)
-                    raise plugin_exc.CurrentlyBusyErrorException()
-
-                elif re.search(self.WARNING_REGEX, output_line):
-                    log.warning('Equipment warning: %s' % output_line)
-
-                elif re.search(wait_str_invalid_regex, output_line):
-                    log.error('Equipment raised INVALID error: %s' %
-                              output_line)
-                    raise deploy_exc.InvalidCommandException(file_name_string)
-
-                elif re.search(wait_str_failed_regex, output_line):
-                    log.error('Equipment raised FAILED error: %s' %
-                              output_line)
-                    raise deploy_exc.CommandErrorException(file_name_string)
-
-                elif re.search(wait_str_ok_regex, output_line):
-
-                    log.debug('Equipment output: %s' % output_line)
-
-                    # test bug switch copying 0 bytes
-                    if output_line == '0 bytes successfully copied':
-                        log.debug('Switch copied 0 bytes, need to try again.')
-                        raise plugin_exc.CurrentlyBusyErrorException()
-                    string_ok = 1
-                elif re.search(self.VALID_TFTP_PUT_MESSAGE_NXS6001, output_line):
-
-                    log.debug('Equipment output: %s' % output_line)
-
-                    # test bug switch copying 0 bytes
-                    if output_line == 'Copy failed':
-                        log.debug('Switch copied 0 bytes, need to try again.')
-                        raise plugin_exc.CurrentlyBusyErrorException()
-                    string_ok = 1
-
-        return recv_string
+        self.copyScriptFileToConfig(filename,
+                                    destination='running-config')
