@@ -287,6 +287,7 @@ class Generic(BasePlugin):
 
         key_dict = {
             'AS_NUMBER': neighbor.local_asn.name,
+            'LOCAL_IP': str(neighbor.local_ip),
             'VRF_NAME': neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf.internal_name,
             'REMOTE_IP': str(neighbor.remote_ip),
             'REMOTE_AS': neighbor.remote_asn.name,
@@ -299,7 +300,8 @@ class Generic(BasePlugin):
             'SOFT_RECONFIGURATION': neighbor.soft_reconfiguration,
             'NEXT_HOP_SELF': neighbor.next_hop_self,
             'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
-            'COMMUNITY': neighbor.community
+            'COMMUNITY': neighbor.community,
+            'GROUP': "AS_{}".format(neighbor.remote_as.name)
         }
 
         return key_dict
