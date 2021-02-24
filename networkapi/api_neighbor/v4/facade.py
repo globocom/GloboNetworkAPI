@@ -612,7 +612,7 @@ def deploy_neighbor_v4(neighbor_id):
 
         eqpt = get_v4_equipment(neighbor)
 
-        plugin = PluginFactory.factory(eqpt)
+        plugin = PluginFactory.factory(eqpt, bgp=True)
         plugin.bgp().deploy_neighbor(neighbor)
         neighbor.deploy()
 
