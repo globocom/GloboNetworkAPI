@@ -59,18 +59,23 @@ class JUNOS(BasePlugin):
     def connect(self):
 
         """
-        Connects to equipment via ssh using PyEz  and create connection with invoked shell object.
+        Connects to equipment via ssh using PyEz
+        and create connection with invoked shell object.
 
         :returns:
-            True on success or raise an exception on any fail (will NOT return a false result, due project decision).
+            True on success or raise an exception on any
+            fail (will NOT return a false result, due project decision).
         """
 
         if self.equipment_access is None:
             try:
                 # Collect the credentials (user and password) for equipment
-                self.equipment_access = EquipamentoAcesso.search(None, self.equipment, 'ssh').uniqueResult()
+                self.equipment_access = EquipamentoAcesso.search(None,
+                                                                 self.equipment,
+                                                                 'ssh').uniqueResult()
             except Exception as e:
-                message = "Unknown error while accessing equipment {} in database.".format(self.equipment.nome)
+                message = "Unknown error while accessing equipment {} in database.".format(
+                    self.equipment.nome)
                 log.error("{}: {}".format(message, e))
                 raise exceptions.APIException(message)
 
