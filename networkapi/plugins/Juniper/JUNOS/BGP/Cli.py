@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
 import logging
 import os
 
@@ -29,17 +31,16 @@ from networkapi.equipamento import models as eqpt_models
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
 from networkapi.infrastructure.ipaddr import IPAddress
-from networkapi.plugins import exceptions as plugin_exc
-from networkapi.plugins.base import BasePlugin
 from networkapi.settings import BGP_CONFIG_FILES_PATH
 from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
 from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
 from networkapi.settings import TFTPBOOT_FILES_PATH
+from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 
 log = logging.getLogger(__name__)
 
 
-class Generic(BasePlugin):
+class Generic(JUNOS):
 
     TEMPLATE_NEIGHBOR_V4_ADD = 'neighbor_v4_add'
     TEMPLATE_NEIGHBOR_V4_REMOVE = 'neighbor_v4_remove'
@@ -50,7 +51,12 @@ class Generic(BasePlugin):
     TEMPLATE_ROUTE_MAP_ADD = 'route_map_add'
     TEMPLATE_ROUTE_MAP_REMOVE = 'route_map_remove'
 
+    def bgp(self):
+        return Generic(equipment=self.equipment)
+
     def _deploy_pre_req(self, neighbor):
+        log.info("_deploy_pre_req")
+
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
         route_map_out = neighbor.peer_group.route_map_out
@@ -180,6 +186,7 @@ class Generic(BasePlugin):
 
     def deploy_list_config_bgp(self, list_config_bgp):
         """Deploy prefix list"""
+        log.info("deploy_list_config_bgp")
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
 
@@ -196,6 +203,7 @@ class Generic(BasePlugin):
 
     def deploy_route_map(self, route_map):
         """Deploy route map"""
+        log.info("deploy_route_map")
 
         config = self._generate_template_dict_route_map(route_map)
 
@@ -251,8 +259,7 @@ class Generic(BasePlugin):
 
         except Exception as err:
             log.error('Error: %s ' % err)
-            raise plugin_exc.BGPTemplateException(err)
-
+            raise self.exceptions.BGPTemplateException(err)
         return config_to_be_saved
 
     def _load_template_file(self, template_type):
@@ -279,7 +286,7 @@ class Generic(BasePlugin):
                 None, self.equipment.id, template_type).uniqueResult()
         except Exception as e:
             log.error('Template type %s not found. Error: %s' % (template_type, e))
-            raise plugin_exc.BGPTemplateException()
+            raise self.exceptions.BGPTemplateException()
 
     @staticmethod
     def _generate_template_dict_neighbor(neighbor):
@@ -301,7 +308,7 @@ class Generic(BasePlugin):
             'NEXT_HOP_SELF': neighbor.next_hop_self,
             'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
             'COMMUNITY': neighbor.community,
-            'GROUP': "AS_{}".format(neighbor.remote_as.name)
+            'GROUP': "AS_{}".format(neighbor.remote_asn.name)
         }
 
         return key_dict
@@ -378,6 +385,7 @@ class Generic(BasePlugin):
 
         try:
             file_handle = open(filename, 'w')
+            log.debug(filename)
             file_handle.write(config)
             file_handle.close()
         except IOError, e:
@@ -393,7 +401,7 @@ class Generic(BasePlugin):
         return self._apply_config(rel_filename)
 
     def _apply_config(self, filename):
-
+        log.info("_apply_config")
         if self.equipment.maintenance:
             raise AllEquipmentsAreInMaintenanceException()
 
