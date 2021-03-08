@@ -308,7 +308,7 @@ class Generic(JUNOS):
             'NEXT_HOP_SELF': neighbor.next_hop_self,
             'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
             'COMMUNITY': neighbor.community,
-            'GROUP': "AS_{}".format(neighbor.remote_asn.name)
+            'GROUP': "GROUP_{}".format(neighbor.remote_ip)
         }
 
         return key_dict
