@@ -75,6 +75,7 @@ class Generic(JUNOS):
             self.deploy_route_map(neighbor.peer_group.route_map_out)
 
     def _undeploy_pre_req(self, neighbor, ip_version):
+        log.info("_undeploy_pre_req")
 
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
@@ -90,18 +91,14 @@ class Generic(JUNOS):
             Q(peer_group__route_map_out=route_map_in))
         ).filter(created=True)
 
-        if ip_version == 6:
-            neighbors_v6.filter(
-                ~Q(id=neighbor.id)
-            )
-        else:
-            neighbors_v4.filter(
-                ~Q(id=neighbor.id)
-            )
+        neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+        neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
         if not neighbors_v4 and not neighbors_v6:
-            if route_map_in.equipments.filter(id=self.equipment.id):
+            try:
                 self.undeploy_route_map(route_map_in)
+            except Exception as e:
+                log.error("Error while undeploying route-map. E: {}".format(e))
 
         neighbors_v4 = NeighborV4.objects.filter(Q(
             Q(peer_group__route_map_in=route_map_out) |
@@ -113,18 +110,14 @@ class Generic(JUNOS):
             Q(peer_group__route_map_out=route_map_out))
         ).filter(created=True)
 
-        if ip_version == 6:
-            neighbors_v6.filter(
-                ~Q(id=neighbor.id)
-            )
-        else:
-            neighbors_v4.filter(
-                ~Q(id=neighbor.id)
-            )
+        neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+        neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
         if not neighbors_v4 and not neighbors_v6:
-            if route_map_out.equipments.filter(id=self.equipment.id):
+            try:
                 self.undeploy_route_map(route_map_out)
+            except Exception as e:
+                log.error("Error while undeploying route-map. E: {}".format(e))
 
         # List Config BGP
         if not neighbors_v4 and not neighbors_v6:
@@ -133,28 +126,24 @@ class Generic(JUNOS):
             for rm_entry in rms:
                 list_config_bgp = rm_entry.list_config_bgp
 
-                neighbors_v6 = NeighborV6.objects.filter(Q(
-                    Q(peer_group__route_map_in__route_map_entries__list_config_bgp=list_config_bgp) |
-                    Q(peer_group__route_map_out__route_map_entries__list_config_bgp=list_config_bgp))
-                ).filter(created=True)
-
                 neighbors_v4 = NeighborV6.objects.filter(Q(
-                    Q(peer_group__route_map_in__route_map_entries__list_config_bgp=list_config_bgp) |
-                    Q(peer_group__route_map_out__route_map_entries__list_config_bgp=list_config_bgp))
+                    Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+                    Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp))
                 ).filter(created=True)
 
-                if ip_version == 6:
-                    neighbors_v6.filter(
-                        ~Q(id=neighbor.id)
-                    )
-                else:
-                    neighbors_v4.filter(
-                        ~Q(id=neighbor.id)
-                    )
+                neighbors_v6 = NeighborV6.objects.filter(Q(
+                    Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+                    Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp))
+                ).filter(created=True)
+
+                neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+                neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
                 if not neighbors_v4 and not neighbors_v6:
-                    if not list_config_bgp.equipments.filter(id=self.equipment.id):
+                    try:
                         self.undeploy_list_config_bgp(list_config_bgp)
+                    except Exception as e:
+                        log.error("Error while undeploying prefix-list. E: {}".format(e))
 
     def deploy_neighbor(self, neighbor):
         """Deploy neighbor"""
@@ -175,14 +164,16 @@ class Generic(JUNOS):
 
         ip_version = IPAddress(str(neighbor.remote_ip)).version
 
-        self._undeploy_pre_req(neighbor, ip_version)
-
         template_type = self.TEMPLATE_NEIGHBOR_V4_REMOVE \
             if ip_version == 4 else self.TEMPLATE_NEIGHBOR_V6_REMOVE
 
         config = self._generate_template_dict_neighbor(neighbor)
 
-        self._operate_equipment('neighbor', template_type, config)
+        self._open()
+        self._operate('neighbor', template_type, config)
+
+        self._undeploy_pre_req(neighbor, ip_version)
+        self._close()
 
     def deploy_list_config_bgp(self, list_config_bgp):
         """Deploy prefix list"""
@@ -195,11 +186,13 @@ class Generic(JUNOS):
 
     def undeploy_list_config_bgp(self, list_config_bgp):
         """Undeploy prefix list"""
+        log.info("undeploy_list_config_bgp")
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
 
-        self._operate_equipment(
-            'list_config_bgp', self.TEMPLATE_LIST_CONFIG_REMOVE, config)
+        self._operate('list_config_bgp',
+                      self.TEMPLATE_LIST_CONFIG_REMOVE,
+                      config)
 
     def deploy_route_map(self, route_map):
         """Deploy route map"""
@@ -215,16 +208,31 @@ class Generic(JUNOS):
 
         config = self._generate_template_dict_route_map(route_map)
 
-        self._operate_equipment(
+        self._operate(
             'route_map', self.TEMPLATE_ROUTE_MAP_REMOVE, config)
 
     def _operate_equipment(self, types, template_type, config):
 
         self.connect()
-        self.ensure_privilege_level()
+        # self.ensure_privilege_level()
         file_to_deploy = self._generate_config_file(
             types, template_type, config)
         self._deploy_config_in_equipment(file_to_deploy)
+        self.close()
+
+    def _operate(self, types, template_type, config):
+
+        file_to_deploy = self._generate_config_file(
+            types, template_type, config)
+        self._deploy_config_in_equipment(file_to_deploy)
+
+    def _open(self):
+
+        self.connect()
+        # self.ensure_privilege_level()
+
+    def _close(self):
+
         self.close()
 
     def _generate_config_file(self, types, template_type, config):
@@ -315,6 +323,7 @@ class Generic(JUNOS):
 
     def _generate_template_dict_list_config_bgp(self, list_config_bgp):
         """Make a dictionary to use in template"""
+        log.info("_generate_template_dict_list_config_bgp")
 
         key_dict = {
             'TYPE': self._get_type_list(list_config_bgp.type)['config_list'],
@@ -329,7 +338,7 @@ class Generic(JUNOS):
 
         entries = []
 
-        for entry_obj in route_map.route_map_entries:
+        for entry_obj in route_map.routemapentry_set.all():
             action = 'permit' if entry_obj.action == 'P' else 'deny'
             entry = {
                 'ACTION': action,
