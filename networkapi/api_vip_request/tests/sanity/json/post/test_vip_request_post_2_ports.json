@@ -23,15 +23,15 @@
                         {
                             "l7_rule": 64,
                             "l7_value": null,
-                            "server_pool": 1
+                            "server_pool": 2
                         },
                         {
                             "l7_rule": 65,
                             "l7_value": null,
-                            "server_pool": 1
+                            "server_pool": 2
                         },
                         {
-                            "server_pool": 1,
+                            "server_pool": 2,
                             "l7_rule": 66,
                             "l7_value": "/l7-rule/",
                             "order":1
@@ -48,7 +48,7 @@
                         {
                             "l7_rule": 64,
                             "l7_value": null,
-                            "server_pool": 1
+                            "server_pool": 2
                         }
                     ],
                     "port": 443

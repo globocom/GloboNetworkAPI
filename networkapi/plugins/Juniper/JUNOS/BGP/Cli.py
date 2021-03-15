@@ -13,10 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
 import logging
 import os
-import re
-from time import sleep
 
 from django.db.models import Q
 from django.template import Context
@@ -31,17 +31,16 @@ from networkapi.equipamento import models as eqpt_models
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
 from networkapi.infrastructure.ipaddr import IPAddress
-from networkapi.plugins import exceptions as plugin_exc
-from networkapi.plugins.base import BasePlugin
 from networkapi.settings import BGP_CONFIG_FILES_PATH
 from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
 from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
 from networkapi.settings import TFTPBOOT_FILES_PATH
+from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 
 log = logging.getLogger(__name__)
 
 
-class Generic(BasePlugin):
+class Generic(JUNOS):
 
     TEMPLATE_NEIGHBOR_V4_ADD = 'neighbor_v4_add'
     TEMPLATE_NEIGHBOR_V4_REMOVE = 'neighbor_v4_remove'
@@ -52,20 +51,12 @@ class Generic(BasePlugin):
     TEMPLATE_ROUTE_MAP_ADD = 'route_map_add'
     TEMPLATE_ROUTE_MAP_REMOVE = 'route_map_remove'
 
-    MAX_TRIES = 10
-    RETRY_WAIT_TIME = 5
-    WAIT_FOR_CLI_RETURN = 1
-    CURRENTLY_BUSY_WAIT = 'Currently busy with copying a file'
-    INVALID_REGEX = '([Ii]nvalid)|overlaps with'
-    WARNING_REGEX = 'config ignored|Warning'
-    ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
-
-    management_vrf = 'management'
-    admin_privileges = 15
-    VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
-    VALID_TFTP_PUT_MESSAGE_NXS6001 = 'Copy complete'
+    def bgp(self):
+        return Generic(equipment=self.equipment)
 
     def _deploy_pre_req(self, neighbor):
+        log.info("_deploy_pre_req")
+
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
         route_map_out = neighbor.peer_group.route_map_out
@@ -84,11 +75,12 @@ class Generic(BasePlugin):
             self.deploy_route_map(neighbor.peer_group.route_map_out)
 
     def _undeploy_pre_req(self, neighbor, ip_version):
+        log.info("_undeploy_pre_req")
+
         # Concatenate RouteMapEntries Lists
         route_map_in = neighbor.peer_group.route_map_in
         route_map_out = neighbor.peer_group.route_map_out
 
-        # Route Map IN
         neighbors_v4 = NeighborV4.objects.filter(Q(
             Q(peer_group__route_map_in=route_map_in) |
             Q(peer_group__route_map_out=route_map_in))
@@ -99,20 +91,15 @@ class Generic(BasePlugin):
             Q(peer_group__route_map_out=route_map_in))
         ).filter(created=True)
 
-        if ip_version == 6:
-            neighbors_v6.filter(
-                ~Q(id=neighbor.id)
-            )
-        else:
-            neighbors_v4.filter(
-                ~Q(id=neighbor.id)
-            )
+        neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+        neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
         if not neighbors_v4 and not neighbors_v6:
-            if route_map_in.equipments.filter(id=self.equipment.id):
+            try:
                 self.undeploy_route_map(route_map_in)
+            except Exception as e:
+                log.error("Error while undeploying route-map. E: {}".format(e))
 
-        # Route Map OUT
         neighbors_v4 = NeighborV4.objects.filter(Q(
             Q(peer_group__route_map_in=route_map_out) |
             Q(peer_group__route_map_out=route_map_out))
@@ -123,18 +110,14 @@ class Generic(BasePlugin):
             Q(peer_group__route_map_out=route_map_out))
         ).filter(created=True)
 
-        if ip_version == 6:
-            neighbors_v6.filter(
-                ~Q(id=neighbor.id)
-            )
-        else:
-            neighbors_v4.filter(
-                ~Q(id=neighbor.id)
-            )
+        neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+        neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
         if not neighbors_v4 and not neighbors_v6:
-            if route_map_out.equipments.filter(id=self.equipment.id):
+            try:
                 self.undeploy_route_map(route_map_out)
+            except Exception as e:
+                log.error("Error while undeploying route-map. E: {}".format(e))
 
         # List Config BGP
         if not neighbors_v4 and not neighbors_v6:
@@ -143,28 +126,24 @@ class Generic(BasePlugin):
             for rm_entry in rms:
                 list_config_bgp = rm_entry.list_config_bgp
 
-                neighbors_v6 = NeighborV6.objects.filter(Q(
-                    Q(peer_group__route_map_in__route_map_entries__list_config_bgp=list_config_bgp) |
-                    Q(peer_group__route_map_out__route_map_entries__list_config_bgp=list_config_bgp))
-                ).filter(created=True)
-
                 neighbors_v4 = NeighborV6.objects.filter(Q(
-                    Q(peer_group__route_map_in__route_map_entries__list_config_bgp=list_config_bgp) |
-                    Q(peer_group__route_map_out__route_map_entries__list_config_bgp=list_config_bgp))
+                    Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+                    Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp))
                 ).filter(created=True)
 
-                if ip_version == 6:
-                    neighbors_v6.filter(
-                        ~Q(id=neighbor.id)
-                    )
-                else:
-                    neighbors_v4.filter(
-                        ~Q(id=neighbor.id)
-                    )
+                neighbors_v6 = NeighborV6.objects.filter(Q(
+                    Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+                    Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp))
+                ).filter(created=True)
+
+                neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+                neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
                 if not neighbors_v4 and not neighbors_v6:
-                    if not list_config_bgp.equipments.filter(id=self.equipment.id):
+                    try:
                         self.undeploy_list_config_bgp(list_config_bgp)
+                    except Exception as e:
+                        log.error("Error while undeploying prefix-list. E: {}".format(e))
 
     def deploy_neighbor(self, neighbor):
         """Deploy neighbor"""
@@ -185,17 +164,20 @@ class Generic(BasePlugin):
 
         ip_version = IPAddress(str(neighbor.remote_ip)).version
 
-        self._undeploy_pre_req(neighbor, ip_version)
-
         template_type = self.TEMPLATE_NEIGHBOR_V4_REMOVE \
             if ip_version == 4 else self.TEMPLATE_NEIGHBOR_V6_REMOVE
 
         config = self._generate_template_dict_neighbor(neighbor)
 
-        self._operate_equipment('neighbor', template_type, config)
+        self._open()
+        self._operate('neighbor', template_type, config)
+
+        self._undeploy_pre_req(neighbor, ip_version)
+        self._close()
 
     def deploy_list_config_bgp(self, list_config_bgp):
         """Deploy prefix list"""
+        log.info("deploy_list_config_bgp")
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
 
@@ -204,14 +186,17 @@ class Generic(BasePlugin):
 
     def undeploy_list_config_bgp(self, list_config_bgp):
         """Undeploy prefix list"""
+        log.info("undeploy_list_config_bgp")
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp)
 
-        self._operate_equipment(
-            'list_config_bgp', self.TEMPLATE_LIST_CONFIG_REMOVE, config)
+        self._operate('list_config_bgp',
+                      self.TEMPLATE_LIST_CONFIG_REMOVE,
+                      config)
 
     def deploy_route_map(self, route_map):
         """Deploy route map"""
+        log.info("deploy_route_map")
 
         config = self._generate_template_dict_route_map(route_map)
 
@@ -223,22 +208,34 @@ class Generic(BasePlugin):
 
         config = self._generate_template_dict_route_map(route_map)
 
-        self._operate_equipment(
+        self._operate(
             'route_map', self.TEMPLATE_ROUTE_MAP_REMOVE, config)
 
-    def _operate_equipment(self, type, template_type, config):
+    def _operate_equipment(self, types, template_type, config):
 
         self.connect()
-        self._ensure_privilege_level()
+        # self.ensure_privilege_level()
         file_to_deploy = self._generate_config_file(
-            type, template_type, config)
+            types, template_type, config)
         self._deploy_config_in_equipment(file_to_deploy)
         self.close()
 
-    ############
-    # TEMPLATE #
-    ############
-    def _generate_config_file(self, type, template_type, config):
+    def _operate(self, types, template_type, config):
+
+        file_to_deploy = self._generate_config_file(
+            types, template_type, config)
+        self._deploy_config_in_equipment(file_to_deploy)
+
+    def _open(self):
+
+        self.connect()
+        # self.ensure_privilege_level()
+
+    def _close(self):
+
+        self.close()
+
+    def _generate_config_file(self, types, template_type, config):
         """Load a template and write a file with the rended output.
 
         Returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
@@ -247,7 +244,7 @@ class Generic(BasePlugin):
         request_id = getattr(local, 'request_id', NO_REQUEST_ID)
 
         filename_out = 'bgp_{}_{}_config_{}'.format(
-            type, self.equipment.id, request_id)
+            types, self.equipment.id, request_id)
 
         filename = BGP_CONFIG_FILES_PATH + filename_out
         rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out
@@ -270,8 +267,7 @@ class Generic(BasePlugin):
 
         except Exception as err:
             log.error('Error: %s ' % err)
-            raise plugin_exc.BGPTemplateException(err)
-
+            raise self.exceptions.BGPTemplateException(err)
         return config_to_be_saved
 
     def _load_template_file(self, template_type):
@@ -296,15 +292,17 @@ class Generic(BasePlugin):
         try:
             return eqpt_models.EquipamentoRoteiro.search(
                 None, self.equipment.id, template_type).uniqueResult()
-        except:
-            log.error('Template type %s not found.' % template_type)
-            raise plugin_exc.BGPTemplateException()
+        except Exception as e:
+            log.error('Template type %s not found. Error: %s' % (template_type, e))
+            raise self.exceptions.BGPTemplateException()
 
-    def _generate_template_dict_neighbor(self, neighbor):
+    @staticmethod
+    def _generate_template_dict_neighbor(neighbor):
         """Make a dictionary to use in template"""
 
         key_dict = {
             'AS_NUMBER': neighbor.local_asn.name,
+            'LOCAL_IP': str(neighbor.local_ip),
             'VRF_NAME': neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf.internal_name,
             'REMOTE_IP': str(neighbor.remote_ip),
             'REMOTE_AS': neighbor.remote_asn.name,
@@ -317,13 +315,15 @@ class Generic(BasePlugin):
             'SOFT_RECONFIGURATION': neighbor.soft_reconfiguration,
             'NEXT_HOP_SELF': neighbor.next_hop_self,
             'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
-            'COMMUNITY': neighbor.community
+            'COMMUNITY': neighbor.community,
+            'GROUP': "GROUP_{}".format(neighbor.remote_ip)
         }
 
         return key_dict
 
     def _generate_template_dict_list_config_bgp(self, list_config_bgp):
         """Make a dictionary to use in template"""
+        log.info("_generate_template_dict_list_config_bgp")
 
         key_dict = {
             'TYPE': self._get_type_list(list_config_bgp.type)['config_list'],
@@ -338,12 +338,13 @@ class Generic(BasePlugin):
 
         entries = []
 
-        for entry_obj in route_map.route_map_entries:
+        for entry_obj in route_map.routemapentry_set.all():
             action = 'permit' if entry_obj.action == 'P' else 'deny'
             entry = {
                 'ACTION': action,
                 'ORDER': entry_obj.order,
-                'TYPE_MATCH': self._get_type_list(entry_obj.list_config_bgp.type)['route_map'],
+                'TYPE_MATCH': self._get_type_list(
+                    entry_obj.list_config_bgp.type)['route_map'],
                 'LIST': entry_obj.list_config_bgp.name,
                 'ACTION_RECONFIG': entry_obj.action_reconfig
             }
@@ -356,7 +357,8 @@ class Generic(BasePlugin):
 
         return key_dict
 
-    def _get_type_list(self, type):
+    @staticmethod
+    def _get_type_list(type_):
         types = {
             'P': {
                 'config_list': 'prefix-list',
@@ -367,9 +369,10 @@ class Generic(BasePlugin):
                 'route_map': ''
             },
         }
-        return types[type]
+        return types[type_]
 
-    def _read_config(self, filename):
+    @staticmethod
+    def _read_config(filename):
         """Return content from template_file"""
 
         try:
@@ -385,20 +388,19 @@ class Generic(BasePlugin):
 
         return template_content
 
-    def _save_config(self, filename, config):
+    @staticmethod
+    def _save_config(filename, config):
         """Write config in template file"""
 
         try:
             file_handle = open(filename, 'w')
+            log.debug(filename)
             file_handle.write(config)
             file_handle.close()
         except IOError, e:
             log.error('Error writing to config file: %s' % filename)
             raise e
 
-    ##########
-    # DEPLOY #
-    ##########
     def _deploy_config_in_equipment(self, rel_filename):
 
         path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
@@ -408,125 +410,9 @@ class Generic(BasePlugin):
         return self._apply_config(rel_filename)
 
     def _apply_config(self, filename):
-
+        log.info("_apply_config")
         if self.equipment.maintenance:
             raise AllEquipmentsAreInMaintenanceException()
 
-        self._copy_script_file_to_config(filename)
-
-    def _copy_script_file_to_config(self, filename,
-                                    destination='running-config'):
-        """
-        Copy file from TFTP server to destination
-        By default, plugin should apply file in running configuration (active)
-        """
-
-        vrf = self.equipment.equipamentoacesso_set.all()[0].vrf.internal_name \
-            if self.equipment.equipamentoacesso_set.all()[0].vrf \
-            else self.management_vrf
-
-        command = 'copy tftp://{}/{} {} vrf {}\n\n'.format(
-            self.tftpserver, filename, destination, vrf)
-
-        file_copied = 0
-        retries = 0
-        while not file_copied and retries < self.MAX_TRIES:
-            if retries is not 0:
-                sleep(self.RETRY_WAIT_TIME)
-
-            try:
-                log.info('try: %s - sending command: %s' % (retries, command))
-                self.channel.send('%s\n' % command)
-                recv = self._wait_string(self.VALID_TFTP_PUT_MESSAGE)
-                file_copied = 1
-
-            except plugin_exc.CurrentlyBusyErrorException:
-                retries += 1
-
-        # not capable of configuring after max retries
-        if retries is self.MAX_TRIES:
-            raise plugin_exc.CurrentlyBusyErrorException()
-
-        return recv
-
-    def _ensure_privilege_level(self, privilege_level=None):
-
-        if privilege_level is None:
-            privilege_level = self.admin_privileges
-
-        self.channel.send('\n')
-        recv = self._wait_string('>|#')
-        self.channel.send('show privilege\n')
-        if not self.waitString('Feature privilege: Disabled'):
-            self.channel.send('show privilege\n')
-            recv = self._wait_string('Current privilege level is')
-            level = re.search(
-                'Current privilege level is ([0-9]+).*', recv, re.DOTALL).group(1)
-
-            level = (level.split(' '))[-1]
-            if int(level) < privilege_level:
-                self.channel.send('enable\n')
-                recv = self._wait_string('Password:')
-                self.channel.send('%s\n' % self.equipment_access.enable_pass)
-                recv = self._wait_string('#')
-
-    def _wait_string(self, wait_str_ok_regex='', wait_str_invalid_regex=None,
-                     wait_str_failed_regex=None):
-        """As equipment goes returning a string, makes a regex and verifies if string wished was returned."""
-
-        if wait_str_invalid_regex is None:
-            wait_str_invalid_regex = self.INVALID_REGEX
-
-        if wait_str_failed_regex is None:
-            wait_str_failed_regex = self.ERROR_REGEX
-
-        string_ok = 0
-        recv_string = ''
-
-        while not string_ok:
-
-            while not self.channel.recv_ready():
-                sleep(self.WAIT_FOR_CLI_RETURN)
-
-            recv_string = self.channel.recv(9999)
-            file_name_string = self.removeDisallowedChars(recv_string)
-
-            for output_line in recv_string.splitlines():
-
-                if re.search(self.CURRENTLY_BUSY_WAIT, output_line):
-                    log.warning('Need to wait - Switch busy: %s' % output_line)
-                    raise plugin_exc.CurrentlyBusyErrorException()
-
-                elif re.search(self.WARNING_REGEX, output_line):
-                    log.warning('Equipment warning: %s' % output_line)
-
-                elif re.search(wait_str_invalid_regex, output_line):
-                    log.error('Equipment raised INVALID error: %s' %
-                              output_line)
-                    raise deploy_exc.InvalidCommandException(file_name_string)
-
-                elif re.search(wait_str_failed_regex, output_line):
-                    log.error('Equipment raised FAILED error: %s' %
-                              output_line)
-                    raise deploy_exc.CommandErrorException(file_name_string)
-
-                elif re.search(wait_str_ok_regex, output_line):
-
-                    log.debug('Equipment output: %s' % output_line)
-
-                    # test bug switch copying 0 bytes
-                    if output_line == '0 bytes successfully copied':
-                        log.debug('Switch copied 0 bytes, need to try again.')
-                        raise plugin_exc.CurrentlyBusyErrorException()
-                    string_ok = 1
-                elif re.search(self.VALID_TFTP_PUT_MESSAGE_NXS6001, output_line):
-
-                    log.debug('Equipment output: %s' % output_line)
-
-                    # test bug switch copying 0 bytes
-                    if output_line == 'Copy failed':
-                        log.debug('Switch copied 0 bytes, need to try again.')
-                        raise plugin_exc.CurrentlyBusyErrorException()
-                    string_ok = 1
-
-        return recv_string
+        self.copyScriptFileToConfig(filename,
+                                    destination='running-config')
