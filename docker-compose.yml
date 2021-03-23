@@ -56,8 +56,8 @@ services:
         image: globocom/networkapi:latest
         restart: always
         ports:
-            - "127.0.0.1:8000:8000"
-            - "127.0.0.1:8001:8001"
+            - "8000:8000"
+            - "8001:8001"
         env_file:
             - scripts/docker/netapi.env
         volumes:
