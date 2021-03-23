@@ -5,6 +5,10 @@ from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from mock import patch, MagicMock
 from jnpr.junos.exception import RPCError, RpcError, LockError, ConfigLoadError, CommitError
 
+from jnpr.junos.device import logger as device_logger
+from ncclient.transport.ssh import logger as ssh_logger
+from ncclient.transport.session import logger as session_logger
+from ncclient.operations.rpc import logger as rpc_logger
 
 class JunosPluginTest(NetworkApiTestCase):
 
@@ -13,7 +17,7 @@ class JunosPluginTest(NetworkApiTestCase):
 
     How to use:
         cd GloboNetworkAPI
-        docker exec -it netapi_app ./fast_start_test_reusedb.sh networkapi/plugins/Juniper/JUNOS
+        docker exec -it netapi_app ./fast_start_test_reusedb.sh networkapi/plugins/Juniper/JUNOS/tests.py
 
     General notes:
         - autospec=True: responds to methods that actually exist in the real class
@@ -257,3 +261,32 @@ class JunosPluginTest(NetworkApiTestCase):
 
         result = plugin.check_configuration_file_exists("any_configuration_path_with_file_name")
         self.assertEqual(result, "any_configuration_path_with_file_name")  # Must be the same
+
+    def test_set_detailed_junos_log_level_not_defined_at_db(self):
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        loggers = [device_logger, ssh_logger, session_logger, rpc_logger]
+        result = plugin.set_detailed_junos_log_level(loggers)
+        self.assertEqual(result, 'ERROR')
+
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.get_value')
+    def test_set_detailed_junos_log_level_defined_at_db(self, mock_get_value):
+
+        mock_get_value.return_value = 'WARNING'
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        loggers = [device_logger, ssh_logger, session_logger, rpc_logger]
+        result = plugin.set_detailed_junos_log_level(loggers)
+
+        self.assertEqual(result, 'WARNING')
+
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.get_value')
+    def test_set_detailed_junos_log_level_defined_wrong_at_db(self, mock_get_value):
+
+        mock_get_value.return_value = 'WRONG'
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        loggers = [device_logger, ssh_logger, session_logger, rpc_logger]
+        result = plugin.set_detailed_junos_log_level(loggers)
+
+        self.assertEqual(result, 'ERROR')

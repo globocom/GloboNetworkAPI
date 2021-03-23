@@ -1903,6 +1903,13 @@ VALUES
 INSERT INTO `tipo_interface` (`tipo`)
 VALUES ("access"), ("trunk");
 
+INSERT INTO `variables` (`name`, `value`, `description`)
+VALUES
+(
+    'detailed_junos_log_level',
+    'ERROR',
+    'Used to disable logs for detailed and specific libs used in plugin Junos'
+);
 
 
 
