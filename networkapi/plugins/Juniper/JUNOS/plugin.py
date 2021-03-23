@@ -36,6 +36,11 @@ from jnpr.junos.exception import \
     CommitError, \
     RpcError
 
+from jnpr.junos.device import logger as device_logger
+from ncclient.transport.ssh import logger as ssh_logger
+from ncclient.transport.session import logger as session_logger
+from ncclient.operations.rpc import logger as rpc_logger
+
 log = logging.getLogger(__name__)
 
 
@@ -44,7 +49,12 @@ class JUNOS(BasePlugin):
     configuration = None
     quantity_of_times_to_try_lock = 3
     seconds_to_wait_to_try_lock = 10
+
+    # Variables defined at networkapi/database
     alternative_variable_base_path_list = ['path_to_tftpboot']
+    detailed_log_level_var = 'detailed_junos_log_level'
+    detailed_log_level_used = None
+
     alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
     ignore_warning_list = ['statement not found']
 
@@ -56,21 +66,31 @@ class JUNOS(BasePlugin):
         if 'seconds_to_wait_to_try_lock' in kwargs:
             self.seconds_to_wait_to_try_lock = kwargs.get('seconds_to_wait_to_try_lock')
 
+        # Logger objects to be disabled. Remove or add objects to array below:
+        loggers = [device_logger, ssh_logger, session_logger, rpc_logger]
+        detailed_log_level_used = self.set_detailed_junos_log_level(loggers)
+        log.info("Detailed Junos log level: {}".format(detailed_log_level_used))
+
     def connect(self):
 
         """
-        Connects to equipment via ssh using PyEz  and create connection with invoked shell object.
+        Connects to equipment via ssh using PyEz
+        and create connection with invoked shell object.
 
         :returns:
-            True on success or raise an exception on any fail (will NOT return a false result, due project decision).
+            True on success or raise an exception on any
+            fail (will NOT return a false result, due project decision).
         """
 
         if self.equipment_access is None:
             try:
                 # Collect the credentials (user and password) for equipment
-                self.equipment_access = EquipamentoAcesso.search(None, self.equipment, 'ssh').uniqueResult()
+                self.equipment_access = EquipamentoAcesso.search(None,
+                                                                 self.equipment,
+                                                                 'ssh').uniqueResult()
             except Exception as e:
-                message = "Unknown error while accessing equipment {} in database.".format(self.equipment.nome)
+                message = "Unknown error while accessing equipment {} in database.".format(
+                    self.equipment.nome)
                 log.error("{}: {}".format(message, e))
                 raise exceptions.APIException(message)
 
@@ -360,3 +380,47 @@ class JUNOS(BasePlugin):
         log.error("{} Could not find in: relative path ('{}'), system variables ({}) or static paths ({})".format(
             message, file_path, self.alternative_variable_base_path_list, self.alternative_static_base_path_list))
         raise exceptions.APIException(message)
+
+    def set_detailed_junos_log_level(self, loggers):
+
+        """
+        Used to disable logs from detailed and specific libs used in Junos plugin, for example:
+        If 'ERROR' is defined, higher log messages will be disabled, like 'WARNING', 'INFO' and 'DEBUG'.
+
+        :param str loggers: Array of logger objects
+        :return: A valid level error ('ERROR', 'INFO', etc.), otherwise None
+        """
+
+        default_log_level = 'ERROR'
+        log_level = None
+
+        # Trying to get the variable from networkapi.
+        try:
+            log_level = get_value(self.detailed_log_level_var)
+        except DatabaseError as e:
+            log.warning("Database error while getting '{}' variable: {}".format(
+                self.detailed_log_level_var, e))
+        except VariableDoesNotExistException as e:
+            log.warning("Variable '{}' does not exist: {}".format(
+                self.detailed_log_level_var, e))
+        except Exception as e:
+            log.warning("Unknown error while getting '{}' variable: {} ".format(
+                self.detailed_log_level_var, e))
+
+        # If could not get the value earlier, a default value will be used
+        if log_level is None or log_level == "":
+            log.warning("Could not get '{}' variable from networkapi. ".format(
+                self.detailed_log_level_var, default_log_level))
+            log_level = default_log_level
+
+        # Trying to set the level to each log object.
+        for logger in loggers:
+            try:
+                logger.setLevel(log_level)
+            except Exception as e:
+                log.error("Invalid log level '{}'. The default {} will be used: {}".format(
+                    log_level, default_log_level, e))
+                log_level = default_log_level  # to be used at next iteration too
+                logger.setLevel(log_level)
+
+        return log_level
