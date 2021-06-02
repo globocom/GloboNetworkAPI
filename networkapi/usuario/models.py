@@ -383,13 +383,19 @@ class Usuario(BaseModel):
             if bypass:
 
                 try:
+                    password = Usuario.encode_password(password)
+                    user = Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
+
                     if convert_string_or_int_to_boolean(get_value('use_cache_user')):
                         self.cache_user.set(username, password)
+
+                    return user
+
                 except exceptions.VariableDoesNotExistException:
                     self.log.debug(u'User will not be cached because cached user is disabled')
 
-                password = Usuario.encode_password(password)
-                return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
+                except ObjectDoesNotExist:
+                    raise ObjectDoesNotExist
 
             # ldap auth
             try:
