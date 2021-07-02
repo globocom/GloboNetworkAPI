@@ -171,9 +171,8 @@ class JUNOS(BasePlugin):
         try:
 
             command_file = open(file_path, "r")
-            self.check_configuration_file_has_content(command_file, file_path)
-
             command = command_file.read()
+            self.check_configuration_has_content(command, file_path)  # Raises exception if it fails
             log.info("Load configuration from file {} successfully!".format(file_path))
             return self.exec_command(command)
 
@@ -381,30 +380,6 @@ class JUNOS(BasePlugin):
         message = "An error occurred while finding configuration file."
         log.error("{} Could not find in: relative path ('{}'), system variables ({}) or static paths ({})".format(
             message, file_path, self.alternative_variable_base_path_list, self.alternative_static_base_path_list))
-        raise exceptions.APIException(message)
-
-    def check_configuration_file_has_content(self, command_file, file_path):
-        """
-        Method aimed to check file emptiness.
-        Return true if some line has a content or raise an exception if all lines has only break line
-
-        :param command_file:
-        :param file_path: for debug reasons
-
-        :return: True or raise an exception
-        """
-
-        log.info("Checking configuration file has content: {}".format(file_path))
-
-        lines = command_file.readlines()
-        for line in lines:
-            if not line.isspace():
-                # Has content and finish
-                return True
-
-        # If code came here, means file has no content
-        message = "Configuration file is empty."  # Message to client
-        log.error("{} {}".format(message, file_path))  # Message to log
         raise exceptions.APIException(message)
 
     def set_detailed_junos_log_level(self, loggers):

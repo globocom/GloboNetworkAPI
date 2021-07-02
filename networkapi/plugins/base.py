@@ -201,6 +201,23 @@ class BasePlugin(object):
 
         return recv_string
 
+    def check_configuration_has_content(self, command, file_path):
+        """
+        Raises exception if command is empty
+
+        :param str command:
+        :param str file_path: for debug reasons
+        """
+
+        log.info("Checking configuration has content (file path: {}) ... ".format(file_path))
+
+        command = command.replace("\n", "")
+        if not command:
+            message = "Configuration is empty."
+            log.error("{} {}".format(message, file_path))
+            raise exceptions.APIException(message)
+        log.info("Success, configuration file has content!")
+
     def get_state_member(self, status):
         """Return state of poolmember."""
 
