@@ -211,10 +211,15 @@ class BasePlugin(object):
 
         log.info("Checking configuration has content (file path: {}) ... ".format(file_path))
 
-        command = command.replace("\n", "")
-        if not command:
-            message = "Configuration is empty."
-            log.error("{} {}".format(message, file_path))
+        if re.search('[a-zA-Z]', command) is None:
+
+            # Exception message
+            message = "Configuration is empty.".format(command)
+
+            # Internal detailed log message.
+            # Important to keep the single quotes '{}' to identify possible blank spaces in command
+            log.error("{} {} command:'{}'".format(message, file_path, command))
+
             raise exceptions.APIException(message)
         log.info("Success, configuration file has content!")
 
