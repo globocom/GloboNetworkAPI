@@ -172,6 +172,7 @@ class JUNOS(BasePlugin):
 
             command_file = open(file_path, "r")
             command = command_file.read()
+            self.check_configuration_has_content(command, file_path)  # Raises exception if it fails
             log.info("Load configuration from file {} successfully!".format(file_path))
             return self.exec_command(command)
 
