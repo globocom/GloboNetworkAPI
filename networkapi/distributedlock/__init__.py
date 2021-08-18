@@ -117,3 +117,6 @@ class distributedlock(object):
     def __exit__(self, type, value, traceback):
         _debug('releasing lock %s' % self.key)
         self.lock.release()
+
+    def get_cached_data(self):
+        return self.lock.get_cached_data()
