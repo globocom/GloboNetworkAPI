@@ -69,3 +69,8 @@ class MemcachedLock(object):
         else:
             log.warning(
                 "I've no lock to release. Increase TIMEOUT of lock operations")
+
+    def get_cached_data(self):
+        value = self.client.get(self.key)
+
+        return value if value else None

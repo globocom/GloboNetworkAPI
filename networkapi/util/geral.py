@@ -72,6 +72,13 @@ def create_lock_with_blocking(locks_name):
     for lock_name in locks_name:
         try:
             lock = distributedlock(lock_name, blocking=False)
+            # TODO: This is a temporary solution for a high needed change. In the future we need to validate
+            #  why destroy_lock in models/create_v3 didn't work some times
+
+            if lock.get_cached_data():
+                log.info('Get cached lock data for {}. Disabling it and creating a new lock'.format(lock_name))
+                lock.lock.instance_id = lock.get_cached_data()
+                lock.__exit__('', '', '')
             lock.__enter__()
             locks_list.append(lock)
         except LockNotAcquiredError:
