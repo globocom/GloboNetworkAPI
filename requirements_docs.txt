@@ -68,5 +68,5 @@ pytest==2.2.4
 pytest-cov==1.6
 PyYAML==3.10
 sure==1.2.7
-urllib3==1.21.1
+urllib3==1.26.5
 
