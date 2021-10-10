@@ -39,7 +39,7 @@ schema==0.6.6
 supervisor==3.3.4
 Jinja2==2.9
 MarkupSafe==1.1.1
-PyYAML==5.3
+PyYAML==5.4
 certifi==2018.10.15
 chardet==3.0.4
 gtextfsm==0.2.1
