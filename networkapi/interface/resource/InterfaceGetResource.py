@@ -29,6 +29,7 @@ from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface
 from networkapi.interface.models import InterfaceError
 from networkapi.interface.models import InterfaceNotFoundError
+from networkapi.interface.models import InterfaceChannelForEquipmentDuplicatedError
 from networkapi.rest import RestResource
 from networkapi.rest import UserNotAuthorizedError
 from networkapi.util import is_valid_int_greater_zero_param
@@ -132,6 +133,9 @@ class InterfaceGetResource(RestResource):
                     channel_id = get_channel[0].channel.id if get_channel else ""
                     interfaces = Interface.objects.filter(channel__id=channel_id) if channel_id else []
                     for i in interfaces:
+                        if i.equipamento.nome == equip_name:
+                            raise InterfaceChannelForEquipmentDuplicatedError(
+                                None, u'An interface of type channel with the same name on the same equipment already exists')
                         equipInterface_list.append(get_new_interface_map(i))
                     return self.response(dumps_networkapi({'interfaces': equipInterface_list}))
                 if equipamento is not None:
