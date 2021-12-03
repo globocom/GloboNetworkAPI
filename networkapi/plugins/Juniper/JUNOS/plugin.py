@@ -425,3 +425,13 @@ class JUNOS(BasePlugin):
                 logger.setLevel(log_level)
 
         return log_level
+
+    def remove_svi(self, svi_number):
+        """
+        In case of undeploy the last network in a VLAN from CadVlan
+        (ex.: https://cadvlan.globoi.com/vlan/get/507484/201/0/0/0/0/0/0/0/0),
+        this method is executed to prevent specific problems, but not necessary in Juniper equipments
+        If this method are not implemented, it will cause a bug in CadVlan, preventing the undeploy.
+        This implementation (returning "") was done in emergency situation to avoid the bug.
+        """
+        return ""
