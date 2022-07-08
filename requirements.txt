@@ -34,7 +34,7 @@ requests==2.10.0
 simple-db-migrate==2.2.0
 six==1.9.0
 stompest==2.1.6
-suds==0.4
+suds==1.0.0
 schema==0.6.6
 supervisor==3.3.4
 Jinja2==2.9
