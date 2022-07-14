@@ -64,12 +64,10 @@ from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import get_app
 from networkapi.api_rest.exceptions import NetworkAPIException
 
-
 log = logging.getLogger(__name__)
 
 
 class NetworkIPv4Error(Exception):
-
     """Generic exception for everything related to NetworkIPv4."""
 
     def __init__(self, cause, message=None):
@@ -82,7 +80,6 @@ class NetworkIPv4Error(Exception):
 
 
 class NetworkIPv4ErrorV3(Exception):
-
     """Generic exception for everything related to NetworkIPv4."""
 
     def __init__(self, message):
@@ -93,7 +90,6 @@ class NetworkIPv4ErrorV3(Exception):
 
 
 class NetworkIPv6ErrorV3(Exception):
-
     """Generic exception for everything related to NetworkIPv6."""
 
     def __init__(self, message):
@@ -104,7 +100,6 @@ class NetworkIPv6ErrorV3(Exception):
 
 
 class NetworkIPv6Error(Exception):
-
     """Generic exception for everything related to NetworkIPv6."""
 
     def __init__(self, cause, message=None):
@@ -117,7 +112,6 @@ class NetworkIPv6Error(Exception):
 
 
 class NetworkIPvXError(Exception):
-
     """Generic exception for everything related to both NetworkIPv4 and NetworkIPv6."""
 
     def __init__(self, cause, message=None):
@@ -130,7 +124,6 @@ class NetworkIPvXError(Exception):
 
 
 class NetworkIPRangeEnvError(NetworkIPvXError):
-
     """Exception for two environments with same ip range when trying to add new network."""
 
     def __init__(self, cause, message=None):
@@ -143,7 +136,6 @@ class NetworkIPRangeEnvError(NetworkIPvXError):
 
 
 class NetworkSubnetRange(NetworkIPvXError):
-
     """Exception for a network that does not be a subnet of de environment network."""
 
     def __init__(self, cause, message=None):
@@ -156,7 +148,6 @@ class NetworkSubnetRange(NetworkIPvXError):
 
 
 class NetworkEnvironmentError(NetworkIPvXError):
-
     """Exception for a environment that does not have a network."""
 
     def __init__(self, cause, message=None):
@@ -169,7 +160,6 @@ class NetworkEnvironmentError(NetworkIPvXError):
 
 
 class IpErrorV3(Exception):
-
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com IP."""
 
     def __init__(self, message):
@@ -180,7 +170,6 @@ class IpErrorV3(Exception):
 
 
 class IpError(Exception):
-
     """Representa um erro ocorrido durante acesso à tabelas relacionadas com IP."""
 
     def __init__(self, cause, message=None):
@@ -193,7 +182,6 @@ class IpError(Exception):
 
 
 class NetworkIPv4NotFoundError(NetworkIPv4Error):
-
     """Exception to search by primary key."""
 
     status_code = status.HTTP_404_NOT_FOUND
@@ -203,7 +191,6 @@ class NetworkIPv4NotFoundError(NetworkIPv4Error):
 
 
 class NetworkIPv6NotFoundError(NetworkIPv6Error):
-
     """Exception to search by primary key."""
 
     def __init__(self, cause, message=None):
@@ -211,7 +198,6 @@ class NetworkIPv6NotFoundError(NetworkIPv6Error):
 
 
 class NetworkIPvXNotFoundError(NetworkIPvXError):
-
     """Exception to search by primary key."""
 
     def __init__(self, cause, message=None):
@@ -219,7 +205,6 @@ class NetworkIPvXNotFoundError(NetworkIPvXError):
 
 
 class NetworkIPv4AddressNotAvailableError(NetworkIPv4Error):
-
     """Exception to unavailable address to create a new NetworkIPv4."""
 
     def __init__(self, cause, message=None):
@@ -227,7 +212,6 @@ class NetworkIPv4AddressNotAvailableError(NetworkIPv4Error):
 
 
 class NetworkIPv6AddressNotAvailableError(NetworkIPv6Error):
-
     """Exception to unavailable address to create a new NetworkIPv6."""
 
     def __init__(self, cause, message=None):
@@ -235,7 +219,6 @@ class NetworkIPv6AddressNotAvailableError(NetworkIPv6Error):
 
 
 class NetworkIpAddressNotAvailableError(NetworkIPvXError):
-
     """Exception to unavailable address."""
 
     def __init__(self, cause, message=None):
@@ -243,7 +226,6 @@ class NetworkIpAddressNotAvailableError(NetworkIPvXError):
 
 
 class IpNotFoundError(IpError):
-
     """Retorna exceção para pesquisa de IP por chave primária."""
 
     def __init__(self, cause, message=None):
@@ -251,7 +233,6 @@ class IpNotFoundError(IpError):
 
 
 class IpEquipmentNotFoundError(IpError):
-
     """Retorna exceção para pesquisa de IP-Equipamento por chave primária/ip e equipamento."""
 
     def __init__(self, cause, message=None):
@@ -259,7 +240,6 @@ class IpEquipmentNotFoundError(IpError):
 
 
 class IpEquipamentoDuplicatedError(IpError):
-
     """Retorna exceção para pesquisa de IP-Equipamento duplicado."""
 
     def __init__(self, cause, message=None):
@@ -267,7 +247,6 @@ class IpEquipamentoDuplicatedError(IpError):
 
 
 class IpNotAvailableError(IpError):
-
     """Retorna exceção porque não existe um IP disponível para a VLAN."""
 
     def __init__(self, cause, message=None):
@@ -275,7 +254,6 @@ class IpNotAvailableError(IpError):
 
 
 class IpEquipmentAlreadyAssociation(IpError):
-
     """Retorna exceção caso um Ip já esteja associado a um determinado equipamento."""
 
     def __init__(self, cause, message=None):
@@ -283,7 +261,6 @@ class IpEquipmentAlreadyAssociation(IpError):
 
 
 class IpNotFoundByEquipAndVipError(IpError):
-
     """Retorna exceção caso um Ip já esteja associado a um determinado equipamento."""
 
     def __init__(self, cause, message=None):
@@ -291,7 +268,6 @@ class IpNotFoundByEquipAndVipError(IpError):
 
 
 class IpCantBeRemovedFromVip(IpError):
-
     """Retorna exceção caso um Ip não possa ser excluído por estar em uso por uma requisição VIP."""
 
     def __init__(self, cause, message=None):
@@ -299,7 +275,6 @@ class IpCantBeRemovedFromVip(IpError):
 
 
 class NetworkNotInEvip(IpError):
-
     """Retorna exceção caso não haja uma rede Ipv4 ou Ipv6 para o Ambiente Vip."""
 
     def __init__(self, cause, message=None):
@@ -307,7 +282,6 @@ class NetworkNotInEvip(IpError):
 
 
 class IpRangeAlreadyAssociation(IpError):
-
     """Returns exception for equipment already having ip with same ip range in another network."""
 
     def __init__(self, cause, message=None):
@@ -315,7 +289,6 @@ class IpRangeAlreadyAssociation(IpError):
 
 
 class IpEquipCantDissociateFromVip(IpError):
-
     """Returns exception when trying to dissociate ip and equipment, but equipment is the last balancer for Vip Request"""
 
     def __init__(self, cause, message=None):
@@ -323,7 +296,6 @@ class IpEquipCantDissociateFromVip(IpError):
 
 
 class IpCantRemoveFromServerPool(IpError):
-
     """Returns exception when trying to dissociate ip and equipment, but equipment is the last balancer for Vip Request"""
 
     def __init__(self, cause, message=None):
@@ -331,7 +303,6 @@ class IpCantRemoveFromServerPool(IpError):
 
 
 class NetworkIPv4(BaseModel):
-
     id = models.AutoField(
         primary_key=True
     )
@@ -564,7 +535,8 @@ class NetworkIPv4(BaseModel):
 
                 # Cast to API class
                 networksv4 = set([(IPv4Network(
-                    '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip in nets])
+                    '%d.%d.%d.%d/%d' % (net_ip.oct1, net_ip.oct2, net_ip.oct3, net_ip.oct4, net_ip.block))) for net_ip
+                    in nets])
 
                 # For each configuration founded in environment
                 for config in configs:
@@ -700,7 +672,7 @@ class NetworkIPv4(BaseModel):
         except IpCantBeRemovedFromVip, e:
             # Network id and ReqVip id
             net_name = str(self.oct1) + '.' + str(self.oct2) + '.' + \
-                str(self.oct3) + '.' + str(self.oct4) + '/' + str(self.block)
+                       str(self.oct3) + '.' + str(self.oct4) + '/' + str(self.block)
             cause = {'Net': net_name, 'ReqVip': e.cause}
             raise IpCantBeRemovedFromVip(
                 cause, 'Esta Rede possui um Vip apontando para ela, e não pode ser excluída')
@@ -734,7 +706,7 @@ class NetworkIPv4(BaseModel):
 
             # Network Type
             if networkv4.get('network_type'):
-                self.network_type = vlan_model.TipoRede()\
+                self.network_type = vlan_model.TipoRede() \
                     .get_by_pk(networkv4.get('network_type'))
 
             # Environment vip
@@ -743,7 +715,7 @@ class NetworkIPv4(BaseModel):
                     networkv4.get('environmentvip'))
 
             # Get environments related
-            envs = self.vlan.get_environment_related(use_vrf=True)\
+            envs = self.vlan.get_environment_related(use_vrf=True) \
                 .values_list('id', flat=True)
 
         except vlan_model.VlanNotFoundError, e:
@@ -788,7 +760,7 @@ class NetworkIPv4(BaseModel):
                     raise NetworkIPv4ErrorV3(e.message)
 
             elif self.block is not None and self.oct1 is not None and \
-                self.oct2 is not None and self.oct3 is not None and \
+                    self.oct2 is not None and self.oct3 is not None and \
                     self.oct4 is not None:
 
                 # Was send prefix and octs
@@ -826,7 +798,7 @@ class NetworkIPv4(BaseModel):
 
                 # Creates Ips for routers of environment
                 eqpt_model = get_model('equipamento', 'EquipamentoAmbiente')
-                eqpts = eqpt_model.get_routers_by_environment(self.vlan.ambiente)\
+                eqpts = eqpt_model.get_routers_by_environment(self.vlan.ambiente) \
                     .values_list('equipamento', flat=True)
 
                 if eqpts:
@@ -850,7 +822,6 @@ class NetworkIPv4(BaseModel):
                     if len(eqpts) > 1 and self.block < 30:
 
                         for eqpt in eqpts:
-
                             ip = Ip.get_first_available_ip(
                                 self.id, topdown=True)
                             router_ip = str(ip).split('.')
@@ -889,7 +860,7 @@ class NetworkIPv4(BaseModel):
         try:
             self.cluster_unit = networkv4.get('cluster_unit')
 
-            self.network_type = vlan_model.TipoRede()\
+            self.network_type = vlan_model.TipoRede() \
                 .get_by_pk(networkv4.get('network_type'))
 
             if force:
@@ -897,7 +868,7 @@ class NetworkIPv4(BaseModel):
 
             # has environmentvip
             if networkv4.get('environmentvip'):
-                self.ambient_vip = envvip_model.EnvironmentVip()\
+                self.ambient_vip = envvip_model.EnvironmentVip() \
                     .get_by_pk(networkv4.get('environmentvip'))
             else:
                 self.ambient_vip = None
@@ -954,7 +925,7 @@ class NetworkIPv4(BaseModel):
         """
 
         # Get environments related
-        envs = self.vlan.get_environment_related(use_vrf=True)\
+        envs = self.vlan.get_environment_related(use_vrf=True) \
             .values_list('id', flat=True)
 
         locks_name = list()
@@ -977,8 +948,8 @@ class NetworkIPv4(BaseModel):
 
             if self.active and not force:
                 msg = 'Can\'t remove network {} because it is active. ' \
-                    'Try to set it inactive before removing it.'.format(
-                        str(self))
+                      'Try to set it inactive before removing it.'.format(
+                    str(self))
                 raise NetworkActiveError(None, msg)
 
             for ip in self.ip_set.all():
@@ -987,9 +958,9 @@ class NetworkIPv4(BaseModel):
             super(NetworkIPv4, self).delete()
 
         except IpCantBeRemovedFromVip, e:
-            msg = 'This network has a VIP pointing to it, and can not '\
-                'be deleted. Network: {}, Vip Request: {}'.format(
-                    str(self), e.cause)
+            msg = 'This network has a VIP pointing to it, and can not ' \
+                  'be deleted. Network: {}, Vip Request: {}'.format(
+                str(self), e.cause)
 
             self.log.error(msg)
             raise NetworkIPv4ErrorV3(msg)
@@ -1186,7 +1157,6 @@ class NetworkIPv4(BaseModel):
 
 
 class Ip(BaseModel):
-
     id = models.AutoField(
         primary_key=True,
         db_column='id_ip'
@@ -1362,7 +1332,6 @@ class Ip(BaseModel):
 
                 # If IP generated was not used
                 if ip not in ipsv4:
-
                     # Use it
                     selected_ip = ip
 
@@ -1403,7 +1372,6 @@ class Ip(BaseModel):
 
             # If IP generated was not used
             if ip not in ipsv4:
-
                 # Use it
                 selected_ip = ip
 
@@ -1419,7 +1387,8 @@ class Ip(BaseModel):
 
             # Cast to API
             net4 = IPv4Network('%d.%d.%d.%d/%d' % (self.networkipv4.oct1, self.networkipv4.oct2,
-                                                   self.networkipv4.oct3, self.networkipv4.oct4, self.networkipv4.block))
+                                                   self.networkipv4.oct3, self.networkipv4.oct4,
+                                                   self.networkipv4.block))
 
             # Find all ips ralated to network
             ips = Ip.objects.filter(networkipv4__id=self.networkipv4.id)
@@ -1529,7 +1498,7 @@ class Ip(BaseModel):
                         None,
                         u'Ip %s.%s.%s.%s already has association with an Equipament. '
                         u'Try using the association screen for this Ip.' % (
-                        self.oct1, self.oct2, self.oct3, self.oct4))
+                            self.oct1, self.oct2, self.oct3, self.oct4))
                 except IpEquipmentNotFoundError:
                     flag = True
                     already_ip = True
@@ -1607,7 +1576,7 @@ class Ip(BaseModel):
             else:
                 raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available '
                                                 u'for network %s.' % (
-                    self.oct1, self.oct2, self.oct3, self.oct4, net.id))
+                                              self.oct1, self.oct2, self.oct3, self.oct4, net.id))
 
         except IpRangeAlreadyAssociation, e:
             raise IpRangeAlreadyAssociation(None, e.message)
@@ -1619,7 +1588,7 @@ class Ip(BaseModel):
         except IpNotAvailableError, e:
             raise IpNotAvailableError(None, u'Ip %s.%s.%s.%s not available for '
                                             u'network %s.' % (
-                self.oct1, self.oct2, self.oct3, self.oct4, net.id))
+                                          self.oct1, self.oct2, self.oct3, self.oct4, net.id))
         except (IpError, EquipamentoError), e:
             self.log.error(
                 u'Error adding new IP or relationship ip-equipment.')
@@ -1683,7 +1652,6 @@ class Ip(BaseModel):
 
                 # If IP generated was not used
                 if ip not in ipsv4:
-
                     # Use it
                     selected_ip = ip
 
@@ -1709,7 +1677,7 @@ class Ip(BaseModel):
             ip_equipment.save(authenticated_user)
 
             try:
-                equipment_environment = equipamentoambiente()\
+                equipment_environment = equipamentoambiente() \
                     .get_by_equipment_environment(
                     equipment_id,
                     self.networkipv4.vlan.ambiente_id
@@ -1809,7 +1777,8 @@ class Ip(BaseModel):
             @raise IpError: Failed to search for the IP.
         """
         try:
-            return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4, networkipv4__vlan__ambiente__id=id_environment)
+            return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4,
+                                  networkipv4__vlan__ambiente__id=id_environment)
         except ObjectDoesNotExist, e:
             raise IpNotFoundError(e, u'There is no IP %s.%s.%s.%s of the environment %s.' % (
                 oct1, oct2, oct3, oct4, id_environment))
@@ -1916,14 +1885,14 @@ class Ip(BaseModel):
     ##################
     # Methods for V3 #
     ##################
-    def create_v3(self, ip_map, locks_used=[]):
+    def create_v3(self, ip_map, locks_used=[], reserve_all=False):
         """Method V3 to create Ip."""
 
         models = get_app('equipamento', 'models')
 
         try:
 
-            self.networkipv4 = NetworkIPv4()\
+            self.networkipv4 = NetworkIPv4() \
                 .get_by_pk(ip_map.get('networkipv4'))
             self.oct1 = ip_map.get('oct1')
             self.oct2 = ip_map.get('oct2')
@@ -1932,8 +1901,8 @@ class Ip(BaseModel):
             self.descricao = ip_map.get('description')
 
             # Get environments related
-            envs = self.networkipv4.vlan\
-                .get_environment_related(use_vrf=True)\
+            envs = self.networkipv4.vlan \
+                .get_environment_related(use_vrf=True) \
                 .values_list('id', flat=True)
 
             # Get objects of equipments
@@ -1973,7 +1942,7 @@ class Ip(BaseModel):
 
             if self.oct1 is None and self.oct2 is None and \
                     self.oct3 is None and self.oct4 is None:
-                self.allocate_v3()
+                self.allocate_v3(reserve_all=reserve_all)
             else:
                 net4 = IPv4Network(self.networkipv4.networkv4)
 
@@ -2046,7 +2015,7 @@ class Ip(BaseModel):
             self.descricao = ip_map.get('description')
 
             # Get environments related
-            envs = self.networkipv4.vlan.get_environment_related(use_vrf=True)\
+            envs = self.networkipv4.vlan.get_environment_related(use_vrf=True) \
                 .values_list('id', flat=True)
 
             # Get objects of equipments
@@ -2093,8 +2062,8 @@ class Ip(BaseModel):
             self.save()
 
             # Get current associates
-            current = self.ipequipamento_set\
-                .filter(equipamento__in=eqpts)\
+            current = self.ipequipamento_set \
+                .filter(equipamento__in=eqpts) \
                 .values_list('equipamento', flat=True)
 
             # Creates new associate
@@ -2107,7 +2076,7 @@ class Ip(BaseModel):
                     })
 
             # Removes old associates
-            for ip_eqpt in self.ipequipamento_set\
+            for ip_eqpt in self.ipequipamento_set \
                     .exclude(equipamento__in=eqpts):
                 ip_eqpt.delete_v3(bypass_ip=True)
 
@@ -2201,7 +2170,7 @@ class Ip(BaseModel):
         env_ip = self.networkipv4.vlan.ambiente
         network.validate_conflict_join_envs(env_ip, equipments)
 
-    def allocate_v3(self):
+    def allocate_v3(self, reserve_all=False):
         """Persist an IPv4 and associate it to an equipment.
             If equipment was not related with VLAN environment, this makes the relationship
             @return: Nothing
@@ -2229,27 +2198,48 @@ class Ip(BaseModel):
 
         # For each ip generated
         i = 0
-        for ip in net4.iterhosts():
 
-            # Do not use some range of IPs (config)
-            # IPv4_MIN = Firsts
-            # IPv4_MAX = Number minimum of Ip reserveds
-            # First IP and 2 last I
-            i = i + 1
-            if i >= conf.IPv4_MIN and i < (net4.numhosts - conf.IPv4_MAX):
+        # To use all IPs in a network
+        if reserve_all:
 
-                # If IP generated was not used
+            # Define a IPs list, include network and broadcast addresses
+            all_ips = [net4.network] # Append the network address to list
+            for ip in net4.iterhosts(): # Append all usable IP addresses to list
+                all_ips.append(ip)
+            all_ips.append(net4.broadcast) # Append broadcast address to list
+
+            # Search for an available IP
+            for ip in all_ips:
+                i += 1
+
+                # Validate if the current IP is not already used.
                 if ip not in ipsv4:
 
-                    # Use it
+                    # Found a available IP
                     selected_ip = ip
-
-                    # Stop generation
                     break
+
+        else:
+            for ip in net4.iterhosts():
+
+                # Do not use some range of IPs (config)
+                # IPv4_MIN = Firsts
+                # IPv4_MAX = Number minimum of Ip reserveds
+                # First IP and 2 last I
+                i = i + 1
+                if i >= conf.IPv4_MIN and i < (net4.numhosts - conf.IPv4_MAX):
+
+                    # If IP generated was not used
+                    if ip not in ipsv4:
+                        # Use it
+                        selected_ip = ip
+
+                        # Stop generation
+                        break
 
         if selected_ip is None:
             raise IpNotAvailableError(None, u'No IP available to VLAN %s.' %
-                                            self.networkipv4.vlan.num_vlan)
+                                      self.networkipv4.vlan.num_vlan)
 
         self.oct1, self.oct2, self.oct3, self.oct4 = str(
             selected_ip).split('.')
@@ -2275,7 +2265,6 @@ class IpEquipamento(BaseModel):
         db_table = u'ips_dos_equipamentos'
         managed = True
         unique_together = ('ip', 'equipamento')
-
 
     @classmethod
     def get_by_ip(cls, ip_id):
@@ -2367,7 +2356,9 @@ class IpEquipamento(BaseModel):
         self.__validate_ip()
 
         try:
-            if self.equipamento not in [ea.equipamento for ea in self.ip.networkipv4.vlan.ambiente.equipamentoambiente_set.all().select_related('equipamento')]:
+            if self.equipamento not in [ea.equipamento for ea in
+                                        self.ip.networkipv4.vlan.ambiente.equipamentoambiente_set.all().select_related(
+                                                'equipamento')]:
                 ea = equipamentoambiente(
                     ambiente=self.ip.networkipv4.vlan.ambiente, equipamento=self.equipamento)
                 ea.save(authenticated_user)
@@ -2400,7 +2391,9 @@ class IpEquipamento(BaseModel):
                 if not another_balancer:
                     if r.vip_criado:
                         raise IpEquipCantDissociateFromVip({'vip_id': r.id, 'ip': mount_ipv4_string(
-                            self.ip), 'equip_name': self.equipamento.nome}, 'Ipv4 não pode ser disassociado do equipamento %s porque é o último balanceador da Requisição Vip %s.' % (self.equipamento.nome, r.id))
+                            self.ip), 'equip_name': self.equipamento.nome},
+                                                           'Ipv4 não pode ser disassociado do equipamento %s porque é o último balanceador da Requisição Vip %s.' % (
+                                                           self.equipamento.nome, r.id))
                     else:
                         # Remove ip from vip or remove vip
                         id_vip = r.id
@@ -2561,7 +2554,6 @@ class IpEquipamento(BaseModel):
                                               bypass_ipv6=True)
 
         if self.ip.serverpoolmember_set.count() > 0:
-
             items = ['{}:{}'.format(
                 svm.server_pool.id,
                 svm.server_pool.identifier
@@ -2588,7 +2580,6 @@ class IpEquipamento(BaseModel):
 
 
 class NetworkIPv6(BaseModel):
-
     id = models.AutoField(
         primary_key=True
     )
@@ -2999,7 +2990,7 @@ class NetworkIPv6(BaseModel):
         except IpCantBeRemovedFromVip, e:
             # Network id and ReqVip id
             net_name = str(self.block1) + ':' + str(self.block2) + \
-                ':' + str(self.block3) + ':' + str(self.block4) + ':'
+                       ':' + str(self.block3) + ':' + str(self.block4) + ':'
             net_name = net_name + str(self.block5) + ':' + str(self.block6) + ':' + str(
                 self.block7) + ':' + str(self.block8) + '/' + str(self.block)
             cause = {'Net': net_name, 'ReqVip': e.cause}
@@ -3044,16 +3035,16 @@ class NetworkIPv6(BaseModel):
 
             # Type of Network
             if networkv6.get('network_type'):
-                self.network_type = vlan_model.TipoRede()\
+                self.network_type = vlan_model.TipoRede() \
                     .get_by_pk(networkv6.get('network_type'))
 
             # has environmentvip
             if networkv6.get('environmentvip'):
-                self.ambient_vip = envvip_model.EnvironmentVip()\
+                self.ambient_vip = envvip_model.EnvironmentVip() \
                     .get_by_pk(networkv6.get('environmentvip'))
 
             # Get environments related
-            envs = self.vlan.get_environment_related(use_vrf=True)\
+            envs = self.vlan.get_environment_related(use_vrf=True) \
                 .values_list('id', flat=True)
 
         except vlan_model.VlanNotFoundError, e:
@@ -3090,7 +3081,7 @@ class NetworkIPv6(BaseModel):
 
             # Allocate network for vlan with prefix(optional)
             if not self.block1 and not self.block2 and not self.block3 and \
-                not self.block4 and not self.block5 and \
+                    not self.block4 and not self.block5 and \
                     not self.block6 and not self.block7 and not self.block8:
 
                 try:
@@ -3102,7 +3093,7 @@ class NetworkIPv6(BaseModel):
 
             # Was send prefix and octs
             elif self.block and self.block1 and self.block2 and self.block3 \
-                and self.block4 and self.block5 and self.block6 and \
+                    and self.block4 and self.block5 and self.block6 and \
                     self.block7 and self.block8:
 
                 ip = IPNetwork('%s/%s' % (self.formated_octs, self.block))
@@ -3143,7 +3134,7 @@ class NetworkIPv6(BaseModel):
 
                 # Creates Ips for routers of environment
                 eqpt_model = get_model('equipamento', 'EquipamentoAmbiente')
-                eqpts = eqpt_model.get_routers_by_environment(self.vlan.ambiente)\
+                eqpts = eqpt_model.get_routers_by_environment(self.vlan.ambiente) \
                     .values_list('equipamento', flat=True)
 
                 if eqpts:
@@ -3171,7 +3162,6 @@ class NetworkIPv6(BaseModel):
                     if len(eqpts) > 1 and self.block < 126:
 
                         for eqpt in eqpts:
-
                             ip = Ipv6.get_first_available_ip6(self.id, True)
                             router_ip = str(ip).split(':')
 
@@ -3280,7 +3270,7 @@ class NetworkIPv6(BaseModel):
         """
 
         # Get environments related
-        envs = self.vlan.get_environment_related(use_vrf=True)\
+        envs = self.vlan.get_environment_related(use_vrf=True) \
             .values_list('id', flat=True)
 
         locks_name = list()
@@ -3302,8 +3292,8 @@ class NetworkIPv6(BaseModel):
         try:
             if self.active and not force:
                 msg = 'Can\'t remove network {} because it is active. ' \
-                    'Try to set it inactive before removing it.'.format(
-                        str(self))
+                      'Try to set it inactive before removing it.'.format(
+                    str(self))
                 raise NetworkActiveError(None, msg)
 
             for ip in self.ipv6_set.all():
@@ -3312,9 +3302,9 @@ class NetworkIPv6(BaseModel):
             super(NetworkIPv6, self).delete()
 
         except IpCantBeRemovedFromVip, e:
-            msg = 'This network has a VIP pointing to it, and can not '\
-                'be deleted. Network: {}, Vip Request: {}'.format(
-                    str(self), e.cause)
+            msg = 'This network has a VIP pointing to it, and can not ' \
+                  'be deleted. Network: {}, Vip Request: {}'.format(
+                str(self), e.cause)
 
             self.log.error(msg)
             raise NetworkIPv6ErrorV3(msg)
@@ -3485,11 +3475,11 @@ class NetworkIPv6(BaseModel):
                     else:
 
                         # Set octs by network generated
-                        self.block1, self.block2, self.block3, self.block4,\
-                            self.block5, self.block6, self.block7, \
-                            self.block8 = str(
-                                subnet.network.exploded
-                            ).split(':')
+                        self.block1, self.block2, self.block3, self.block4, \
+                        self.block5, self.block6, self.block7, \
+                        self.block8 = str(
+                            subnet.network.exploded
+                        ).split(':')
 
                         # Set block by network generated
                         self.block = subnet.prefixlen
@@ -3518,7 +3508,6 @@ class NetworkIPv6(BaseModel):
 
 
 class Ipv6(BaseModel):
-
     id = models.AutoField(
         primary_key=True,
         db_column='id_ipv6'
@@ -3737,7 +3726,6 @@ class Ipv6(BaseModel):
 
                 # If IP generated was not used
                 if ip not in ipsv6:
-
                     # Use it
                     selected_ip = ip
 
@@ -3771,7 +3759,7 @@ class Ipv6(BaseModel):
         # Cast all to API class
         ipsv6 = set([(IPv6Address('%s:%s:%s:%s:%s:%s:%s:%s' % (
             ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
-        )) for ip in ips])
+                                  )) for ip in ips])
 
         selected_ip = None
 
@@ -3785,7 +3773,6 @@ class Ipv6(BaseModel):
 
             # If IP generated was not used
             if ip not in ipsv6:
-
                 # Use it
                 selected_ip = ip
 
@@ -3858,12 +3845,14 @@ class Ipv6(BaseModel):
 
                     ipv6_network = int(ip6_object)
 
-                    if ipv6_network >= (first_ip_network + conf.IPv6_MIN) and ipv6_network < (bcast_ip_network - conf.IPv6_MAX):
+                    if ipv6_network >= (first_ip_network + conf.IPv6_MIN) and ipv6_network < (
+                            bcast_ip_network - conf.IPv6_MAX):
                         flag = True
 
             else:
                 ip6_aux = self.get_by_blocks_and_net(
-                    self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, self.networkipv6.id)
+                    self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7,
+                    self.block8, self.networkipv6.id)
                 if self.id != ip6_aux.id:
                     raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s already on use by network %s.' % (
                         self.block1, self.block2, self.block3, self.block4, self.block5,
@@ -3901,7 +3890,8 @@ class Ipv6(BaseModel):
 
             # Cast to API
             net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (net.block1, net.block2, net.block3, net.block4,
-                                                               net.block5, net.block6, net.block7, net.block8, net.block))
+                                                               net.block5, net.block6, net.block7, net.block8,
+                                                               net.block))
             # Find all ipv6s ralated to network
             ips = Ipv6.objects.filter(networkipv6__id=net.id)
 
@@ -3946,11 +3936,14 @@ class Ipv6(BaseModel):
 
             else:
                 ip_aux = self.get_by_blocks_and_net(
-                    self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, net.id)
+                    self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7,
+                    self.block8, net.id)
                 try:
                     Ipv6Equipament.get_by_ip6(ip_aux.id)
-                    raise IpEquipmentAlreadyAssociation(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s already has association with an Equipament. Try using the association screen for this Ip.' % (
-                        self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8))
+                    raise IpEquipmentAlreadyAssociation(None,
+                                                        u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s already has association with an Equipament. Try using the association screen for this Ip.' % (
+                                                            self.block1, self.block2, self.block3, self.block4,
+                                                            self.block5, self.block6, self.block7, self.block8))
                 except IpEquipmentNotFoundError, e:
                     flag = True
                     already_ip = True
@@ -4000,7 +3993,8 @@ class Ipv6(BaseModel):
                                 tp_equip_list_one.append(fet.equiptype)
 
                             tp_equip_list_two = list()
-                            for fet in filterequiptype.objects.filter(filter=ip_test.networkipv6.vlan.ambiente.filter.id):
+                            for fet in filterequiptype.objects.filter(
+                                    filter=ip_test.networkipv6.vlan.ambiente.filter.id):
                                 tp_equip_list_two.append(fet.equiptype)
 
                             if equipment.tipo_equipamento not in tp_equip_list_one or equipment.tipo_equipamento not in tp_equip_list_two:
@@ -4023,7 +4017,8 @@ class Ipv6(BaseModel):
 
             else:
                 raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' % (
-                    self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, net.id))
+                    self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7,
+                    self.block8, net.id))
 
         except IpRangeAlreadyAssociation, e:
             raise IpRangeAlreadyAssociation(None, e.message)
@@ -4034,7 +4029,8 @@ class Ipv6(BaseModel):
                 self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8))
         except IpNotAvailableError, e:
             raise IpNotAvailableError(None, u'Ipv6 %s:%s:%s:%s:%s:%s:%s:%s not available for network %s.' % (
-                self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8, net.id))
+                self.block1, self.block2, self.block3, self.block4, self.block5, self.block6, self.block7, self.block8,
+                net.id))
         except IpError, e:
             self.log.error(
                 u'Error adding new IPv6 or relationship ip-equipment.')
@@ -4060,7 +4056,8 @@ class Ipv6(BaseModel):
         # Cast to API
         net6 = IPv6Network('%s:%s:%s:%s:%s:%s:%s:%s/%s' % (
             self.networkipv6.block1, self.networkipv6.block2, self.networkipv6.block3, self.networkipv6.block4,
-            self.networkipv6.block5, self.networkipv6.block6, self.networkipv6.block7, self.networkipv6.block8, self.networkipv6.block))
+            self.networkipv6.block5, self.networkipv6.block6, self.networkipv6.block7, self.networkipv6.block8,
+            self.networkipv6.block))
         # Find all ipv6s ralated to network
         ips = Ipv6.objects.filter(networkipv6__id=self.networkipv6.id)
 
@@ -4083,7 +4080,6 @@ class Ipv6(BaseModel):
 
                 # If IP generated was not used
                 if ip not in ipsv6:
-
                     # Use it
                     selected_ip = ip
 
@@ -4320,7 +4316,7 @@ class Ipv6(BaseModel):
 
         try:
 
-            self.networkipv6_id = NetworkIPv6()\
+            self.networkipv6_id = NetworkIPv6() \
                 .get_by_pk(ip_map.get('networkipv6')).id
             self.block1 = ip_map.get('block1')
             self.block2 = ip_map.get('block2')
@@ -4333,8 +4329,8 @@ class Ipv6(BaseModel):
             self.descricao = ip_map.get('description')
 
             # Get environments related
-            envs = self.networkipv6.vlan\
-                .get_environment_related(use_vrf=True)\
+            envs = self.networkipv6.vlan \
+                .get_environment_related(use_vrf=True) \
                 .values_list('id', flat=True)
 
             # Get objects of equipments
@@ -4450,7 +4446,7 @@ class Ipv6(BaseModel):
             self.descricao = ip_map.get('description')
 
             # Get environments related
-            envs = self.networkipv6.vlan.get_environment_related(use_vrf=True)\
+            envs = self.networkipv6.vlan.get_environment_related(use_vrf=True) \
                 .values_list('id', flat=True)
 
             # Get objects of equipments
@@ -4497,8 +4493,8 @@ class Ipv6(BaseModel):
             self.save()
 
             # Get current associates
-            current = self.ipv6equipament_set\
-                .filter(equipamento__in=eqpts)\
+            current = self.ipv6equipament_set \
+                .filter(equipamento__in=eqpts) \
                 .values_list('equipamento', flat=True)
 
             # Creates new associate
@@ -4511,7 +4507,7 @@ class Ipv6(BaseModel):
                     })
 
             # Removes old associates
-            for ip_eqpt in self.ipv6equipament_set\
+            for ip_eqpt in self.ipv6equipament_set \
                     .exclude(equipamento__in=eqpts):
                 ip_eqpt.delete_v3(bypass_ip=True)
 
@@ -4644,7 +4640,6 @@ class Ipv6(BaseModel):
 
                 # If IP generated was not used
                 if ip not in ipsv6:
-
                     # Use it
                     selected_ip = ip
 
@@ -4653,11 +4648,11 @@ class Ipv6(BaseModel):
 
         if selected_ip is None:
             raise IpNotAvailableError(None, u'No IP available to VLAN %s.' %
-                                            self.networkipv6.vlan.num_vlan)
+                                      self.networkipv6.vlan.num_vlan)
 
         self.block1, self.block2, self.block3, self.block4, self.block5, \
-            self.block6, self.block7, self.block8 = str(
-                selected_ip.exploded).split(':')
+        self.block6, self.block7, self.block8 = str(
+            selected_ip.exploded).split(':')
 
 
 class Ipv6Equipament(BaseModel):
@@ -4680,7 +4675,6 @@ class Ipv6Equipament(BaseModel):
         db_table = u'ipsv6_dos_equipamentos'
         managed = True
         unique_together = ('ip', 'equipamento')
-
 
     @classmethod
     def list_by_equip(cls, equip_id):
@@ -4760,8 +4754,8 @@ class Ipv6Equipament(BaseModel):
                 ip=self.ip, equipamento=self.equipamento)
             raise IpEquipamentoDuplicatedError(
                 None, u'IP already registered for the equipment. '
-                'Ip: %s, Equipment: %s' %
-                (str(self.ip), str(self.equipamento)))
+                      'Ip: %s, Equipment: %s' %
+                      (str(self.ip), str(self.equipamento)))
         except ObjectDoesNotExist:
             pass
 
@@ -4784,7 +4778,8 @@ class Ipv6Equipament(BaseModel):
         self.validate_ip()
 
         try:
-            if self.equipamento not in [ea.equipamento for ea in self.ip.networkipv6.vlan.ambiente.equipamentoambiente_set.all()]:
+            if self.equipamento not in [ea.equipamento for ea in
+                                        self.ip.networkipv6.vlan.ambiente.equipamentoambiente_set.all()]:
                 ea = equipamentoambiente(
                     ambiente=self.ip.networkipv6.vlan.ambiente, equipamento=self.equipamento)
                 ea.save(authenticated_user)
@@ -4839,8 +4834,8 @@ class Ipv6Equipament(BaseModel):
                                 'ip': mount_ipv6_string(self.ip),
                                 'equip_name': self.equipamento.nome
                             }, 'Ipv6 não pode ser disassociado do equipamento %s '
-                            'porque é o último balanceador da Requisição Vip %s.' %
-                            (self.equipamento.nome, r.id))
+                               'porque é o último balanceador da Requisição Vip %s.' %
+                               (self.equipamento.nome, r.id))
                     else:
                         # Remove ip from vip or remove vip
                         id_vip = r.id
@@ -4912,8 +4907,8 @@ class Ipv6Equipament(BaseModel):
         try:
 
             # All equipments related with environment of IP
-            eqpts = self.ip.networkipv6.vlan.ambiente\
-                .equipamentoambiente_set.all()\
+            eqpts = self.ip.networkipv6.vlan.ambiente \
+                .equipamentoambiente_set.all() \
                 .values_list('equipamento', flat=True)
 
             if ip_equipment.get('equipment') not in eqpts:
@@ -4986,7 +4981,6 @@ class Ipv6Equipament(BaseModel):
                                               bypass_ipv6=True)
 
         if self.ip.serverpoolmember_set.count() > 0:
-
             items = ['{}:{}'.format(
                 svm.server_pool.id,
                 svm.server_pool.identifier
@@ -5030,7 +5024,7 @@ def network_in_range(vlan, network, version):
     # that are not supposed to be filtered
     # (not the same type of the equipment type of a filter of the environment)
     for env in ambiente.equipamentoambiente_set.all().exclude(
-        equipamento__tipo_equipamento__in=equipment_types
+            equipamento__tipo_equipamento__in=equipment_types
     ).select_related('equipamento'):
         equips.append(env.equipamento)
 
@@ -5046,7 +5040,7 @@ def network_in_range(vlan, network, version):
     # network being tested
     for env in envs:
         for vlan in env.vlan_set.all().prefetch_related(
-            'networkipv4_set'
+                'networkipv4_set'
         ).prefetch_related('networkipv6_set'):
             ids_all.append(vlan.id)
             is_subnet = verify_subnet(vlan, network, version)
@@ -5057,7 +5051,6 @@ def network_in_range(vlan, network, version):
 
 
 def verify_subnet(vlan, network, version):
-
     from networkapi.infrastructure.ipaddr import IPNetwork
 
     if version == IP_VERSION.IPv4[0]:
