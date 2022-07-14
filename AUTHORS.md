@@ -15,3 +15,4 @@
 - Mauricio Leoncio dos Santos
 - Mateus Constanzo
 - [Silvano Buback](https://github.com/snbuback)
+- [Renan Lopes](https://github.com/renanlopes97s)
