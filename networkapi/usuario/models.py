@@ -379,37 +379,42 @@ class Usuario(BaseModel):
                     "Using local authentication for user \'%s\'" % username)
                 bypass = 1
 
-            # local auth
-            if bypass:
-
-                try:
-                    if convert_string_or_int_to_boolean(get_value('use_cache_user')):
-                        self.cache_user.set(username, password)
-                except exceptions.VariableDoesNotExistException:
-                    self.log.debug(u'User will not be cached because cached user is disabled')
-
-                password = Usuario.encode_password(password)
-                return Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
-
             # ldap auth
-            try:
-                connect = ldap.open(ldap_server)
-                user_dn = 'cn=' + username + ',' + ldap_param
-                connect.simple_bind_s(user_dn, password)
-
+            if not bypass:
                 try:
-                    if convert_string_or_int_to_boolean(get_value('use_cache_user')):
-                        self.cache_user.set(username, password)
-                except exceptions.VariableDoesNotExistException:
-                    self.log.debug(u'User will not be cached because cached user is disabled')
+                    connect = ldap.open(ldap_server)
+                    user_dn = 'cn=' + username + ',' + ldap_param
+                    connect.simple_bind_s(user_dn, password)
 
-                return return_user
+                    try:
+                        if convert_string_or_int_to_boolean(get_value('use_cache_user')):
+                            self.cache_user.set(username, password)
+                    except exceptions.VariableDoesNotExistException:
+                        self.log.debug(u'User will not be cached because cached user is disabled')
 
-            except ldap.INVALID_CREDENTIALS, e:
-                self.log.error('LDAP authentication error %s' % e)
-            except exceptions.VariableDoesNotExistException, e:
-                self.log.error(
-                    'Error getting LDAP config variables (ldap_server, ldap_param).')
+                    return return_user
+
+                except ldap.INVALID_CREDENTIALS, e:
+                    self.log.error('LDAP authentication error %s' % e)
+                except exceptions.VariableDoesNotExistException, e:
+                    self.log.error(
+                        'Error getting LDAP config variables (ldap_server, ldap_param).')
+
+            # local auth
+            try:
+                password = Usuario.encode_password(password)
+                user = Usuario.objects.prefetch_related('grupos').get(user=username, pwd=password, ativo=1)
+
+                if convert_string_or_int_to_boolean(get_value('use_cache_user')):
+                    self.cache_user.set(username, password)
+
+                return user
+
+            except exceptions.VariableDoesNotExistException:
+                self.log.debug(u'User will not be cached because cached user is disabled')
+
+            except ObjectDoesNotExist:
+                raise ObjectDoesNotExist
 
         except ObjectDoesNotExist:
             self.log.error(u'Usuário não autenticado ou inativo: %s', username)

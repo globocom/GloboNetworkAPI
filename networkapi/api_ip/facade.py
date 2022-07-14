@@ -57,12 +57,11 @@ def get_ipv4_by_ids(ip_ids):
     return ipv4s
 
 
-def create_ipv4(ipv4, user=None):
+def create_ipv4(ipv4, user=None, reserve_all=False):
     """Creates a Ipv4."""
-
     try:
         ipv4_obj = Ip()
-        ipv4_obj.create_v3(ipv4)
+        ipv4_obj.create_v3(ipv4, reserve_all=reserve_all)
     except ObjectDoesNotExistException, e:
         raise ObjectDoesNotExistException(e.detail)
     except (IpError, IpErrorV3), e:

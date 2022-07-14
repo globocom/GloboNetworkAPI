@@ -26,6 +26,9 @@
           "networkipv4": {
             "type": "integer"
           },
+          "reserve_all": {
+            "type": "boolean"
+          },
           "description": {
             "type": "string"
           },
