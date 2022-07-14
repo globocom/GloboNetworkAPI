@@ -78,7 +78,10 @@ class IPv4View(CustomAPIView):
         json_validate(SPECS.get('ipv4_post')).validate(ips)
         response = list()
         for ip in ips['ips']:
-            ret = facade.create_ipv4(ip, request.user)
+            if 'reserve_all' in ip and ip['reserve_all'] is True:
+                ret = facade.create_ipv4(ip, request.user, reserve_all=ip['reserve_all'])
+            else:
+                ret = facade.create_ipv4(ip, request.user)
             response.append({'id': ret.id})
 
         return Response(response, status=status.HTTP_201_CREATED)
