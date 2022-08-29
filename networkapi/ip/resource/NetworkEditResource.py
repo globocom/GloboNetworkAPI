@@ -196,7 +196,7 @@ class NetworkEditResource(RestResource):
                                 raise NetworkIpAddressNotAvailableError(
                                     None, u'Unavailable address to create a NetworkIPv6.')
 
-                    net.edit_network_ipv6(user, id_net_type, id_env_vip)
+                    net.edit_network_ipv6(user, id_net_type, id_env_vip, cluster_unit)
 
             # Delete vlan's cache
             # destroy_cache_function()
