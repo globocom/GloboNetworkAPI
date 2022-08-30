@@ -812,21 +812,27 @@ class Vlan(BaseModel):
             equips.append(env.equipamento)
 
         # Get all environment that the equipments above are included
+        self.log.info('# Get all environment that the equipments above are included: ')
         for equip in equips:
+            self.log.info('- equip={}'.format(equip))
             for env in equip.equipamentoambiente_set.all():
                 if env.ambiente_id not in envs_aux:
+                    self.log.info('-- ambiente_id={}'.format(env.ambiente_id))
                     envs.append(env.ambiente)
                     envs_aux.append(env.ambiente_id)
 
         # Check in all vlans from all environments above
         # if there is a vlan with the same vlan number of the
         # vlan being tested
+        self.log.info('# Check in all vlans from all environments:')
         for env in envs:
+            self.log.info('- env={}'.format(env))
             for vlan in env.vlan_set.all():
                 if int(vlan.num_vlan) == int(self.num_vlan):
-                    raise VlanNumberEnvironmentNotAvailableError(
-                        None, 'Já existe uma VLAN cadastrada com o número %s com um equipamento compartilhado '
-                              'nesse ambiente' % (self.num_vlan))
+                    message = "Já existe uma VLAN cadastrada com o número {} com um equipamento compartilhado " \
+                              "nesse ambiente".format(self.num_vlan)
+                    self.log.error('{} env={} vlan={}'.format(message, env, vlan))
+                    raise VlanNumberEnvironmentNotAvailableError(None, message)
 
         # Name VLAN can not be duplicated in the environment
         if self.exist_vlan_name_in_environment():
