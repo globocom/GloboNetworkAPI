@@ -2802,7 +2802,7 @@ class NetworkIPv6(BaseModel):
             self.log.error(u'Error disabling NetworkIPv6.')
             raise NetworkIPv6Error(e, u'Error disabling NetworkIPv6.')
 
-    def edit_network_ipv6(self, authenticated_user, id_net_type, id_env_vip, cluster_unit):
+    def edit_network_ipv6(self, authenticated_user, id_net_type, id_env_vip, cluster_unit=None):
         try:
             self.network_type = id_net_type
             self.ambient_vip = id_env_vip
