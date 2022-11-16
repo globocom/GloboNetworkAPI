@@ -1911,6 +1911,8 @@ VALUES
     'Used to disable logs for detailed and specific libs used in plugin Junos'
 );
 
+INSERT INTO `variables` (`name`, `value`, `description`)
+VALUES('use_cache_user', 'True', 'Used to cache user');
 
 
 --
