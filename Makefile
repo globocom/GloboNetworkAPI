@@ -150,9 +150,15 @@ endif
 
 
 test_ci:
+ifeq (${app},)
+	@clear
+	@echo "Running NetAPI tests for app 'networkapi'"
+	time docker exec -it netapi_app ./fast_start_test.sh networkapi/
+else
+	@clear
 	@echo "Running NetAPI tests for app '${app}'"
 	time docker exec -it netapi_app ./fast_start_test.sh ${app}
-
+endif
 
 test_ci_travis:
 	@echo "Running the same NetAPI tests enabled on travis"
