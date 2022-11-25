@@ -32,9 +32,9 @@ It was not created to be and inventory database, so it does not have CMDB functi
 [Documentation](http://globonetworkapi.readthedocs.org/)
 
 ## Run Unit Tests
-To run the unit tests right after executing the make build_img/make start command, just run "make test_ci", this instruction will run all the unit tests specified in the networkapi/tests/__init__.py file. This command will create a new dummy database to collect the necessary data to run the tests.
+To run the unit tests right after executing the make build_img/make start command, just run "`make test_ci`", this instruction will run all the unit tests specified in the `networkapi/tests/__init__.py` file. This command will create a new dummy database to collect the necessary data to run the tests.
 
-To run the unit tests without needing to rebuild the application container just run the command: "make test", which will run all the unit tests specified in the file networkapi/tests/__init__.py without rebuilding the dummy database used by the test for data collection.
+To run the unit tests without needing to rebuild the application container just run the command: "`make test`", which will run all the unit tests specified in the file `networkapi/tests/__init__.py` without rebuilding the dummy database used by the test for data collection.
 
 ## How to contribute
 Check this out at
