@@ -186,6 +186,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
     'rest_framework',
+    'networkapi.api_ip.tests.unit.ipv4.async'
+
 )
 
 INSTALLED_APPS += PROJECT_APPS

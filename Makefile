@@ -99,7 +99,7 @@ api:
 	@docker exec -it netapi_app sh
 
 
-db: 
+db:
 	@docker exec -it netapi_db bash
 
 
@@ -138,15 +138,27 @@ status:
 
 
 test:
+ifeq (${app},)
+	@clear
+	@echo "Running NetAPI tests for app 'networkapi'"
+	time docker exec -it netapi_app ./fast_start_test_reusedb.sh networkapi/
+else
 	@clear
 	@echo "Running NetAPI tests for app '${app}'"
 	time docker exec -it netapi_app ./fast_start_test_reusedb.sh ${app}
+endif
 
 
 test_ci:
+ifeq (${app},)
+	@clear
+	@echo "Running NetAPI tests for app 'networkapi'"
+	time docker exec -it netapi_app ./fast_start_test.sh networkapi/
+else
+	@clear
 	@echo "Running NetAPI tests for app '${app}'"
 	time docker exec -it netapi_app ./fast_start_test.sh ${app}
-
+endif
 
 test_ci_travis:
 	@echo "Running the same NetAPI tests enabled on travis"
@@ -166,7 +178,8 @@ build_img: scripts/docker/Dockerfile
 
 push_img: scripts/docker/push_image.sh
 	./$^
-	
+
+
 tag:
 ifneq ($(curr_branch),master)
 	$(error Branch must be master to generate a new tag)

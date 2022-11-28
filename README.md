@@ -31,6 +31,9 @@ It was not created to be and inventory database, so it does not have CMDB functi
 ## Documentation
 [Documentation](http://globonetworkapi.readthedocs.org/)
 
+## Run Unit Tests
+To run the unit tests just run `make build_img && make start && make test_ci` this instruction will run all the unit tests specified in the `networkapi/tests/__init__.py` file.
+
 ## How to contribute
 Check this out at
 [Contributing](https://github.com/globocom/GloboNetworkAPI/blob/master/CONTRIBUTING.md) file.

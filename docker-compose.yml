@@ -3,7 +3,7 @@ services:
 
     db:
         container_name: netapi_db
-        image: mysql:8.0.0
+        image: mysql:8.0
         ports:
             - "3306:3306"
         environment:
