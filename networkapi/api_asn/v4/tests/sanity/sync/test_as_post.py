@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 
-from django.test.client import Client
+from rest_framework.test import APIClient
+from networkapi.usuario.models import Usuario
 
 from networkapi.test.test_case import NetworkApiTestCase
 
@@ -26,8 +27,9 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -41,8 +43,7 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v4/as/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -53,8 +54,7 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             get_url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -70,8 +70,7 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v4/as/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -82,8 +81,7 @@ class AsPostSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             get_url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
