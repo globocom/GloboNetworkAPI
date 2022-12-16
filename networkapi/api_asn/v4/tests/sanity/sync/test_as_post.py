@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 
-from rest_framework.test import APIClient
-from networkapi.usuario.models import Usuario
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 json_path = 'api_asn/v4/tests/sanity/sync/json/%s'
 
