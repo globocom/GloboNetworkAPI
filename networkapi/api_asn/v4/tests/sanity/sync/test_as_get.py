@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# from django.test.client import Client
 from rest_framework.test import APIClient
 from networkapi.usuario.models import Usuario
 
