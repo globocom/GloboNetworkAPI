@@ -1,22 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from json import dumps
-from json import loads
+from json import dumps, loads
 
-import logging
-import imp
-from mock import patch, MagicMock
-# from django.test.client import Client
-from rest_framework.test import APIClient
-
+from mock import patch
 from networkapi.test.test_case import NetworkApiTestCase
-from rest_framework.permissions import IsAuthenticated
-from networkapi.api_environment.permissions import Read, Write
 from networkapi.usuario.models import Usuario
-
-from networkapi.api_environment import views
-from django.contrib.auth.models import User
-
+from rest_framework.test import APIClient
 
 
 class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
