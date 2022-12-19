@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,9 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -35,8 +37,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment-vip/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -45,8 +46,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment-vip/1;2/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -57,8 +57,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
         url = '/api/v3/environment-vip/step/'
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -68,8 +67,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
         )
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -79,8 +77,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
         )
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -90,8 +87,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
         )
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -109,8 +105,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment-vip/?search=%s' % search,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -119,8 +114,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/option-vip/environment-vip/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -130,8 +124,7 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/type-option/environment-vip/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -139,7 +132,6 @@ class EnvironmentVipGetTestCase(NetworkApiTestCase):
             '/api/v3/option-vip/environment-vip/1/type-option/{0}/'.format(
                 response.data[0]
             ),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
