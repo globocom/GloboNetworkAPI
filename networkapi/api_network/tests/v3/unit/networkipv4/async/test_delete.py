@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.test.client import Client
 from mock import patch
-
-from networkapi.api_network.tasks import delete_networkv4
-from networkapi.api_network.tasks import undeploy_networkv4
+from networkapi.api_network.tasks import delete_networkv4, undeploy_networkv4
 from networkapi.ip.models import NetworkIPv4
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +14,9 @@ log = logging.getLogger(__name__)
 class NetworkIPv4AsyncDeleteSuccessTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -44,7 +44,9 @@ class NetworkIPv4AsyncDeleteSuccessTestCase(NetworkApiTestCase):
 class NetworkIPv4AsyncDeleteErrorTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -58,7 +60,9 @@ class NetworkIPv4AsyncDeleteErrorTestCase(NetworkApiTestCase):
 class NetworkIPv4AsyncDeleteDeploySuccessTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -89,7 +93,9 @@ class NetworkIPv4AsyncDeleteDeploySuccessTestCase(NetworkApiTestCase):
 class NetworkIPv4AsyncDeleteDeployErrorTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
