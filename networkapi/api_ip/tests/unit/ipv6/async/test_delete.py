@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.test.client import Client
 from mock import patch
-
 from networkapi.api_ip.tasks import delete_ipv6
 from networkapi.ip.models import Ip
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +14,7 @@ log = logging.getLogger(__name__)
 class IPv6AsyncDeleteSuccessTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
 
     def tearDown(self):
         pass
@@ -43,7 +42,7 @@ class IPv6AsyncDeleteSuccessTestCase(NetworkApiTestCase):
 class IPv6AsyncDeleteErrorTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
 
     def tearDown(self):
         pass
