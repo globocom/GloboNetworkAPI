@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from networkapi.usuario.models import Usuario
-from rest_framework.test import APIClient
 from mock import patch
-
 from networkapi.api_ip.tasks import update_ipv4
 from networkapi.ip.models import Ip
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +14,7 @@ log = logging.getLogger(__name__)
 class IPv4AsyncPutSuccessTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
 
     def tearDown(self):
         pass
@@ -48,8 +46,6 @@ class IPv4AsyncPutErrorTestCase(NetworkApiTestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = Usuario.objects.get(user='test')
-        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass

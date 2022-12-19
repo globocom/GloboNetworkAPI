@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class IPv4AsyncPostSuccessTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
 
     def tearDown(self):
         pass
@@ -43,8 +43,6 @@ class IPv4AsyncPostErrorTestCase(NetworkApiTestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = Usuario.objects.get(user='test')
-        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
