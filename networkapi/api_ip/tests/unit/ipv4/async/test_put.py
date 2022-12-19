@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.test.client import Client
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 from mock import patch
 
 from networkapi.api_ip.tasks import update_ipv4
@@ -46,7 +47,9 @@ class IPv4AsyncPutSuccessTestCase(NetworkApiTestCase):
 class IPv4AsyncPutErrorTestCase(NetworkApiTestCase):
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
