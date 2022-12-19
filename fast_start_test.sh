@@ -14,14 +14,27 @@ echo "Found SDN controller at $REMOTE_CTRL_IP"
 
 echo "Starting tests.."
 echo "=============== Tests for IPV4 ================="
-python manage.py test networkapi/api_ip/tests/sanity/ipv4/sync/test_delete.py
-python manage.py test networkapi/api_ip/tests/sanity/ipv4/sync/test_get.py
-python manage.py test networkapi/api_ip/tests/sanity/ipv4/sync/test_post.py
-python manage.py test networkapi/api_ip/tests/sanity/ipv4/sync/test_put.py
-python manage.py test networkapi/api_ip/tests/unit/ipv4/async/test_delete.py
-python manage.py test networkapi/api_ip/tests/unit/ipv4/async/test_post.py
-python manage.py test networkapi/api_ip/tests/unit/ipv4/async/test_put.py
-python manage.py test networkapi/api_ip/tests/sanity/ipv4/async/test_put.py
-python manage.py test networkapi/api_ip/v4/tests/unity/ipv4/async/test_delete.py
-python manage.py test networkapi/api_ip/v4/tests/unity/ipv4/async/test_post.py
-python manage.py test networkapi/api_ip/v4/tests/unity/ipv4/async/test_put.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_delete.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_get.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_post.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_put.py
+python manage.py test networkapi/api_ip.tests.unit.ipv4.async.test_delete.py
+python manage.py test networkapi/api_ip.tests.unit.ipv4.async.test_post.py
+python manage.py test networkapi/api_ip.tests.unit.ipv4.async.test_put.py
+python manage.py test networkapi/api_ip.v4.tests.sanity.ipv4.sync.test_delete.py
+python manage.py test networkapi/api_ip.v4.tests.sanity.ipv4.sync.test_get.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_post.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_put.py
+
+echo ""
+echo "=============== Tests for IPV6 ================="
+python manage.py test networkapi/api_ip.tests.sanity.ipv6.sync.test_delete.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv6.sync.test_get.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv6.sync.test_post.py
+python manage.py test networkapi/api_ip.tests.sanity.ipv6.sync.test_put.py
+python manage.py test networkapi/api_ip.tests.unit.ipv6.async.test_delete.py
+python manage.py test networkapi/api_ip.tests.unit.ipv6.async.test_post.py
+python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_delete.py
+python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_get.py
+python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_post.py
+python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_put.py
