@@ -34,6 +34,7 @@ python manage.py test networkapi/api_ip.tests.sanity.ipv6.sync.test_post.py
 python manage.py test networkapi/api_ip.tests.sanity.ipv6.sync.test_put.py
 python manage.py test networkapi/api_ip.tests.unit.ipv6.async.test_delete.py
 python manage.py test networkapi/api_ip.tests.unit.ipv6.async.test_post.py
+python manage.py test networkapi/api_ip.tests.unit.ipv6.async.test_put.py
 python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_delete.py
 python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_get.py
 python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_post.py
