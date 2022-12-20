@@ -39,3 +39,15 @@ python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_delete.py
 python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_get.py
 python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_post.py
 python manage.py test networkapi/api_ip.v4.tests.sanity.ipv6.sync.test_put.py
+
+echo ""
+echo "=============== Tests for Environment ================="
+python manage.py test networkapi/api_environment.tests.sanity.test_cidr_delete.py
+python manage.py test networkapi/api_environment.tests.sanity.test_cidr_get.py
+python manage.py test networkapi/api_environment.tests.sanity.test_cidr_post.py
+python manage.py test networkapi/api_environment.tests.sanity.test_cidr_put.py
+python manage.py test networkapi/api_environment.tests.sanity.test_environment_delete.py
+python manage.py test networkapi/api_environment.tests.sanity.test_environment_get.py
+python manage.py test networkapi/api_environment.tests.sanity.test_environment_post.py
+python manage.py test networkapi/api_environment.tests.sanity.test_environment_put.py
+python manage.py test networkapi/api_environment.tests.test_acl_flows.py
