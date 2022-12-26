@@ -4,6 +4,9 @@ from nose.tools import assert_raises_regexp
 from nose.tools import assert_raises
 from requests.exceptions import HTTPError
 from requests.models import Response
+import mock
+from mock import MagicMock
+
 
 import random
 from json import dumps
@@ -22,7 +25,21 @@ from networkapi.test.test_case import NetworkApiTestCase
 class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for success cases."""
     fixtures = [
-        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json'
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
     ]
 
     utils = OpenDaylightTestUtils()
@@ -43,8 +60,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.flow_key = "flow-node-inventory:flow"
 
-
-    def test_add_flow_checking_if_persisted_in_all_ovss(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_checking_if_persisted_in_all_ovss(self, mock_request):
         """Test add flow checking if ACL was persisted at all OVS's."""
 
         input = self.json_aclapi_input_path % 'acl_id_83000.json'
@@ -61,7 +78,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             output = self.json_odl_output_path % 'odl_id_83000.json'
             self.compare_json_lists(output, flow[self.flow_key])
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_tcp_protocol_dest_eq_l4(self, mock_request):
         """Test add flow with tcp protocol and dest eq in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_82338.json'
@@ -79,7 +97,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82338.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol_flags_rst_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_tcp_protocol_flags_rst_l4(self, mock_request):
         """Test add flow with tcp protocol and flags RST in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_101301.json'
@@ -101,7 +120,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol_flags_ack_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_tcp_protocol_flags_ack_l4(self, mock_request):
         """Test add flow with tcp protocol and flags ACK in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_101302.json'
@@ -123,7 +143,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_tcp_protocol(self, mock_request):
         """Test add flow with tcp protocol."""
 
         input = self.json_aclapi_input_path % 'acl_id_106966.json'
@@ -141,7 +162,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_106966.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_with_tcp_protocol_dest_eq_l4_and_sequence(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_with_tcp_protocol_dest_eq_l4_and_sequence(self, mock_request):
         """Test add flow with tcp protocol and dest eq in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_107480.json'
@@ -159,7 +181,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_107480.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol_and_sequence(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_tcp_protocol_and_sequence(self, mock_request):
         """Test add flow with tcp protocol and sequence."""
 
         input = self.json_aclapi_input_path % 'acl_id_110886.json'
@@ -177,7 +200,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_110886.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_with_udp_protocol_src_eq_and_dest_eq_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_with_udp_protocol_src_eq_and_dest_eq_l4(self, mock_request):
         """Test add flow with udp protocol and src eq, dest eq in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_82324.json'
@@ -195,7 +219,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82324.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_udp_protocol_dest_eq_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_udp_protocol_dest_eq_l4(self, mock_request):
         """Test add flow with udp protocol and dest eq in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_82337.json'
@@ -213,7 +238,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82337.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_udp_protocol_src_eq_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_udp_protocol_src_eq_l4(self, mock_request):
         """Test add flow with udp protocol and src eq in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_112140.json'
@@ -231,8 +257,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_112140.json'
         self.compare_json_lists(output, flow)
 
-
-    def test_add_flow_one_acl_rule_with_ip_protocol(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_ip_protocol(self, mock_request):
         """Test add flow with ip protocol."""
 
         input = self.json_aclapi_input_path % 'acl_id_82332.json'
@@ -250,7 +276,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82332.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_ip_protocol_and_sequence(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_ip_protocol_and_sequence(self, mock_request):
         """Test add flow with ip protocol and sequence."""
 
         input = self.json_aclapi_input_path % 'acl_id_107200.json'
@@ -267,7 +294,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_107200.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_icmp_protocol(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_icmp_protocol(self, mock_request):
         """Test add flow with icmp protocol."""
 
         input = self.json_aclapi_input_path % 'acl_id_82325.json'
@@ -285,22 +313,59 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         output = self.json_odl_output_path % 'odl_id_82325.json'
         self.compare_json_lists(output, flow)
 
-    def test_add_a_list_of_acls_in_one_request(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_a_list_of_acls_in_one_request(self, mock_request):
         """ Should insert many flows with one request """
 
-        input = self.json_aclapi_input_path % 'acl_id_40000.json'
+        input = self.json_aclapi_input_path % 'acl_id_83000.json'
         data = self.load_json_file(input)
 
         self.odl.add_flow(data)
 
+        returns_list = [
+            {
+                "nodes": {
+                    "node": [
+                        {
+                            "id": "openflow:"
+                        }
+                    ]
+                }
+            },
+            {
+                "topology": [
+                    {
+                        "node": [
+                            {
+                                "node-id": "openflow:"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "topology": [
+                    {
+                        "node": [
+                            {
+                                "node-id": "openflow:"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+        mock_request = MagicMock(side_effect = returns_list)
         nodes_ids = self.odl._get_nodes_ids()
+        # nodes_ids = [1,2]
 
         random_idx = random.randint(0, len(nodes_ids) - 1)
 
         flow_id = data['rules'][0]['id']
         flow = self.odl.get_flow(flow_id)[random_idx][self.flow_key]
 
-    def test_remove_flow(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_remove_flow(self, mock_request):
         """Test of success to remove flow."""
 
         input = self.json_aclapi_input_path % 'acl_id_80000.json'
@@ -313,7 +378,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
 
         assert_raises(HTTPError, self.odl.get_flow, id_flow)
 
-    def test_add_flow_one_acl_rule_with_udp_protocol_dest_range_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_udp_protocol_dest_range_l4(self, mock_request):
         """Test add flow with udp protocol and dest range in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_141880.json'
@@ -333,7 +399,8 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             output = self.json_odl_output_path % 'odl_id_141880_%s.json' % id_
             self.compare_json_lists(output, flow)
 
-    def test_add_flow_one_acl_rule_with_tcp_protocol_dest_range_l4(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_add_flow_one_acl_rule_with_tcp_protocol_dest_range_l4(self, mock_request):
         """Test add flow with tcp protocol and dest range in l4 options."""
 
         input = self.json_aclapi_input_path % 'acl_id_141239.json'
@@ -353,32 +420,35 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             output = self.json_odl_output_path % 'odl_id_141239_%s.json' % id_
             self.compare_json_lists(output, flow)
 
-    def test_flush_flows(self,):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_flush_flows(self, mock_request):
         """test delete all flows"""
 
         self.odl.flush_flows()
-        flows=self.odl.get_flows()
+        flows = self.odl.get_flows()
         for k in flows:
             self.assertEqual(flows[k], [])
 
-    def test_get_nodes_ids(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_get_nodes_ids(self, mock_request):
         """Test get nodes ids"""
 
         self.assertEqual(type(self.odl._get_nodes_ids()), type([]))
         self.assertEqual(len(self.odl._get_nodes_ids()), 3)
 
-    def test_update_all_flows(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_update_all_flows(self, mock_request):
         """Test update_all_flows"""
 
-        #clean the table
+        # clean the table
         self.odl.flush_flows()
 
-        #add a fist json with 4 flows
+        # add a fist json with 4 flows
         input = self.json_aclapi_input_path % 'acl_id_150001.json'
         data = self.load_json_file(input)
         self.odl.add_flow(data)
 
-        #try to update with another json
+        # try to update with another json
         # at the end:
         # flow 150001 should be updated
         # flow 150002 should remain untouched
@@ -395,13 +465,14 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
         data = self.load_json_file(input)
         self.odl.update_all_flows(data=data)
 
-        #assert
+        # assert
         output = self.json_odl_output_path % 'odl_id_150000.json'
-        all_flows=self.odl.get_flows()
+        all_flows = self.odl.get_flows()
         for node in all_flows:
             self.compare_json_lists(output, all_flows[node][0]['flow'])
 
-    def test_get_nodes_ids_empty(self):
+    @mock.patch('networkapi.plugins.SDN.ODL.Generic.ODLPlugin._request')
+    def test_get_nodes_ids_empty(self, mock_request):
         """Test get nodes with a empty result"""
 
         def fake_method(**kwargs):
@@ -410,10 +481,11 @@ class GenericOpenDayLightTestCaseSuccess(NetworkApiTestCase):
             setattr(e.response, 'status_code', 404)
             raise e
         original = self.odl._request
-        self.odl._request=fake_method
+        self.odl._request = fake_method
 
         self.assertEqual(self.odl._get_nodes_ids(), [])
-        self.odl._request=original
+        self.odl._request = original
+
 
 class GenericOpenDayLightTestCaseError(NetworkApiTestCase):
     """Class for testing the generic OpenDayLight plugin for error cases."""

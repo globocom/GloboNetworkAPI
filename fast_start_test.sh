@@ -51,3 +51,20 @@ python manage.py test networkapi/api_environment.tests.sanity.test_environment_g
 python manage.py test networkapi/api_environment.tests.sanity.test_environment_post.py
 python manage.py test networkapi/api_environment.tests.sanity.test_environment_put.py
 python manage.py test networkapi/api_environment.tests.test_acl_flows.py
+
+echo ""
+echo "=============== Tests for Environment VIP ================="
+python manage.py test networkapi/api_environment_vip.tests.sanity.test_environment_vip_delete.py
+python manage.py test networkapi/api_environment_vip.tests.sanity.test_environment_vip_get.py
+python manage.py test networkapi/api_environment_vip.tests.sanity.test_environment_vip_post.py
+python manage.py test networkapi/api_environment_vip.tests.sanity.test_environment_vip_put.py
+
+echo ""
+echo "=============== Tests for Plugins ================="
+python manage.py test networkapi/plugins.SDN.ODL.tests.test_acl_flow_builder.py
+python manage.py test networkapi/plugins.SDN.ODL.tests.test_cookie_handler.py
+python manage.py test networkapi/plugins.SDN.ODL.tests.test_generic_odl_plugin.py
+python manage.py test networkapi/plugins.SDN.ODL.tests.test_odl_acl.py
+python manage.py test networkapi/plugins.SDN.ODL.tests.test_odl_authentication.py
+python manage.py test networkapi/plugins.SDN.ODL.tests.test_send_flows_with_tcp_flags.py
+python manage.py test networkapi/plugins.SDN.ODL.tests.test_tcp_control_bits.py
