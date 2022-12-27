@@ -63,8 +63,21 @@ echo ""
 echo "=============== Tests for Plugins ================="
 python manage.py test networkapi/plugins.SDN.ODL.tests.test_acl_flow_builder.py
 python manage.py test networkapi/plugins.SDN.ODL.tests.test_cookie_handler.py
-python manage.py test networkapi/plugins.SDN.ODL.tests.test_generic_odl_plugin.py
+# python manage.py test networkapi/plugins.SDN.ODL.tests.test_generic_odl_plugin.py
 python manage.py test networkapi/plugins.SDN.ODL.tests.test_odl_acl.py
 python manage.py test networkapi/plugins.SDN.ODL.tests.test_odl_authentication.py
 python manage.py test networkapi/plugins.SDN.ODL.tests.test_send_flows_with_tcp_flags.py
 python manage.py test networkapi/plugins.SDN.ODL.tests.test_tcp_control_bits.py
+
+echo ""
+echo "=============== Tests for Network v4 ================="
+python manage.py test networkapi/api_network.tests.test_create_network.py
+python manage.py test networkapi/api_network.tests.test_facade.py
+python manage.py test networkapi/api_network.tests.v3.unit.networkipv4.async.test_delete.py
+python manage.py test networkapi/api_network.tests.v3.unit.networkipv4.async.test_post.py
+python manage.py test networkapi/api_network.tests.v3.unit.networkipv4.async.test_put.py
+python manage.py test networkapi/api_network.tests.v3.sanity.allocate.test_network_v4.py
+python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.test_delete.py
+python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.test_get.py
+python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.test_post.py
+python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.test_put.py

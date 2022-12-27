@@ -13,6 +13,24 @@ log = logging.getLogger(__name__)
 
 class NetworkIPv4AsyncDeleteSuccessTestCase(NetworkApiTestCase):
 
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
+
     def setUp(self):
         self.client = APIClient()
         self.user = Usuario.objects.get(user='test')
@@ -43,6 +61,24 @@ class NetworkIPv4AsyncDeleteSuccessTestCase(NetworkApiTestCase):
 
 class NetworkIPv4AsyncDeleteErrorTestCase(NetworkApiTestCase):
 
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
+
     def setUp(self):
         self.client = APIClient()
         self.user = Usuario.objects.get(user='test')
@@ -58,6 +94,24 @@ class NetworkIPv4AsyncDeleteErrorTestCase(NetworkApiTestCase):
 
 
 class NetworkIPv4AsyncDeleteDeploySuccessTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
 
     def setUp(self):
         self.client = APIClient()
@@ -91,6 +145,24 @@ class NetworkIPv4AsyncDeleteDeploySuccessTestCase(NetworkApiTestCase):
 
 
 class NetworkIPv4AsyncDeleteDeployErrorTestCase(NetworkApiTestCase):
+
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
 
     def setUp(self):
         self.client = APIClient()
