@@ -2,7 +2,8 @@
 import json
 from itertools import izip
 
-from django.test.client import Client
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import prepare_url
@@ -44,8 +45,9 @@ class NetworksIntegrationV4TestCase(NetworkApiTestCase):
 
     def setUp(self):
 
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
 
@@ -114,8 +116,8 @@ class NetworksIntegrationV4TestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v3/networkv4/',
             data=json.dumps({'networks': netv4_dict}),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization
+            content_type='application/json'
+            # HTTP_AUTHORIZATION=self.authorization
         )
 
         return response.data
@@ -134,8 +136,8 @@ class NetworksIntegrationV4TestCase(NetworkApiTestCase):
         url = '/api/v3/vlan/'
 
         response = self.client.get(
-            prepare_url(url, search=search_vlan, fields=['id']),
-            HTTP_AUTHORIZATION=self.authorization
+            prepare_url(url, search=search_vlan, fields=['id'])
+            # HTTP_AUTHORIZATION=self.authorization
         )
 
         vlans = response.data['vlans']
@@ -204,7 +206,7 @@ class NetworksIntegrationV4TestCase(NetworkApiTestCase):
             url = '/api/v3/networkv4/%s/' % id_network
             url = prepare_url(url, fields=fields)
             response = self.client.get(
-                url, HTTP_AUTHORIZATION=self.authorization
+                url
             )
 
             # Verify if object is right
@@ -384,7 +386,7 @@ class NetworksIntegrationV4TestCase(NetworkApiTestCase):
             url = '/api/v3/networkv4/%s/' % id_network
             url = prepare_url(url, fields=fields)
             response = self.client.get(
-                url, HTTP_AUTHORIZATION=self.authorization
+                url
             )
 
             # Verify if object is right
