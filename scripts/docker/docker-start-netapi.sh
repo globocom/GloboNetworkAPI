@@ -26,26 +26,28 @@ echo "Starting netapi_app ..."
 
 
 # Waits for database container to be ready
-for i in $(seq 1  ${MAX_RETRIES}); do
+if [ "$NETWORKAPI_DATABASE_HOST" -eq "localhost" ]; then
+    for i in $(seq 1  ${MAX_RETRIES}); do
 
-  mysql -u root -h ${NETWORKAPI_DATABASE_HOST} -e 'DROP DATABASE IF EXISTS networkapi;'
+    mysql -u root -h ${NETWORKAPI_DATABASE_HOST} -e 'DROP DATABASE IF EXISTS networkapi;'
 
-  if [ "$?" -eq "0" ]; then
-    echo "Dropping old networkapi database"
-    DB_READY=1;
-    break;
-  fi
+    if [ "$?" -eq "0" ]; then
+        echo "Dropping old networkapi database"
+        DB_READY=1;
+        break;
+    fi
 
-  echo "DB not ready. Trying again in ${SLEEP_TIME} seconds."
-  sleep ${SLEEP_TIME}
-  echo "Retrying ${i}.."
-done
+    echo "DB not ready. Trying again in ${SLEEP_TIME} seconds."
+    sleep ${SLEEP_TIME}
+    echo "Retrying ${i}.."
+    done
 
 
-# Exits if we can not connect to database container
-if [ "$DB_READY" -eq "0" ]; then
-  echo "Fatal error: Could not connect to DB"
-  exit 1;
+    # Exits if we can not connect to database container
+    if [ "$DB_READY" -eq "0" ]; then
+    echo "Fatal error: Could not connect to DB"
+    exit 1;
+    fi
 fi
 
 
