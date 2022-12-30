@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.test.client import Client
 from mock import patch
-
 from networkapi.test.mock import MockPluginNetwork
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 
 class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
@@ -45,8 +45,9 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -57,15 +58,13 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/networkv4/5/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/5/'
         )
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/networkv4/5/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/5/'
         )
 
         self.compare_status(404, response.status_code)
@@ -81,15 +80,13 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/networkv4/4/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/4/'
         )
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/networkv4/4/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/4/'
         )
 
         self.compare_status(404, response.status_code)
@@ -105,15 +102,13 @@ class NetworkIPv4DeleteSuccessTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/networkv4/6/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/6/'
         )
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/networkv4/6/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/6/'
         )
 
         self.compare_status(404, response.status_code)
@@ -163,8 +158,9 @@ class NetworkIPv4DeleteErrorTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -175,8 +171,7 @@ class NetworkIPv4DeleteErrorTestCase(NetworkApiTestCase):
         delete_url = '/api/v3/networkv4/1000/'
 
         response = self.client.delete(
-            delete_url,
-            HTTP_AUTHORIZATION=self.authorization
+            delete_url
         )
 
         self.compare_status(404, response.status_code)
@@ -228,8 +223,9 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
     json_path = 'api_network/tests/v3/sanity/networkipv4/json/%s'
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -238,8 +234,7 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
         """Test of error to delete an active Network IPv4."""
 
         response = self.client.delete(
-            '/api/v3/networkv4/1/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/1/'
         )
 
         self.compare_status(400, response.status_code)
@@ -249,8 +244,7 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
         self.compare_values(msg, response.data['detail'])
 
         response = self.client.get(
-            '/api/v3/networkv4/1/?kind=basic',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/1/?kind=basic'
         )
 
         self.compare_status(200, response.status_code)
@@ -264,8 +258,7 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
         """
 
         response = self.client.delete(
-            '/api/v3/networkv4/3/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/3/'
         )
 
         self.compare_status(400, response.status_code)
@@ -275,8 +268,7 @@ class NetworkIPv4UnDeployErrorTestCase(NetworkApiTestCase):
         self.compare_values(msg, response.data['detail'])
 
         response = self.client.get(
-            '/api/v3/networkv4/3/?kind=basic',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/3/?kind=basic'
         )
 
         self.compare_status(200, response.status_code)
@@ -324,8 +316,9 @@ class NetworkIPv4UnDeploySuccessTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -339,13 +332,11 @@ class NetworkIPv4UnDeploySuccessTestCase(NetworkApiTestCase):
         test_patch.return_value = mock
 
         response = self.client.delete(
-            '/api/v3/networkv4/deploy/1/',
-            HTTP_AUTHORIZATION=self.authorization)
+            '/api/v3/networkv4/deploy/1/')
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/networkv4/1/?fields=active',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/1/?fields=active'
         )
 
         self.compare_status(200, response.status_code)
@@ -393,8 +384,9 @@ class NetworkIPv4ForceDeleteSuccessTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test_admin')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -403,15 +395,13 @@ class NetworkIPv4ForceDeleteSuccessTestCase(NetworkApiTestCase):
         """Try to delete NetworkIPv4 with true active flag forcibly."""
 
         response = self.client.delete(
-            '/api/v3/networkv4/force/1/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/force/1/'
         )
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/networkv4/1/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/1/'
         )
 
         self.compare_status(404, response.status_code)
@@ -425,15 +415,13 @@ class NetworkIPv4ForceDeleteSuccessTestCase(NetworkApiTestCase):
         """Try to delete NetworkIPv4 with false active flag."""
 
         response = self.client.delete(
-            '/api/v3/networkv4/force/4/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/force/4/'
         )
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v3/networkv4/4/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v3/networkv4/4/'
         )
 
         self.compare_status(404, response.status_code)

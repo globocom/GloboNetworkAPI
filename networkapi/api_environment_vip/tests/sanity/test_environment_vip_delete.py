@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +24,9 @@ class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -34,15 +36,13 @@ class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v3/environment-vip/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
             '/api/v3/environment-vip/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
 
@@ -51,8 +51,7 @@ class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v3/environment-vip/1000/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
 
@@ -63,7 +62,6 @@ class EnvironmentVipDeleteTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v3/environment-vip/2/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response.status_code)

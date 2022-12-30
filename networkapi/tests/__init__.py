@@ -19,6 +19,7 @@ from ..api_ip.tests.sanity.ipv6.sync.test_post import *
 from ..api_ip.tests.sanity.ipv6.sync.test_put import *
 from ..api_ip.tests.unit.ipv6.async.test_delete import *
 from ..api_ip.tests.unit.ipv6.async.test_post import *
+from ..api_ip.tests.unit.ipv6.async.test_put import *
 from ..api_ip.v4.tests.sanity.ipv6.sync.test_delete import *
 from ..api_ip.v4.tests.sanity.ipv6.sync.test_get import *
 from ..api_ip.v4.tests.sanity.ipv6.sync.test_post import *

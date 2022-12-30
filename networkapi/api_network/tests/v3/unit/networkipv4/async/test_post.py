@@ -1,22 +1,40 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.test.client import Client
 from mock import patch
-
-from networkapi.api_network.tasks import create_networkv4
-from networkapi.api_network.tasks import deploy_networkv4
+from networkapi.api_network.tasks import create_networkv4, deploy_networkv4
 from networkapi.ip.models import NetworkIPv4
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
 
 class NetworkIPv4AsyncPostSuccessTestCase(NetworkApiTestCase):
 
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
+
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -47,8 +65,28 @@ class NetworkIPv4AsyncPostSuccessTestCase(NetworkApiTestCase):
 
 class NetworkIPv4AsyncPostErrorTestCase(NetworkApiTestCase):
 
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
+
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -61,8 +99,28 @@ class NetworkIPv4AsyncPostErrorTestCase(NetworkApiTestCase):
 
 class NetworkIPv4AsyncPostDeploySuccessTestCase(NetworkApiTestCase):
 
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
+
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -93,8 +151,28 @@ class NetworkIPv4AsyncPostDeploySuccessTestCase(NetworkApiTestCase):
 
 class NetworkIPv4AsyncPostDeployErrorTestCase(NetworkApiTestCase):
 
+    fixtures = [
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+        'networkapi/api_rack/fixtures/initial_datacenter.json',
+        'networkapi/api_rack/fixtures/initial_fabric.json',
+        'networkapi/api_environment/fixtures/initial_base_pre_environment.json',
+        'networkapi/api_environment/fixtures/initial_base_environment.json',
+        'networkapi/api_environment/fixtures/initial_environment.json',
+        'networkapi/api_environment/fixtures/initial_base.json',
+        'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
+    ]
+
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
