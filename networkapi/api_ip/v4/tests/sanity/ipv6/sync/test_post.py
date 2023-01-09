@@ -2,10 +2,10 @@
 import json
 import logging
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
 from networkapi.util.geral import prepare_url
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,9 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -42,8 +44,7 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
         response = self.client.post(
             '/api/v4/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -51,8 +52,7 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
                           fields=['ip_formated'])
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
         self.compare_values(
@@ -68,8 +68,7 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
         response = self.client.post(
             '/api/v4/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response.status_code)
         self.compare_values(
@@ -85,8 +84,7 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
         response = self.client.post(
             '/api/v4/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -94,8 +92,7 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
                           fields=['ip_formated'])
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
         self.compare_values('fc00:0000:0000:0004:0000:0000:0000:0099',
@@ -108,8 +105,7 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
         response = self.client.post(
             '/api/v4/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response.status_code)
         self.compare_values(
@@ -123,8 +119,7 @@ class IPv6PostTestCaseV4(NetworkApiTestCase):
         response = self.client.post(
             '/api/v4/ipv6/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response.status_code)
         self.compare_values(

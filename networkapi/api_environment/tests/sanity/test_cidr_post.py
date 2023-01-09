@@ -2,9 +2,9 @@
 import json
 import logging
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,9 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
     get_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -47,8 +49,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v3/cidr/',
             data=json.dumps(self.load_json_file(post_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -57,8 +58,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         # get request
         response = self.client.get(
             '/api/v3/cidr/%s/' % id_cidr,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -78,8 +78,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v3/cidr/',
             data=json.dumps(self.load_json_file(post_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -89,8 +88,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         # get request
         response = self.client.get(
             '/api/v3/cidr/%s;%s/' % (id1_cidr, id2_cidr),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -110,8 +108,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response_error = self.client.post(
             '/api/v3/cidr/',
             data=json.dumps(self.load_json_file(post_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response_error.status_code)
 
@@ -128,8 +125,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response_error = self.client.post(
             '/api/v3/cidr/',
             data=json.dumps(self.load_json_file(post_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response_error.status_code)
 
@@ -146,8 +142,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response_error = self.client.post(
             '/api/v3/cidr/',
             data=json.dumps(self.load_json_file(post_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response_error.status_code)
 
@@ -204,8 +199,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v3/cidr/',
             data=json.dumps(self.load_json_file(post_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -214,8 +208,7 @@ class TestCIDRPostTestCase(NetworkApiTestCase):
         # get request
         response = self.client.get(
             '/api/v3/cidr/%s/' % id_cidr,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 

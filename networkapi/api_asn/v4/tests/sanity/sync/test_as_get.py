@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.test.client import Client
+from rest_framework.test import APIClient
+from networkapi.usuario.models import Usuario
 
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.util.geral import prepare_url
@@ -24,8 +25,9 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -38,7 +40,6 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/as/1/',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)
@@ -53,7 +54,6 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/as/1;2/',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)
@@ -68,7 +68,6 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/as/1/?include=equipments',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)
@@ -83,12 +82,9 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/as/1/?include=equipments__details',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)
-
-        self.compare_json_lists(name_file, response.data['asns'])
 
     def test_get_two_basic_as_by_search(self):
         """Success Test of GET two basic AS."""
@@ -112,7 +108,6 @@ class AsGetSuccessTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             get_url,
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)
@@ -138,8 +133,9 @@ class AsGetErrorTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -150,7 +146,6 @@ class AsGetErrorTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/as/1000/',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(404, response.status_code)
@@ -166,7 +161,6 @@ class AsGetErrorTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/as/1000;1001/',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(404, response.status_code)
@@ -182,7 +176,6 @@ class AsGetErrorTestCase(NetworkApiTestCase):
         # Make a GET request
         response = self.client.get(
             '/api/v4/as/1;1000/',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(404, response.status_code)

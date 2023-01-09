@@ -1,9 +1,9 @@
-version: '3'
+version: '3.3'
 services:
 
     db:
         container_name: netapi_db
-        image: mysql:8.0.0
+        image: mysql:5.7
         ports:
             - "3306:3306"
         environment:
@@ -39,9 +39,9 @@ services:
         image: globocom/networkapi:latest
         command: sh scripts/docker/docker-start-celery.sh
         env_file:
-            - scripts/docker/netapi.env
+            - ./scripts/docker/netapi.env
         volumes:
-          - .:/netapi
+            - ./networkapi/:/netapi/networkapi
         networks:
             - netapi_net
         links:
@@ -59,9 +59,10 @@ services:
             - "8000:8000"
             - "8001:8001"
         env_file:
-            - scripts/docker/netapi.env
+            - ./scripts/docker/netapi.env
         volumes:
-            - .:/netapi
+            - ./networkapi:/netapi/networkapi
+            # - /tftpboot:/tftpboot:rw
         networks:
             - netapi_net
         depends_on:
