@@ -2,10 +2,10 @@
 import json
 import logging
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
 from networkapi.util.geral import prepare_url
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,9 @@ class IPv6PutTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -38,8 +40,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/ipv6/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         # API will return success but network will not be changed
         self.compare_status(200, response.status_code)
@@ -48,8 +49,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         url = prepare_url('/api/v3/ipv6/1/', fields=['id', 'equipments'])
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -65,8 +65,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/ipv6/2/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         # API will return success but network will not be changed
         self.compare_status(200, response.status_code)
@@ -75,8 +74,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         url = prepare_url('/api/v3/ipv6/2/', fields=['id', 'equipments'])
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -90,8 +88,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/ipv6/2/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         # API will return success but network will not be changed
         self.compare_status(200, response.status_code)
@@ -100,8 +97,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         url = prepare_url('/api/v3/ipv6/2/', fields=['id', 'equipments'])
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -115,8 +111,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/ipv6/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         # API will return success but network will not be changed
         self.compare_status(200, response.status_code)
@@ -125,8 +120,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         url = prepare_url('/api/v3/ipv6/1/', fields=['id', 'networkipv6'])
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -140,8 +134,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/ipv6/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         # API will return success but network will not be changed
         self.compare_status(200, response.status_code)
@@ -150,8 +143,7 @@ class IPv6PutTestCase(NetworkApiTestCase):
         url = prepare_url('/api/v3/ipv6/1/', fields=['id', 'ip_formated'])
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 

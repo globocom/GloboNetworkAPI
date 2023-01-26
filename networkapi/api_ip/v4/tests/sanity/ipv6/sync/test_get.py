@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
 from networkapi.util.geral import prepare_url
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,9 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -39,8 +41,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
         # Does get request
         response = self.client.get(
             '/api/v4/ipv6/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -53,8 +54,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v4/ipv6/1000/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
 
@@ -71,8 +71,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
         # Does get request
         response = self.client.get(
             '/api/v4/ipv6/1;2/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -85,8 +84,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v4/ipv6/1000;1001/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
 
@@ -102,8 +100,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v4/ipv6/1;1001/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
         self.compare_values(
@@ -138,8 +135,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
         url = prepare_url('/api/v4/ipv6/', search=search, fields=fields)
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -185,8 +181,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
         url = prepare_url('/api/v4/ipv6/', search=search, fields=fields)
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -224,8 +219,7 @@ class IPv6GetTestCaseV4(NetworkApiTestCase):
         url = prepare_url('/api/v4/ipv6/', search=search)
         response = self.client.get(
             url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
         self.compare_values(0, response.data['total'])

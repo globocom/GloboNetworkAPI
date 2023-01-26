@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 json_path = 'api_asn/v4/tests/sanity/sync/json/%s'
 
@@ -26,8 +26,9 @@ class AsPutSuccessTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -41,8 +42,7 @@ class AsPutSuccessTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v4/as/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -52,8 +52,7 @@ class AsPutSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             get_url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -68,8 +67,7 @@ class AsPutSuccessTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v4/as/1;2/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -79,8 +77,7 @@ class AsPutSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             get_url,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -105,8 +102,9 @@ class AsPutErrorTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -119,8 +117,7 @@ class AsPutErrorTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v4/as/1000/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.authorization)
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
 

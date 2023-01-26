@@ -2,7 +2,8 @@
 import json
 import logging
 
-from django.test.client import Client
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 from networkapi.test.test_case import NetworkApiTestCase
 
@@ -35,7 +36,9 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
     comp_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -50,16 +53,14 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/environment/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
         # Does get request
         response = self.client.get(
             '/api/v3/environment/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -79,16 +80,14 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/environment/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
         # Does get request
         response = self.client.get(
             '/api/v3/environment/1/?include=configs',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -111,16 +110,14 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/environment/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
         # Does get request
         response = self.client.get(
             '/api/v3/environment/1/?include=configs',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -141,16 +138,14 @@ class EnvironmentPutOneSuccessTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/environment/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
         # Does get request
         response = self.client.get(
             '/api/v3/environment/1/?include=configs',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -184,7 +179,9 @@ class EnvironmentPutTwoSuccessTestCase(NetworkApiTestCase):
     json_path = 'api_environment/tests/sanity/json/put/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -198,16 +195,14 @@ class EnvironmentPutTwoSuccessTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/environment/1;2/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
         # Does get request
         response = self.client.get(
             '/api/v3/environment/1;2/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -239,7 +234,9 @@ class EnvironmentPutErrorTestCase(NetworkApiTestCase):
     json_path = 'api_environment/tests/sanity/json/put/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -253,7 +250,6 @@ class EnvironmentPutErrorTestCase(NetworkApiTestCase):
         response = self.client.put(
             '/api/v3/environment/1/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(400, response.status_code)

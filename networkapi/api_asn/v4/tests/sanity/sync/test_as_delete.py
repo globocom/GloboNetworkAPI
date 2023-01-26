@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 json_path = 'api_asn/v4/tests/sanity/sync/json/%s'
 
@@ -24,8 +24,9 @@ class AsDeleteSuccessTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -34,15 +35,13 @@ class AsDeleteSuccessTestCase(NetworkApiTestCase):
         """Success Test of DELETE one AS."""
 
         response = self.client.delete(
-            '/api/v4/as/3/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v4/as/3/'
         )
 
         self.compare_status(200, response.status_code)
 
         response = self.client.get(
-            '/api/v4/as/3/',
-            HTTP_AUTHORIZATION=self.authorization
+            '/api/v4/as/3/'
         )
 
         self.compare_status(404, response.status_code)
@@ -57,7 +56,7 @@ class AsDeleteSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             '/api/v4/as/3;4/',
-            HTTP_AUTHORIZATION=self.authorization
+            # HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)
@@ -65,7 +64,6 @@ class AsDeleteSuccessTestCase(NetworkApiTestCase):
         for id_ in xrange(3, 4 + 1):
             response = self.client.get(
                 '/api/v4/as/%s/' % id_,
-                HTTP_AUTHORIZATION=self.authorization
             )
 
             self.compare_status(404, response.status_code)
@@ -94,8 +92,9 @@ class AsDeleteErrorTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
-        self.authorization = self.get_http_authorization('test')
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -107,7 +106,6 @@ class AsDeleteErrorTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             delete_url,
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(400, response.status_code)
@@ -125,7 +123,6 @@ class AsDeleteErrorTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             delete_url,
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(404, response.status_code)
@@ -144,7 +141,6 @@ class AsDeleteErrorTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             delete_url,
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(400, response.status_code)
@@ -158,7 +154,6 @@ class AsDeleteErrorTestCase(NetworkApiTestCase):
         # Check if AS 3 not changed
         response = self.client.get(
             '/api/v4/as/3/',
-            HTTP_AUTHORIZATION=self.authorization
         )
 
         self.compare_status(200, response.status_code)

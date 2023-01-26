@@ -2,9 +2,9 @@
 import json
 import logging
 
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,9 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
     json_path = 'api_environment_vip/tests/sanity/json/post/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -40,8 +42,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v3/environment-vip/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -50,8 +51,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
         # Does get request
         response = self.client.get(
             '/api/v3/environment-vip/%s/?include=conf' % id_env,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -70,8 +70,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v3/environment-vip/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -80,8 +79,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
         # Does get request
         response = self.client.get(
             '/api/v3/environment-vip/%s/?include=environments,conf' % id_env,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -100,8 +98,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
         response = self.client.post(
             '/api/v3/environment-vip/',
             data=json.dumps(self.load_json_file(name_file)),
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(201, response.status_code)
 
@@ -110,8 +107,7 @@ class EnvironmentVipPostSuccessTestCase(NetworkApiTestCase):
         # Does get request
         response = self.client.get(
             '/api/v3/environment-vip/%s/?include=optionsvip,conf' % id_env,
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 

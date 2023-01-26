@@ -2,7 +2,8 @@
 import json
 import logging
 
-from django.test.client import Client
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 from networkapi.test.test_case import NetworkApiTestCase
 
@@ -32,7 +33,9 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
     json_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -42,8 +45,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -54,8 +56,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/1/?kind=details',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -66,8 +67,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/1/?include=routers',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -86,8 +86,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/1/?include=equipments',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -110,8 +109,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/1/?include=equipments,sdn_controllers',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -136,8 +134,7 @@ class EnvironmentGetOneSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/4/?include=children',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -176,7 +173,9 @@ class EnvironmentGetTwoSuccessTestCase(NetworkApiTestCase):
     json_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -188,8 +187,7 @@ class EnvironmentGetTwoSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/1;2/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -218,7 +216,9 @@ class EnvironmentGetListSuccessTestCase(NetworkApiTestCase):
     json_path = 'api_environment/tests/sanity/json/get/%s'
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -228,8 +228,7 @@ class EnvironmentGetListSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -240,8 +239,7 @@ class EnvironmentGetListSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/environment-vip/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -253,8 +251,7 @@ class EnvironmentGetListSuccessTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/environment-vip/1/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(200, response.status_code)
 
@@ -281,7 +278,9 @@ class EnvironmentGetErrorTestCase(NetworkApiTestCase):
     ]
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
         pass
@@ -291,8 +290,7 @@ class EnvironmentGetErrorTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/1000/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
 
@@ -307,8 +305,7 @@ class EnvironmentGetErrorTestCase(NetworkApiTestCase):
 
         response = self.client.get(
             '/api/v3/environment/environment-vip/1000/',
-            content_type='application/json',
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+            content_type='application/json')
 
         self.compare_status(404, response.status_code)
 

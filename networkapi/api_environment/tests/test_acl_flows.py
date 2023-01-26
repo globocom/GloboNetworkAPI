@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from json import dumps
-from json import loads
+from json import dumps, loads
 
 from mock import patch
-
-from django.test.client import Client
-
 from networkapi.test.test_case import NetworkApiTestCase
+from networkapi.usuario.models import Usuario
+from rest_framework.test import APIClient
 
 
 class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
@@ -30,6 +28,7 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
         'networkapi/api_environment/fixtures/initial_base.json',
         'networkapi/plugins/SDN/ODL/fixtures/initial_equipments.json',
     ]
+    # logging.debug(fixtures)
 
     ENV_URL = "/api/v3/environment/%s/"
 
@@ -38,7 +37,10 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
     FLOW_URL = ENV_URL + "flows/%s/"
 
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
+        self.user = Usuario.objects.get(user='test')
+        self.client.force_authenticate(user=self.user)
+
 
     def test_add_acl_flow_with_flow_id(self):
         """ Should insert an ACL flow using async call with flow id """
@@ -52,15 +54,12 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
                 "destination": "10.0.0.2/32",
             }]
         }
-
         response = self.client.post(
             self.FLOW_URL % (self.ENV_ID, data['rules'][0]['id']),
             dumps(data),
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'),
             content_type="application/json")
 
         resp_data = loads(response.content)
-
         assert response.status_code == 201
         assert resp_data['id'] == str(data['rules'][0]['id'])
 
@@ -80,7 +79,6 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
         response = self.client.post(
             url + "flows/",
             dumps(data),
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'),
             content_type="application/json")
 
         resp_data = loads(response.content)
@@ -93,7 +91,6 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             self.FLOW_URL % (self.ENV_ID, 1),
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'),
             content_type="application/json")
 
         assert response.status_code == 200
@@ -108,7 +105,6 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
 
         response = self.client.delete(
             (self.ENV_URL+'flows/') % self.ENV_ID,
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'),
             content_type="application/json")
 
         assert plugin.called is True
@@ -132,7 +128,6 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
         response = self.client.put(
             self.FLOW_URL % (self.ENV_ID, data['rules'][0]['id']),
             dumps(data),
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'),
             content_type="application/json")
 
         assert response.status_code == 200
@@ -157,7 +152,6 @@ class APIEnvironmentFlowsTestCase(NetworkApiTestCase):
         response = self.client.put(
             url + "flows/",
             dumps(data),
-            HTTP_AUTHORIZATION=self.get_http_authorization('test'),
             content_type="application/json")
 
         assert response.status_code == 200
