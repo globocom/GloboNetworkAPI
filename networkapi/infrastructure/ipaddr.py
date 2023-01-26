@@ -925,16 +925,17 @@ class _BaseNet(_IPAddrBase):
               number means a larger network)
 
         """
-        if self._prefixlen == self._max_prefixlen:
-            yield self
-            return
 
-        if new_prefix is not None:
+        if new_prefix :
             if new_prefix < self._prefixlen:
                 raise ValueError('new prefix must be longer')
             if prefixlen_diff != 1:
                 raise ValueError('cannot set prefixlen_diff and new_prefix')
             prefixlen_diff = new_prefix - self._prefixlen
+
+        if self._prefixlen == self._max_prefixlen:
+            yield self
+            return
 
         if prefixlen_diff < 0:
             raise ValueError('prefix length diff must be > 0')
