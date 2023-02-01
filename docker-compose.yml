@@ -62,6 +62,8 @@ services:
             - ./scripts/docker/netapi.env
         volumes:
             - ./networkapi:/netapi/networkapi
+            - ./dev:/netapi/dev
+            # # COMMENT
             # - /tftpboot:/tftpboot:rw
         networks:
             - netapi_net
