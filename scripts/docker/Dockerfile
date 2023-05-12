@@ -70,4 +70,4 @@ ENV PATH="/venv/bin:${PATH}"
 
 ENV PYTHONPATH="/usr/lib/python2.7:/venv/lib/python2.7"
 
-CMD /netapi/scripts/docker/docker-start-netapi.sh
+# CMD /netapi/scripts/docker/docker-start-netapi.sh

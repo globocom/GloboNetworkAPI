@@ -4,6 +4,7 @@ services:
     db:
         container_name: netapi_db
         image: mysql:5.7
+        platform: linux/x86_64
         ports:
             - "3306:3306"
         environment:
@@ -36,7 +37,12 @@ services:
 
     celery:
         container_name: netapi_celery
-        image: globocom/networkapi:latest
+        image: networkapi:latest
+        build:
+            context: .
+            dockerfile: ./scripts/docker/Dockerfile
+        restart: always
+        working_dir: /netapi
         command: sh scripts/docker/docker-start-celery.sh
         env_file:
             - ./scripts/docker/netapi.env
@@ -53,8 +59,13 @@ services:
 
     netapi:
         container_name: netapi_app
-        image: globocom/networkapi:latest
+        image: globocom:latest
+        build:
+            context: .
+            dockerfile: ./scripts/docker/Dockerfile
         restart: always
+        working_dir: /netapi
+        command: sh /netapi/scripts/docker/docker-start-netapi.sh
         ports:
             - "8000:8000"
             - "8001:8001"
