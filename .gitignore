@@ -25,3 +25,4 @@ sitestatic/
 reports/
 networkapi/generated_config/*
 cover/
+*.pyc
