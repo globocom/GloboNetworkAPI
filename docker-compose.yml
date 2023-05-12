@@ -61,7 +61,7 @@ services:
         env_file:
             - ./scripts/docker/netapi.env
         volumes:
-            - ./networkapi:/netapi/networkapi
+            - ./:/netapi/
             - ./dev:/netapi/dev
             # # COMMENT
             # - /tftpboot:/tftpboot:rw

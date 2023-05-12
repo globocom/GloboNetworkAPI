@@ -81,3 +81,69 @@ python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.te
 python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.test_get.py
 python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.test_post.py
 python manage.py test networkapi/api_network.tests.v3.sanity.networkipv4.sync.test_put.py
+
+echo ""
+echo "=============== Tests for Network v6 ================="
+python manage.py test netwrokapi/api_network.tests.v3.unit.networkipv6.async.test_delete.py
+python manage.py test netwrokapi/api_network.tests.v3.unit.networkipv6.async.test_post.py
+python manage.py test netwrokapi/api_network.tests.v3.unit.networkipv6.async.test_put.py
+python manage.py test netwrokapi/api_network.tests.v3.sanity.allocate.test_network_v4.py
+python manage.py test netwrokapi/api_network.tests.v3.sanity.networkipv6.sync.test_delete.py
+python manage.py test netwrokapi/api_network.tests.v3.sanity.networkipv6.sync.test_get.py
+python manage.py test netwrokapi/api_network.tests.v3.sanity.networkipv6.sync.test_post.py
+python manage.py test netwrokapi/api_network.tests.v3.sanity.networkipv6.sync.test_put.py
+
+echo ""
+echo "=============== Tests for ASN ================="
+python manage.py test netwrokapi/api_asn.v4.tests.sanity.sync.test_as_delete.py
+python manage.py test netwrokapi/api_asn.v4.tests.sanity.sync.test_as_get.py
+python manage.py test netwrokapi/api_asn.v4.tests.sanity.sync.test_as_post.py
+python manage.py test netwrokapi/api_asn.v4.tests.sanity.sync.test_as_put.py
+
+echo ""
+echo "=============== Tests for Interface ================="
+python manage.py test netwrokapi/api_interface.tests.sanity.interface.test_interface_delete.py
+python manage.py test netwrokapi/api_interface.tests.sanity.interface.test_interface_get.py
+python manage.py test netwrokapi/api_interface.tests.sanity.interface.test_interface_post.py
+python manage.py test netwrokapi/api_interface.tests.sanity.interface.teste_interface_put.py
+python manage.py test netwrokapi/api_interface.tests.sanity.interface_environments.teste_delete.py
+python manage.py test netwrokapi/api_interface.tests.sanity.interface_environments.teste_post.py
+
+echo ""
+echo "=============== Tests for List Configuration BGP ================="
+python manage.py test netwrokapi/api_list_config_bgp.v4.tests.sanity.sync.test_delete.py
+python manage.py test netwrokapi/api_list_config_bgp.v4.tests.sanity.sync.test_get.py
+python manage.py test netwrokapi/api_list_config_bgp.v4.tests.sanity.sync.test_post.py
+python manage.py test netwrokapi/api_list_config_bgp.v4.tests.sanity.sync.test_put.py
+
+echo ""
+echo "=============== Tests for Rack ================="
+python manage.py test netwrokapi/api_rack.tests.datacenter.test_datacenter.py
+python manage.py test netwrokapi/api_rack.tests.fabric.test_fabric.py
+python manage.py test netwrokapi/api_rack.tests.rack.test_rack.py
+
+echo ""
+echo "=============== Tests for Pool ================="
+python manage.py test netwrokapi/api_pools.tests.functional.v1.test_facade.py
+python manage.py test netwrokapi/api_pools.tests.functional.v1.test_save_pool.py
+python manage.py test netwrokapi/api_pools.tests.sanity.test_pool_deploy_mock_delete.py
+python manage.py test netwrokapi/api_pools.tests.sanity.test_pool_deploy_mock_post.py
+python manage.py test netwrokapi/api_pools.tests.sanity.test_pool_deploy_mock_put.py
+python manage.py test netwrokapi/api_pools.tests.sanity.test_pool_get.py
+python manage.py test netwrokapi/api_pools.tests.sanity.test_pool_get_deploy_mock.py
+python manage.py test netwrokapi/api_pools.tests.sanity.test_pool_post_spec.py
+python manage.py test netwrokapi/api_pools.tests.sanity.test_pool_put_spec.py
+python manage.py test netwrokapi/api_pools.tests.unit.test_pool_deploy_mock_plugin.py
+python manage.py test netwrokapi/api_pools.tests.unit.async.test_delete.py
+python manage.py test netwrokapi/api_pools.tests.unit.async.test_post.py
+python manage.py test netwrokapi/api_pools.tests.unit.async.test_put.py
+
+echo ""
+echo "=============== Tests for VIP Requests ================="
+python manage.py test netwrokapi/api_vip_request.tests.sanity.sync.test_delete.py
+python manage.py test netwrokapi/api_vip_request.tests.sanity.sync.test_get.py
+python manage.py test netwrokapi/api_vip_request.tests.sanity.sync.test_post.py
+python manage.py test netwrokapi/api_vip_request.tests.sanity.sync.test_put.py
+python manage.py test netwrokapi/api_vip_request.tests.unit.async.test_delete.py
+python manage.py test netwrokapi/api_vip_request.tests.unit.async.test_post.py
+python manage.py test netwrokapi/api_vip_request.tests.unit.async.test_put.py
