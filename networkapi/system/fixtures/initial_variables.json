@@ -1,541 +1,541 @@
 [
   {
-    "pk": 25, 
-    "model": "system.variable", 
+    "pk": 25,
+    "model": "system.variable",
     "fields": {
-      "name": "base_so", 
-      "value": "1010", 
+      "name": "base_so",
+      "value": "1010",
       "description": "valor base para as vlans e portchannels"
     }
-  }, 
+  },
   {
-    "pk": 26, 
-    "model": "system.variable", 
+    "pk": 26,
+    "model": "system.variable",
     "fields": {
-      "name": "net_core", 
-      "value": "10.143.0.0/18", 
+      "name": "net_core",
+      "value": "10.143.0.0/18",
       "description": "rede para conectar cores aos racks"
     }
-  }, 
+  },
   {
-    "pk": 28, 
-    "model": "system.variable", 
+    "pk": 28,
+    "model": "system.variable",
     "fields": {
-      "name": "base_rack", 
-      "value": "120", 
+      "name": "base_rack",
+      "value": "120",
       "description": "numero de racks por sala"
     }
-  }, 
+  },
   {
-    "pk": 29, 
-    "model": "system.variable", 
+    "pk": 29,
+    "model": "system.variable",
     "fields": {
-      "name": "vlanbe", 
-      "value": "2000", 
+      "name": "vlanbe",
+      "value": "2000",
       "description": "base do numero das vlans de BE"
     }
-  }, 
+  },
   {
-    "pk": 30, 
-    "model": "system.variable", 
+    "pk": 30,
+    "model": "system.variable",
     "fields": {
-      "name": "vlanfe", 
-      "value": "2480", 
+      "name": "vlanfe",
+      "value": "2480",
       "description": "base do numero das vlans de FE"
     }
-  }, 
+  },
   {
-    "pk": 31, 
-    "model": "system.variable", 
+    "pk": 31,
+    "model": "system.variable",
     "fields": {
-      "name": "vlanborda", 
-      "value": "2960", 
+      "name": "vlanborda",
+      "value": "2960",
       "description": "base do numero das vlans de BORDA"
     }
-  }, 
+  },
   {
-    "pk": 32, 
-    "model": "system.variable", 
+    "pk": 32,
+    "model": "system.variable",
     "fields": {
-      "name": "vlanbordacachos", 
-      "value": "3440", 
+      "name": "vlanbordacachos",
+      "value": "3440",
       "description": "base do numero das vlans de BORDACACHOS"
     }
-  }, 
+  },
   {
-    "pk": 41, 
-    "model": "system.variable", 
+    "pk": 41,
+    "model": "system.variable",
     "fields": {
-      "name": "vlanbetorxtor", 
-      "value": "3921", 
+      "name": "vlanbetorxtor",
+      "value": "3921",
       "description": "numero da vlan TorxTor do ambiente BE"
     }
-  }, 
+  },
   {
-    "pk": 42, 
-    "model": "system.variable", 
+    "pk": 42,
+    "model": "system.variable",
     "fields": {
-      "name": "cidr_sl01", 
-      "value": "10.128.0.0/12", 
+      "name": "cidr_sl01",
+      "value": "10.128.0.0/12",
       "description": "CIDR sala 01"
     }
-  }, 
+  },
   {
-    "pk": 43, 
-    "model": "system.variable", 
+    "pk": 43,
+    "model": "system.variable",
     "fields": {
-      "name": "cidr_bgp", 
-      "value": "10.126.0.0/22", 
+      "name": "cidr_bgp",
+      "value": "10.126.0.0/22",
       "description": "CIDR BGP"
     }
-  }, 
+  },
   {
-    "pk": 44, 
-    "model": "system.variable", 
+    "pk": 44,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn01", 
-      "value": "10.126.0.0/24", 
+      "name": "net_spn01",
+      "value": "10.126.0.0/24",
       "description": "rede do spine 01"
     }
-  }, 
+  },
   {
-    "pk": 45, 
-    "model": "system.variable", 
+    "pk": 45,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn02", 
-      "value": "10.126.1.0/24", 
+      "name": "net_spn02",
+      "value": "10.126.1.0/24",
       "description": "rede do spine 02"
     }
-  }, 
+  },
   {
-    "pk": 46, 
-    "model": "system.variable", 
+    "pk": 46,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn03", 
-      "value": "10.126.2.0/24", 
+      "name": "net_spn03",
+      "value": "10.126.2.0/24",
       "description": "rede do spine 03"
     }
-  }, 
+  },
   {
-    "pk": 47, 
-    "model": "system.variable", 
+    "pk": 47,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn04", 
-      "value": "10.126.3.0/24", 
+      "name": "net_spn04",
+      "value": "10.126.3.0/24",
       "description": "rede do spine 04"
     }
-  }, 
+  },
   {
-    "pk": 48, 
-    "model": "system.variable", 
+    "pk": 48,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn01_v6", 
-      "value": "fdbe:0:0:1eaf::/120", 
+      "name": "net_spn01_v6",
+      "value": "fdbe:0:0:1eaf::/120",
       "description": "rede do spine 01 (v6)"
     }
-  }, 
+  },
   {
-    "pk": 49, 
-    "model": "system.variable", 
+    "pk": 49,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn02_v6", 
-      "value": "fdbe:0:0:1eaf::100/120", 
+      "name": "net_spn02_v6",
+      "value": "fdbe:0:0:1eaf::100/120",
       "description": "rede do spine 02 (v6)"
     }
-  }, 
+  },
   {
-    "pk": 50, 
-    "model": "system.variable", 
+    "pk": 50,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn03_v6", 
-      "value": "fdbe:0:0:1eaf::200/120", 
+      "name": "net_spn03_v6",
+      "value": "fdbe:0:0:1eaf::200/120",
       "description": "rede do spine 03 (v6)"
     }
-  }, 
+  },
   {
-    "pk": 51, 
-    "model": "system.variable", 
+    "pk": 51,
+    "model": "system.variable",
     "fields": {
-      "name": "net_spn04_v6", 
-      "value": "fdbe:0:0:1eaf::300/120", 
+      "name": "net_spn04_v6",
+      "value": "fdbe:0:0:1eaf::300/120",
       "description": "rede do spine 04 (v6)"
     }
-  }, 
+  },
   {
-    "pk": 52, 
-    "model": "system.variable", 
+    "pk": 52,
+    "model": "system.variable",
     "fields": {
-      "name": "vlan_so_name", 
-      "value": "OOB_SO_", 
+      "name": "vlan_so_name",
+      "value": "OOB_SO_",
       "description": "base do nome das vlans de so"
     }
-  }, 
+  },
   {
-    "pk": 53, 
-    "model": "system.variable", 
+    "pk": 53,
+    "model": "system.variable",
     "fields": {
-      "name": "cidr_be_v4", 
-      "value": "10.128.0.0/12", 
+      "name": "cidr_be_v4",
+      "value": "10.128.0.0/12",
       "description": "CIDR BE v4"
     }
-  }, 
+  },
   {
-    "pk": 54, 
-    "model": "system.variable", 
+    "pk": 54,
+    "model": "system.variable",
     "fields": {
-      "name": "cidr_be_v6", 
-      "value": "fdbe:bebe:bedc::/48", 
+      "name": "cidr_be_v6",
+      "value": "fdbe:bebe:bedc::/48",
       "description": "CIDR BE v6"
     }
-  }, 
+  },
   {
-    "pk": 55, 
-    "model": "system.variable", 
+    "pk": 55,
+    "model": "system.variable",
     "fields": {
-      "name": "be_vlan_min", 
-      "value": "2", 
+      "name": "be_vlan_min",
+      "value": "2",
       "description": "numero m\u00ednimo das vlans de BE"
     }
-  }, 
+  },
   {
-    "pk": 56, 
-    "model": "system.variable", 
+    "pk": 56,
+    "model": "system.variable",
     "fields": {
-      "name": "be_vlan_max", 
-      "value": "129", 
+      "name": "be_vlan_max",
+      "value": "129",
       "description": "numero maximo das vlans de BE"
     }
-  }, 
+  },
   {
-    "pk": 57, 
-    "model": "system.variable", 
+    "pk": 57,
+    "model": "system.variable",
     "fields": {
-      "name": "befe_vlan_min", 
-      "value": "130", 
+      "name": "befe_vlan_min",
+      "value": "130",
       "description": "numero m\u00ednimo das vlans de BEFE"
     }
-  }, 
+  },
   {
-    "pk": 58, 
-    "model": "system.variable", 
+    "pk": 58,
+    "model": "system.variable",
     "fields": {
-      "name": "befe_vlan_max", 
-      "value": "193", 
+      "name": "befe_vlan_max",
+      "value": "193",
       "description": "numero maximo das vlans de BEFE"
     }
-  }, 
+  },
   {
-    "pk": 59, 
-    "model": "system.variable", 
+    "pk": 59,
+    "model": "system.variable",
     "fields": {
-      "name": "beborda_vlan_min", 
-      "value": "194", 
+      "name": "beborda_vlan_min",
+      "value": "194",
       "description": "numero m\u00ednimo das vlans de BEBORDA"
     }
-  }, 
+  },
   {
-    "pk": 60, 
-    "model": "system.variable", 
+    "pk": 60,
+    "model": "system.variable",
     "fields": {
-      "name": "beborda_vlan_max", 
-      "value": "257", 
+      "name": "beborda_vlan_max",
+      "value": "257",
       "description": "numero maximo das vlans de BEBORDA"
     }
-  }, 
+  },
   {
-    "pk": 61, 
-    "model": "system.variable", 
+    "pk": 61,
+    "model": "system.variable",
     "fields": {
-      "name": "becachos_vlan_min", 
-      "value": "258", 
+      "name": "becachos_vlan_min",
+      "value": "258",
       "description": "numero m\u00ednimo das vlans de BECACHOS"
     }
-  }, 
+  },
   {
-    "pk": 62, 
-    "model": "system.variable", 
+    "pk": 62,
+    "model": "system.variable",
     "fields": {
-      "name": "becachos_vlan_max", 
-      "value": "289", 
+      "name": "becachos_vlan_max",
+      "value": "289",
       "description": "numero maximo das vlans de BECACHOS"
     }
-  }, 
+  },
   {
-    "pk": 63, 
-    "model": "system.variable", 
+    "pk": 63,
+    "model": "system.variable",
     "fields": {
-      "name": "vlan_mngt_be", 
-      "value": "296", 
+      "name": "vlan_mngt_be",
+      "value": "296",
       "description": "numero da vlan de gerencia de BE"
     }
-  }, 
+  },
   {
-    "pk": 64, 
-    "model": "system.variable", 
+    "pk": 64,
+    "model": "system.variable",
     "fields": {
-      "name": "vlan_mngt_fe", 
-      "value": "297", 
+      "name": "vlan_mngt_fe",
+      "value": "297",
       "description": "numero da vlan de gerencia de FE"
     }
-  }, 
+  },
   {
-    "pk": 65, 
-    "model": "system.variable", 
+    "pk": 65,
+    "model": "system.variable",
     "fields": {
-      "name": "vlan_mngt_bo", 
-      "value": "298", 
+      "name": "vlan_mngt_bo",
+      "value": "298",
       "description": "numero da vlan de gerencia de BO"
     }
-  }, 
+  },
   {
-    "pk": 66, 
-    "model": "system.variable", 
+    "pk": 66,
+    "model": "system.variable",
     "fields": {
-      "name": "vlan_mngt_ca", 
-      "value": "299", 
+      "name": "vlan_mngt_ca",
+      "value": "299",
       "description": "numero da vlan de gerencia de CA"
     }
-  }, 
+  },
   {
-    "pk": 67, 
-    "model": "system.variable", 
+    "pk": 67,
+    "model": "system.variable",
     "fields": {
-      "name": "vlan_mngt_filer", 
-      "value": "300", 
+      "name": "vlan_mngt_filer",
+      "value": "300",
       "description": "numero da vlan de gerencia de FILER"
     }
-  }, 
+  },
   {
-    "pk": 68, 
-    "model": "system.variable", 
+    "pk": 68,
+    "model": "system.variable",
     "fields": {
-      "name": "cidr_fe_v4", 
-      "value": "172.20.0.0/14", 
+      "name": "cidr_fe_v4",
+      "value": "172.20.0.0/14",
       "description": "CIDR FE v4"
     }
-  }, 
+  },
   {
-    "pk": 69, 
-    "model": "system.variable", 
+    "pk": 69,
+    "model": "system.variable",
     "fields": {
-      "name": "cidr_fe_v6", 
-      "value": "fdfe:fefe:fedc:0100::/50", 
+      "name": "cidr_fe_v6",
+      "value": "fdfe:fefe:fedc:0100::/50",
       "description": "CIDR FE v6"
     }
-  }, 
+  },
   {
-    "pk": 70, 
-    "model": "system.variable", 
+    "pk": 70,
+    "model": "system.variable",
     "fields": {
-      "name": "fe_vlan_min", 
-      "value": "365", 
+      "name": "fe_vlan_min",
+      "value": "365",
       "description": "numero min das vlans de FE"
     }
-  }, 
+  },
   {
-    "pk": 71, 
-    "model": "system.variable", 
+    "pk": 71,
+    "model": "system.variable",
     "fields": {
-      "name": "fe_vlan_max", 
-      "value": "301", 
+      "name": "fe_vlan_max",
+      "value": "301",
       "description": "numero maximo das vlans de FE"
     }
-  }, 
+  },
   {
-    "pk": 76, 
-    "model": "system.variable", 
+    "pk": 76,
+    "model": "system.variable",
     "fields": {
-      "name": "base_as", 
-      "value": "65100", 
+      "name": "base_as",
+      "value": "65100",
       "description": "numero de AS para BGP - Rack0"
     }
-  }, 
+  },
   {
-    "pk": 77, 
-    "model": "system.variable", 
+    "pk": 77,
+    "model": "system.variable",
     "fields": {
-      "name": "ibgptorlxlip_v4", 
-      "value": "10.126.4.0/24", 
+      "name": "ibgptorlxlip_v4",
+      "value": "10.126.4.0/24",
       "description": "rede IBGP"
     }
-  }, 
+  },
   {
-    "pk": 78, 
-    "model": "system.variable", 
+    "pk": 78,
+    "model": "system.variable",
     "fields": {
-      "name": "ibgptorlxlip_v6", 
-      "value": "fdbe:0:0:1eaf:8100::/120", 
+      "name": "ibgptorlxlip_v6",
+      "value": "fdbe:0:0:1eaf:8100::/120",
       "description": "rede IBGP v6"
     }
-  }, 
+  },
   {
-    "pk": 79, 
-    "model": "system.variable", 
+    "pk": 79,
+    "model": "system.variable",
     "fields": {
-      "name": "base_as_spn01", 
-      "value": "64601", 
+      "name": "base_as_spn01",
+      "value": "64601",
       "description": "numero AS para BGP - spine 01"
     }
-  }, 
+  },
   {
-    "pk": 80, 
-    "model": "system.variable", 
+    "pk": 80,
+    "model": "system.variable",
     "fields": {
-      "name": "base_as_spn02", 
-      "value": "64602", 
+      "name": "base_as_spn02",
+      "value": "64602",
       "description": "numero AS para BGP - spine 02"
     }
-  }, 
+  },
   {
-    "pk": 81, 
-    "model": "system.variable", 
+    "pk": 81,
+    "model": "system.variable",
     "fields": {
-      "name": "base_as_spn03", 
-      "value": "64603", 
+      "name": "base_as_spn03",
+      "value": "64603",
       "description": "numero AS para BGP - spine 03"
     }
-  }, 
+  },
   {
-    "pk": 82, 
-    "model": "system.variable", 
+    "pk": 82,
+    "model": "system.variable",
     "fields": {
-      "name": "base_as_spn04", 
-      "value": "64604", 
+      "name": "base_as_spn04",
+      "value": "64604",
       "description": "numero AS para BGP - spine 04"
     }
-  }, 
+  },
   {
-    "pk": 83, 
-    "model": "system.variable", 
+    "pk": 83,
+    "model": "system.variable",
     "fields": {
-      "name": "image_so_lf", 
-      "value": "n6000-uk9.7.1.0.N1.1b.bin", 
+      "name": "image_so_lf",
+      "value": "n6000-uk9.7.1.0.N1.1b.bin",
       "description": "image_so_lf"
     }
-  }, 
+  },
   {
-    "pk": 84, 
-    "model": "system.variable", 
+    "pk": 84,
+    "model": "system.variable",
     "fields": {
-      "name": "kickstart_so_lf", 
-      "value": "n6000-uk9-kickstart.7.1.0.N1.1b.bin", 
+      "name": "kickstart_so_lf",
+      "value": "n6000-uk9-kickstart.7.1.0.N1.1b.bin",
       "description": "kickstart_so_lf"
     }
-  }, 
+  },
   {
-    "pk": 87, 
-    "model": "system.variable", 
+    "pk": 87,
+    "model": "system.variable",
     "fields": {
-      "name": "foreman_username", 
-      "value": "admin", 
+      "name": "foreman_username",
+      "value": "admin",
       "description": "username"
     }
-  }, 
+  },
   {
-    "pk": 88, 
-    "model": "system.variable", 
+    "pk": 88,
+    "model": "system.variable",
     "fields": {
-      "name": "foreman_password", 
-      "value": "password", 
+      "name": "foreman_password",
+      "value": "password",
       "description": "password"
     }
-  }, 
+  },
   {
-    "pk": 89, 
-    "model": "system.variable", 
+    "pk": 89,
+    "model": "system.variable",
     "fields": {
-      "name": "foreman_hosts_environment_id", 
-      "value": "1", 
+      "name": "foreman_hosts_environment_id",
+      "value": "1",
       "description": "environment id"
     }
-  }, 
+  },
   {
-    "pk": 90, 
-    "model": "system.variable", 
+    "pk": 90,
+    "model": "system.variable",
     "fields": {
-      "name": "divisaodc_mngt", 
-      "value": "OOB-CM", 
+      "name": "divisaodc_mngt",
+      "value": "OOB-CM",
       "description": "Nome da divisao dc"
     }
-  }, 
+  },
   {
-    "pk": 91, 
-    "model": "system.variable", 
+    "pk": 91,
+    "model": "system.variable",
     "fields": {
-      "name": "amblog_mngt", 
-      "value": "GERENCIA", 
+      "name": "amblog_mngt",
+      "value": "GERENCIA",
       "description": "Nome do ambiente logico"
     }
-  }, 
+  },
   {
-    "pk": 92, 
-    "model": "system.variable", 
+    "pk": 92,
+    "model": "system.variable",
     "fields": {
-      "name": "grpl3_mngt", 
-      "value": "CORE/DENSIDADE", 
+      "name": "grpl3_mngt",
+      "value": "CORE/DENSIDADE",
       "description": "Nome do grupo l3"
     }
-  }, 
+  },
   {
-    "pk": 93, 
-    "model": "system.variable", 
+    "pk": 93,
+    "model": "system.variable",
     "fields": {
-      "name": "leaf", 
-      "value": "LF-CM", 
+      "name": "leaf",
+      "value": "LF-CM",
       "description": "prefixo do nome do leaf"
     }
-  }, 
+  },
   {
-    "pk": 94, 
-    "model": "system.variable", 
+    "pk": 94,
+    "model": "system.variable",
     "fields": {
-      "name": "formato", 
-      "value": ".cfg", 
+      "name": "formato",
+      "value": ".cfg",
       "description": "extensao do arquivo de configuracao gera"
     }
-  }, 
+  },
   {
-    "pk": 95, 
-    "model": "system.variable", 
+    "pk": 95,
+    "model": "system.variable",
     "fields": {
-      "name": "oob", 
-      "value": "OOB-CM", 
+      "name": "oob",
+      "value": "OOB-CM",
       "description": "prefixo do nome do oob"
     }
-  }, 
+  },
   {
-    "pk": 96, 
-    "model": "system.variable", 
+    "pk": 96,
+    "model": "system.variable",
     "fields": {
-      "name": "spn", 
-      "value": "SPN-CM", 
+      "name": "spn",
+      "value": "SPN-CM",
       "description": "prefixo do nome do spine"
     }
-  }, 
+  },
   {
-    "pk": 97, 
-    "model": "system.variable", 
+    "pk": 97,
+    "model": "system.variable",
     "fields": {
-      "name": "use_foreman", 
-      "value": "0", 
+      "name": "use_foreman",
+      "value": "0",
       "description": "use foreman"
     }
-  }, 
+  },
   {
-    "pk": 98, 
-    "model": "system.variable", 
+    "pk": 98,
+    "model": "system.variable",
     "fields": {
-      "name": "foreman_url", 
-      "value": "http://foreman_server", 
+      "name": "foreman_url",
+      "value": "http://foreman_server",
       "description": "fo"
     }
-  }, 
+  },
   {
-    "pk": 99, 
-    "model": "system.variable", 
+    "pk": 99,
+    "model": "system.variable",
     "fields": {
-      "name": "teste", 
-      "value": "teste", 
+      "name": "teste",
+      "value": "teste",
       "description": ""
     }
   },
@@ -698,6 +698,15 @@
     "fields": {
       "name": "use_ldap",
       "value": "0",
+      "description": ""
+    }
+  },
+  {
+    "pk": 209,
+    "model": "system.variable",
+    "fields": {
+      "name": "use_cache_user",
+      "value": "True",
       "description": ""
     }
   }
