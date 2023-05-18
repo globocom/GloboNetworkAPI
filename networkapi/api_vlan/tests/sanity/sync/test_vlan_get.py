@@ -93,7 +93,7 @@ class VlanGetTestCase(NetworkApiTestCase):
             ' Choices are: acl_draft, acl_draft_v6, acl_file_name,' + \
             ' acl_file_name_v6, acl_valida, acl_valida_v6, ambiente,' + \
             ' ativada, descricao, id, networkipv4, networkipv6, nome,' +\
-            ' num_vlan, vrf, vrfvlanequipment'
+            ' num_vlan, vrf, vrfvlanequipment, vxlan'
 
         self.assertEqual(
             expected_data,
