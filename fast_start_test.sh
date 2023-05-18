@@ -16,6 +16,16 @@ export REMOTE_CTRL_IP=$(nslookup netapi_odl | grep Address | tail -1 | awk '{pri
 echo "Found SDN controller at $REMOTE_CTRL_IP"
 
 echo "Starting tests.."
+
+echo "=============== Tests for VLAN ================="
+python manage.py test networkapi/api_vlan.tests.sanity.sync.test_vlan_delete.py
+python manage.py test networkapi/api_vlan.tests.sanity.sync.test_vlan_get.py
+python manage.py test networkapi/api_vlan.tests.sanity.sync.test_vlan_post.py
+python manage.py test networkapi/api_vlan.tests.sanity.sync.test_vlan_put.py
+python manage.py test networkapi/api_vlan.tests.unit.async.test_delete.py
+python manage.py test networkapi/api_vlan.tests.unit.async.test_post.py
+python manage.py test networkapi/api_vlan.tests.unit.async.test_put.py
+
 echo "=============== Tests for IPV4 ================="
 python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_delete.py
 python manage.py test networkapi/api_ip.tests.sanity.ipv4.sync.test_get.py

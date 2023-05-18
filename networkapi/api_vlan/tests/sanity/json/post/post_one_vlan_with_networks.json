@@ -15,14 +15,15 @@
             "vrf": null,
             "create_networkv4": {
                 "network_type": 1,
-                "prefix": 24,
+                "prefix": 29,
                 "environmentvip": 1
             },
             "create_networkv6": {
                 "network_type": 1,
-                "prefix": 64,
+                "prefix": 127,
                 "environmentvip": 1
-            }
+            },
+            "vxlan": false
         }
     ]
 }
