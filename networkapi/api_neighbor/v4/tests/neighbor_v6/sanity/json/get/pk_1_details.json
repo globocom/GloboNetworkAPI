@@ -1,478 +1,483 @@
 [
   {
-    "created": false,
-    "id": 1,
-    "local_asn": {
-      "description": "ASN 1",
-      "equipments": [
-        {
-          "equipment": {
-            "asn": {
-              "description": "ASN 1",
-              "id": 1,
-              "name": "1"
-            },
-            "environments": [],
-            "equipment_type": {
-              "equipment_type": "Equipment",
-              "id": 1
-            },
-            "groups": [],
-            "id": 1,
-            "ipsv4": [],
-            "ipsv6": [
+      "id": 1,
+      "local_asn": {
+          "id": 1,
+          "name": "1",
+          "description": "ASN 1",
+          "equipments": [
               {
-                "id": 1,
-                "ip": {
-                  "block1": "fc00",
-                  "block2": "0000",
-                  "block3": "0000",
-                  "block4": "0001",
-                  "block5": "0000",
-                  "block6": "0000",
-                  "block7": "0000",
-                  "block8": "0002",
-                  "description": null,
-                  "id": 1,
-                  "ip_formated": "fc00:0000:0000:0001:0000:0000:0000:0002",
-                  "networkipv6": {
-                    "active": true,
-                    "block1": "fc00",
-                    "block2": "0000",
-                    "block3": "0000",
-                    "block4": "0001",
-                    "block5": "0000",
-                    "block6": "0000",
-                    "block7": "0000",
-                    "block8": "0000",
-                    "cluster_unit": "cluster-unit-1",
-                    "dhcprelay": [],
-                    "environmentvip": null,
-                    "id": 1,
-                    "mask1": "ffff",
-                    "mask2": "ffff",
-                    "mask3": "ffff",
-                    "mask4": "ffff",
-                    "mask5": "0000",
-                    "mask6": "0000",
-                    "mask7": "0000",
-                    "mask8": "0000",
-                    "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
-                    "network_type": {
+                  "equipment": {
                       "id": 1,
-                      "tipo_rede": "some_network_type"
-                    },
-                    "networkv6": "fc00:0000:0000:0001:0000:0000:0000:0000/64",
-                    "prefix": 64,
-                    "vlan": {
-                      "acl_draft": null,
-                      "acl_draft_v6": null,
-                      "acl_file_name": "",
-                      "acl_file_name_v6": "",
-                      "acl_valida": false,
-                      "acl_valida_v6": false,
-                      "active": false,
-                      "description": "",
-                      "environment": 1,
-                      "id": 1,
-                      "name": "VLAN 1 of env 1",
-                      "num_vlan": 1,
-                      "vrf": null
-                    }
+                      "name": "EQUIPMENT-1",
+                      "maintenance": false,
+                      "equipment_type": {
+                          "id": 1,
+                          "equipment_type": "Equipment"
+                      },
+                      "model": {
+                          "id": 1,
+                          "name": "model"
+                      },
+                      "ipsv4": [],
+                      "ipsv6": [
+                          {
+                              "id": 1,
+                              "ip": {
+                                  "id": 1,
+                                  "ip_formated": "fc00:0000:0000:0001:0000:0000:0000:0002",
+                                  "block1": "fc00",
+                                  "block2": "0000",
+                                  "block3": "0000",
+                                  "block4": "0001",
+                                  "block5": "0000",
+                                  "block6": "0000",
+                                  "block7": "0000",
+                                  "block8": "0002",
+                                  "networkipv6": {
+                                      "id": 1,
+                                      "block1": "fc00",
+                                      "block2": "0000",
+                                      "block3": "0000",
+                                      "block4": "0001",
+                                      "block5": "0000",
+                                      "block6": "0000",
+                                      "block7": "0000",
+                                      "block8": "0000",
+                                      "prefix": 64,
+                                      "networkv6": "fc00:0000:0000:0001:0000:0000:0000:0000/64",
+                                      "mask1": "ffff",
+                                      "mask2": "ffff",
+                                      "mask3": "ffff",
+                                      "mask4": "ffff",
+                                      "mask5": "0000",
+                                      "mask6": "0000",
+                                      "mask7": "0000",
+                                      "mask8": "0000",
+                                      "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+                                      "vlan": {
+                                          "id": 1,
+                                          "name": "VLAN 1 of env 1",
+                                          "num_vlan": 1,
+                                          "vxlan": false,
+                                          "environment": 1,
+                                          "description": "",
+                                          "acl_file_name": "",
+                                          "acl_valida": false,
+                                          "acl_file_name_v6": "",
+                                          "acl_valida_v6": false,
+                                          "active": false,
+                                          "vrf": null,
+                                          "acl_draft": null,
+                                          "acl_draft_v6": null
+                                      },
+                                      "network_type": {
+                                          "id": 1,
+                                          "tipo_rede": "some_network_type"
+                                      },
+                                      "environmentvip": null,
+                                      "active": true,
+                                      "dhcprelay": [],
+                                      "cluster_unit": "cluster-unit-1"
+                                  },
+                                  "description": null
+                              }
+                          }
+                      ],
+                      "environments": [],
+                      "sdn_controlled_environment": [],
+                      "groups": [],
+                      "asn": {
+                          "id": 1,
+                          "name": "1",
+                          "description": "ASN 1"
+                      }
                   }
-                }
               }
-            ],
-            "maintenance": false,
-            "model": {
-              "id": 1,
-              "name": "model"
-            },
-            "name": "EQUIPMENT-1",
-            "sdn_controlled_environment": []
-          }
-        }
-      ],
-      "id": 1,
-      "name": "1"
-    },
-    "local_ip": {
-      "block1": "fc00",
-      "block2": "0000",
-      "block3": "0000",
-      "block4": "0001",
-      "block5": "0000",
-      "block6": "0000",
-      "block7": "0000",
-      "block8": "0002",
-      "description": null,
-      "equipments": [
-        {
-          "equipment": {
-            "asn": {
-              "description": "ASN 1",
-              "id": 1,
-              "name": "1"
-            },
-            "environments": [],
-            "equipment_type": {
-              "equipment_type": "Equipment",
-              "id": 1
-            },
-            "groups": [],
-            "id": 1,
-            "maintenance": false,
-            "model": {
-              "id": 1,
-              "name": "model"
-            },
-            "name": "EQUIPMENT-1",
-            "sdn_controlled_environment": []
-          },
-          "id": 1
-        }
-      ],
-      "id": 1,
-      "ip_formated": "fc00:0000:0000:0001:0000:0000:0000:0002",
-      "networkipv6": {
-        "active": true,
-        "block1": "fc00",
-        "block2": "0000",
-        "block3": "0000",
-        "block4": "0001",
-        "block5": "0000",
-        "block6": "0000",
-        "block7": "0000",
-        "block8": "0000",
-        "cluster_unit": "cluster-unit-1",
-        "dhcprelay": [],
-        "environmentvip": null,
-        "id": 1,
-        "mask1": "ffff",
-        "mask2": "ffff",
-        "mask3": "ffff",
-        "mask4": "ffff",
-        "mask5": "0000",
-        "mask6": "0000",
-        "mask7": "0000",
-        "mask8": "0000",
-        "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
-        "network_type": {
-          "id": 1,
-          "tipo_rede": "some_network_type"
-        },
-        "networkv6": "fc00:0000:0000:0001:0000:0000:0000:0000/64",
-        "prefix": 64,
-        "vlan": {
-          "acl_draft": null,
-          "acl_draft_v6": null,
-          "acl_file_name": "",
-          "acl_file_name_v6": "",
-          "acl_valida": false,
-          "acl_valida_v6": false,
-          "active": false,
-          "description": "",
-          "environment": 1,
-          "id": 1,
-          "name": "VLAN 1 of env 1",
-          "num_vlan": 1,
-          "vrf": null
-        }
-      }
-    },
-    "peer_group": {
-      "environments": [
-        {
-          "environment": {
-            "acl_path": null,
-            "ambiente_logico": {
-              "id": 1,
-              "name": "AMBLOG-1"
-            },
-            "aws_vpc": null,
-            "dcroom": null,
-            "default_vrf": {
-              "id": 1,
-              "internal_name": "default",
-              "vrf": "default"
-            },
-            "divisao_dc": {
-              "id": 1,
-              "name": "DC-1"
-            },
-            "father_environment": null,
-            "filter": null,
-            "grupo_l3": {
-              "id": 1,
-              "name": "GL-1"
-            },
-            "id": 1,
-            "ipv4_template": null,
-            "ipv6_template": null,
-            "link": "",
-            "max_num_vlan_1": null,
-            "max_num_vlan_2": null,
-            "min_num_vlan_1": null,
-            "min_num_vlan_2": null,
-            "name": "DC-1 - AMBLOG-1 - GL-1",
-            "sdn_controllers": [],
-            "vxlan": null
-          },
-          "id": 1
-        }
-      ],
-      "id": 1,
-      "name": "peer_group_1",
-      "route_map_in": {
-        "id": 1,
-        "name": "route_map_1",
-        "route_map_entries": []
+          ]
       },
-      "route_map_out": {
-        "id": 2,
-        "name": "route_map_2",
-        "route_map_entries": []
-      }
-    },
-    "remote_asn": {
-      "description": "ASN 2",
-      "equipments": [
-        {
-          "equipment": {
-            "asn": {
-              "description": "ASN 2",
-              "id": 2,
-              "name": "2"
-            },
-            "environments": [],
-            "equipment_type": {
-              "equipment_type": "Equipment",
-              "id": 1
-            },
-            "groups": [],
-            "id": 2,
-            "ipsv4": [],
-            "ipsv6": [
-              {
-                "id": 2,
-                "ip": {
-                  "block1": "fc00",
-                  "block2": "0000",
-                  "block3": "0000",
-                  "block4": "0002",
-                  "block5": "0000",
-                  "block6": "0000",
-                  "block7": "0000",
-                  "block8": "0002",
-                  "description": null,
-                  "id": 2,
-                  "ip_formated": "fc00:0000:0000:0002:0000:0000:0000:0002",
-                  "networkipv6": {
-                    "active": true,
-                    "block1": "fc00",
-                    "block2": "0000",
-                    "block3": "0000",
-                    "block4": "0002",
-                    "block5": "0000",
-                    "block6": "0000",
-                    "block7": "0000",
-                    "block8": "0000",
-                    "cluster_unit": "cluster-unit-1",
-                    "dhcprelay": [],
-                    "environmentvip": null,
-                    "id": 2,
-                    "mask1": "ffff",
-                    "mask2": "ffff",
-                    "mask3": "ffff",
-                    "mask4": "ffff",
-                    "mask5": "0000",
-                    "mask6": "0000",
-                    "mask7": "0000",
-                    "mask8": "0000",
-                    "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
-                    "network_type": {
-                      "id": 1,
-                      "tipo_rede": "some_network_type"
-                    },
-                    "networkv6": "fc00:0000:0000:0002:0000:0000:0000:0000/64",
-                    "prefix": 64,
-                    "vlan": {
-                      "acl_draft": null,
-                      "acl_draft_v6": null,
-                      "acl_file_name": "",
-                      "acl_file_name_v6": "",
-                      "acl_valida": false,
-                      "acl_valida_v6": false,
-                      "active": false,
-                      "description": "",
-                      "environment": 2,
-                      "id": 2,
-                      "name": "VLAN 2 of env 2",
-                      "num_vlan": 2,
-                      "vrf": null
-                    }
-                  }
-                }
-              },
-              {
-                "id": 3,
-                "ip": {
-                  "block1": "fc00",
-                  "block2": "0000",
-                  "block3": "0000",
-                  "block4": "0001",
-                  "block5": "0000",
-                  "block6": "0000",
-                  "block7": "0000",
-                  "block8": "0003",
-                  "description": null,
-                  "id": 3,
-                  "ip_formated": "fc00:0000:0000:0001:0000:0000:0000:0003",
-                  "networkipv6": {
-                    "active": true,
-                    "block1": "fc00",
-                    "block2": "0000",
-                    "block3": "0000",
-                    "block4": "0001",
-                    "block5": "0000",
-                    "block6": "0000",
-                    "block7": "0000",
-                    "block8": "0000",
-                    "cluster_unit": "cluster-unit-1",
-                    "dhcprelay": [],
-                    "environmentvip": null,
-                    "id": 1,
-                    "mask1": "ffff",
-                    "mask2": "ffff",
-                    "mask3": "ffff",
-                    "mask4": "ffff",
-                    "mask5": "0000",
-                    "mask6": "0000",
-                    "mask7": "0000",
-                    "mask8": "0000",
-                    "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
-                    "network_type": {
-                      "id": 1,
-                      "tipo_rede": "some_network_type"
-                    },
-                    "networkv6": "fc00:0000:0000:0001:0000:0000:0000:0000/64",
-                    "prefix": 64,
-                    "vlan": {
-                      "acl_draft": null,
-                      "acl_draft_v6": null,
-                      "acl_file_name": "",
-                      "acl_file_name_v6": "",
-                      "acl_valida": false,
-                      "acl_valida_v6": false,
-                      "active": false,
-                      "description": "",
-                      "environment": 1,
-                      "id": 1,
-                      "name": "VLAN 1 of env 1",
-                      "num_vlan": 1,
-                      "vrf": null
-                    }
-                  }
-                }
-              }
-            ],
-            "maintenance": false,
-            "model": {
-              "id": 1,
-              "name": "model"
-            },
-            "name": "EQUIPMENT-2",
-            "sdn_controlled_environment": []
-          }
-        }
-      ],
-      "id": 2,
-      "name": "2"
-    },
-    "remote_ip": {
-      "block1": "fc00",
-      "block2": "0000",
-      "block3": "0000",
-      "block4": "0002",
-      "block5": "0000",
-      "block6": "0000",
-      "block7": "0000",
-      "block8": "0002",
-      "description": null,
-      "equipments": [
-        {
-          "equipment": {
-            "asn": {
-              "description": "ASN 2",
-              "id": 2,
-              "name": "2"
-            },
-            "environments": [],
-            "equipment_type": {
-              "equipment_type": "Equipment",
-              "id": 1
-            },
-            "groups": [],
-            "id": 2,
-            "maintenance": false,
-            "model": {
-              "id": 1,
-              "name": "model"
-            },
-            "name": "EQUIPMENT-2",
-            "sdn_controlled_environment": []
-          },
-          "id": 2
-        }
-      ],
-      "id": 2,
-      "ip_formated": "fc00:0000:0000:0002:0000:0000:0000:0002",
-      "networkipv6": {
-        "active": true,
-        "block1": "fc00",
-        "block2": "0000",
-        "block3": "0000",
-        "block4": "0002",
-        "block5": "0000",
-        "block6": "0000",
-        "block7": "0000",
-        "block8": "0000",
-        "cluster_unit": "cluster-unit-1",
-        "dhcprelay": [],
-        "environmentvip": null,
-        "id": 2,
-        "mask1": "ffff",
-        "mask2": "ffff",
-        "mask3": "ffff",
-        "mask4": "ffff",
-        "mask5": "0000",
-        "mask6": "0000",
-        "mask7": "0000",
-        "mask8": "0000",
-        "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
-        "network_type": {
-          "id": 1,
-          "tipo_rede": "some_network_type"
-        },
-        "networkv6": "fc00:0000:0000:0002:0000:0000:0000:0000/64",
-        "prefix": 64,
-        "vlan": {
-          "acl_draft": null,
-          "acl_draft_v6": null,
-          "acl_file_name": "",
-          "acl_file_name_v6": "",
-          "acl_valida": false,
-          "acl_valida_v6": false,
-          "active": false,
-          "description": "",
-          "environment": 2,
+      "remote_asn": {
           "id": 2,
-          "name": "VLAN 2 of env 2",
-          "num_vlan": 2,
-          "vrf": null
-        }
-      }
-    },
-    "virtual_interface": "test_vi"
+          "name": "2",
+          "description": "ASN 2",
+          "equipments": [
+              {
+                  "equipment": {
+                      "id": 2,
+                      "name": "EQUIPMENT-2",
+                      "maintenance": false,
+                      "equipment_type": {
+                          "id": 1,
+                          "equipment_type": "Equipment"
+                      },
+                      "model": {
+                          "id": 1,
+                          "name": "model"
+                      },
+                      "ipsv4": [],
+                      "ipsv6": [
+                          {
+                              "id": 2,
+                              "ip": {
+                                  "id": 2,
+                                  "ip_formated": "fc00:0000:0000:0002:0000:0000:0000:0002",
+                                  "block1": "fc00",
+                                  "block2": "0000",
+                                  "block3": "0000",
+                                  "block4": "0002",
+                                  "block5": "0000",
+                                  "block6": "0000",
+                                  "block7": "0000",
+                                  "block8": "0002",
+                                  "networkipv6": {
+                                      "id": 2,
+                                      "block1": "fc00",
+                                      "block2": "0000",
+                                      "block3": "0000",
+                                      "block4": "0002",
+                                      "block5": "0000",
+                                      "block6": "0000",
+                                      "block7": "0000",
+                                      "block8": "0000",
+                                      "prefix": 64,
+                                      "networkv6": "fc00:0000:0000:0002:0000:0000:0000:0000/64",
+                                      "mask1": "ffff",
+                                      "mask2": "ffff",
+                                      "mask3": "ffff",
+                                      "mask4": "ffff",
+                                      "mask5": "0000",
+                                      "mask6": "0000",
+                                      "mask7": "0000",
+                                      "mask8": "0000",
+                                      "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+                                      "vlan": {
+                                          "id": 2,
+                                          "name": "VLAN 2 of env 2",
+                                          "num_vlan": 2,
+                                          "vxlan": false,
+                                          "environment": 2,
+                                          "description": "",
+                                          "acl_file_name": "",
+                                          "acl_valida": false,
+                                          "acl_file_name_v6": "",
+                                          "acl_valida_v6": false,
+                                          "active": false,
+                                          "vrf": null,
+                                          "acl_draft": null,
+                                          "acl_draft_v6": null
+                                      },
+                                      "network_type": {
+                                          "id": 1,
+                                          "tipo_rede": "some_network_type"
+                                      },
+                                      "environmentvip": null,
+                                      "active": true,
+                                      "dhcprelay": [],
+                                      "cluster_unit": "cluster-unit-1"
+                                  },
+                                  "description": null
+                              }
+                          },
+                          {
+                              "id": 3,
+                              "ip": {
+                                  "id": 3,
+                                  "ip_formated": "fc00:0000:0000:0001:0000:0000:0000:0003",
+                                  "block1": "fc00",
+                                  "block2": "0000",
+                                  "block3": "0000",
+                                  "block4": "0001",
+                                  "block5": "0000",
+                                  "block6": "0000",
+                                  "block7": "0000",
+                                  "block8": "0003",
+                                  "networkipv6": {
+                                      "id": 1,
+                                      "block1": "fc00",
+                                      "block2": "0000",
+                                      "block3": "0000",
+                                      "block4": "0001",
+                                      "block5": "0000",
+                                      "block6": "0000",
+                                      "block7": "0000",
+                                      "block8": "0000",
+                                      "prefix": 64,
+                                      "networkv6": "fc00:0000:0000:0001:0000:0000:0000:0000/64",
+                                      "mask1": "ffff",
+                                      "mask2": "ffff",
+                                      "mask3": "ffff",
+                                      "mask4": "ffff",
+                                      "mask5": "0000",
+                                      "mask6": "0000",
+                                      "mask7": "0000",
+                                      "mask8": "0000",
+                                      "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+                                      "vlan": {
+                                          "id": 1,
+                                          "name": "VLAN 1 of env 1",
+                                          "num_vlan": 1,
+                                          "vxlan": false,
+                                          "environment": 1,
+                                          "description": "",
+                                          "acl_file_name": "",
+                                          "acl_valida": false,
+                                          "acl_file_name_v6": "",
+                                          "acl_valida_v6": false,
+                                          "active": false,
+                                          "vrf": null,
+                                          "acl_draft": null,
+                                          "acl_draft_v6": null
+                                      },
+                                      "network_type": {
+                                          "id": 1,
+                                          "tipo_rede": "some_network_type"
+                                      },
+                                      "environmentvip": null,
+                                      "active": true,
+                                      "dhcprelay": [],
+                                      "cluster_unit": "cluster-unit-1"
+                                  },
+                                  "description": null
+                              }
+                          }
+                      ],
+                      "environments": [],
+                      "sdn_controlled_environment": [],
+                      "groups": [],
+                      "asn": {
+                          "id": 2,
+                          "name": "2",
+                          "description": "ASN 2"
+                      }
+                  }
+              }
+          ]
+      },
+      "local_ip": {
+          "id": 1,
+          "ip_formated": "fc00:0000:0000:0001:0000:0000:0000:0002",
+          "block1": "fc00",
+          "block2": "0000",
+          "block3": "0000",
+          "block4": "0001",
+          "block5": "0000",
+          "block6": "0000",
+          "block7": "0000",
+          "block8": "0002",
+          "networkipv6": {
+              "id": 1,
+              "block1": "fc00",
+              "block2": "0000",
+              "block3": "0000",
+              "block4": "0001",
+              "block5": "0000",
+              "block6": "0000",
+              "block7": "0000",
+              "block8": "0000",
+              "prefix": 64,
+              "networkv6": "fc00:0000:0000:0001:0000:0000:0000:0000/64",
+              "mask1": "ffff",
+              "mask2": "ffff",
+              "mask3": "ffff",
+              "mask4": "ffff",
+              "mask5": "0000",
+              "mask6": "0000",
+              "mask7": "0000",
+              "mask8": "0000",
+              "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+              "vlan": {
+                  "id": 1,
+                  "name": "VLAN 1 of env 1",
+                  "num_vlan": 1,
+                  "vxlan": false,
+                  "environment": 1,
+                  "description": "",
+                  "acl_file_name": "",
+                  "acl_valida": false,
+                  "acl_file_name_v6": "",
+                  "acl_valida_v6": false,
+                  "active": false,
+                  "vrf": null,
+                  "acl_draft": null,
+                  "acl_draft_v6": null
+              },
+              "network_type": {
+                  "id": 1,
+                  "tipo_rede": "some_network_type"
+              },
+              "environmentvip": null,
+              "active": true,
+              "dhcprelay": [],
+              "cluster_unit": "cluster-unit-1"
+          },
+          "description": null,
+          "equipments": [
+              {
+                  "id": 1,
+                  "equipment": {
+                      "id": 1,
+                      "name": "EQUIPMENT-1",
+                      "maintenance": false,
+                      "equipment_type": {
+                          "id": 1,
+                          "equipment_type": "Equipment"
+                      },
+                      "model": {
+                          "id": 1,
+                          "name": "model"
+                      },
+                      "environments": [],
+                      "sdn_controlled_environment": [],
+                      "groups": [],
+                      "asn": {
+                          "id": 1,
+                          "name": "1",
+                          "description": "ASN 1"
+                      }
+                  }
+              }
+          ]
+      },
+      "remote_ip": {
+          "id": 2,
+          "ip_formated": "fc00:0000:0000:0002:0000:0000:0000:0002",
+          "block1": "fc00",
+          "block2": "0000",
+          "block3": "0000",
+          "block4": "0002",
+          "block5": "0000",
+          "block6": "0000",
+          "block7": "0000",
+          "block8": "0002",
+          "networkipv6": {
+              "id": 2,
+              "block1": "fc00",
+              "block2": "0000",
+              "block3": "0000",
+              "block4": "0002",
+              "block5": "0000",
+              "block6": "0000",
+              "block7": "0000",
+              "block8": "0000",
+              "prefix": 64,
+              "networkv6": "fc00:0000:0000:0002:0000:0000:0000:0000/64",
+              "mask1": "ffff",
+              "mask2": "ffff",
+              "mask3": "ffff",
+              "mask4": "ffff",
+              "mask5": "0000",
+              "mask6": "0000",
+              "mask7": "0000",
+              "mask8": "0000",
+              "mask_formated": "ffff:ffff:ffff:ffff:0000:0000:0000:0000",
+              "vlan": {
+                  "id": 2,
+                  "name": "VLAN 2 of env 2",
+                  "num_vlan": 2,
+                  "vxlan": false,
+                  "environment": 2,
+                  "description": "",
+                  "acl_file_name": "",
+                  "acl_valida": false,
+                  "acl_file_name_v6": "",
+                  "acl_valida_v6": false,
+                  "active": false,
+                  "vrf": null,
+                  "acl_draft": null,
+                  "acl_draft_v6": null
+              },
+              "network_type": {
+                  "id": 1,
+                  "tipo_rede": "some_network_type"
+              },
+              "environmentvip": null,
+              "active": true,
+              "dhcprelay": [],
+              "cluster_unit": "cluster-unit-1"
+          },
+          "description": null,
+          "equipments": [
+              {
+                  "id": 2,
+                  "equipment": {
+                      "id": 2,
+                      "name": "EQUIPMENT-2",
+                      "maintenance": false,
+                      "equipment_type": {
+                          "id": 1,
+                          "equipment_type": "Equipment"
+                      },
+                      "model": {
+                          "id": 1,
+                          "name": "model"
+                      },
+                      "environments": [],
+                      "sdn_controlled_environment": [],
+                      "groups": [],
+                      "asn": {
+                          "id": 2,
+                          "name": "2",
+                          "description": "ASN 2"
+                      }
+                  }
+              }
+          ]
+      },
+      "peer_group": {
+          "id": 1,
+          "name": "peer_group_1",
+          "route_map_in": {
+              "id": 1,
+              "name": "route_map_1",
+              "route_map_entries": []
+          },
+          "route_map_out": {
+              "id": 2,
+              "name": "route_map_2",
+              "route_map_entries": []
+          },
+          "environments": [
+              {
+                  "id": 1,
+                  "environment": {
+                      "id": 1,
+                      "name": "DC-1 - AMBLOG-1 - GL-1",
+                      "grupo_l3": {
+                          "id": 1,
+                          "name": "GL-1"
+                      },
+                      "ambiente_logico": {
+                          "id": 1,
+                          "name": "AMBLOG-1"
+                      },
+                      "divisao_dc": {
+                          "id": 1,
+                          "name": "DC-1"
+                      },
+                      "filter": null,
+                      "acl_path": null,
+                      "ipv4_template": null,
+                      "ipv6_template": null,
+                      "link": "",
+                      "min_num_vlan_1": null,
+                      "max_num_vlan_1": null,
+                      "min_num_vlan_2": null,
+                      "max_num_vlan_2": null,
+                      "default_vrf": {
+                          "id": 1,
+                          "internal_name": "default",
+                          "vrf": "default"
+                      },
+                      "father_environment": null,
+                      "sdn_controllers": [],
+                      "dcroom": null,
+                      "aws_vpc": null,
+                      "vxlan": null
+                  }
+              }
+          ]
+      },
+      "virtual_interface": "test_vi",
+      "created": false
   }
 ]
