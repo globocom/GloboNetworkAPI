@@ -168,6 +168,6 @@ echo "=============== Tests for Neighbor ================="
 # python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v4.sanity.sync.test_post.py
 # python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v4.sanity.sync.test_put.py
 # python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v6.sanity.sync.test_delete.py
-python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v6.sanity.sync.test_get.py
-# python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v6.sanity.sync.test_post.py
+# python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v6.sanity.sync.test_get.py
+python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v6.sanity.sync.test_post.py
 # python manage.py test networkapi/api_neighbor.v4.tests.neighbor_v6.sanity.sync.test_put.py
