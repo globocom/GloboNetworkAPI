@@ -30,5 +30,13 @@
     },
     "model": "api_asn.asnequipment",
     "pk": 3
+  },
+  {
+    "fields": {
+      "asn": 8,
+      "equipment": 5
+    },
+    "model": "api_asn.asnequipment",
+    "pk": 4
   }
 ]

@@ -60,5 +60,15 @@
     },
     "model": "equipamento.equipamento",
     "pk": 4
+  },
+  {
+    "fields": {
+      "maintenance": false,
+      "modelo": 1,
+      "nome": "EQUIPMENT-5",
+      "tipo_equipamento": 1
+    },
+    "model": "equipamento.equipamento",
+    "pk": 5
   }
 ]
