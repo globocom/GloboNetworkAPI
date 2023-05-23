@@ -1,12 +1,22 @@
 {
   "neighbors": [
     {
-      "local_asn": 1,
-      "local_ip": 1,
-      "peer_group": 3,
-      "remote_asn": 2,
-      "remote_ip": 2,
-      "virtual_interface": "test_vi"
+      "local_asn": 8,
+      "local_ip": 9,
+      "peer_group": 4,
+      "remote_asn": 1,
+      "remote_ip": 1,
+      "virtual_interface": "test_vi",
+      "next_hop_self": true,
+      "community": true,
+      "soft_reconfiguration": true,
+      "remove_private_as": true,
+      "password": "123",
+      "maximum_hops": "2",
+      "timer_keepalive": "12",
+      "timer_timeout": "128",
+      "description": "teste",
+      "kind": "1"
     }
   ]
 }

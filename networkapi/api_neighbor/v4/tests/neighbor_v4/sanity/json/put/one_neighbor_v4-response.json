@@ -1,0 +1,13 @@
+{
+  "neighbors": [
+    {
+      "id": 1,
+      "local_asn": 2,
+      "local_ip": 3,
+      "peer_group": 1,
+      "remote_asn": 1,
+      "remote_ip": 1,
+      "virtual_interface": "1"
+    }
+  ]
+}

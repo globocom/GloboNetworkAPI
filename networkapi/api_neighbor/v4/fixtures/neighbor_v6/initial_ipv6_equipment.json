@@ -39,4 +39,13 @@
     "model": "ip.ipv6equipament",
     "pk": 5
   }
+  ,
+  {
+    "fields": {
+      "equipamento": 4,
+      "ip": 9
+    },
+    "model": "ip.ipv6equipament",
+    "pk": 6
+  }
 ]
