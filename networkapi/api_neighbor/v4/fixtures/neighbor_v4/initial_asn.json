@@ -54,5 +54,13 @@
     },
     "model": "api_asn.Asn",
     "pk": 7
+  },
+  {
+    "fields": {
+      "description": "ASN 8",
+      "name": "8"
+    },
+    "model": "api_asn.Asn",
+    "pk": 8
   }
 ]

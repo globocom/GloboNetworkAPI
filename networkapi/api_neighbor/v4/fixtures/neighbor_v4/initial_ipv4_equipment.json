@@ -38,5 +38,13 @@
     },
     "model": "ip.ipequipamento",
     "pk": 5
+  },
+  {
+    "fields": {
+      "equipamento": 5,
+      "ip": 9
+    },
+    "model": "ip.ipequipamento",
+    "pk": 6
   }
 ]

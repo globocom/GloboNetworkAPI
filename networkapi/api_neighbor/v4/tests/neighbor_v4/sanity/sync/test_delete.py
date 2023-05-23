@@ -27,7 +27,6 @@ class NeighborV4DeleteSuccessTestCase(NetworkApiTestCase):
         fixtures_path.format('initial_ipv4.json'),
         fixtures_path.format('initial_asn.json'),
         fixtures_path.format('initial_route_map.json'),
-        fixtures_path.format('initial_peer_group.json'),
         fixtures_path.format('initial_equipment.json'),
         fixtures_path.format('initial_asn_equipment.json'),
         fixtures_path.format('initial_ipv4_equipment.json'),

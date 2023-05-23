@@ -7,7 +7,17 @@
       "peer_group": 1,
       "remote_asn": 1,
       "remote_ip": 1,
-      "virtual_interface": "test_vi"
+      "next_hop_self": true,
+      "community": true,
+      "soft_reconfiguration": true,
+      "remove_private_as": true,
+      "password": "123",
+      "maximum_hops": "2",
+      "timer_keepalive": "12",
+      "timer_timeout": "128",
+      "description": "teste",
+      "kind": "1",
+      "virtual_interface": "1"
     }
   ]
 }
