@@ -4,7 +4,7 @@
       "created": false,
       "local_asn": 1,
       "local_ip": 1,
-      "peer_group": 1,
+      "peer_group": 2,
       "remote_asn": 2,
       "remote_ip": 2,
       "virtual_interface": "test_vi"
@@ -24,5 +24,74 @@
     },
     "model": "api_neighbor.NeighborV4",
     "pk": 2
+  },
+  {
+    "fields": {
+      "name": "peer_group_1",
+      "route_map_in": 1,
+      "route_map_out": 2
+    },
+    "model": "api_peer_group.PeerGroup",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "peer_group_2",
+      "route_map_in": 3,
+      "route_map_out": 4
+    },
+    "model": "api_peer_group.PeerGroup",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "name": "peer_group_3",
+      "route_map_in": 5,
+      "route_map_out": 6
+    },
+    "model": "api_peer_group.PeerGroup",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "name": "route_map_1"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "name": "route_map_2"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "name": "route_map_3"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "name": "route_map_4"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "name": "route_map_5"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "name": "route_map_6"
+    },
+    "model": "api_route_map.RouteMap",
+    "pk": 6
   }
 ]

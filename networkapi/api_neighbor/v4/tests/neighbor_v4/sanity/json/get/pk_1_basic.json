@@ -1,73 +1,75 @@
 [
   {
-    "created": false,
-    "id": 1,
-    "local_asn": {
-      "description": "ASN 1",
-      "equipments": [
-        {
-          "equipment": {
-            "id": 1,
-            "name": "EQUIPMENT-1"
-          }
-        }
-      ],
       "id": 1,
-      "name": "1"
-    },
-    "local_ip": {
-      "description": null,
-      "id": 1,
-      "ip_formated": "192.168.1.2",
-      "networkipv4": {
-        "broadcast": "192.168.1.255",
-        "environmentvip": null,
-        "id": 1,
-        "mask_formated": "255.255.255.0",
-        "network_type": 1,
-        "networkv4": "192.168.1.0/24",
-        "vlan": {
+      "local_asn": {
           "id": 1,
-          "name": "VLAN 1 of env 1",
-          "num_vlan": 1
-        }
-      }
-    },
-    "peer_group": {
-      "id": 1,
-      "name": "peer_group_1"
-    },
-    "remote_asn": {
-      "description": "ASN 2",
-      "equipments": [
-        {
-          "equipment": {
-            "id": 2,
-            "name": "EQUIPMENT-2"
-          }
-        }
-      ],
-      "id": 2,
-      "name": "2"
-    },
-    "remote_ip": {
-      "description": null,
-      "id": 2,
-      "ip_formated": "192.168.2.2",
-      "networkipv4": {
-        "broadcast": "192.168.2.255",
-        "environmentvip": null,
-        "id": 2,
-        "mask_formated": "255.255.255.0",
-        "network_type": 1,
-        "networkv4": "192.168.2.0/24",
-        "vlan": {
+          "name": "1",
+          "description": "ASN 1",
+          "equipments": [
+              {
+                  "equipment": {
+                      "id": 1,
+                      "name": "EQUIPMENT-1"
+                  }
+              }
+          ]
+      },
+      "remote_asn": {
           "id": 2,
-          "name": "VLAN 2 of env 2",
-          "num_vlan": 2
-        }
-      }
-    },
-    "virtual_interface": "test_vi"
+          "name": "2",
+          "description": "ASN 2",
+          "equipments": [
+              {
+                  "equipment": {
+                      "id": 2,
+                      "name": "EQUIPMENT-2"
+                  }
+              }
+          ]
+      },
+      "local_ip": {
+          "id": 1,
+          "ip_formated": "192.168.1.2",
+          "networkipv4": {
+              "id": 1,
+              "networkv4": "192.168.1.0/24",
+              "mask_formated": "255.255.255.0",
+              "broadcast": "192.168.1.255",
+              "vlan": {
+                  "id": 1,
+                  "name": "VLAN 1 of env 1",
+                  "num_vlan": 1,
+                  "vxlan": false
+              },
+              "network_type": 1,
+              "environmentvip": null
+          },
+          "description": null
+      },
+      "remote_ip": {
+          "id": 2,
+          "ip_formated": "192.168.2.2",
+          "networkipv4": {
+              "id": 2,
+              "networkv4": "192.168.2.0/24",
+              "mask_formated": "255.255.255.0",
+              "broadcast": "192.168.2.255",
+              "vlan": {
+                  "id": 2,
+                  "name": "VLAN 2 of env 2",
+                  "num_vlan": 2,
+                  "vxlan": false
+              },
+              "network_type": 1,
+              "environmentvip": null
+          },
+          "description": null
+      },
+      "peer_group": {
+          "id": 2,
+          "name": "peer_group_2"
+      },
+      "virtual_interface": "test_vi",
+      "created": false
   }
 ]

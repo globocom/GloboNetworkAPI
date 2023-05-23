@@ -7,7 +7,11 @@
       "peer_group": 1,
       "remote_asn": 6,
       "remote_ip": 7,
-      "virtual_interface": "test_vi"
+      "virtual_interface": "test_vi",
+      "next_hop_self": true,
+      "community": true,
+      "soft_reconfiguration": true,
+      "remove_private_as": true
     }
   ]
 }

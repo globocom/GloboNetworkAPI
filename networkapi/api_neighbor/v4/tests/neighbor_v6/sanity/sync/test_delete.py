@@ -89,7 +89,9 @@ class NeighborV6DeleteErrorTestCase(NetworkApiTestCase):
         fixtures_path.format('initial_networkipv6.json'),
         fixtures_path.format('initial_ipv6.json'),
         fixtures_path.format('initial_asn.json'),
-        fixtures_path.format('initial_neighbor_v6.json')
+        fixtures_path.format('initial_neighbor_v6.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_route_map.json'),
     ]
 
     def setUp(self):
