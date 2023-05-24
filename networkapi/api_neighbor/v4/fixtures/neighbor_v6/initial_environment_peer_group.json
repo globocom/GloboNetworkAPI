@@ -14,5 +14,13 @@
     },
     "model": "api_peer_group.EnvironmentPeerGroup",
     "pk": 2
+  },
+  {
+    "fields": {
+      "environment": 1,
+      "peer_group": 4
+    },
+    "model": "api_peer_group.EnvironmentPeerGroup",
+    "pk": 2
   }
 ]
