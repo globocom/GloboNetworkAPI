@@ -1,5 +1,5 @@
 #!/bin/sh
-source venv/bin/activate
+source /venv/bin/activate
 
 pip install --no-cache --upgrade pip
 pip install -r requirements_test.txt
