@@ -100,7 +100,7 @@ echo "=============== Tests for Network v6 ================="
 python manage.py test networkapi/api_network.tests.v3.unit.networkipv6.async.test_delete.py
 python manage.py test networkapi/api_network.tests.v3.unit.networkipv6.async.test_post.py
 python manage.py test networkapi/api_network.tests.v3.unit.networkipv6.async.test_put.py
-python manage.py test networkapi/api_network.tests.v3.sanity.allocate.test_network_v4.py
+python manage.py test networkapi/api_network.tests.v3.sanity.allocate.test_network_v6.py
 python manage.py test networkapi/api_network.tests.v3.sanity.networkipv6.sync.test_delete.py
 python manage.py test networkapi/api_network.tests.v3.sanity.networkipv6.sync.test_get.py
 python manage.py test networkapi/api_network.tests.v3.sanity.networkipv6.sync.test_post.py
