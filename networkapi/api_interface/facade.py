@@ -714,12 +714,10 @@ def verificar_vlan_range(amb, vlans):
                     'definido para o ambiente')
 
 
-def verificar_vlan_nativa(vlan_nativa):
-    log.info("verificar_vlan_nativa")
-
-    if vlan_nativa is not None:
-        if int(vlan_nativa) < 1 or 3967 < int(vlan_nativa) < 4048 or int(vlan_nativa) >= 4096:
-            raise InvalidValueError(None, 'Vlan Nativa', 'Range valido: 1-3967, 4048-4095.')
+def verify_native_vlan(native_vlan):
+    if native_vlan is not None:
+        if int(native_vlan) < 1 or int(native_vlan) > 3967 or int(native_vlan) < 4048 or int(native_vlan) >= 4096:
+            raise InvalidValueError(None, 'Vlan Nativa', 'Valid range: 1-3967, 4048-4095.')
 
 
 def check_channel_name_on_equipment(nome, interfaces):

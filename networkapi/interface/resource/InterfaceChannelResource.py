@@ -137,7 +137,7 @@ class InterfaceChannelResource(RestResource):
             amb = Ambiente()
             cont = []
 
-            api_interface_facade.verificar_vlan_nativa(vlan_nativa)
+            api_interface_facade.verify_native_vlan(vlan_nativa)
 
             # verifica se o nome do port channel já existe no equipamento
             interfaces = str(interfaces).split('-')
@@ -405,7 +405,7 @@ class InterfaceChannelResource(RestResource):
             interface = Interface()
             amb = Ambiente()
 
-            api_interface_facade.verificar_vlan_nativa(vlan_nativa)
+            api_interface_facade.verify_native_vlan(vlan_nativa)
 
             # verifica se o nome do port channel já existe no equipamento
             channel = port_channel.get_by_pk(int(id_channel))
@@ -487,10 +487,10 @@ class InterfaceChannelResource(RestResource):
 
             return self.response(dumps_networkapi({'port_channel': port_channel_map}))
 
-        except InvalidValueError, e:
-            return self.response_error(269, e.param, e.value)
-        except XMLError, x:
-            self.log.error(u'Erro ao ler o XML da requisição.')
-            return self.response_error(3, x)
-        except InterfaceError, e:
-            return self.response_error(406, e)
+        except InvalidValueError as invalid_value_error:
+            return self.response_error(269, invalid_value_error.param, invalid_value_error.value)
+        except XMLError as xml_error:
+            self.log.error('Error reading the request XML.')
+            return self.response_error(3, xml_error)
+        except InterfaceError as interface_error:
+            return self.response_error(406, interface_error)

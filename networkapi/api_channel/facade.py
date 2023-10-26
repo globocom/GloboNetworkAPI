@@ -60,7 +60,7 @@ class ChannelV3(object):
         vlan_nativa = data.get('vlan')
         envs_vlans = data.get('envs_vlans')
 
-        api_interface_facade.verificar_vlan_nativa(vlan_nativa)
+        api_interface_facade.verify_native_vlan(vlan_nativa)
 
         # Checks if Port Channel name already exists on equipment
         api_interface_facade.check_channel_name_on_equipment(nome, interfaces)
@@ -79,7 +79,7 @@ class ChannelV3(object):
             if iface.channel:
                 raise InterfaceError(
                     'Interface %s is already a Channel' % iface.interface
-                    )
+                )
 
             if iface.equipamento.id not in ifaces_on_channel:
                 ifaces_on_channel.append(int(iface.equipamento.id))
@@ -107,7 +107,7 @@ class ChannelV3(object):
         if iface.channel:
             raise InterfaceError(
                 'Interface %s is already a Channel' % iface.interface
-                )
+            )
 
         if iface.equipamento.id not in ifaces_on_channel:
             ifaces_on_channel.append(int(iface.equipamento.id))
@@ -190,12 +190,12 @@ class ChannelV3(object):
                 raise InvalidValueError(None, 'Channel number',
                                         'must be integer.')
 
-            api_interface_facade.verificar_vlan_nativa(vlan_nativa)
+            api_interface_facade.verify_native_vlan(vlan_nativa)
 
             # Dissociate old interfaces
             interfaces_old = Interface.objects.filter(
                 channel__id=int(id_channel)
-                )
+            )
             log.debug(interfaces_old)
             server = None
             for i in interfaces_old:
@@ -229,14 +229,14 @@ class ChannelV3(object):
                     raise InterfaceError(
                         'Interface %s is already in a Channel'
                         % iface.interface
-                        )
+                    )
 
                 if iface.equipamento.id not in ifaces_on_channel:
                     ifaces_on_channel.append(int(iface.equipamento.id))
                     if len(ifaces_on_channel) > 2:
                         raise InterfaceError(
                             'More than one equipment selected.'
-                            )
+                        )
 
                 iface.channel = self.channel
                 iface.tipo = type_obj
@@ -327,7 +327,7 @@ class ChannelV3(object):
         for equip_id in [i.equipamento.id for i in interfaces]:
 
             equip_dict[str(equip_id)] = interfaces.filter(
-                    equipamento__id=equip_id)
+                equipamento__id=equip_id)
 
         return equip_dict
 
@@ -356,7 +356,7 @@ class ChannelV3(object):
                     ligacao_back_id=back,
                     tipo=iface_type,
                     vlan_nativa='1'
-                 )
+                )
 
             api_interface_facade.delete_channel(
                 self.user, equip_id, ifaces, channel)
