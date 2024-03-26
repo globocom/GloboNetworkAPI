@@ -5,14 +5,21 @@ services:
         container_name: netapi_db
         image: mysql:5.7
         platform: linux/x86_64
+        command: --default-authentication-plugin=mysql_native_password
         ports:
-            - "3306:3306"
+            - "33306:3306"
         environment:
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_ROOT_PASSWORD: 'put_your_password_here'
         volumes:
             - netapi_db_vol:/var/lib/mysql
         networks:
             - netapi_net
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",-p$$MYSQL_ROOT_PASSWORD ,"--silent"]
+            interval: 5s
+            timeout: 3s
+            retries: 2
+            start_period: 15s
 
     queue:
         container_name: netapi_queue
@@ -55,11 +62,11 @@ services:
             - queue:netapi_queue
             - cache:netapi_cache
         depends_on:
-          - queue
+            - queue
 
     netapi:
         container_name: netapi_app
-        image: globocom:latest
+        image: networkapi:latest
         build:
             context: .
             dockerfile: ./scripts/docker/Dockerfile
@@ -79,9 +86,8 @@ services:
         networks:
             - netapi_net
         depends_on:
-            - db
-            - queue
-            - cache
+            db:
+                condition: service_healthy
         links:
             - db:netapi_db
         external_links:

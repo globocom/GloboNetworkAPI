@@ -120,9 +120,14 @@ publish: clean
 # Containers based target rules
 #
 
-start: docker-compose-sdn.yml docker-compose.yml
+start_recreate: docker-compose-sdn.yml docker-compose.yml
 	docker-compose up --force-recreate --remove-orphans -d
 	docker-compose --file $< up --force-recreate -d
+
+
+start: docker-compose-sdn.yml docker-compose.yml
+	docker-compose up  -d
+	docker-compose --file $< up  -d
 
 
 stop: docker-compose-sdn.yml docker-compose.yml
@@ -172,8 +177,8 @@ endif
 
 
 build_img: scripts/docker/Dockerfile
-	docker build -t networkapi:latest --file scripts/docker/Dockerfile .
-	docker build -t networkapi:$(NETAPI_IMAGE_VERSION) --file scripts/docker/Dockerfile .
+	docker build  --platform=linux/x86_64 -t networkapi:latest --file scripts/docker/Dockerfile .
+	docker build  --platform=linux/x86_64 -t networkapi:$(NETAPI_IMAGE_VERSION) --file scripts/docker/Dockerfile .
 
 
 push_img: scripts/docker/push_image.sh

@@ -1,7 +1,7 @@
 #
 # Base stage
 #
-FROM alpine:3.7 as base
+FROM  alpine:3.7 as base
 
 RUN apk update
 
