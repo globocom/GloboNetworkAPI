@@ -9,11 +9,17 @@ services:
         ports:
             - "33306:3306"
         environment:
-            MYSQL_ROOT_PASSWORD: 'put your password here'
+            MYSQL_ROOT_PASSWORD: 'put_your_password_here'
         volumes:
             - netapi_db_vol:/var/lib/mysql
         networks:
             - netapi_net
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",-p$$MYSQL_ROOT_PASSWORD ,"--silent"]
+            interval: 5s
+            timeout: 3s
+            retries: 2
+            start_period: 15s
 
     queue:
         container_name: netapi_queue
@@ -80,9 +86,8 @@ services:
         networks:
             - netapi_net
         depends_on:
-            - db
-            - queue
-            - cache
+            db:
+                condition: service_healthy
         links:
             - db:netapi_db
         external_links:
