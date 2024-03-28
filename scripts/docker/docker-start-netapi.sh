@@ -53,7 +53,7 @@ fi
 
 
 echo "Creating networkapi database"
-mysql -u root -h ${NETWORKAPI_DATABASE_HOST} -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
+mysql -u root -h ${NETWORKAPI_DATABASE_HOST} -p${NETWORKAPI_DATABASE_PASSWORD} -e 'CREATE DATABASE IF NOT EXISTS networkapi;'
 
 
 # Running database migrations if exists
@@ -61,7 +61,7 @@ cd /netapi/dbmigrate; db-migrate --show-sql
 
 
 echo "Loading base Network API data into database"
-mysql -u root -h ${NETWORKAPI_DATABASE_HOST} networkapi < /netapi/dev/load_example_environment.sql
+mysql -u root -h ${NETWORKAPI_DATABASE_HOST} -p${NETWORKAPI_DATABASE_PASSWORD} networkapi < /netapi/dev/load_example_environment.sql
 
 
 # Discovering SDN controller
