@@ -65,12 +65,18 @@ class TrackingRequestOnThreadLocalMiddleware(object):
             AuditRequest.new_request(request.get_full_path(), request.user,
                                      ip, identity, context)
         else:
-            user_auth_tuple = BasicAuthentication().authenticate(request)
+            try:
+                user_auth_tuple = BasicAuthentication().authenticate(request)
+            except Exception as ex:
+                user_auth_tuple = None
 
             if user_auth_tuple is not None:
                 user, token = user_auth_tuple
             else:  # keeps compatibility with old authentication method
-                user = RestResource.authenticate_user(request)
+                try:
+                    user = RestResource.authenticate_user(request)
+                except Exception as ex:
+                    user = None
 
             if user is not None:
                 ip = self._get_ip(request)
