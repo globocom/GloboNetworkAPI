@@ -89,11 +89,15 @@ class RackEnvironment:
                     id_amb_log = amb_log_dict.id
                     pass
                 config = list()
+                subnet_index = (spn*int(self.rack.dcroom.racks))+int(self.rack.numero)
                 for sub in config_subnet:
                     config_spn = {
-                        'subnet': str(sub.get("cidr")[spn]),
+                        'subnet': str(sub.get("cidr")[subnet_index]),
+                        'network': str(sub.get("cidr")[subnet_index]),
                         'new_prefix': str(31) if str(sub.get("type"))[-1] is "4" else str(127),
+                        'subnet_mask': str(31) if str(sub.get("type"))[-1] is "4" else str(127),
                         'type': str(sub.get("type")),
+                        'ip_version': str(sub.get("type")),
                         'network_type': sub.get("network_type")
                     }
                     config.append(config_spn)
@@ -105,17 +109,18 @@ class RackEnvironment:
                     'ipv4_template': env.ipv4_template,
                     'ipv6_template': env.ipv6_template,
                     'link': env.link,
-                    'min_num_vlan_2': env.min_num_vlan_2,
-                    'max_num_vlan_2': env.max_num_vlan_2,
-                    'min_num_vlan_1': env.min_num_vlan_1,
-                    'max_num_vlan_1': env.max_num_vlan_1,
+                    'min_num_vlan_2': env.min_num_vlan_1+subnet_index,
+                    'max_num_vlan_2': env.min_num_vlan_1+subnet_index,
+                    'min_num_vlan_1': env.min_num_vlan_1+subnet_index,
+                    'max_num_vlan_1': env.min_num_vlan_1+subnet_index,
                     'vrf': env.vrf,
                     'father_environment': env.id,
                     'default_vrf': env.default_vrf.id,
                     'configs': config,
                     'fabric_id': self.rack.dcroom.id
                 }
-
+                environment = facade_env.create_environment(obj)
+                
         return environment_spn_lf_list
 
     def spines_environment_read(self):
@@ -178,7 +183,7 @@ class RackEnvironment:
         log.debug("_create_lflf_vlans")
 
         env_lf = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
-                                                    grupo_l3__nome=str(self.rack.dcroom.name),
+                                                    grupo_l3__nome=str(self.rack.name),
                                                     ambiente_logico__nome="LEAF-LEAF")
         log.debug("Leaf-leaf environments: " + str(env_lf))
 
