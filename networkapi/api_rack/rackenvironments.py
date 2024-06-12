@@ -119,10 +119,8 @@ class RackEnvironment:
                     'configs': config,
                     'fabric_id': self.rack.dcroom.id
                 }
-                #TODO SAVE ENVS OBJ
-                amb_new = models_env.Ambiente()
-                amb_new.create_v3(obj)
-
+                environment = facade_env.create_environment(obj)
+                
         return environment_spn_lf_list
 
     def spines_environment_read(self):
@@ -185,7 +183,7 @@ class RackEnvironment:
         log.debug("_create_lflf_vlans")
 
         env_lf = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
-                                                    grupo_l3__nome=str(self.rack.dcroom.name),
+                                                    grupo_l3__nome=str(self.rack.name),
                                                     ambiente_logico__nome="LEAF-LEAF")
         log.debug("Leaf-leaf environments: " + str(env_lf))
 
