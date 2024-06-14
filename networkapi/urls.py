@@ -66,11 +66,11 @@ urlpatterns = patterns(
     # ambiente
     url(r'^ambiente/', include('networkapi.ambiente.urls')),
     url(r'^environment/', include('networkapi.ambiente.urls_environment')),
-    url(r'^divisiondc/', include('networkapi.ambiente.urls_divisiondc')),
-    url(r'^groupl3/', include('networkapi.ambiente.urls_groupl3')),
-    url(r'^logicalenvironment/',
-        include('networkapi.ambiente.urls_logicalenvironment')),
-    url(r'^ipconfig/', include('networkapi.ambiente.urls_ipconfig')),
+    # url(r'^divisiondc/', include('networkapi.ambiente.urls_divisiondc')),
+    # url(r'^groupl3/', include('networkapi.ambiente.urls_groupl3')),
+    # url(r'^logicalenvironment/',
+    #     include('networkapi.ambiente.urls_logicalenvironment')),
+    # url(r'^ipconfig/', include('networkapi.ambiente.urls_ipconfig')),
 
     # rules
     url(r'^rule/', include('networkapi.blockrules.urls')),
