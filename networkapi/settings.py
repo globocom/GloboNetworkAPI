@@ -71,7 +71,7 @@ NETWORKAPI_DATABASE_HOST = os.getenv('NETWORKAPI_DATABASE_HOST', 'localhost')
 NETWORKAPI_DATABASE_PORT = os.getenv('NETWORKAPI_DATABASE_PORT', '3306')
 NETWORKAPI_DATABASE_OPTIONS = os.getenv(
     'NETWORKAPI_DATABASE_OPTIONS',
-    '{"init_command": "SET storage_engine=INNODB"}')
+    '{"init_command": "SET default_storage_engine=INNODB"}')
 
 # Configurações de banco de dados
 DATABASES = {
