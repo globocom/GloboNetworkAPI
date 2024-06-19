@@ -2000,7 +2000,7 @@ class EnvCIDR(BaseModel):
         elif int(network_mask) == last_subnet.prefixlen:
             subnet = last_subnet.next()
         else:
-            subnet = NETADDR(str(last_subnet.next().ip) + "/" + network_mask)
+            subnet = NETADDR(str(last_subnet.next().ip) + "/" + str(network_mask))
             if not subnet.ip == subnet.network:
                 subnet = subnet.next()
 
