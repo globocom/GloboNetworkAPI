@@ -44,7 +44,7 @@ services:
 
     celery:
         container_name: netapi_celery
-        image: networkapi:latest
+        image: globocom/networkapi:latest
         build:
             context: .
             dockerfile: ./scripts/docker/Dockerfile
@@ -66,7 +66,7 @@ services:
 
     netapi:
         container_name: netapi_app
-        image: networkapi:latest
+        image: globocom/networkapi:latest
         build:
             context: .
             dockerfile: ./scripts/docker/Dockerfile
