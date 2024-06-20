@@ -1976,7 +1976,7 @@ class EnvCIDR(BaseModel):
         for idx in range(len(subnets)-1):
             step = int(subnets[idx+1].network_first_ip) - int(subnets[idx].network_last_ip) - 1
             if step >= 2 ** (32-int(network_mask)):
-                subnet = NETADDR(str(NETADDR(subnets[idx].network).next().ip) + "/" + network_mask)
+                subnet = NETADDR(str(NETADDR(subnets[idx].network).next().ip) + "/" + str(network_mask))
                 if subnet.ip == subnet.network and \
                         not ipaddr.IPNetwork(subnet).overlaps(ipaddr.IPNetwork(subnets[idx+1].network)):
                     return str(subnet)
