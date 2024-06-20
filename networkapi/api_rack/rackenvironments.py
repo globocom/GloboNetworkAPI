@@ -183,7 +183,7 @@ class RackEnvironment:
         log.debug("_create_lflf_vlans")
 
         env_lf = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
-                                                    grupo_l3__nome=str(self.rack.name),
+                                                    grupo_l3__nome=str(self.rack.nome),
                                                     ambiente_logico__nome="LEAF-LEAF")
         log.debug("Leaf-leaf environments: " + str(env_lf))
 
