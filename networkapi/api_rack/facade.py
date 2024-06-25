@@ -970,8 +970,8 @@ def allocate_env_vlan(user, rack_id):
     rack_env.spine_leaf_vlans_save()
 
     # leaf x leaf
-    rack_env.leaf_leaf_vlans_save()
     rack_env.leaf_leaf_envs_save()
+    rack_env.leaf_leaf_vlans_save()
 
     # producao/cloud
     rack_env.prod_environment_save()
