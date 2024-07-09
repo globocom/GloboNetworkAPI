@@ -282,28 +282,17 @@ class Provision:
         id_vlt = [envconfig.get("VLT").get("id_vlt_lf1"), envconfig.get("VLT").get("id_vlt_lf2")]
         priority_vlt = [envconfig.get("VLT").get("priority_vlt_lf1"), envconfig.get("VLT").get("priority_vlt_lf2")]
 
-        IPSPINEipv4[numero_rack].append(CIDRBEipv4[0][0])
-        IPSPINEipv4[numero_rack].append(CIDRBEipv4[1][0])
-        IPSPINEipv4[numero_rack].append(CIDRBEipv4[2][0])
-        IPSPINEipv4[numero_rack].append(CIDRBEipv4[3][0])
-        #
-        IPLEAFipv4[numero_rack].append(CIDRBEipv4[0][1])
-        IPLEAFipv4[numero_rack].append(CIDRBEipv4[1][1])
-        IPLEAFipv4[numero_rack].append(CIDRBEipv4[2][1])
-        IPLEAFipv4[numero_rack].append(CIDRBEipv4[3][1])
+        for i in range(len(CIDRBEipv4)):
+            IPSPINEipv4[numero_rack].append(CIDRBEipv4[i][0])
+            IPLEAFipv4[numero_rack].append(CIDRBEipv4[i][1])
+
+            IPSPINEipv6[numero_rack].append(CIDRBEipv6[i][0])
+            IPLEAFipv6[numero_rack].append(CIDRBEipv6[i][1])
+
         #
         IPSIBGPipv4[numero_rack].append(IBGPToRLxLipv4[0])
         IPSIBGPipv4[numero_rack].append(IBGPToRLxLipv4[1])
         #
-        IPSPINEipv6[numero_rack].append(CIDRBEipv6[0][0])
-        IPSPINEipv6[numero_rack].append(CIDRBEipv6[1][0])
-        IPSPINEipv6[numero_rack].append(CIDRBEipv6[2][0])
-        IPSPINEipv6[numero_rack].append(CIDRBEipv6[3][0])
-        #
-        IPLEAFipv6[numero_rack].append(CIDRBEipv6[0][1])
-        IPLEAFipv6[numero_rack].append(CIDRBEipv6[1][1])
-        IPLEAFipv6[numero_rack].append(CIDRBEipv6[2][1])
-        IPLEAFipv6[numero_rack].append(CIDRBEipv6[3][1])
         #
         IPSIBGPipv6[numero_rack].append(IBGPToRLxLipv6[0])
         IPSIBGPipv6[numero_rack].append(IBGPToRLxLipv6[1])
@@ -322,6 +311,10 @@ class Provision:
         log.debug("as")
         log.debug(BASE_AS_LFS)
         log.debug(numero_rack)
+        log.debug(numero_rack)
+        log.debug("zip equips_sorted")
+        log.debug(zip(equips_sorted[:2], [0, 2], [0, 1]))
+
         ASLEAF[numero_rack].append(BASE_AS_LFS + numero_rack)
 
         for equip, spn, j in zip(equips_sorted[:2], [0, 2], [0, 1]):
