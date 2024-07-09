@@ -132,18 +132,18 @@ class LocalIpAndPeerGroupAtDifferentEnvironmentsException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, neighbor):
-        self.detail = u'LocalIp id = {} and PeerGroup id = {} belongs to ' \
-                      u'different Environments'. \
-            format(neighbor.local_ip, neighbor.peer_group)
+        self.detail = u'Not allowed to configure BGP neighbor using this Peer Group. ' \
+                      u'PeerGroup id = {} is not mapped to the environment of LocalIp id = {}'.\
+            format(neighbor.peer_group, neighbor.local_ip)
 
 
 class NeighborDuplicatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, neighbor):
-        self.detail = u'It already exists Neighbor with LocalAsn id = {}, ' \
+        self.detail = u'Duplicated neighbor. A Neighbor with LocalAsn id = {}, ' \
                       u'LocalIp id = {}, RemoteAsn id = {} and ' \
-                      u'RemoteIp id = {}'.\
+                      u'RemoteIp id = {} already exists'.\
             format(neighbor.local_asn, neighbor.local_ip,
                    neighbor.remote_asn, neighbor.remote_ip)
 
