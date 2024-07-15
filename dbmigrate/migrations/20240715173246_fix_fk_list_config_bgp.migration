@@ -1,0 +1,9 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+ALTER TABLE equipment_list_config_bgp DROP FOREIGN KEY fk_equipment_list_config_bgp_2;
+ALTER TABLE equipment_list_config_bgp ADD CONSTRAINT `fk_equipment_list_config_bgp_2` FOREIGN KEY (`id_list_config_bgp`) REFERENCES `list_config_bgp` (`id`)
+"""
+
+SQL_DOWN = u"""
+
+"""
