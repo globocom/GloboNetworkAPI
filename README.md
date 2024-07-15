@@ -34,6 +34,10 @@ It was not created to be and inventory database, so it does not have CMDB functi
 ## Run Unit Tests
 To run the unit tests just run `make build_img && make start && make test_ci` this instruction will run all the unit tests specified in the `networkapi/tests/__init__.py` file.
 
+## Create and run migrations
+To create a new migration, just run into app container `cd dbmigrate; db-migrate --new=<MIGRATION_NAME>`. This step will create a enpty migration file, you must write the SQL statement.
+To run a migration, just run into app container `cd dbmigrate; db-migrate`. This command will execute all migrations files not executed until now.
+
 ## How to contribute
 Check this out at
 [Contributing](https://github.com/globocom/GloboNetworkAPI/blob/master/CONTRIBUTING.md) file.
