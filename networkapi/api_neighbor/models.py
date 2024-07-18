@@ -613,7 +613,7 @@ class NeighborV6(BaseModel):
                 'route_map': route_map_out.id
             })
 
-        entries = route_map_out.route_map_entries | route_map_in.:619:
+        entries = route_map_out.route_map_entries | route_map_in.route_map_entries
         for entry in entries:
             eqpt_list_config = EquipmentListConfig.objects.filter(
                 equipment=equipment,
