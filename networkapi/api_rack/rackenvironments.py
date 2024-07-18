@@ -56,12 +56,14 @@ class RackEnvironment:
         environment_spn_lf_list = list()
         spines = int(self.rack.dcroom.spines)
         fabric = self.rack.dcroom.name
+        rackname = self.rack.nome
+        grupoL3name = fabric+"_"+racknome
 
         try:
-            id_grupo_l3 = models_env.GrupoL3().get_by_name(fabric).id
+            id_grupo_l3 = models_env.GrupoL3().get_by_name(grupoL3name).id
         except:
             grupo_l3_dict = models_env.GrupoL3()
-            grupo_l3_dict.nome = fabric
+            grupo_l3_dict.nome = grupoL3name
             grupo_l3_dict.save()
             id_grupo_l3 = grupo_l3_dict.id
             pass
@@ -483,13 +485,29 @@ class RackEnvironment:
     def rack_environment_remove(self):
         log.info("_remove_envs")
 
-        envs = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
+        envs_racks = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
                                                   grupo_l3__nome=str(self.rack.nome))
 
-        for env in envs:
+        log.debug("PROD RACK environments to be removed: %s. Total: %s" % (str(envs_racks), len(envs_racks)))
+
+        for env in envs_racks:
             env.delete_v3()
 
-        log.debug("PROD environments: %s. Total: %s" % (str(envs), len(envs)))
+        log.debug("PROD RACK environments removed.")
+
+        envs_spines = models_env.Ambiente.objects.filter(dcroom=int(rack.dcroom.id),
+                                                     grupo_l3__nome=str(rack.dcroom.name),
+                                                     ambiente_logico__nome__in=["SPINE01LEAF",
+                                                                                "SPINE02LEAF",
+                                                                                "SPINE03LEAF",
+                                                                                "SPINE04LEAF"])
+
+        log.debug("PROD SPINELEAF environments to be removed: %s. Total: %s" % (str(envs_spines), len(envs_spines)))
+
+        for env in envs_spines:
+            env.delete_v3()
+
+        log.debug("PROD SPINELEAF environments removed.")
 
     def rack_vlans_remove(self):
         log.info("remove_vlans")

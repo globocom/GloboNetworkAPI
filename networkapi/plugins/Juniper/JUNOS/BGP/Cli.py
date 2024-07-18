@@ -65,14 +65,14 @@ class Generic(JUNOS):
             route_map_out.route_map_entries
         for rm_entry in rms:
             list_config_bgp = rm_entry.list_config_bgp
-            if not list_config_bgp.equipments.filter(id=self.equipment.id):
-                self.deploy_list_config_bgp(list_config_bgp)
+        #     if not list_config_bgp.equipments.filter(id=self.equipment.id):
+        #         self.deploy_list_config_bgp(list_config_bgp)
 
-        if not route_map_in.equipments.filter(id=self.equipment.id):
-            self.deploy_route_map(neighbor.peer_group.route_map_in)
+        # if not route_map_in.equipments.filter(id=self.equipment.id):
+        #     self.deploy_route_map(neighbor.peer_group.route_map_in)
 
-        if not route_map_out.equipments.filter(id=self.equipment.id):
-            self.deploy_route_map(neighbor.peer_group.route_map_out)
+        # if not route_map_out.equipments.filter(id=self.equipment.id):
+        #     self.deploy_route_map(neighbor.peer_group.route_map_out)
 
     def _undeploy_pre_req(self, neighbor, ip_version):
         log.info("_undeploy_pre_req")
