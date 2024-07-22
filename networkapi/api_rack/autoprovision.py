@@ -511,6 +511,7 @@ def autoprovision_splf(rack, equips):
                 variablestochangespine1["ASLEAF"] = str(ASLEAF[numero_rack][0])
                 variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num-1])
                 variablestochangespine1["IPNEIGHLEAFIPV6"] = str(IPLEAFipv6[numero_rack][spine_num-1])
+                variablestochangespine1["RACK_NUM"] = str(numero_rack)
                 if spine_num in [1, 3]:
                     variablestochangeleaf1["SP1_HOSTNAME"] = i.get("nome")
                     variablestochangeleaf1["INTERFACE_SP1"] = i.get("interface")
