@@ -271,10 +271,12 @@ class NeighborV4(BaseModel):
                 list_config_bgp=entry.list_config_bgp
             )
             if not eqpt_list_config:
-                EquipmentListConfig().create_v4({
-                    'equipment': equipment.id,
-                    'list_config_bgp': entry.list_config_bgp.id
-                })
+                self.log.debug('equipment id %s' % equipment.id)
+                self.log.debug('id_list_config_bgp %s' % entry.list_config_bgp.id)
+                # EquipmentListConfig().create_v4({
+                #     'equipment': equipment.id,
+                #     'list_config_bgp': entry.list_config_bgp.id
+                # })
 
     def undeploy(self):
         """Undeploy NeighborV4."""
