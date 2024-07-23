@@ -412,9 +412,23 @@ class Provision:
 
                     ### TO BERRINI
                     if spine_num == 1:
+                        variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num])
+                        variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num])
+                        variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num])
+                        variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num])
+                        variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num])
+                        variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num])
+                        variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num])
                         variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num])
                         variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
                     elif spine_num == 2:
+                        variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num - 2])
+                        variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
+                        variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
+                        variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num - 2])
+                        variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num - 2])
+                        variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num - 2])
+                        variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num - 2])
                         variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 2])
                         variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 2])
 
