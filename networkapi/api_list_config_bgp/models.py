@@ -156,7 +156,7 @@ class EquipmentListConfig(BaseModel):
     )
     list_config_bgp = models.ForeignKey(
         'api_list_config_bgp.ListConfigBGP',
-        db_column='id'
+        db_column='id_list_config_bgp'
     )
 
     class Meta(BaseModel.Meta):
