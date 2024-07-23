@@ -409,6 +409,11 @@ class Provision:
                     variablestochangespine1["VLANBORDACACHOSLEAF"] = str(vlanBOCA[spine_num - 1])
                     variablestochangespine1["VLANBORDACACHOSB"] = str(vlanBOCAB[spine_num - 1])
                     variablestochangespine1["ASLEAF"] = str(ASLEAF[numero_rack][0])
+
+                    ### TO BERRINI
+                    variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num])
+                    variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
+
                     variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 1])
                     variablestochangespine1["IPNEIGHLEAFIPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 1])
 
