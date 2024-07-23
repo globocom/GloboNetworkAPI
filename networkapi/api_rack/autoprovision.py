@@ -511,8 +511,8 @@ def autoprovision_splf(rack, equips):
                 variablestochangespine1["ASLEAF"] = str(ASLEAF[numero_rack][0])
 
                 ### To pop Berrini
-                variablestochangespine1["IPNEIGHLEAFIPV4_2"] = str(IPLEAFipv4[numero_rack][spine_num])
-                variablestochangespine1["IPNEIGHLEAFIPV6_2"] = str(IPLEAFipv6[numero_rack][spine_num])
+                variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num])
+                variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
 
 
                 variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num-1])
