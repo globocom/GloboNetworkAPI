@@ -952,6 +952,13 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine1['VLANBORDALEAF'] = str(VLANBORDALEAF[rack][0])
     variablestochangespine1['VLANBORDACACHOSLEAF'] = str(
         VLANBORDACACHOSLEAF[rack][0])
+
+    ### TO POP Berrini
+    variablestochangespine1['IPNEIGHLEAFIPV4_2'] = str(IPLEAFipv4[rack][1])
+    variablestochangespine1['IPNEIGHLEAFIPV6_2'] = str(IPLEAFipv6[rack][1])
+    variablestochangespine1['LEAFNAME_2'] = HOSTNAME_LF2
+
+
     variablestochangespine1['ASLEAF'] = str(ASLEAF[rack][0])
     variablestochangespine1['IPNEIGHLEAFIPV4'] = str(IPLEAFipv4[rack][0])
     variablestochangespine1['IPNEIGHLEAFIPV6'] = str(IPLEAFipv6[rack][0])
@@ -968,6 +975,14 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine2['VLANBORDALEAF'] = str(VLANBORDALEAF[rack][1])
     variablestochangespine2['VLANBORDACACHOSLEAF'] = str(
         VLANBORDACACHOSLEAF[rack][1])
+
+
+    ### TO POP Berrini
+    variablestochangespine1['IPNEIGHLEAFIPV4_2'] = str(IPLEAFipv4[rack][0])
+    variablestochangespine1['IPNEIGHLEAFIPV6_2'] = str(IPLEAFipv6[rack][0])
+    variablestochangespine1['LEAFNAME_2'] = HOSTNAME_LF2
+
+
     variablestochangespine2['ASLEAF'] = str(ASLEAF[rack][0])
     variablestochangespine2['IPNEIGHLEAFIPV4'] = str(IPLEAFipv4[rack][1])
     variablestochangespine2['IPNEIGHLEAFIPV6'] = str(IPLEAFipv6[rack][1])
