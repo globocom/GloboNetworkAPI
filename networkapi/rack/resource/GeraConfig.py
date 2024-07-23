@@ -958,7 +958,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine1['INTERFACE'] = INTERFACE_SP1
     variablestochangespine1['LEAFNAME'] = HOSTNAME_LF1
     variablestochangespine1['INT_LF_UPLINK'] = int_lf1_sp1
-    variablestochangespine1['RACK_NUM'] = str(rack)
     #
     #
     variablestochangespine2['IPSPINEIPV4'] = str(IPSPINEipv4[rack][1])
@@ -974,8 +973,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine2['INTERFACE'] = INTERFACE_SP2
     variablestochangespine2['LEAFNAME'] = HOSTNAME_LF1
     variablestochangespine2['INT_LF_UPLINK'] = int_lf1_sp2
-    variablestochangespine2['RACK_NUM'] = str(rack)
-
     #
     #
     variablestochangespine3['IPSPINEIPV4'] = str(IPSPINEipv4[rack][2])
@@ -991,8 +988,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine3['INTERFACE'] = INTERFACE_SP3
     variablestochangespine3['LEAFNAME'] = HOSTNAME_LF2
     variablestochangespine3['INT_LF_UPLINK'] = int_lf2_sp3
-    variablestochangespine3['RACK_NUM'] = str(rack)
-
     #
     #
     variablestochangespine4['IPSPINEIPV4'] = str(IPSPINEipv4[rack][3])
@@ -1008,8 +1003,6 @@ def autoprovision_splf(rack,FILEINLF1, FILEINLF2,FILEINSP1, FILEINSP2, FILEINSP3
     variablestochangespine4['INTERFACE'] = INTERFACE_SP4
     variablestochangespine4['LEAFNAME'] = HOSTNAME_LF2
     variablestochangespine4['INT_LF_UPLINK'] = int_lf2_sp4
-    variablestochangespine4['RACK_NUM'] = str(rack)
-
     #
     #
     variablestochangeleaf1['IPLEAFSP1IPV4'] = str(IPLEAFipv4[rack][0])
