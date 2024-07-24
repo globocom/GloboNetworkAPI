@@ -396,6 +396,8 @@ class Provision:
                     variablestochangeleaf1["LFNEIGH_IP_MGMT"] = i.get("ip_mngt")
                 elif i.get("nome")[:3] == self.spine_prefix:
                     spine_num = int(i.get("nome")[-1])
+                    log.debug(spn)
+                    log.debug(spine_num)
                     variablestochangespine1["ASSPINE"] = str(BASE_AS_SPN + spine_num - 1)
                     variablestochangespine1["INTERFACE"] = i.get("interface")
                     variablestochangespine1["LEAFNAME"] = equip.get("nome")
