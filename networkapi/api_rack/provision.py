@@ -316,7 +316,6 @@ class Provision:
         log.debug(zip(equips_sorted[:2], [0, 2], [0, 1]))
 
         ASLEAF[numero_rack].append(BASE_AS_LFS + numero_rack)
-        log.debug(IPLEAFipv4)
 
         for equip, spn, j in zip(equips_sorted[:2], [0, 2], [0, 1]):
             variablestochangeleaf1["IPLEAFSP1IPV4"] = str(IPLEAFipv4[numero_rack][spn])
@@ -417,21 +416,51 @@ class Provision:
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num])
                         variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num])
-                        variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num])
-                        variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num])
+
+                        counter = 1
+                        for ipv6 in IPSPINEipv6[numero_rack]:
+                            variablestochangespine1[f'IPSPINE{counter}IPV6'] = ipv6
+                            variablestochangespine1[f"IPNEIGHLEAF{counter}IPV6"] = str(IPLEAFipv6[numero_rack][counter -1])
+
+                            counter += 1
+
+                        counter = 1
+                        for ipv4 in IPSPINEipv4[numero_rack]:
+                            variablestochangespine1[f'IPSPINE{counter}IPV4'] = str(ipv6)
+                            variablestochangespine1[f"IPNEIGHLEAF{counter}IPV4"] = str(IPLEAFipv4[numero_rack][counter -1])
+
+                            counter += 1
+
+                        # variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num])
+                        # variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num])
                         variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num])
-                        variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num])
-                        variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
+                        # variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num])
+                        # variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
                     elif spine_num == 2:
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
                         variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num - 2])
-                        variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num - 2])
-                        variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num - 2])
+                        counter = 1
+                        for ipv6 in IPSPINEipv6[numero_rack]:
+                            variablestochangespine1[f'IPSPINE{counter}IPV6'] = str(ipv6)
+                            variablestochangespine1[f"IPNEIGHLEAF{counter}IPV6"] = str(IPLEAFipv6[numero_rack][counter - 1])
+                            counter += 1
+
+                        counter = 1
+                        for ipv4 in IPSPINEipv4[numero_rack]:
+                            variablestochangespine1[f'IPSPINE{counter}IPV4'] = str(ipv6)
+                            variablestochangespine1[f"IPNEIGHLEAF{counter}IPV4"] = str(IPLEAFipv4[numero_rack][counter - 1])
+
+
+                            counter += 1
+                        # variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num - 2])
+                        # variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num - 2])
                         variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num - 2])
-                        variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 2])
-                        variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 2])
+                        # variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 2])
+                        # variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 2])
+
+                    #### END to Berrini Block #####
 
                     variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 1])
                     variablestochangespine1["IPNEIGHLEAFIPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 1])
