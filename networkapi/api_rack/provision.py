@@ -478,6 +478,10 @@ class Provision:
                         # variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 2])
                         # variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 2])
 
+                        e_counter = 1
+                        for e in equips_sorted[:2]:
+                            variablestochangespine1["DESCRIPTION{}INTERFACE".format(e_counter)] = e.get("name")
+                            e_counter += 1
                     #### END to Berrini Block #####
 
                     variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 1])
