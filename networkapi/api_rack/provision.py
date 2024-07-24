@@ -316,6 +316,7 @@ class Provision:
         log.debug(zip(equips_sorted[:2], [0, 2], [0, 1]))
 
         ASLEAF[numero_rack].append(BASE_AS_LFS + numero_rack)
+        log.debug(IPLEAFipv4)
 
         for equip, spn, j in zip(equips_sorted[:2], [0, 2], [0, 1]):
             variablestochangeleaf1["IPLEAFSP1IPV4"] = str(IPLEAFipv4[numero_rack][spn])
