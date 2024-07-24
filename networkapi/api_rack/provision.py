@@ -480,7 +480,7 @@ class Provision:
 
                         e_counter = 1
                         for e, s, y in zip(equips_sorted[:2], [0, 2], [0, 1]):
-                            variablestochangespine1["DESCRIPTION{}INTERFACE".format(e_counter)] = e.get("nome")
+                            variablestochangespine1["DESCRIPTION{}CONNECT".format(e_counter)] = e.get("nome")
                             e_counter += 1
                     #### END to Berrini Block #####
 
