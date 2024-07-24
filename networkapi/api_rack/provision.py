@@ -482,7 +482,7 @@ class Provision:
                         # for e in equips_sorted[:2]:
                         #     # "DESCRIPTION{}CONNECT"
                         variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
-                        variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
+                        variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
                             # e_counter += 1
                     #### END to Berrini Block #####
 
