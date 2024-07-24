@@ -426,7 +426,7 @@ class Provision:
 
                         counter = 1
                         for ipv4 in IPSPINEipv4[numero_rack]:
-                            variablestochangespine1["IPSPINE{}IPV4".format(counter)] = str(ipv6)
+                            variablestochangespine1["IPSPINE{}IPV4".format(counter)] = str(ipv4)
                             variablestochangespine1["IPNEIGHLEAF{}IPV4".format(counter)] = str(IPLEAFipv4[numero_rack][counter -1])
 
                             counter += 1
@@ -441,16 +441,18 @@ class Provision:
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
                         variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num - 2])
-                        counter = 1
+                        counter = 0
                         for ipv6 in IPSPINEipv6[numero_rack]:
-                            variablestochangespine1["IPSPINE{}IPV6".format(counter)] = str(ipv6)
-                            variablestochangespine1["IPNEIGHLEAF{}IPV6".format(counter)] = str(IPLEAFipv6[numero_rack][counter - 1])
+                            if spine_num + counter < len(IPLEAFipv6[numero_rack]):
+                                variablestochangespine1["IPSPINE{}IPV6".format(counter + 1)] = str(IPSPINEipv6[numero_rack][counter + spine_num])
+                                variablestochangespine1["IPNEIGHLEAF{}IPV6".format(counter + 1)] = str(IPLEAFipv6[numero_rack][counter + spine_num])
                             counter += 1
 
-                        counter = 1
+                        counter = 0
                         for ipv4 in IPSPINEipv4[numero_rack]:
-                            variablestochangespine1["IPSPINE{}IPV4".format(counter)] = str(ipv6)
-                            variablestochangespine1["IPNEIGHLEAF{}IPV4".format(counter)] = str(IPLEAFipv4[numero_rack][counter - 1])
+                            if spine_num + counter < len(IPLEAFipv4[numero_rack]):
+                                variablestochangespine1["IPSPINE{}IPV4".format(counter + 1)] = str(IPSPINEipv4[numero_rack][counter + spine_num])
+                                variablestochangespine1["IPNEIGHLEAF{}IPV4".format(counter + 1)] = str(IPLEAFipv4[numero_rack][counter + spine_num])
 
 
                             counter += 1
