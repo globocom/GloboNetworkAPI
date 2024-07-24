@@ -442,6 +442,7 @@ class Provision:
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
                         variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num - 2])
                         counter = 0
+                        log.debug(IPSPINEipv6[numero_rack])
                         for ipv6 in IPSPINEipv6[numero_rack]:
                             if spine_num + counter < len(IPLEAFipv6[numero_rack]):
                                 variablestochangespine1["IPSPINE{}IPV6".format(counter + 1)] = str(IPSPINEipv6[numero_rack][counter + spine_num])
