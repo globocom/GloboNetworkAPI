@@ -455,7 +455,7 @@ class Provision:
                         # variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
                     elif spine_num == 2:
                         variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
-                        variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[2].get("nome")
+                        variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
