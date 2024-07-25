@@ -500,16 +500,24 @@ class Provision:
                         #     # "DESCRIPTION{}CONNECT"
 
                             # e_counter += 1
-                    interface_counter = 1
+                    interface1_counter = 1
+                    interface2_counter = 1
+
                     for lf in equips_sorted[:2]:
                         for iface in lf.get("interfaces"):
-                            if iface.get("nome")[:3] == self.spine_prefix and iface.get("nome")[-1] == 2:
-                                variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
-                            # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
-                            elif iface.get("nome")[:3] == self.spine_prefix and iface.get("nome")[-1] == 1:
-                                variablestochangespine1["SINGLE1{}INT".format(interface_counter)] = iface.get("interface")
-                            # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
-                                interface_counter += 1
+                            iface_name = iface.get("nome")
+                            if iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 2:
+                                variablestochangespine1["SINGLE2{}INT".format(interface2_counter)] = iface.get("interface")
+                                variablestochangespine1["INT_LF_2{}UPLINK".format(interface2_counter)] = iface.get("eq_interface")
+
+                                interface2_counter += 1
+                                # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
+
+                            elif iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 1:
+                                variablestochangespine1["SINGLE1{}INT".format(interface1_counter)] = iface.get("interface")
+                                variablestochangespine1["INT_LF_1{}UPLINK".format(interface1_counter)] = iface.get("eq_interface")
+                                # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
+                                interface1_counter += 1
                     variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
                     variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
                     #### END to Berrini Block #####
