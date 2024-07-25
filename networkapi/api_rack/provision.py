@@ -429,6 +429,13 @@ class Provision:
                     if spine_num == 1:
                         # variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
                         # variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
+                        for lf in equips_sorted[:2]:
+                            interface_counter = 1
+                            for iface in lf.get("interfaces"):
+                                if iface.get("nome")[:3] == self.spine_prefix and iface.get("nome")[-1] == 1:
+                                    variablestochangespine1["SINGLE1{}INT".format(interface_counter)] = iface.get("interface")
+                                # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
+                                    interface_counter += 1
 
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num])
@@ -455,6 +462,13 @@ class Provision:
                         # variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num])
                         # variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
                     elif spine_num == 2:
+                        for lf in equips_sorted[:2]:
+                            interface_counter = 1
+                            for iface in lf.get("interfaces"):
+                                if iface.get("nome")[:3] == self.spine_prefix and iface.get("nome")[-1] == 2:
+                                    variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
+                                # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
+                                    interface_counter += 1
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
@@ -486,11 +500,7 @@ class Provision:
                         #     # "DESCRIPTION{}CONNECT"
 
                             # e_counter += 1
-                    interface_counter = 1
-                    for iface in equip.get("interfaces"):
-                        variablestochangespine1["SINGLE1{}INT".format(interface_counter)] = iface.get("interface")
-                        variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
-                        interface_counter += 1
+
                     variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
                     variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
                     #### END to Berrini Block #####
