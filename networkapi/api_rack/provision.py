@@ -509,6 +509,8 @@ class Provision:
                             if iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 2:
                                 variablestochangespine1["SINGLE2{}INT".format(interface2_counter)] = iface.get("interface")
                                 variablestochangespine1["INT_LF_2{}UPLINK".format(interface2_counter)] = iface.get("eq_interface")
+                                variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
+                                variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
 
                                 interface2_counter += 1
                                 # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
@@ -518,8 +520,8 @@ class Provision:
                                 variablestochangespine1["INT_LF_1{}UPLINK".format(interface1_counter)] = iface.get("eq_interface")
                                 # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
                                 interface1_counter += 1
-                    variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
-                    variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
+                                variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
+                                variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
                     #### END to Berrini Block #####
 
                     variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 1])
