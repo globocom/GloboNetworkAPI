@@ -426,6 +426,8 @@ class Provision:
                     variablestochangespine1["ASLEAF"] = str(ASLEAF[numero_rack][0])
 
                     ### TO BERRINI
+                    ## To pop Berrini we use new variables, this make the new cross topology and old topology run to.
+
                     if spine_num == 1:
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num])
@@ -508,6 +510,8 @@ class Provision:
                     fileoutspine1 = path_to_add_config + i.get("nome") + "-ADD-" + rack.nome + ".cfg"
 
                     ### ANOTHER BERRINI BLOCK
+                    ## Here we invert the variables of description, due unique template to diferent spines
+                    ## without this invertion, the description run well on spine 2 but on spine 1 they are inverted
                     if int(i.get("nome")[-1]) == 1:
                         spn_int_desc1 = variablestochangespine1["DESCRIPTION2CONNECT"]
                         spn_int_desc2 = variablestochangespine1["DESCRIPTION1CONNECT"]
