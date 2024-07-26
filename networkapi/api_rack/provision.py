@@ -509,8 +509,10 @@ class Provision:
                             if iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 2:
                                 variablestochangespine1["SINGLE2{}INT".format(interface2_counter)] = iface.get("interface")
                                 variablestochangespine1["INT_LF_2{}UPLINK".format(interface2_counter)] = iface.get("eq_interface")
-                                variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
-                                variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
+                                # variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
+                                variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
+                                variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
+                                variablestochangespine1["PO2CHANNEL"] = variablestochangespine1["SINGLE21INT".format(interface2_counter)].split('/')[-1].split(':')[0]
 
                                 interface2_counter += 1
                                 # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
@@ -518,10 +520,12 @@ class Provision:
                             elif iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 1:
                                 variablestochangespine1["SINGLE1{}INT".format(interface1_counter)] = iface.get("interface")
                                 variablestochangespine1["INT_LF_1{}UPLINK".format(interface1_counter)] = iface.get("eq_interface")
+                                variablestochangespine1["PO1CHANNEL"] = variablestochangespine1["SINGLE11INT".format(interface2_counter)].split('/')[-1].split(':')[0]
+
                                 # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
+                                variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
+                                variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
                                 interface1_counter += 1
-                                variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
-                                variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
                     #### END to Berrini Block #####
 
                     variablestochangespine1["IPNEIGHLEAFIPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 1])
@@ -538,6 +542,21 @@ class Provision:
 
                     fileinspine1 = path_to_guide + i.get("roteiro")
                     fileoutspine1 = path_to_add_config + i.get("nome") + "-ADD-" + rack.nome + ".cfg"
+                    log.debug(i.get("nome"[-1]))
+                    # if self.spine_prefix in fileinspine1 and spine_num in fileinspine1 and spine_num == 1:
+                    if int(i.get("nome")[-1]) == 1:
+                        spn_int_desc1 = variablestochangespine1["DESCRIPTION2CONNECT"]
+                        spn_int_desc2 = variablestochangespine1["DESCRIPTION1CONNECT"]
+                        variablestochangespine1["DESCRIPTION1CONNECT"] = spn_int_desc2
+                        variablestochangespine1["DESCRIPTION2CONNECT"] = spn_int_desc1
+
+                    # if self.spine_prefix in fileinspine1 and spine_num in fileinspine1 and spine_num == 2:
+                    if int(i.get("nome")[-1]) == 2:
+                        spn_int_desc1 = variablestochangespine1["DESCRIPTION2CONNECT"]
+                        spn_int_desc2 = variablestochangespine1["DESCRIPTION1CONNECT"]
+                        variablestochangespine1["DESCRIPTION2CONNECT"] = spn_int_desc2
+                        variablestochangespine1["DESCRIPTION1CONNECT"] = spn_int_desc1
+
                     self.replace_file(fileinspine1, fileoutspine1, variablestochangespine1)
                     variablestochangespine1 = dict()
 
