@@ -427,16 +427,6 @@ class Provision:
 
                     ### TO BERRINI
                     if spine_num == 1:
-                        # variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
-                        # variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
-                        # interface_counter = 1
-                        # for lf in equips_sorted[:2]:
-                        #     for iface in lf.get("interfaces"):
-                        #         if iface.get("nome")[:3] == self.spine_prefix and iface.get("nome")[-1] == 1:
-                        #             variablestochangespine1["SINGLE1{}INT".format(interface_counter)] = iface.get("interface")
-                        #         # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
-                        #             interface_counter += 1
-
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num])
@@ -456,25 +446,13 @@ class Provision:
 
                             counter += 1
 
-                        # variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num])
-                        # variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num])
                         variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num])
-                        # variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num])
-                        # variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num])
                     elif spine_num == 2:
-                        # interface_counter = 1
-                        # for lf in equips_sorted[:2]:
-                        #     for iface in lf.get("interfaces"):
-                        #         if iface.get("nome")[:3] == self.spine_prefix and iface.get("nome")[-1] == 2:
-                        #             variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
-                        #         # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
-                        #             interface_counter += 1
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
                         variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num - 2])
                         counter = 0
-                        log.debug(IPSPINEipv6[numero_rack])
                         for ipv6 in IPSPINEipv6[numero_rack]:
                             if spine_num + counter < len(IPLEAFipv6[numero_rack]):
                                 variablestochangespine1["IPSPINE{}IPV6".format(counter + 1)] = str(IPSPINEipv6[numero_rack][counter + spine_num])
@@ -489,17 +467,7 @@ class Provision:
 
 
                             counter += 1
-                        # variablestochangespine1["IPSPI2NEIPV6"] = str(IPSPINEipv6[numero_rack][spine_num - 2])
-                        # variablestochangespine1["IPSPI2NEIPV4"] = str(IPSPINEipv4[numero_rack][spine_num - 2])
                         variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num - 2])
-                        # variablestochangespine1["IPNEIGHLEAF2IPV4"] = str(IPLEAFipv4[numero_rack][spine_num - 2])
-                        # variablestochangespine1["IPNEIGHLEAF2IPV6"] = str(IPLEAFipv6[numero_rack][spine_num - 2])
-
-                        # e_counter = 1
-                        # for e in equips_sorted[:2]:
-                        #     # "DESCRIPTION{}CONNECT"
-
-                            # e_counter += 1
                     interface1_counter = 1
                     interface2_counter = 1
 
@@ -509,20 +477,16 @@ class Provision:
                             if iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 2:
                                 variablestochangespine1["SINGLE2{}INT".format(interface2_counter)] = iface.get("interface")
                                 variablestochangespine1["INT_LF_2{}UPLINK".format(interface2_counter)] = iface.get("eq_interface")
-                                # variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
                                 variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
                                 variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
                                 variablestochangespine1["PO2CHANNEL"] = variablestochangespine1["SINGLE21INT".format(interface2_counter)].split('/')[-1].split(':')[0]
 
                                 interface2_counter += 1
-                                # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
 
                             elif iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 1:
                                 variablestochangespine1["SINGLE1{}INT".format(interface1_counter)] = iface.get("interface")
                                 variablestochangespine1["INT_LF_1{}UPLINK".format(interface1_counter)] = iface.get("eq_interface")
                                 variablestochangespine1["PO1CHANNEL"] = variablestochangespine1["SINGLE11INT".format(interface2_counter)].split('/')[-1].split(':')[0]
-
-                                # variablestochangespine1["SINGLE2{}INT".format(interface_counter)] = iface.get("interface")
                                 variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
                                 variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
                                 interface1_counter += 1
@@ -542,20 +506,21 @@ class Provision:
 
                     fileinspine1 = path_to_guide + i.get("roteiro")
                     fileoutspine1 = path_to_add_config + i.get("nome") + "-ADD-" + rack.nome + ".cfg"
-                    log.debug(i.get("nome"[-1]))
-                    # if self.spine_prefix in fileinspine1 and spine_num in fileinspine1 and spine_num == 1:
+
+                    ### ANOTHER BERRINI BLOCK
                     if int(i.get("nome")[-1]) == 1:
                         spn_int_desc1 = variablestochangespine1["DESCRIPTION2CONNECT"]
                         spn_int_desc2 = variablestochangespine1["DESCRIPTION1CONNECT"]
                         variablestochangespine1["DESCRIPTION1CONNECT"] = spn_int_desc2
                         variablestochangespine1["DESCRIPTION2CONNECT"] = spn_int_desc1
 
-                    # if self.spine_prefix in fileinspine1 and spine_num in fileinspine1 and spine_num == 2:
                     if int(i.get("nome")[-1]) == 2:
                         spn_int_desc1 = variablestochangespine1["DESCRIPTION2CONNECT"]
                         spn_int_desc2 = variablestochangespine1["DESCRIPTION1CONNECT"]
                         variablestochangespine1["DESCRIPTION2CONNECT"] = spn_int_desc2
                         variablestochangespine1["DESCRIPTION1CONNECT"] = spn_int_desc1
+
+                    #### END BLOCK
 
                     self.replace_file(fileinspine1, fileoutspine1, variablestochangespine1)
                     variablestochangespine1 = dict()
