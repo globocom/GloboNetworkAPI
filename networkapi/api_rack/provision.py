@@ -403,6 +403,8 @@ class Provision:
             variablestochangeleaf1["OWN_IP_MGMT"] = equip.get("ip_mngt")
             variablestochangeleaf1["LF_HOSTNAME"] = equip.get("nome")
             log.debug("5")
+            lf1_if_counter = 1
+            lf2_if_counter = 1
             for i in equip.get("interfaces"):
                 if i.get("nome")[:3] == self.leaf_prefix:
                     variablestochangeleaf1["LFNEIGH_HOSTNAME"] = i.get("nome")
@@ -481,14 +483,14 @@ class Provision:
                                 variablestochangespine1["INT_LF_2{}UPLINK".format(interface2_counter)] = iface.get("eq_interface")
                                 variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[0].get("nome")
                                 variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[1].get("nome")
-                                variablestochangespine1["PO2CHANNEL"] = variablestochangespine1["SINGLE21INT".format(interface2_counter)].split('/')[-1].split(':')[0]
+                                variablestochangespine1["PO2CHANNEL"] = variablestochangespine1["SINGLE21INT"].split('/')[-1].split(':')[0]
 
                                 interface2_counter += 1
 
                             elif iface_name[:3] == self.spine_prefix and int(iface_name[-1]) == 1:
                                 variablestochangespine1["SINGLE1{}INT".format(interface1_counter)] = iface.get("interface")
                                 variablestochangespine1["INT_LF_1{}UPLINK".format(interface1_counter)] = iface.get("eq_interface")
-                                variablestochangespine1["PO1CHANNEL"] = variablestochangespine1["SINGLE11INT".format(interface2_counter)].split('/')[-1].split(':')[0]
+                                variablestochangespine1["PO1CHANNEL"] = variablestochangespine1["SINGLE11INT"].split('/')[-1].split(':')[0]
                                 variablestochangespine1["DESCRIPTION1CONNECT"] = equips_sorted[0].get("nome")
                                 variablestochangespine1["DESCRIPTION2CONNECT"] = equips_sorted[1].get("nome")
                                 interface1_counter += 1
@@ -501,6 +503,7 @@ class Provision:
                         variablestochangeleaf1["SP1_HOSTNAME"] = i.get("nome")
                         variablestochangeleaf1["INTERFACE_SP1"] = i.get("interface")
                         variablestochangeleaf1["ASSPINE1"] = str(BASE_AS_SPN + spine_num - 1)
+
                     else:
                         variablestochangeleaf1["SP2_HOSTNAME"] = i.get("nome")
                         variablestochangeleaf1["INTERFACE_SP2"] = i.get("interface")
@@ -532,6 +535,50 @@ class Provision:
                 elif i.get("nome")[:3] == self.oob_prefix:
                     variablestochangeleaf1["HOSTNAME_OOB"] = i.get("nome")
                     variablestochangeleaf1["INTERFACE_OOB"] = i.get("interface")
+
+                interface_name = i.get("nome")
+                if interface_name[:3] == self.spine_prefix and int(interface_name[-1]) == 1:
+                    variablestochangeleaf1["INTERFACE{}_SP1".format(lf1_if_counter)] = i.get("interface")
+                    lf1_if_counter +=1
+
+                elif interface_name[:3] == self.spine_prefix and int(interface_name[-1]) == 2:
+                    variablestochangeleaf1["INTERFACE{}_SP2".format(lf2_if_counter)] = i.get("interface")
+                    lf2_if_counter +=1
+
+            #### ANOTHER BERRINI BLOCK
+            ## Here we invert the variables of description, due unique template to diferent spines
+            ## without this invertion, the description run well on spine 2 but on spine 1 they are inverted
+            if int(equip.get('nome')[-1]) == 2:
+                ### Here we must have to invert the variables to leaf2, due the new topology
+                sp1_hostname = variablestochangeleaf1["SP1_HOSTNAME"]
+                sp2_hostname = variablestochangeleaf1["SP2_HOSTNAME"]
+                variablestochangeleaf1["SP1_HOSTNAME"] = sp2_hostname
+                variablestochangeleaf1["SP2_HOSTNAME"] = sp1_hostname
+
+                if1_sp1 = variablestochangeleaf1['INTERFACE1_SP1']
+                if2_sp1 = variablestochangeleaf1['INTERFACE2_SP1']
+                if3_sp1 = variablestochangeleaf1['INTERFACE3_SP1']
+                if4_sp1 = variablestochangeleaf1['INTERFACE4_SP1']
+
+                if1_sp2 = variablestochangeleaf1['INTERFACE1_SP2']
+                if2_sp2 = variablestochangeleaf1['INTERFACE2_SP2']
+                if3_sp2 = variablestochangeleaf1['INTERFACE3_SP2']
+                if4_sp2 = variablestochangeleaf1['INTERFACE4_SP2']
+
+                variablestochangeleaf1['INTERFACE1_SP1'] = if1_sp2
+                variablestochangeleaf1['INTERFACE2_SP1'] = if2_sp2
+                variablestochangeleaf1['INTERFACE3_SP1'] = if3_sp2
+                variablestochangeleaf1['INTERFACE4_SP1'] = if4_sp2
+
+                variablestochangeleaf1['INTERFACE1_SP2'] = if1_sp1
+                variablestochangeleaf1['INTERFACE2_SP2'] = if2_sp1
+                variablestochangeleaf1['INTERFACE3_SP2'] = if3_sp1
+                variablestochangeleaf1['INTERFACE4_SP2'] = if4_sp1
+
+            variablestochangeleaf1['LFPO1'] = variablestochangeleaf1['INTERFACE1_SP1'].split('/')[-1].split(':')[0]
+            variablestochangeleaf1['LFPO2'] = variablestochangeleaf1['INTERFACE1_SP2'].split('/')[-1].split(':')[0]
+
+            ### End Berrini Block
 
             variablestochangeleaf1["ID_VLT"] = str(id_vlt[j])
             variablestochangeleaf1["PRIORITY_VLT"] = str(priority_vlt[j])
