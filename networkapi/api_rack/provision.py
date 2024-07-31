@@ -436,21 +436,24 @@ class Provision:
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num])
                         variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num])
 
-                        counter = 1
+                        counter = 0
                         for ipv6 in IPSPINEipv6[numero_rack]:
-                            variablestochangespine1["IPSPINE{}IPV6".format(counter)] = str(ipv6)
-                            variablestochangespine1["IPNEIGHLEAF{}IPV6".format(counter)] = str(IPLEAFipv6[numero_rack][counter -1])
+                            if counter + 1 < len(IPSPINEipv6[numero_rack]):
+                                variablestochangespine1["IPSPINE{}IPV6".format(counter+1)] = str(IPSPINEipv6[numero_rack][counter - 1])
+                                variablestochangespine1["IPNEIGHLEAF{}IPV6".format(counter+1)] = str(IPLEAFipv6[numero_rack][counter -1])
 
-                            counter += 1
+                                counter += 1
 
-                        counter = 1
+                        counter = 0
                         for ipv4 in IPSPINEipv4[numero_rack]:
-                            variablestochangespine1["IPSPINE{}IPV4".format(counter)] = str(ipv4)
-                            variablestochangespine1["IPNEIGHLEAF{}IPV4".format(counter)] = str(IPLEAFipv4[numero_rack][counter -1])
+                            if counter + 1 < len(IPSPINEipv4[numero_rack]):
+                                variablestochangespine1["IPSPINE{}IPV4".format(counter+1)] = str(IPSPINEipv4[numero_rack][counter - 1])
+                                variablestochangespine1["IPNEIGHLEAF{}IPV4".format(counter+1)] = str(IPLEAFipv4[numero_rack][counter -1])
 
-                            counter += 1
+                                counter += 1
 
                         variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num])
+
                     elif spine_num == 2:
                         variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num - 2])
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
@@ -459,15 +462,15 @@ class Provision:
                         counter = 0
                         for ipv6 in IPSPINEipv6[numero_rack]:
                             if spine_num + counter < len(IPLEAFipv6[numero_rack]):
-                                variablestochangespine1["IPSPINE{}IPV6".format(counter + 1)] = str(IPSPINEipv6[numero_rack][counter + spine_num])
-                                variablestochangespine1["IPNEIGHLEAF{}IPV6".format(counter + 1)] = str(IPLEAFipv6[numero_rack][counter + spine_num])
+                                variablestochangespine1["IPSPINE{}IPV6".format(counter + 1)] = str(IPSPINEipv6[numero_rack][counter + 1])
+                                variablestochangespine1["IPNEIGHLEAF{}IPV6".format(counter + 1)] = str(IPLEAFipv6[numero_rack][counter + 1])
                             counter += 1
 
                         counter = 0
                         for ipv4 in IPSPINEipv4[numero_rack]:
                             if spine_num + counter < len(IPLEAFipv4[numero_rack]):
-                                variablestochangespine1["IPSPINE{}IPV4".format(counter + 1)] = str(IPSPINEipv4[numero_rack][counter + spine_num])
-                                variablestochangespine1["IPNEIGHLEAF{}IPV4".format(counter + 1)] = str(IPLEAFipv4[numero_rack][counter + spine_num])
+                                variablestochangespine1["IPSPINE{}IPV4".format(counter + 1)] = str(IPSPINEipv4[numero_rack][counter + 1])
+                                variablestochangespine1["IPNEIGHLEAF{}IPV4".format(counter + 1)] = str(IPLEAFipv4[numero_rack][counter + 1])
 
 
                             counter += 1
@@ -526,6 +529,46 @@ class Provision:
                         spn_int_desc2 = variablestochangespine1["DESCRIPTION1CONNECT"]
                         variablestochangespine1["DESCRIPTION2CONNECT"] = spn_int_desc2
                         variablestochangespine1["DESCRIPTION1CONNECT"] = spn_int_desc1
+
+                        spn_vlan_bo2 = variablestochangespine1["VLANBORDA2LEAF"]
+                        spn_vlan_bc2 = variablestochangespine1["VLANBORDA2CACHOSLEAF"]
+                        spn_vlan_fe2 = variablestochangespine1["VLANFE2LEAF"]
+                        spn_vlan_be2 = variablestochangespine1["VLANBE2LEAF"]
+                        spn_vlan_be1 = variablestochangespine1["VLANBELEAF"]
+                        spn_vlan_fe1 = variablestochangespine1["VLANFELEAF"]
+                        spn_vlan_bo1 = variablestochangespine1["VLANBORDALEAF"]
+                        spn_vlan_bc1 = variablestochangespine1["VLANBORDACACHOSLEAF"]
+
+                        variablestochangespine1["VLANBORDA2LEAF"] = spn_vlan_bo1
+                        variablestochangespine1["VLANBORDA2CACHOSLEAF"] = spn_vlan_bc1
+                        variablestochangespine1["VLANFE2LEAF"] = spn_vlan_fe1
+                        variablestochangespine1["VLANBE2LEAF"] = spn_vlan_be1
+                        variablestochangespine1["VLANBELEAF"] = spn_vlan_be2
+                        variablestochangespine1["VLANFELEAF"] = spn_vlan_fe2
+                        variablestochangespine1["VLANBORDALEAF"] = spn_vlan_bo2
+                        variablestochangespine1["VLANBORDACACHOSLEAF"] = spn_vlan_bc2
+
+                    ipv4spn1 = variablestochangespine1["IPSPINE1IPV4"]
+                    ipv4spn2 = variablestochangespine1["IPSPINE2IPV4"]
+                    variablestochangespine1["IPSPINE1IPV4"] = ipv4spn2
+                    variablestochangespine1["IPSPINE2IPV4"] = ipv4spn1
+
+                    ipv6spn1 = variablestochangespine1["IPSPINE1IPV6"]
+                    ipv6spn2 = variablestochangespine1["IPSPINE2IPV6"]
+                    variablestochangespine1["IPSPINE1IPV6"] = ipv6spn2
+                    variablestochangespine1["IPSPINE2IPV6"] = ipv6spn1
+
+                    ipv4_nei_lf1 = variablestochangespine1["IPNEIGHLEAF1IPV4"]
+                    ipv4_nei_lf2 = variablestochangespine1["IPNEIGHLEAF2IPV4"]
+                    variablestochangespine1["IPNEIGHLEAF1IPV4"] = ipv4_nei_lf2
+                    variablestochangespine1["IPNEIGHLEAF2IPV4"] = ipv4_nei_lf1
+
+                    ipv6_nei_lf1 = variablestochangespine1["IPNEIGHLEAF1IPV6"]
+                    ipv6_nei_lf2 = variablestochangespine1["IPNEIGHLEAF2IPV6"]
+                    variablestochangespine1["IPNEIGHLEAF1IPV6"] = ipv6_nei_lf2
+                    variablestochangespine1["IPNEIGHLEAF2IPV6"] = ipv6_nei_lf1
+
+
 
                     #### END BLOCK
 
