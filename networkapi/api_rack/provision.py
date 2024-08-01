@@ -337,16 +337,16 @@ class Provision:
             variablestochangeleaf1["VLANBORDACACHOSBLEAFSP2"] = str(vlanBOCAB[spn + 1])
 
             ### To pop Berrini
-            variablestochangeleaf1["VLANBERBELEAFSP1"] = str(vlanBE[0])
-            variablestochangeleaf1["VLANBERBELEAFSP2"] = str(vlanBE[1])
-            variablestochangeleaf1["VLANBERFELEAFSP1"] = str(vlanFE[0])
-            variablestochangeleaf1["VLANBERFELEAFSP2"] = str(vlanFE[1])
-            variablestochangeleaf1["VLANBERBORDALEAFSP1"] = str(vlanBO[0])
-            variablestochangeleaf1["VLANBERBORDALEAFSP2"] = str(vlanBO[1])
-            variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP1"] = str(vlanBOCA[0])
-            variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP2"] = str(vlanBOCA[1])
-            variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP1"] = str(vlanBOCAB[0])
-            variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP2"] = str(vlanBOCAB[1])
+            variablestochangeleaf1["VLANBERBELEAFSP1"] = str(vlanBE[int(equip.get("nome")[-1]) - 1])
+            variablestochangeleaf1["VLANBERBELEAFSP2"] = str(vlanBE[int(equip.get("nome")[-1]) + 1])
+            variablestochangeleaf1["VLANBERFELEAFSP1"] = str(vlanFE[int(equip.get("nome")[-1]) - 1])
+            variablestochangeleaf1["VLANBERFELEAFSP2"] = str(vlanFE[int(equip.get("nome")[-1]) + 1])
+            variablestochangeleaf1["VLANBERBORDALEAFSP1"] = str(vlanBO[int(equip.get("nome")[-1]) - 1])
+            variablestochangeleaf1["VLANBERBORDALEAFSP2"] = str(vlanBO[int(equip.get("nome")[-1]) + 1])
+            variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP1"] = str(vlanBOCA[int(equip.get("nome")[-1]) - 1])
+            variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP2"] = str(vlanBOCA[int(equip.get("nome")[-1]) + 1])
+            variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP1"] = str(vlanBOCAB[int(equip.get("nome")[-1]) - 1])
+            variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP2"] = str(vlanBOCAB[int(equip.get("nome")[-1]) + 1])
 
             log.debug("2")
             variablestochangeleaf1["ASLEAF"] = str(ASLEAF[numero_rack][0])
@@ -435,6 +435,12 @@ class Provision:
                         variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num])
                         variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num])
                         variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num])
+                        variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num])
+                        variablestochangespine1["VLANBE1LEAF"] = str(vlanBE[spine_num - 1])
+                        variablestochangespine1["VLANFE1LEAF"] = str(vlanFE[spine_num - 1])
+                        variablestochangespine1["VLANBORDA1LEAF"] = str(vlanBO[spine_num - 1])
+                        variablestochangespine1["VLANBORDA1CACHOSLEAF"] = str(vlanBOCA[spine_num - 1])
+                        variablestochangespine1["VLANBORDA1CACHOSB"] = str(vlanBOCAB[spine_num - 1])
 
                         counter = 0
                         for ipv6 in IPSPINEipv6[numero_rack]:
@@ -452,13 +458,19 @@ class Provision:
 
                                 counter += 1
 
-                        variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num])
 
                     elif spine_num == 2:
-                        variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num - 2])
-                        variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num - 2])
-                        variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num - 2])
-                        variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num - 2])
+                        variablestochangespine1["VLANBORDA2LEAF"] = str(vlanBO[spine_num])
+                        variablestochangespine1["VLANBORDA2CACHOSLEAF"] = str(vlanBOCA[spine_num])
+                        variablestochangespine1["VLANBORDA2CACHOSB"] = str(vlanBOCAB[spine_num])
+                        variablestochangespine1["VLANFE2LEAF"] = str(vlanFE[spine_num])
+                        variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num])
+                        variablestochangespine1["VLANBE1LEAF"] = str(vlanBE[spine_num + 1])
+                        variablestochangespine1["VLANFE1LEAF"] = str(vlanFE[spine_num + 1])
+                        variablestochangespine1["VLANBORDA1LEAF"] = str(vlanBO[spine_num + 1])
+                        variablestochangespine1["VLANBORDA1CACHOSLEAF"] = str(vlanBOCA[spine_num + 1])
+                        variablestochangespine1["VLANBORDA1CACHOSB"] = str(vlanBOCAB[spine_num + 1])
+
                         counter = 0
                         for ipv6 in IPSPINEipv6[numero_rack]:
                             if spine_num + counter < len(IPLEAFipv6[numero_rack]):
@@ -474,7 +486,6 @@ class Provision:
 
 
                             counter += 1
-                        variablestochangespine1["VLANBE2LEAF"] = str(vlanBE[spine_num - 2])
                     interface1_counter = 1
                     interface2_counter = 1
 
@@ -529,24 +540,6 @@ class Provision:
                         spn_int_desc2 = variablestochangespine1["DESCRIPTION1CONNECT"]
                         variablestochangespine1["DESCRIPTION2CONNECT"] = spn_int_desc2
                         variablestochangespine1["DESCRIPTION1CONNECT"] = spn_int_desc1
-
-                        spn_vlan_bo2 = variablestochangespine1["VLANBORDA2LEAF"]
-                        spn_vlan_bc2 = variablestochangespine1["VLANBORDA2CACHOSLEAF"]
-                        spn_vlan_fe2 = variablestochangespine1["VLANFE2LEAF"]
-                        spn_vlan_be2 = variablestochangespine1["VLANBE2LEAF"]
-                        spn_vlan_be1 = variablestochangespine1["VLANBELEAF"]
-                        spn_vlan_fe1 = variablestochangespine1["VLANFELEAF"]
-                        spn_vlan_bo1 = variablestochangespine1["VLANBORDALEAF"]
-                        spn_vlan_bc1 = variablestochangespine1["VLANBORDACACHOSLEAF"]
-
-                        variablestochangespine1["VLANBORDA2LEAF"] = spn_vlan_bo1
-                        variablestochangespine1["VLANBORDA2CACHOSLEAF"] = spn_vlan_bc1
-                        variablestochangespine1["VLANFE2LEAF"] = spn_vlan_fe1
-                        variablestochangespine1["VLANBE2LEAF"] = spn_vlan_be1
-                        variablestochangespine1["VLANBELEAF"] = spn_vlan_be2
-                        variablestochangespine1["VLANFELEAF"] = spn_vlan_fe2
-                        variablestochangespine1["VLANBORDALEAF"] = spn_vlan_bo2
-                        variablestochangespine1["VLANBORDACACHOSLEAF"] = spn_vlan_bc2
 
                     ipv4spn1 = variablestochangespine1["IPSPINE1IPV4"]
                     ipv4spn2 = variablestochangespine1["IPSPINE2IPV4"]
@@ -617,6 +610,31 @@ class Provision:
                 variablestochangeleaf1['INTERFACE2_SP2'] = if2_sp1
                 variablestochangeleaf1['INTERFACE3_SP2'] = if3_sp1
                 variablestochangeleaf1['INTERFACE4_SP2'] = if4_sp1
+
+                vlan_ber_be1= variablestochangeleaf1["VLANBERBELEAFSP1"]
+                vlan_ber_be2= variablestochangeleaf1["VLANBERBELEAFSP2"]
+                vlan_ber_fe1= variablestochangeleaf1["VLANBERFELEAFSP1"]
+                vlan_ber_fe2= variablestochangeleaf1["VLANBERFELEAFSP2"]
+                vlan_ber_bo1= variablestochangeleaf1["VLANBERBORDALEAFSP1"]
+                vlan_ber_bo2= variablestochangeleaf1["VLANBERBORDALEAFSP2"]
+                vlan_ber_bc1= variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP1"]
+                vlan_ber_bc2= variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP2"]
+                vlan_ber_bcb1= variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP1"]
+                vlan_ber_bcb2= variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP2"]
+                variablestochangeleaf1["VLANBERBELEAFSP1"] = vlan_ber_be2
+                variablestochangeleaf1["VLANBERBELEAFSP2"] = vlan_ber_be1
+                variablestochangeleaf1["VLANBERFELEAFSP1"] = vlan_ber_fe2
+                variablestochangeleaf1["VLANBERFELEAFSP2"] = vlan_ber_fe1
+                variablestochangeleaf1["VLANBERBORDALEAFSP1"] = vlan_ber_bo2
+                variablestochangeleaf1["VLANBERBORDALEAFSP2"] = vlan_ber_bo1
+                variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP1"] = vlan_ber_bc2
+                variablestochangeleaf1["VLANBERBORDACACHOSLEAFSP2"] = vlan_ber_bc1
+                variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP1"] = vlan_ber_bcb2
+                variablestochangeleaf1["VLANBERBORDACACHOSBLEAFSP2"] = vlan_ber_bcb1
+                as_spine1 = variablestochangeleaf1["ASSPINE1"]
+                as_spine2 = variablestochangeleaf1["ASSPINE2"]
+                variablestochangeleaf1["ASSPINE1"] = as_spine2
+                variablestochangeleaf1["ASSPINE2"] = as_spine1
 
             variablestochangeleaf1['LFPO1'] = variablestochangeleaf1['INTERFACE1_SP1'].split('/')[-1].split(':')[0]
             variablestochangeleaf1['LFPO2'] = variablestochangeleaf1['INTERFACE1_SP2'].split('/')[-1].split(':')[0]
