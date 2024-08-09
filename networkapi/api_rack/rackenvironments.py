@@ -57,7 +57,7 @@ class RackEnvironment:
         spines = int(self.rack.dcroom.spines)
         fabric = self.rack.dcroom.name
         rackname = self.rack.nome
-        grupoL3name = fabric+"_"+racknome
+        grupoL3name = fabric+"_"+rackname
 
         try:
             id_grupo_l3 = models_env.GrupoL3().get_by_name(grupoL3name).id
@@ -122,7 +122,7 @@ class RackEnvironment:
                     'fabric_id': self.rack.dcroom.id
                 }
                 environment = facade_env.create_environment(obj)
-                
+
         return environment_spn_lf_list
 
     def spines_environment_read(self):
