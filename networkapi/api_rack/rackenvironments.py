@@ -130,9 +130,12 @@ class RackEnvironment:
 
     def spine_leaf_vlans_save(self):
         log.debug("_create_spnlfvlans")
+        fabric = self.rack.dcroom.name
+        rackname = self.rack.nome
+        grupoL3name = fabric+"_"+rackname
 
         spn_lf_envs = models_env.Ambiente.objects.filter(dcroom=int(self.rack.dcroom.id),
-                                                         grupo_l3__nome=str(self.rack.dcroom.name),
+                                                         grupo_l3__nome=str(grupoL3name),
                                                          ambiente_logico__nome__in=["SPINE01LEAF",
                                                                                     "SPINE02LEAF",
                                                                                     "SPINE03LEAF",
