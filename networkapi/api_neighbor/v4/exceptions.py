@@ -123,9 +123,11 @@ class RemoteIpAndRemoteAsnAtDifferentEquipmentsException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, neighbor):
-        self.detail = u'RemoteIp id = {} and RemoteAsn id = {} belongs to ' \
-                      u'different Equipments'.\
-            format(neighbor.remote_ip, neighbor.remote_asn)
+        # self.detail = u'RemoteIp id = {} and RemoteAsn id = {} belongs to ' \
+        #               u'different Equipments'.\
+        #     format(neighbor.remote_ip, neighbor.remote_asn)
+        self.detail =  u'O ASN remoto (id: {}) não está associado a qualquer equipamento do IP (id: {}). '.\
+            format(neighbor.remote_asn, neighbor.remote_ip)
 
 
 class LocalIpAndPeerGroupAtDifferentEnvironmentsException(APIException):

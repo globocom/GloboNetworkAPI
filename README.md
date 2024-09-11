@@ -31,8 +31,11 @@ It was not created to be and inventory database, so it does not have CMDB functi
 ## Documentation
 [Documentation](http://globonetworkapi.readthedocs.org/)
 
+## Run API
+Run `make build_img && make start` and visit `http://localhost:8000/healthcheck` if running locally.
+
 ## Run Unit Tests
-To run the unit tests just run `make build_img && make start && make test_ci` this instruction will run all the unit tests specified in the `networkapi/tests/__init__.py` file.
+Run `make test_ci`. This command will run all the unit tests specified in the `networkapi/tests/__init__.py` file.
 
 ## Create and run migrations
 To create a new migration, just run into app container `cd dbmigrate; db-migrate --new=<MIGRATION_NAME>`. This step will create a enpty migration file, you must write the SQL statement.
