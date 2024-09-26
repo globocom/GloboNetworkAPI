@@ -156,6 +156,8 @@ def get_vip_request_by_search(search=dict()):
 
 def prepare_apply(load_balance, vip, created=True, user=None):
 
+    log.debug("Preparing to aplly. load_balance:%s vip:%s, created:%s", load_balance, vip, created)
+
     vip_request = copy.deepcopy(vip)
 
     id_vip = str(vip_request.get('id'))
@@ -617,6 +619,9 @@ def patch_real_vip_request(vip_requests, user):
 
 @commit_on_success
 def delete_real_vip_request(vip_requests, user, cleanup='0'):
+
+    log.debug("Deleting real VIP request. vip_requests:%s cleanup:%s", vip_requests, cleanup)
+
     load_balance = dict()
     cleanup = True if cleanup == '1' else False
 
@@ -656,6 +661,8 @@ def delete_real_vip_request(vip_requests, user, cleanup='0'):
 
 def _validate_vip_to_apply(vip_request, update=False, user=None):
 
+    log.debug("Validating VIP to aplly. vip_request:%s update:%s", vip_request, update)
+
     vip = get_vip_request_by_id(vip_request.get('id'))
 
     # validate vip with same ipv4 ou ipv6
@@ -676,11 +683,12 @@ def _validate_vip_to_apply(vip_request, update=False, user=None):
         raise exceptions.VipRequestAlreadyCreated(vip.id)
 
     equips = facade_eqpt.get_eqpt_by_envvip(vip_request['environmentvip'])
+    log.debug("equips:%s", equips)
 
     conf = EnvironmentVip.objects.get(id=vip_request['environmentvip']).conf
 
-    if facade_eqpt.all_equipments_are_in_maintenance(equips):
-        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException()
+    if equips and facade_eqpt.all_equipments_are_in_maintenance(equips):
+        raise exceptions_eqpt.AllEquipmentsAreInMaintenanceException(equips=equips)
 
     if user:
         if not facade_eqpt.all_equipments_can_update_config(equips, user):
