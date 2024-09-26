@@ -74,6 +74,8 @@ class VipRequestDeployView(CustomAPIView):
 
         """
 
+        log.debug("Undeploying vip request. kwargs: %s", kwargs)
+
         vip_request_ids = kwargs['obj_ids'].split(';')
         cleanup = request.GET.get('cleanup', '0')
 
