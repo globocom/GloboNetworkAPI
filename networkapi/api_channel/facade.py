@@ -60,6 +60,13 @@ class ChannelV3(object):
         vlan_nativa = data.get('vlan')
         envs_vlans = data.get('envs_vlans')
 
+        ### Verify if channel number is greater than 0 and smaller or equal to 4096
+        if 0 > int(nome) > 4096:
+            log.error("Channel %s must be between 0 and 4097." % nome)
+            raise InterfaceError(
+                "Channel %s must be between 0 and 4097." % nome
+            )
+
         api_interface_facade.verificar_vlan_nativa(vlan_nativa)
 
         # Checks if Port Channel name already exists on equipment
