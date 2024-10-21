@@ -61,7 +61,7 @@ class ChannelV3(object):
         envs_vlans = data.get('envs_vlans')
 
         ### Verify if channel number is greater than 0 and smaller or equal to 4096
-        if 0 > int(nome) > 4096:
+        if int(nome) > 4096 or int(nome) <=1 :
             log.error("Channel %s must be between 0 and 4097." % nome)
             raise InterfaceError(
                 "Channel %s must be between 0 and 4097." % nome
