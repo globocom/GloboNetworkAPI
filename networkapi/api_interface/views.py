@@ -380,23 +380,24 @@ class InterfaceV3View(CustomAPIView):
         log.info('kwargs: %s', kwargs)
         json_validate(SPECS.get('interface_post')).validate(interfaces)
 
+        # Validate input user interface
         for interface in interfaces.get('interfaces'):
             
-            # User interface input,ex.: 
-            # eth1, eth1/1, 1, Gi1/5, FF:FF:FF:FF:FF:F, int1, mgmt0, ethernet1/12, ..
+            # User interface input, ex.: 
+            # ex.: eth1, eth1/1, 1, Gi1/5, FF:FF:FF:FF:FF:F, int1, mgmt0, ethernet1/12, ..
             interface_input = interface['interface']
             log.debug('interface_input: %s', interface_input)
             
             # Equipments from input interface
             equipment_id = interface['equipment']
-            log.info('equipment_id: %s', equipment_id)
+            log.debug('equipment_id: %s', equipment_id)
             obj_model = facade.get_interface_by_search(
                 {'extends_search': [], 'start_record': 0, 'custom_search': equipment_id, 'end_record': 1000, 'asorting_cols': ['id'], 'searchable_columns': ['equipamento__id']}
             )
             equipment_list = obj_model['query_set']
-            log.info("equipment_list %s", equipment_list)
+            log.debug("equipment_list %s", equipment_list)
             for equipment_interface in equipment_list:
-                log.info('equipment_interface: %s', equipment_interface.interface)
+                log.debug('equipment_interface: %s', equipment_interface.interface)
 
         for i in interfaces.get('interfaces'):
             try:
