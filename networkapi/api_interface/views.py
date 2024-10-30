@@ -41,6 +41,7 @@ from networkapi.util.decorators import permission_classes_apiview
 from networkapi.util.decorators import prepare_search
 from networkapi.util.json_validate import json_validate
 from networkapi.util.json_validate import raise_json_validate
+from networkapi.util.interface_validate import InterfaceOverrideValidator
 from networkapi.util.geral import create_lock
 from networkapi.util.geral import destroy_lock
 from networkapi.util.geral import render_to_json
@@ -380,24 +381,30 @@ class InterfaceV3View(CustomAPIView):
         log.info('kwargs: %s', kwargs)
         json_validate(SPECS.get('interface_post')).validate(interfaces)
 
-        # Validate input user interface
+        user_interface_str_list = []
+        equipmemnt_interface_str_list = []
         for interface in interfaces.get('interfaces'):
             
             # User interface input, ex.: 
             # ex.: eth1, eth1/1, 1, Gi1/5, FF:FF:FF:FF:FF:F, int1, mgmt0, ethernet1/12, ..
             interface_input = interface['interface']
-            log.debug('interface_input: %s', interface_input)
+            user_interface_str_list.append(interface_input)
             
             # Equipments from input interface
             equipment_id = interface['equipment']
-            log.debug('equipment_id: %s', equipment_id)
             obj_model = facade.get_interface_by_search(
                 {'extends_search': [], 'start_record': 0, 'custom_search': equipment_id, 'end_record': 1000, 'asorting_cols': ['id'], 'searchable_columns': ['equipamento__id']}
             )
             equipment_list = obj_model['query_set']
             log.debug("equipment_list %s", equipment_list)
             for equipment_interface in equipment_list:
-                log.debug('equipment_interface: %s', equipment_interface.interface)
+                equipmemnt_interface_str_list.append(equipment_interface.interface)
+        
+        # Validate interface overrinding
+        InterfaceOverrideValidator().check_overriding(
+            source_interface_str_list=user_interface_str_list,
+            target_interface_str_list=equipmemnt_interface_str_list
+        )
 
         for i in interfaces.get('interfaces'):
             try:
