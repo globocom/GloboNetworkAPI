@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import threading
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -181,6 +182,7 @@ class HealthcheckExpect(BaseModel):
             raise HealthcheckExpectError(
                 e, u'Falha ao inserir healthcheck_expect.')
 
+lock = threading.Lock()
 
 class Healthcheck(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_healthcheck')
@@ -197,10 +199,11 @@ class Healthcheck(BaseModel):
         managed = True
 
     def get_create_healthcheck(self, healthcheck):
-        try:
-            hc = Healthcheck.objects.get(**healthcheck)
-        except ObjectDoesNotExist:
-            hc = Healthcheck(**healthcheck)
-            hc.save()
+        with lock:
+            try:
+                hc = Healthcheck.objects.get(**healthcheck)
+            except ObjectDoesNotExist:
+                hc = Healthcheck(**healthcheck)
+                hc.save()
 
         return hc
