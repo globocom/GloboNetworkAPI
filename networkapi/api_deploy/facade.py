@@ -20,7 +20,7 @@ from networkapi.api_deploy import exceptions
 from networkapi.api_equipment.exceptions import AllEquipmentsAreInMaintenanceException
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.distributedlock import distributedlock
-from networkapi.equipamento.models import Equipamento
+from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 from networkapi.extra_logging import local
 from networkapi.extra_logging import NO_REQUEST_ID
 from networkapi.plugins.factory import PluginFactory
@@ -41,7 +41,7 @@ from networkapi.settings import TFTPBOOT_FILES_PATH
 log = logging.getLogger(__name__)
 
 
-def _applyconfig(equipment, filename, equipment_access=None, source_server=None, port=22):
+def _applyconfig(equipment: Equipamento, filename, equipment_access: EquipamentoAcesso=None, source_server=None, port=22):
     """Apply configuration file on equipment
 
     Args:
