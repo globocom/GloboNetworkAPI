@@ -54,6 +54,7 @@ class Generic(GenericNetconf):
     def bgp(self):
         return Generic(equipment=self.equipment)
 
+
     def _deploy_pre_req(self, neighbor):
         log.info("_deploy_pre_req")
 
@@ -70,6 +71,7 @@ class Generic(GenericNetconf):
             if not list_config_bgp.equipments.filter(id=self.equipment.id):
                 self.deploy_list_config_bgp(list_config_bgp)
 
+
     @staticmethod
     def _get_type_list(type_):
         types = {
@@ -83,6 +85,73 @@ class Generic(GenericNetconf):
             },
         }
         return types[type_]
+
+
+    @staticmethod
+    def _read_config(filename):
+        """
+        Return the content from template_file
+        """
+
+        try:
+            file_handle = open(filename, 'r')
+            template_content = Template(file_handle.read())
+            file_handle.close()
+
+        except IOError, e:
+            log.error('Error opening template file for read: %s' % filename)
+            raise Exception(e)
+
+        except Exception, e:
+            log.error('Syntax error when parsing template: %s' % e)
+            raise Exception(e)
+
+        return template_content
+
+
+    @staticmethod
+    def _save_config(filename, config):
+        """
+        Write config in template file
+        """
+
+        try:
+            file_handle = open(filename, 'w')
+            log.debug(filename)
+            file_handle.write(config)
+            file_handle.close()
+
+        except IOError, e:
+            log.error('Error writting to config gile: %s' % filename)
+            raise e
+
+
+    @staticmethod
+    def _generate_template_dict_neighbor(neighbor):
+        """
+        Make a dictionary to use in template
+        """
+
+        key_dict = {
+            'AS_NUMBER': neighbor.local_asn.name,
+            'LOCAL_IP': str(neighbor.local_ip),
+            'VRF_NAME': neighbor.remote_ip.networkipv4.vlan.ambiente.default_vrf.internal_name,
+            'REMOTE_IP': str(neighbor.remote_ip),
+            'REMOTE_AS': neighbor.remote_asn.name,
+            'ROUTE_MAP_IN': neighbor.peer_group.route_map_in.name,
+            'ROUTE_MAP_OUT': neighbor.peer_group.route_map_out.name,
+            'PASSWORD': neighbor.password,
+            'TIMER_KEEPALIVE': neighbor.timer_keepalive,
+            'TIMER_TIMEOUT': neighbor.timer_timeout,
+            'DESCRIPTION': neighbor.description,
+            'SOFT_RECONFIGURATION': neighbor.soft_reconfiguration,
+            'NEXT_HOP_SELF': neighbor.next_hop_self,
+            'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
+            'COMMUNITY': neighbor.community,
+            'GROUP': 'GROUPT_{}'.format(neighbor.remote_ip)
+        }
+
+        return key_dict
 
 
     def _generate_template_dict_route_map(self, route_map):
@@ -112,9 +181,276 @@ class Generic(GenericNetconf):
 
         return key_dict
 
+
+    def _get_equipment_template(self, template_type):
+        """
+        Return a script by equipment and template_type
+        """
+
+        try:
+            return eqpt_models.EquipamentoRoteiro.search(
+                None, self.equipment.id, template_type
+            ).uniqueResult()
+
+        except Exception as e:
+            log.error('Template type %s not found. Error: %s' %(template_type, e))
+            raise self.exceptions.BGPTemplateException()
+
+
+    def _load_template_file(self, template_type):
+        """
+        Load template file with specific type related to equipment
+
+        :template_type: Type of template to be loaded
+
+        :returns: template string
+        """
+
+        equipment_template = self._get_equipment_template(template_type=template_type)
+
+        filename = BGP_CONFIG_TEMPLATE_PATH + '/' + equipment_template.roteiro.roteiro
+
+        template_file = self._read_config(filename=filename)
+
+        return template_file
+
+
+    def _get_template_config(self, template_type, config):
+        """
+        Load template file and render values in VARs
+        """
+
+        try:
+            template_file = self._load_template_file(template_type=template_type)
+            config_to_be_saved = template_type.render(Context(config))
+
+        except KeyError as err:
+            log.error('Error %s' % err)
+            raise deploy_exc.InvalidKeyException(err)
+
+        except Exception as err:
+            log.error('Error: %s' % err)
+            raise self.exceptions.BGPTemplateException(err)
+
+        return config_to_be_saved
+
+
+    def _generate_config_file(self, types, template_type, config):
+        """
+        Load a template and write a file with the rended output
+
+        :returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
+        """
+
+        request_id = getattr(local, 'request_id', NO_REQUEST_ID)
+
+        filename_out = 'bgp_{}_{}_config_{}'.format(
+            types, self.equipment.id, request_id
+        )
+
+        filename = BGP_CONFIG_FILES_PATH + filename_out
+        rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out
+
+        config = self._get_template_config(template_type=template_type, config=config)
+        self._save_config(filename=filename, config=config)
+
+        return rel_file_to_deploy
+
+
+    def _apply_config(self, filename):
+
+        log.info("_apply_config")
+
+        if self.equipment.maintenance:
+            raise AllEquipmentsAreInMaintenanceException()
+
+        self.copyScriptFileToConfig(filename=filename, destination='running-config')
+
+
+    def _deploy_config_in_equipment(self, rel_filename):
+
+        path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
+
+        if not path.startswith(TFTPBOOT_FILES_PATH):
+            raise deploy_exc.InvalidFilenameException(rel_filename)
+
+        return self._apply_config(filename=rel_filename)
+
+
     def _operate_equipment(self, types, template_type, config):
-        # TODO
-        return
+
+        self.connect()
+        file_to_deploy = self._generate_config_file(
+            types=types, template_type=template_type, config=config
+        )
+        self._deploy_config_in_equipment(file_to_deploy)
+
+
+    def _generate_template_dict_list_config_bgp(self, list_config_bgp):
+        """
+        Make a dictionary to use in template
+        """
+
+        log.info("_generate_template_dict_list_config_bgp")
+
+        key_dict = {
+            'TYPE': self._get_type_list(list_config_bgp.type)['config_list'],
+            'NAME': list_config_bgp.name,
+            'CONFIG': list_config_bgp.config
+        }
+
+        return key_dict
+
+
+    def _undeploy_pre_req(self, neighbor, ip_version):
+
+        log.info("_undeploy_pre_req")
+
+        # Concatenate RouteMapEntries Lists
+        route_map_in = neighbor.peer_group.route_map_in
+        route_map_out = neighbor.peer_group.route_map_out
+
+        neighbors_v4 = NeighborV4.objects.filter(Q(
+            Q(peer_group__route_map_in=route_map_in) |
+            Q(peer_group__route_map_out=route_map_in)
+        )).filter(created=True)
+
+        neighbors_v6 = NeighborV6.objects.filter(Q(
+            Q(peer_group__route_map_in=route_map_in) |
+            Q(peer_group__route_map_out=route_map_in)
+        )).filter(created=True)
+
+        neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+        neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
+
+        if not neighbors_v4 and not neighbors_v6:
+            try:
+                self.undeploy_route_map(route_map_in)
+
+            except Exception as e:
+                log.error("Error while undeploying route-map. Error: {}".format(e))
+
+        neighbors_v4 = NeighborV4.objects.filter(Q(
+            Q(peer_group__route_map_in=route_map_out) |
+            Q(peer_group__route_map_out=route_map_out)
+        )).filter(created=True)
+
+        neighbors_v6 = NeighborV6.objects.filter(Q(
+            Q(peer_group__route_map_in=route_map_out) |
+            Q(peer_group__route_map_out=route_map_out)
+        )).filter(created=True)
+
+        neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+        neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
+
+        if not neighbors_v4 and not neighbors_v6:
+            try:
+                self._undeploy_route_map(route_map=route_map_out)
+
+            except Exception as e:
+                log.error("Error while undeploying route-map. Error: {}".format(e))
+
+        # List Config BGP
+        if not neighbors_v4 and not neighbors_v6:
+            rms = route_map_in.route_map_entries | \
+                route_map_out.route_map_entries
+
+            for rm_entry in rms:
+                list_config_bgp = rm_entry.list_config_bgp
+
+                neighbors_v4 = NeighborV4.objects.filter(Q(
+                    Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+                    Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp)
+                )).filter(created=True)
+
+                neighbors_v6 = NeighborV6.objects.filter(Q(
+                    Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
+                    Q(peer_group__route_map_out__routemapentry__list_config_bgp=list_config_bgp)
+                )).filter(created=True)
+
+                neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
+                neighbors_v6 = neighbors_v6.exclue(Q(id=neighbor.id))
+
+                if not neighbors_v4 and not neighbors_v6:
+                    try:
+                        self.undeploy_list_config_bgp(list_config_bgp=list_config_bgp)
+
+                    except Exception as e:
+                        log.error("Error while undeploying prefix-list. Error: {}".format(e))
+
+
+    def _operate(self, types, template_type, config):
+
+        file_to_deploy = self._generate_config_file(
+            types=types,
+            template_type=template_type,
+            config=config
+        )
+        self._deploy_config_in_equipment(rel_filename=file_to_deploy)
+        self.close()
+
+
+    def _undeploy_route_map(self, route_map):
+        """
+        Undeploy route map
+        """
+
+        config = self._generate_template_dict_route_map(route_map=route_map)
+
+        self._operate(
+            types='route_map',
+            template_type=self.TEMPLATE_ROUTE_MAP_REMOVE,
+            config=config
+        )
+
+
+    def _open(self):
+
+        self.connect()
+
+
+    def undeploy_neighbor(self, neighbor):
+        """
+        Undeploy neighbor
+        """
+
+        ip_version = IPAddress(str(neighbor.remote_ip)).version
+
+        template_type = self.TEMPLATE_NEIGHBOR_V4_REMOVE \
+            if ip_version == 4 else self.TEMPLATE_NEIGHBOR_V6_REMOVE
+
+        config = self._generate_template_dict_neighbor(neighbor=neighbor)
+
+        self._open()
+        self._operate(
+            types='neighbor',
+            template_type=template_type,
+            config=config
+        )
+
+        self._undeploy_pre_req(
+            neighbor=neighbor,
+            ip_version=ip_version
+        )
+
+        self.close()
+
+
+    def deploy_list_config_bgp(self, list_config_bgp):
+        """
+        Deploy prefix list
+        """
+
+        log.info("deploy_list_config_bgp")
+
+        config = self._generate_template_dict_list_config_bgp(list_config_bgp=list_config_bgp)
+
+        self._operate_equipment(
+            types='list_config_bgp',
+            template_type=self.TEMPLATE_LIST_CONFIG_ADD,
+            config=config
+        )
+
 
     def deploy_route_map(self, route_map):
         """
@@ -128,5 +464,61 @@ class Generic(GenericNetconf):
         self._operate_equipment(
             'route_map', self.TEMPLATE_ROUTE_MAP_ADD, config
         )
+
+
+    def undeploy_list_config_bgp(self, list_config_bgp):
+        """
+        Undeploy prefix list
+        """
+
+        log.info("Undeploy list config BGP")
+
+        config = self._generate_template_dict_list_config_bgp(list_config_bgp=list_config_bgp)
+
+        self._operate_equipment(
+            types='list_config_bgp',
+            template_type=self.TEMPLATE_LIST_CONFIG_REMOVE,
+            config=config
+        )
+
+
+    def deploy_neighbor(self, neighbor):
+        """
+        Deploy neighbor
+        """
+
+        self._deploy_pre_req(neighbor=neighbor)
+
+        ip_version = IPAddress(str(neighbor.remote_ip)).version
+
+        template_type = self.TEMPLATE_NEIGHBOR_V4_ADD if ip_version == 4 else \
+            self.TEMPLATE_NEIGHBOR_V6_ADD
+
+        config = self._generate_template_dict_neighbor(neighbor=neighbor)
+
+        self._operate_equipment(
+            types='neighbor',
+            template_type=template_type,
+            config=config
+        )
+
+
+    def undeploy_route_map(self, route_map):
+        """
+        Undeply route map
+        """
+
+        config = self._generate_template_dict_route_map(route_map=route_map)
+
+        self._operate(
+            types='route_map',
+            template_type=self.TEMPLATE_ROUTE_MAP_REMOVE,
+            config=config
+        )
+
+
+    def _close(self):
+
+        self.close()
 
 
