@@ -35,7 +35,6 @@ from networkapi.settings import BGP_CONFIG_FILES_PATH
 from networkapi.settings import BGP_CONFIG_TEMPLATE_PATH
 from networkapi.settings import BGP_CONFIG_TOAPPLY_REL_PATH
 from networkapi.settings import TFTPBOOT_FILES_PATH
-from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from networkapi.plugins.Netconf.plugin import GenericNetconf
 
 log = logging.getLogger(__name__)
@@ -54,7 +53,6 @@ class Generic(GenericNetconf):
     def bgp(self):
         return Generic(equipment=self.equipment)
 
-
     def _deploy_pre_req(self, neighbor):
         log.info("_deploy_pre_req")
 
@@ -71,7 +69,6 @@ class Generic(GenericNetconf):
             if not list_config_bgp.equipments.filter(id=self.equipment.id):
                 self.deploy_list_config_bgp(list_config_bgp)
 
-
     @staticmethod
     def _get_type_list(type_):
         types = {
@@ -85,7 +82,6 @@ class Generic(GenericNetconf):
             },
         }
         return types[type_]
-
 
     @staticmethod
     def _read_config(filename):
@@ -108,7 +104,6 @@ class Generic(GenericNetconf):
 
         return template_content
 
-
     @staticmethod
     def _save_config(filename, config):
         """
@@ -124,7 +119,6 @@ class Generic(GenericNetconf):
         except IOError, e:
             log.error('Error writting to config gile: %s' % filename)
             raise e
-
 
     @staticmethod
     def _generate_template_dict_neighbor(neighbor):
@@ -153,7 +147,6 @@ class Generic(GenericNetconf):
 
         return key_dict
 
-
     def _generate_template_dict_route_map(self, route_map):
         """
         Make a dictionary to use in template
@@ -181,7 +174,6 @@ class Generic(GenericNetconf):
 
         return key_dict
 
-
     def _get_equipment_template(self, template_type):
         """
         Return a script by equipment and template_type
@@ -195,7 +187,6 @@ class Generic(GenericNetconf):
         except Exception as e:
             log.error('Template type %s not found. Error: %s' %(template_type, e))
             raise self.exceptions.BGPTemplateException()
-
 
     def _load_template_file(self, template_type):
         """
@@ -213,7 +204,6 @@ class Generic(GenericNetconf):
         template_file = self._read_config(filename=filename)
 
         return template_file
-
 
     def _get_template_config(self, template_type, config):
         """
@@ -233,7 +223,6 @@ class Generic(GenericNetconf):
             raise self.exceptions.BGPTemplateException(err)
 
         return config_to_be_saved
-
 
     def _generate_config_file(self, types, template_type, config):
         """
@@ -256,7 +245,6 @@ class Generic(GenericNetconf):
 
         return rel_file_to_deploy
 
-
     def _apply_config(self, filename):
 
         log.info("_apply_config")
@@ -265,7 +253,6 @@ class Generic(GenericNetconf):
             raise AllEquipmentsAreInMaintenanceException()
 
         self.copyScriptFileToConfig(filename=filename, destination='running-config')
-
 
     def _deploy_config_in_equipment(self, rel_filename):
 
@@ -276,7 +263,6 @@ class Generic(GenericNetconf):
 
         return self._apply_config(filename=rel_filename)
 
-
     def _operate_equipment(self, types, template_type, config):
 
         self.connect()
@@ -284,7 +270,6 @@ class Generic(GenericNetconf):
             types=types, template_type=template_type, config=config
         )
         self._deploy_config_in_equipment(file_to_deploy)
-
 
     def _generate_template_dict_list_config_bgp(self, list_config_bgp):
         """
@@ -300,7 +285,6 @@ class Generic(GenericNetconf):
         }
 
         return key_dict
-
 
     def _undeploy_pre_req(self, neighbor, ip_version):
 
@@ -378,7 +362,6 @@ class Generic(GenericNetconf):
                     except Exception as e:
                         log.error("Error while undeploying prefix-list. Error: {}".format(e))
 
-
     def _operate(self, types, template_type, config):
 
         file_to_deploy = self._generate_config_file(
@@ -388,7 +371,6 @@ class Generic(GenericNetconf):
         )
         self._deploy_config_in_equipment(rel_filename=file_to_deploy)
         self.close()
-
 
     def _undeploy_route_map(self, route_map):
         """
@@ -403,11 +385,9 @@ class Generic(GenericNetconf):
             config=config
         )
 
-
     def _open(self):
 
         self.connect()
-
 
     def undeploy_neighbor(self, neighbor):
         """
@@ -435,7 +415,6 @@ class Generic(GenericNetconf):
 
         self.close()
 
-
     def deploy_list_config_bgp(self, list_config_bgp):
         """
         Deploy prefix list
@@ -451,7 +430,6 @@ class Generic(GenericNetconf):
             config=config
         )
 
-
     def deploy_route_map(self, route_map):
         """
         Deploy route map
@@ -464,7 +442,6 @@ class Generic(GenericNetconf):
         self._operate_equipment(
             'route_map', self.TEMPLATE_ROUTE_MAP_ADD, config
         )
-
 
     def undeploy_list_config_bgp(self, list_config_bgp):
         """
@@ -480,7 +457,6 @@ class Generic(GenericNetconf):
             template_type=self.TEMPLATE_LIST_CONFIG_REMOVE,
             config=config
         )
-
 
     def deploy_neighbor(self, neighbor):
         """
@@ -502,7 +478,6 @@ class Generic(GenericNetconf):
             config=config
         )
 
-
     def undeploy_route_map(self, route_map):
         """
         Undeply route map
@@ -516,9 +491,7 @@ class Generic(GenericNetconf):
             config=config
         )
 
-
     def _close(self):
 
         self.close()
-
 
