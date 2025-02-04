@@ -58,15 +58,12 @@ class PluginFactory(object):
             if re.search('C9500', modelo.upper(), re.DOTALL):
                 from .Cisco.IOS.plugin import IOS
                 return IOS
-            if re.search('CloudEngine 8875-24BQ8DQ') or re.search('CloudEngine CE8850E-32CQ'):
-                from .Netconf.plugin import GenericNetconf
-                return GenericNetconf
 
         if 'marca' in kwargs:
             marca = kwargs.get('marca')
             if re.search('HUAWEI', marca.upper(), re.DOTALL):
-                from .Huawei import Generic
-                return Generic
+                from .Netconf.plugin import GenericNetconf
+                return GenericNetconf
             if re.search('F5', marca.upper(), re.DOTALL):
                 from .F5.Generic import Generic
                 return Generic

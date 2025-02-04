@@ -64,13 +64,28 @@ class Generic(GenericNetconf):
             route_map_out.route_map_entries
 
         for rm_entry in rms:
+            log.info(rm_entry)
             list_config_bgp = rm_entry.list_config_bgp
 
             if not list_config_bgp.equipments.filter(id=self.equipment.id):
+                log.info("Deploying list config BGP on equipment. Equipment ID: '%s'." % self.equipment.id)
                 self.deploy_list_config_bgp(list_config_bgp)
+
+        # Deploying routemap In on equipment
+        if not route_map_in.equipments.filter(id=self.equipment.id):
+            log.info("Deploying routemap in on equipment. Equipment ID: '%s'" % self.equipment.id)
+            self.deploy_route_map(neighbor.peer_group.route_map_id)
+
+        # Deploying routemap Out on equipment
+        if not route_map_out.equipments.filter(id=self.equipment.id):
+            log.info("Deploying routemap out on equipment. Equipment ID: '%s'" % self.equipment.id)
+            self.deploy_route_map(neighbor.peer_group.route_map_out)
+
 
     @staticmethod
     def _get_type_list(type_):
+        log.info("Getting type list...")
+
         types = {
             'P': {
                 'config_list': 'prefix-list',
@@ -81,6 +96,8 @@ class Generic(GenericNetconf):
                 'route_map': ''
             },
         }
+
+        log.info(types[type_])
         return types[type_]
 
     @staticmethod
@@ -89,10 +106,17 @@ class Generic(GenericNetconf):
         Return the content from template_file
         """
 
+        log.info("Reading config from file: '%s'" % filename)
+
         try:
             file_handle = open(filename, 'r')
             template_content = Template(file_handle.read())
+
+            log.info("Template content:")
+            log.info(template_content)
+
             file_handle.close()
+            log.info('File closed.')
 
         except IOError, e:
             log.error('Error opening template file for read: %s' % filename)
@@ -110,11 +134,15 @@ class Generic(GenericNetconf):
         Write config in template file
         """
 
+        log.info("Saving config to file.")
+        log.info("Filename: %s" % filename)
+        log.info("Config: %s" % config)
+
         try:
             file_handle = open(filename, 'w')
-            log.debug(filename)
             file_handle.write(config)
             file_handle.close()
+            log.info("File closed.")
 
         except IOError, e:
             log.error('Error writting to config gile: %s' % filename)
@@ -125,6 +153,8 @@ class Generic(GenericNetconf):
         """
         Make a dictionary to use in template
         """
+
+        log.info("Generating a template dict to neighbor... Neighbor ID: '%s'" % neighbor.id)
 
         key_dict = {
             'AS_NUMBER': neighbor.local_asn.name,
@@ -142,8 +172,10 @@ class Generic(GenericNetconf):
             'NEXT_HOP_SELF': neighbor.next_hop_self,
             'REMOVE_PRIVATE_AS': neighbor.remove_private_as,
             'COMMUNITY': neighbor.community,
-            'GROUP': 'GROUPT_{}'.format(neighbor.remote_ip)
+            'GROUP': 'GROUP_{}'.format(neighbor.remote_ip)
         }
+
+        log.info(key_dict)
 
         return key_dict
 
@@ -151,6 +183,8 @@ class Generic(GenericNetconf):
         """
         Make a dictionary to use in template
         """
+
+        log.info("Generate template dict for routemap. Routemap name: '%s'" % route_map.name)
 
         entries = []
 
@@ -172,12 +206,16 @@ class Generic(GenericNetconf):
             'ENTRIES': entries
         }
 
+        log.info(key_dict)
+
         return key_dict
 
     def _get_equipment_template(self, template_type):
         """
         Return a script by equipment and template_type
         """
+
+        log.info("Getting equipment's template... Template type: '%s'" % template_type)
 
         try:
             return eqpt_models.EquipamentoRoteiro.search(
@@ -197,11 +235,16 @@ class Generic(GenericNetconf):
         :returns: template string
         """
 
+        log.info("Loading template file...")
+
         equipment_template = self._get_equipment_template(template_type=template_type)
+        log.info("Equipment's template: '%s'" % equipment_template)
 
         filename = BGP_CONFIG_TEMPLATE_PATH + '/' + equipment_template.roteiro.roteiro
+        log.info("Filename: '%s'" % filename)
 
         template_file = self._read_config(filename=filename)
+        log.info("Template file: '%s'" % template_file)
 
         return template_file
 
@@ -210,9 +253,12 @@ class Generic(GenericNetconf):
         Load template file and render values in VARs
         """
 
+        log.info("Getting template config...")
+
         try:
             template_file = self._load_template_file(template_type=template_type)
-            config_to_be_saved = template_type.render(Context(config))
+            config_to_be_saved = template_file.render(Context(config))
+            log.info(config_to_be_saved)
 
         except KeyError as err:
             log.error('Error %s' % err)
@@ -231,6 +277,8 @@ class Generic(GenericNetconf):
         :returns: filename with relative path to settings.TFTPBOOT_FILES_PATH
         """
 
+        log.info("Generating config file...")
+
         request_id = getattr(local, 'request_id', NO_REQUEST_ID)
 
         filename_out = 'bgp_{}_{}_config_{}'.format(
@@ -240,8 +288,14 @@ class Generic(GenericNetconf):
         filename = BGP_CONFIG_FILES_PATH + filename_out
         rel_file_to_deploy = BGP_CONFIG_TOAPPLY_REL_PATH + filename_out
 
+        log.info("Filename: '%s'" % filename)
+        log.info("Relative file to deploy: '%s'" % rel_file_to_deploy)
+
         config = self._get_template_config(template_type=template_type, config=config)
+        log.info("Config generated successfully.")
+
         self._save_config(filename=filename, config=config)
+        log.info("Config saved successfully.")
 
         return rel_file_to_deploy
 
@@ -253,8 +307,11 @@ class Generic(GenericNetconf):
             raise AllEquipmentsAreInMaintenanceException()
 
         self.copyScriptFileToConfig(filename=filename, destination='running-config')
+        log.info("Configuration in file: '%s' successfully applyied on equipment" % filename)
 
     def _deploy_config_in_equipment(self, rel_filename):
+
+        log.info("Deploying config on equipment. Relative filename: '%s'." % rel_filename)
 
         path = os.path.abspath(TFTPBOOT_FILES_PATH + rel_filename)
 
@@ -265,11 +322,20 @@ class Generic(GenericNetconf):
 
     def _operate_equipment(self, types, template_type, config):
 
+        log.info("Operate equipment method...")
+
         self.connect()
+
         file_to_deploy = self._generate_config_file(
             types=types, template_type=template_type, config=config
         )
+        log.info("Configuration file generated successfully")
+
         self._deploy_config_in_equipment(file_to_deploy)
+        log.info("Configuration deployed on equipment successfully")
+
+        self.close()
+        log.info("Connection closed successfully.")
 
     def _generate_template_dict_list_config_bgp(self, list_config_bgp):
         """
@@ -283,6 +349,8 @@ class Generic(GenericNetconf):
             'NAME': list_config_bgp.name,
             'CONFIG': list_config_bgp.config
         }
+
+        log.info(key_dict)
 
         return key_dict
 
@@ -307,9 +375,14 @@ class Generic(GenericNetconf):
         neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
         neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
+        log.info("Neighbors V4: '%s'." % neighbors_v4)
+        log.info("Neighbors V6: '%s'." % neighbors_v6)
+
         if not neighbors_v4 and not neighbors_v6:
+            log.info("No neighbors founded...")
             try:
                 self.undeploy_route_map(route_map_in)
+                log.info("Routemap '%s' undeployed successfully." % route_map_in)
 
             except Exception as e:
                 log.error("Error while undeploying route-map. Error: {}".format(e))
@@ -327,9 +400,14 @@ class Generic(GenericNetconf):
         neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
         neighbors_v6 = neighbors_v6.exclude(Q(id=neighbor.id))
 
+        log.info("Neighbors V4: '%s'." % neighbors_v4)
+        log.info("Neighbors V6: '%s'." % neighbors_v6)
+
         if not neighbors_v4 and not neighbors_v6:
+            log.info("No neighbors founded...")
             try:
                 self._undeploy_route_map(route_map=route_map_out)
+                log.info("Routemap '%s' undeployed successfully." % route_map_out)
 
             except Exception as e:
                 log.error("Error while undeploying route-map. Error: {}".format(e))
@@ -341,6 +419,7 @@ class Generic(GenericNetconf):
 
             for rm_entry in rms:
                 list_config_bgp = rm_entry.list_config_bgp
+                log.info("List config BGP: '%s'." % list_config_bgp)
 
                 neighbors_v4 = NeighborV4.objects.filter(Q(
                     Q(peer_group__route_map_in__routemapentry__list_config_bgp=list_config_bgp) |
@@ -355,29 +434,45 @@ class Generic(GenericNetconf):
                 neighbors_v4 = neighbors_v4.exclude(Q(id=neighbor.id))
                 neighbors_v6 = neighbors_v6.exclue(Q(id=neighbor.id))
 
+                log.info("Neighbors V4: '%s'." % neighbors_v4)
+                log.info("Neighbors V6: '%s'." % neighbors_v6)
+
                 if not neighbors_v4 and not neighbors_v6:
+                    log.info("No neighbors founded...")
                     try:
                         self.undeploy_list_config_bgp(list_config_bgp=list_config_bgp)
+                        log.info("List config BGP '%s' undeployed successfully." % list_config_bgp)
 
                     except Exception as e:
                         log.error("Error while undeploying prefix-list. Error: {}".format(e))
 
     def _operate(self, types, template_type, config):
 
+        log.info("_operate method")
+
         file_to_deploy = self._generate_config_file(
             types=types,
             template_type=template_type,
             config=config
         )
+
+        log.info("File to Deploy: '%s'." % file_to_deploy)
+
         self._deploy_config_in_equipment(rel_filename=file_to_deploy)
+        log.info("Configuration successfully deployed on equipment.")
+
         self.close()
+        log.info("Netconf session closed.")
 
     def _undeploy_route_map(self, route_map):
         """
         Undeploy route map
         """
 
+        log.info("Undelpoy routemap method started... Routemap: '%s'" % route_map)
+
         config = self._generate_template_dict_route_map(route_map=route_map)
+        log.info("Configuration successfully generated.")
 
         self._operate(
             types='route_map',
@@ -387,19 +482,26 @@ class Generic(GenericNetconf):
 
     def _open(self):
 
+        log.info("Openning Netconf session...")
         self.connect()
+        log.info("Session openned succesfully.")
 
     def undeploy_neighbor(self, neighbor):
         """
         Undeploy neighbor
         """
 
+        log.info("Undeploy neighbor method started... Neighbor: '%s'" % neighbor)
+
         ip_version = IPAddress(str(neighbor.remote_ip)).version
 
         template_type = self.TEMPLATE_NEIGHBOR_V4_REMOVE \
             if ip_version == 4 else self.TEMPLATE_NEIGHBOR_V6_REMOVE
 
+        log.info("Template type: '%s'." % template_type)
+
         config = self._generate_template_dict_neighbor(neighbor=neighbor)
+        log.info("Configuration dict generated successfuly. Config: '%s'" % config)
 
         self._open()
         self._operate(
@@ -412,6 +514,7 @@ class Generic(GenericNetconf):
             neighbor=neighbor,
             ip_version=ip_version
         )
+        log.info("Pre req undeployed successfully.")
 
         self.close()
 
@@ -420,7 +523,7 @@ class Generic(GenericNetconf):
         Deploy prefix list
         """
 
-        log.info("deploy_list_config_bgp")
+        log.info("Deploy list config BGP method started... List Config BGP: '%s'." % list_config_bgp)
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp=list_config_bgp)
 

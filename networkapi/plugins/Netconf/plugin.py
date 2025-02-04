@@ -8,6 +8,8 @@ import logging
 log = logging.getLogger(__name__)
 
 class GenericNetconf(BasePlugin):
+    session_manager: manager = None
+
     def __try_lock(self):
         """
         Try lock to equipment, not necessary in Ncclient
@@ -46,14 +48,13 @@ class GenericNetconf(BasePlugin):
 
         ### Runs connection ###
         try:
-            with manager.connect(
+            self.session_manager =  manager.connect(
                 host = device,
                 port = self.connection_port,
                 username = username,
                 password = password,
                 hostkey_verify = False
-            ) as m:
-                return m
+            )
 
         ### Exception handler
         except IOError, e:
@@ -61,7 +62,6 @@ class GenericNetconf(BasePlugin):
             raise exceptions.ConnectionException(device)
         except Exception, e:
             log.error('Error connecting to host %s:%s' % (device, e))
-
 
     def apply_config_to_equipment(self, config, use_vrf=None, tarqet='running'):
 
@@ -133,14 +133,45 @@ class GenericNetconf(BasePlugin):
 
         log.info("Trying to execute a configuration on host {}...".format(self.equipment_access.fqdn))
 
-        # try:
-        self.__try_lock() # Do nothing, will be executed by the locked method of ncclient
-        with self.connect() as connection:
-            with connection.locked(target='running'):
-                connection.edit_config(target='running', config=command)
+        try:
+            self.__try_lock() # Do nothing, will be executed by the locked method of ncclient
+            # with self.connect() as connection:
+                # with connection.locked(target='running'):
+                #     connection.edit_config(target='running', config=command)
 
-        result_message = "Configuration was executed successfully on {}.".format(self.equipment_access.fqdn)
-        log.info(result_message)
-        return result_message
+            with self.session_manager.locked(target='running'):
+                self.session_manager.edit_config(target='running', config=command)
 
-        # except
+            result_message = "Configuration was executed successfully on {}.".format(self.equipment_access.fqdn)
+            log.info(result_message)
+            return result_message
+
+        except Exception as e:
+            message = "Error while excute netconf command on equipment %s" % self.equipment_access.fqdn
+            log.error(message)
+            log.error(e)
+
+            raise exceptions.APIException(message)
+
+    def close(self):
+        """
+        Disconnect session from the equipment
+
+        :returns: True if success or raise an exception on any error
+        """
+
+        try:
+            if self.session_manager:
+                self.session_manager.close_session()
+                return True
+
+            else:
+                raise Exception("session_manager is None.")
+
+        except Exception as e:
+            message = "Error while calling close session method on equipment %s" % self.equipment_access.fqdn
+            log.error(message)
+            log.error(e)
+
+            raise exceptions.APIException(message)
+
