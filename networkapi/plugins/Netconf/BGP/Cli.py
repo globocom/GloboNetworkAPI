@@ -526,75 +526,92 @@ class Generic(GenericNetconf):
         log.info("Deploy list config BGP method started... List Config BGP: '%s'." % list_config_bgp)
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp=list_config_bgp)
+        log.info("Dict list config BGP generated successfully. Config: '%s'" % config)
 
         self._operate_equipment(
             types='list_config_bgp',
             template_type=self.TEMPLATE_LIST_CONFIG_ADD,
             config=config
         )
+        log.info("List config BGP successfully deployed.")
 
     def deploy_route_map(self, route_map):
         """
         Deploy route map
         """
 
-        log.info("Deploy route map")
+        log.info("Deploy route map method started...")
 
         config = self._generate_template_dict_route_map(route_map)
+        log.info("Dict config for routemap created successfully... Config: '%s'" % config)
 
         self._operate_equipment(
             'route_map', self.TEMPLATE_ROUTE_MAP_ADD, config
         )
+        log.info("Routemap successfully deployed.")
 
     def undeploy_list_config_bgp(self, list_config_bgp):
         """
         Undeploy prefix list
         """
 
-        log.info("Undeploy list config BGP")
+        log.info("Undeploy list config BGP method started.")
 
         config = self._generate_template_dict_list_config_bgp(list_config_bgp=list_config_bgp)
+        log.info("Dict for list config BGP created. Config: '%s'" % config)
 
         self._operate_equipment(
             types='list_config_bgp',
             template_type=self.TEMPLATE_LIST_CONFIG_REMOVE,
             config=config
         )
+        log.info("List config BGP successfully undeployed.")
 
     def deploy_neighbor(self, neighbor):
         """
         Deploy neighbor
         """
 
+        log.info("Deploy neighbor method started...")
+
         self._deploy_pre_req(neighbor=neighbor)
+        log.info("Pre req successfully deployed...")
 
         ip_version = IPAddress(str(neighbor.remote_ip)).version
 
         template_type = self.TEMPLATE_NEIGHBOR_V4_ADD if ip_version == 4 else \
             self.TEMPLATE_NEIGHBOR_V6_ADD
+        log.info("Template type: '%s'." % template_type)
 
         config = self._generate_template_dict_neighbor(neighbor=neighbor)
+        log.info("Dict for neighbor config successfully generated. Config: '%s'" % config)
 
         self._operate_equipment(
             types='neighbor',
             template_type=template_type,
             config=config
         )
+        log.info("Neighbor deployed successfully.")
 
     def undeploy_route_map(self, route_map):
         """
         Undeply route map
         """
 
+        log.info("Undeploy routemap method started...")
+
         config = self._generate_template_dict_route_map(route_map=route_map)
+        log.info("Dict for routemap config generated successfully. Config: '%s'" % config)
 
         self._operate(
             types='route_map',
             template_type=self.TEMPLATE_ROUTE_MAP_REMOVE,
             config=config
         )
+        log.info("Routemap deployed successfully.")
 
     def _close(self):
-
+        log.info("Close connection method started")
         self.close()
+        log.info("Connection closed successfully.")
 
