@@ -16,7 +16,7 @@ class GenericNetconf(BasePlugin):
         """
         return True
 
-    def connect(self) -> manager.connect:
+    def connect(self):
         """
 
         Connects to equipment using NCClient to provide Netconf access
@@ -24,13 +24,15 @@ class GenericNetconf(BasePlugin):
         :raises:
             IOError: If can't connect to host
             Exception: to any other unhandled exceptions
-        :return:
-            NCClient connect object
+        :return: None
         """
+
+        log.info("Connection to equipment method started")
 
         ### If equipment access was not provided, then search the access ###
         if self.equipment_access is None:
             try:
+                log.info("Searching for equipment access...")
                 self.equipment_access = EquipamentoAcesso.search(
                     None, self.equipment, 'netconf').uniqueResult()
             except Exception:
@@ -48,6 +50,7 @@ class GenericNetconf(BasePlugin):
 
         ### Runs connection ###
         try:
+            log.info("Starting connection to '%s' using NCClient..." % device)
             self.session_manager =  manager.connect(
                 host = device,
                 port = self.connection_port,
@@ -55,6 +58,7 @@ class GenericNetconf(BasePlugin):
                 password = password,
                 hostkey_verify = False
             )
+            log.info('Connection succesfully...')
 
         ### Exception handler
         except IOError, e:
@@ -65,11 +69,12 @@ class GenericNetconf(BasePlugin):
 
     def apply_config_to_equipment(self, config, use_vrf=None, tarqet='running'):
 
+        log.info("Starting method to apply config on equipment... Config: '%s'" % config)
         try:
             if use_vrf is None:
                 use_vrf = self.management_vrf
 
-            log.info("Config to apply: '%s'", % config)
+            log.info("Config to apply: '%s'" % config)
 
             response = self.connect.edit_config(tarqet=tarqet, config=config)
             log.info(response)
@@ -108,6 +113,7 @@ class GenericNetconf(BasePlugin):
         # 'filename' was defined in super class, but in plugin junos the 'file_path' will be used instead
         file_path = filename
         file_path = self.check_configuration_file_exists(file_path)
+        log.info("Configuration for file '%s' is valid." % file_path)
 
         try:
             command_file = open(file_path, "r")
@@ -135,10 +141,6 @@ class GenericNetconf(BasePlugin):
 
         try:
             self.__try_lock() # Do nothing, will be executed by the locked method of ncclient
-            # with self.connect() as connection:
-                # with connection.locked(target='running'):
-                #     connection.edit_config(target='running', config=command)
-
             with self.session_manager.locked(target='running'):
                 self.session_manager.edit_config(target='running', config=command)
 
@@ -159,10 +161,11 @@ class GenericNetconf(BasePlugin):
 
         :returns: True if success or raise an exception on any error
         """
-
+        log.info("Close connection started...")
         try:
             if self.session_manager:
                 self.session_manager.close_session()
+                log.info('Connection closed successfully.')
                 return True
 
             else:
