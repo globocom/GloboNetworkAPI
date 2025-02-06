@@ -62,8 +62,8 @@ class PluginFactory(object):
         if 'marca' in kwargs:
             marca = kwargs.get('marca')
             if re.search('HUAWEI', marca.upper(), re.DOTALL):
-                from .Huawei import Generic
-                return Generic
+                from .Netconf.plugin import GenericNetconf
+                return GenericNetconf
             if re.search('F5', marca.upper(), re.DOTALL):
                 from .F5.Generic import Generic
                 return Generic
