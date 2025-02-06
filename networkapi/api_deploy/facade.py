@@ -41,7 +41,7 @@ from networkapi.settings import TFTPBOOT_FILES_PATH
 log = logging.getLogger(__name__)
 
 
-def _applyconfig(equipment: Equipamento, filename, equipment_access: EquipamentoAcesso=None, source_server=None, port=22):
+def _applyconfig(equipment, filename, equipment_access=None, source_server=None, port=22):
     """Apply configuration file on equipment
 
     Args:
