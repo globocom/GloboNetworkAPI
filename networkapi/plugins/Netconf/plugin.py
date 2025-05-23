@@ -3,12 +3,21 @@ from networkapi.plugins import exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.base import BasePlugin
 import logging
+from networkapi.system.facade import get_value
+import paramiko
+import requests, json, os
+from django.db.utils import DatabaseError
+from networkapi.system.exceptions import VariableDoesNotExistException
+
 
 
 log = logging.getLogger(__name__)
 
 class GenericNetconf(BasePlugin):
-    session_manager: manager = None
+    session_manager = None
+    alternative_variable_base_path_list = ['path_to_tftpboot']
+    alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
+
 
     def __try_lock(self):
         """
@@ -29,6 +38,8 @@ class GenericNetconf(BasePlugin):
 
         log.info("Connection to equipment method started")
 
+
+
         ### If equipment access was not provided, then search the access ###
         if self.equipment_access is None:
             try:
@@ -42,23 +53,40 @@ class GenericNetconf(BasePlugin):
                 raise exceptions.InvalidEquipmentAccessException()
         ### End block ###
 
-        ### Getting device access data ###
-        device = self.equipment_access.fqdn
-        username = self.equipment_access.user
-        password = self.equipment_access.password
-        ### End block ###
-
-        ### Runs connection ###
+        #Bypassing connection
         try:
-            log.info("Starting connection to '%s' using NCClient..." % device)
-            self.session_manager =  manager.connect(
-                host = device,
-                port = self.connection_port,
-                username = username,
-                password = password,
-                hostkey_verify = False
-            )
-            log.info('Connection succesfully...')
+            pass
+
+        # ### Getting device access data ###
+        # device = self.equipment_access.fqdn
+        # username = self.equipment_access.user
+        # password = self.equipment_access.password
+        # ### End block ###
+
+        # ### Runs connection ###
+        # try:
+        #     log.info("Starting connection to '%s' using NCClient..." % device)
+        #     # transport = paramiko.Transport((device, 22))
+        #     # transport.get_security_options().kex = (
+        #     #     'curve25519-sha256',
+        #     #     'diffie-hellman-group14-sha1',
+        #     #     'diffie-hellman-group-exchange-sha256',
+        #     # )
+        #     # transport.get_security_options().ciphers = (
+        #     #     'aes128-ctr', 'aes256-ctr'
+        #     # )
+
+        #     self.session_manager =  manager.connect(
+        #         host = device,
+        #         port = self.connect_port,
+        #         username = username,
+        #         password = password,
+        #         # hostkey_verify = False,
+        #         # allow_agent=False,
+        #         # look_for_keys=False,
+
+        #     )
+        #     log.info('Connection succesfully...')
 
         ### Exception handler
         except IOError, e:
@@ -93,6 +121,61 @@ class GenericNetconf(BasePlugin):
         """
         return True
 
+    def check_configuration_has_content(self, command, file_path):
+        pass
+
+    def check_configuration_file_exists(self, file_path):
+
+        """
+        This function try to find and build (if necessary) the configuration file path. The priorities are:
+        (1) build the full path from system variable base and relative file path ('file_path'); or
+        (2) build the full path from static variable base and relative file path ('file_path'); or
+        (3) return the relative path it self ('file_path')
+
+        :param str file_path: Relative path, examples:
+            'networkapi/plugins/Juniper/JUNOS/samples/sample_command.txt' or
+            'networkapi/generated_config/interface/int-d_24823_config_ROR9BX3ATQG93TALJAMO2G'
+
+        :return: Return a valid configuration file path string. Ex.:
+        'networkapi/plugins/Juniper/JUNOS/samples/sample_command.txt' or
+        '/mnt/scripts/tftpboot/networkapi/generated_config/interface/int-d_24823_config_ROR9BX3ATQG93TALJAMO2G'
+        """
+
+        log.info("Checking configuration file exist: {}".format(file_path))
+
+        # Check in system variables
+        for variable in self.alternative_variable_base_path_list:
+            try:
+                base_path = get_value(variable)
+                if base_path != "":
+                    result_path = base_path + file_path
+                    if os.path.isfile(result_path):
+                        log.info("Configuration file {} was found by system variable {}!".format(result_path, variable))
+                        return result_path
+            except (DatabaseError, VariableDoesNotExistException):
+                # DatabaseError means that variable table do not exist
+                pass
+            except Exception as e:
+                log.warning("Unknown error while calling networkapi.system.facade.get_value({}): {} {} ".format(
+                    variable, e.__class__, e))
+
+        # Check possible static variables
+        for static_path in self.alternative_static_base_path_list:
+            result_path = static_path + file_path
+            if os.path.isfile(result_path):
+                log.info("Configuration file {} was found by static variable {}!".format(result_path, static_path))
+                return result_path
+
+        # Check if relative path is valid (for dev tests)
+        if os.path.isfile(file_path):
+            log.info("Configuration file {} was found by relative path".format(file_path))
+            return file_path
+
+        message = "An error occurred while finding configuration file."
+        log.error("{} Could not find in: relative path ('{}'), system variables ({}) or static paths ({})".format(
+            message, file_path, self.alternative_variable_base_path_list, self.alternative_static_base_path_list))
+        raise exceptions.APIException(message)
+
     def copyScriptFileToConfig(self, filename, use_vrf='', destination=''):
         """
         Receives the file path (usually in /mnt/scripts/tftpboot/networkapi/generated_config/interface/)
@@ -120,9 +203,9 @@ class GenericNetconf(BasePlugin):
             command = command_file.read()
 
             # Check if Configuration is not empty and raises exception if not contain
-            self.check_configuration_has_content(command=command, file_path=file_path)
+            # self.check_configuration_has_content(command=command, file_path=file_path)
 
-            log.info("Load configuration from file {} successfully".format(file_path))
+            # log.info("Load configuration from file {} successfully".format(file_path))
 
             return self.exec_command(command=command)
 
@@ -141,8 +224,22 @@ class GenericNetconf(BasePlugin):
 
         try:
             self.__try_lock() # Do nothing, will be executed by the locked method of ncclient
-            with self.session_manager.locked(target='running'):
-                self.session_manager.edit_config(target='running', config=command)
+            # with self.session_manager.locked(target='running'):
+            #     self.session_manager.edit_config(target='running', config=command)
+
+            response = requests.post(
+                url="http://localhost:5000/deploy",
+                headers={"Content-type": "application/json"},
+                data=json.dumps({
+                    "address": self.equipment_access.fqdn,
+                    "username": self.equipment_access.user,
+                    "password": self.equipment_access.password,
+                    "configuration": command
+                })
+            )
+
+            if response.status_code != 200:
+                raise Exception
 
             result_message = "Configuration was executed successfully on {}.".format(self.equipment_access.fqdn)
             log.info(result_message)
@@ -161,20 +258,21 @@ class GenericNetconf(BasePlugin):
 
         :returns: True if success or raise an exception on any error
         """
-        log.info("Close connection started...")
-        try:
-            if self.session_manager:
-                self.session_manager.close_session()
-                log.info('Connection closed successfully.')
-                return True
+        # log.info("Close connection started...")
+        pass
+        # try:
+        #     if self.session_manager:
+        #         self.session_manager.close_session()
+        #         log.info('Connection closed successfully.')
+        #         return True
 
-            else:
-                raise Exception("session_manager is None.")
+        #     else:
+        #         raise Exception("session_manager is None.")
 
-        except Exception as e:
-            message = "Error while calling close session method on equipment %s" % self.equipment_access.fqdn
-            log.error(message)
-            log.error(e)
+        # except Exception as e:
+        #     message = "Error while calling close session method on equipment %s" % self.equipment_access.fqdn
+        #     log.error(message)
+        #     log.error(e)
 
-            raise exceptions.APIException(message)
+        #     raise exceptions.APIException(message)
 
