@@ -35,6 +35,9 @@ class PluginFactory(object):
     @classmethod
     def get_plugin(cls, **kwargs):
 
+        if 'tipo_acesso' in kwargs and kwargs.get('tipo_acesso') == 'netconf':
+            from .Netconf.plugin import GenericNetconf
+            return GenericNetconf
         if 'modelo' in kwargs:
             modelo = kwargs.get('modelo')
 
@@ -61,9 +64,9 @@ class PluginFactory(object):
 
         if 'marca' in kwargs:
             marca = kwargs.get('marca')
-            if re.search('HUAWEI', marca.upper(), re.DOTALL):
-                from .Netconf.plugin import GenericNetconf
-                return GenericNetconf
+            # if re.search('HUAWEI', marca.upper(), re.DOTALL):
+            #     from .Netconf.plugin import GenericNetconf
+            #     return GenericNetconf
             if re.search('F5', marca.upper(), re.DOTALL):
                 from .F5.Generic import Generic
                 return Generic
