@@ -53,47 +53,16 @@ class GenericNetconf(BasePlugin):
                 raise exceptions.InvalidEquipmentAccessException()
         ### End block ###
 
-        #Bypassing connection
+        # Bypassing connection due python version incompatibility
         try:
             pass
 
-        # ### Getting device access data ###
-        # device = self.equipment_access.fqdn
-        # username = self.equipment_access.user
-        # password = self.equipment_access.password
-        # ### End block ###
-
-        # ### Runs connection ###
-        # try:
-        #     log.info("Starting connection to '%s' using NCClient..." % device)
-        #     # transport = paramiko.Transport((device, 22))
-        #     # transport.get_security_options().kex = (
-        #     #     'curve25519-sha256',
-        #     #     'diffie-hellman-group14-sha1',
-        #     #     'diffie-hellman-group-exchange-sha256',
-        #     # )
-        #     # transport.get_security_options().ciphers = (
-        #     #     'aes128-ctr', 'aes256-ctr'
-        #     # )
-
-        #     self.session_manager =  manager.connect(
-        #         host = device,
-        #         port = self.connect_port,
-        #         username = username,
-        #         password = password,
-        #         # hostkey_verify = False,
-        #         # allow_agent=False,
-        #         # look_for_keys=False,
-
-        #     )
-        #     log.info('Connection succesfully...')
-
         ### Exception handler
         except IOError, e:
-            log.error('Could not connect to host %s: %s' % (device, e))
-            raise exceptions.ConnectionException(device)
+            log.error('Could not connect to host %s: %s' % (self.equipment_access.fqdn, e))
+            raise exceptions.ConnectionException(self.equipment_access.fqdn)
         except Exception, e:
-            log.error('Error connecting to host %s:%s' % (device, e))
+            log.error('Error connecting to host %s:%s' % (self.equipment_access.fqdn, e))
 
     def apply_config_to_equipment(self, config, use_vrf=None, tarqet='running'):
 
@@ -202,11 +171,6 @@ class GenericNetconf(BasePlugin):
             command_file = open(file_path, "r")
             command = command_file.read()
 
-            # Check if Configuration is not empty and raises exception if not contain
-            # self.check_configuration_has_content(command=command, file_path=file_path)
-
-            # log.info("Load configuration from file {} successfully".format(file_path))
-
             return self.exec_command(command=command)
 
         except IOError as e:
@@ -224,8 +188,7 @@ class GenericNetconf(BasePlugin):
 
         try:
             self.__try_lock() # Do nothing, will be executed by the locked method of ncclient
-            # with self.session_manager.locked(target='running'):
-            #     self.session_manager.edit_config(target='running', config=command)
+            # Here we make a request to a microservice that runs in docker with python 3
 
             response = requests.post(
                 url="http://localhost:5000/deploy",
@@ -258,21 +221,6 @@ class GenericNetconf(BasePlugin):
 
         :returns: True if success or raise an exception on any error
         """
-        # log.info("Close connection started...")
+        # Not necessary
         pass
-        # try:
-        #     if self.session_manager:
-        #         self.session_manager.close_session()
-        #         log.info('Connection closed successfully.')
-        #         return True
-
-        #     else:
-        #         raise Exception("session_manager is None.")
-
-        # except Exception as e:
-        #     message = "Error while calling close session method on equipment %s" % self.equipment_access.fqdn
-        #     log.error(message)
-        #     log.error(e)
-
-        #     raise exceptions.APIException(message)
 
