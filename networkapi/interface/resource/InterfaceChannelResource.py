@@ -277,11 +277,15 @@ class InterfaceChannelResource(RestResource):
             return self.response_error(1)
 
     def handle_delete(self, request, user, *args, **kwargs):
-        """Trata uma requisição DELETE para excluir um port channel
-            URL: /channel/delete/<channel_name>/<interface_id>
+        """
+            Delete port channel from interface id (table 'interfaces'), ex.: 
+            DELETE /channel/delete/73886/
+
+            Not tested:
+            DELETE /channel/delete/<channel_name>/<interface_id>
         """
         try:
-            self.log.info('Delete Channel')
+            self.log.debug('Delete Channel request:%s', request)
 
             # User permission
             if not has_perm(user, AdminPermission.EQUIPMENT_MANAGEMENT, AdminPermission.WRITE_OPERATION):
@@ -290,30 +294,39 @@ class InterfaceChannelResource(RestResource):
                 raise UserNotAuthorizedError(None)
 
             interface_id = kwargs.get('channel_name')
+            self.log.info('interface_id: %s', interface_id)
             interface = Interface.get_by_pk(int(interface_id))
             equip_list = []
 
+            # Getting port channel
             try:
                 interface.channel.id
                 channel = interface.channel
             except:
                 channel = interface.ligacao_front.channel
                 pass
+            self.log.debug('channel id:%s name:%s', channel.id, channel)
+
+            # Getting all interfaces used by port channel
             try:
                 interfaces = Interface.objects.all().filter(channel__id=channel.id)
             except:
                 return self.response(dumps_networkapi({}))
+            self.log.debug('interfaces: %s', interfaces)
 
+            # Getting all equipment from interfaces (switches, ex.: LF-CM-AH18-1 and LF-CM-AH18-2)
             for i in interfaces:
                 equip_list.append(i.equipamento.id)
             equip_list = set(equip_list)
             equip_dict = dict()
+            self.log.debug('equip_list: %s', equip_list)
             for e in equip_list:
                 equip_dict[str(e)] = interfaces.filter(equipamento__id=e)
 
             tipo = TipoInterface()
             tipo = tipo.get_by_name('access')
 
+            # For each equipment (leaf), remove port channel
             for e in equip_dict:
                 for i in equip_dict.get(e):
                     try:
