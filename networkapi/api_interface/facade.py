@@ -290,6 +290,9 @@ def get_interface_by_ids(interface_ids):
 
 
 def generate_delete_file(user, equip_id, interface_list, channel):
+
+    log.info("generate_delete_file equip_id:%s interface_list:%s channel:%s", equip_id, interface_list, channel)
+
     try:
         INTERFACE_CONFIG_TOAPPLY_REL_PATH = get_variable(
             'interface_config_toapply_rel_path')
@@ -297,6 +300,11 @@ def generate_delete_file(user, equip_id, interface_list, channel):
             'interface_config_files_path')
         TEMPLATE_REMOVE_CHANNEL = get_variable('template_remove_channel')
         TEMPLATE_REMOVE_INTERFACE = get_variable('template_remove_interface')
+
+        log.debug('INTERFACE_CONFIG_TOAPPLY_REL_PATH:%s', INTERFACE_CONFIG_TOAPPLY_REL_PATH)
+        log.debug('INTERFACE_CONFIG_FILES_PATH:%s', INTERFACE_CONFIG_FILES_PATH)
+        log.debug('TEMPLATE_REMOVE_CHANNEL:%s', TEMPLATE_REMOVE_CHANNEL)
+        log.debug('TEMPLATE_REMOVE_INTERFACE:%s', TEMPLATE_REMOVE_INTERFACE)
     except ObjectDoesNotExist:
         raise var_exceptions.VariableDoesNotExistException(
             'Erro buscando a variável INTERFACE_CONFIG_TEMPLATE_PATH,'
@@ -350,9 +358,12 @@ def generate_delete_file(user, equip_id, interface_list, channel):
 
 def delete_channel(user, equip_id, interface_list, channel):
 
+    log.info('delete_channel equip_id:%s interface_list:%s channel:%s', equip_id, interface_list, channel)
+
     file_to_deploy = generate_delete_file(
         user, equip_id, interface_list, channel)
 
+    log.debug('file_to_deploy: %s', file_to_deploy)
     # TODO Deploy config file
     try:
         lockvar = LOCK_EQUIPMENT % (equip_id)
@@ -510,6 +521,7 @@ def _load_template_file(equipment_id, template_type):
 
     filename_in = INTERFACE_CONFIG_TEMPLATE_PATH + \
         equipment_template.roteiro.roteiro
+    log.debug("filename_in: %s", filename_in)
 
     # Read contents from file
     try:
