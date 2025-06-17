@@ -190,6 +190,8 @@ class GenericNetconf(BasePlugin):
             self.__try_lock() # Do nothing, will be executed by the locked method of ncclient
             # Here we make a request to a microservice that runs in docker with python 3
 
+            ultimate_template = '<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">{}</config>'.format(command)
+
             response = requests.post(
                 url="http://localhost:5000/deploy",
                 headers={"Content-type": "application/json"},
@@ -197,7 +199,7 @@ class GenericNetconf(BasePlugin):
                     "address": self.equipment_access.fqdn,
                     "username": self.equipment_access.user,
                     "password": self.equipment_access.password,
-                    "configuration": command
+                    "configuration": ultimate_template
                 })
             )
 
