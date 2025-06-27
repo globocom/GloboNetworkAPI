@@ -15,6 +15,7 @@
 # limitations under the License.
 import logging
 import re
+from networkapi.equipamento.models import Equipamento, EquipamentoAcesso
 
 from networkapi.plugins.SDN.ODL.Generic import ODLPlugin
 
@@ -34,8 +35,13 @@ class PluginFactory(object):
 
     @classmethod
     def get_plugin(cls, **kwargs):
-
         if 'tipo_acesso' in kwargs and kwargs.get('tipo_acesso') == 'netconf':
+            if 'bgp' in kwargs:
+                bgp = kwargs.get('bgp')
+                if bgp:
+                    from .Netconf.BGP.Cli import Generic
+                    return Generic
+
             from .Netconf.plugin import GenericNetconf
             return GenericNetconf
         if 'modelo' in kwargs:
@@ -109,7 +115,14 @@ class PluginFactory(object):
 
         marca = equipment.modelo.marca.nome
         modelo = equipment.modelo.nome
-        plugin_class = cls.get_plugin(modelo=modelo, marca=marca, **kwargs)
+        tipo_acesso = EquipamentoAcesso.search(None,
+                                        equipment,
+                                        ).uniqueResult()
+
+        if tipo_acesso is None:
+            return 'Equipment has no Access.'
+
+        plugin_class = cls.get_plugin(modelo=modelo, marca=marca, tipo_acesso=tipo_acesso.tipo_acesso.protocolo, **kwargs)
 
         if type(plugin_class) == type(ODLPlugin):
             version = 'BERYLLIUM'
