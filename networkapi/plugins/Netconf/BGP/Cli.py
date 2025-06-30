@@ -17,6 +17,7 @@
 
 import logging
 import os
+from HTMLParser import HTMLParser
 
 from django.db.models import Q
 from django.template import Context
@@ -66,20 +67,21 @@ class Generic(GenericNetconf):
         for rm_entry in rms:
             log.info(rm_entry)
             list_config_bgp = rm_entry.list_config_bgp
+        #     log.debug(dir(neighbor.peer_group))
 
-            if not list_config_bgp.equipments.filter(id=self.equipment.id):
-                log.info("Deploying list config BGP on equipment. Equipment ID: '%s'." % self.equipment.id)
-                self.deploy_list_config_bgp(list_config_bgp)
+        #     if not list_config_bgp.equipments.filter(id=self.equipment.id):
+        #         log.info("Deploying list config BGP on equipment. Equipment ID: '%s'." % self.equipment.id)
+        #         self.deploy_list_config_bgp(list_config_bgp)
 
-        # Deploying routemap In on equipment
-        if not route_map_in.equipments.filter(id=self.equipment.id):
-            log.info("Deploying routemap in on equipment. Equipment ID: '%s'" % self.equipment.id)
-            self.deploy_route_map(neighbor.peer_group.route_map_id)
+        # # Deploying routemap In on equipment
+        # if not route_map_in.equipments.filter(id=self.equipment.id):
+        #     log.info("Deploying routemap in on equipment. Equipment ID: '%s'" % self.equipment.id)
+        #     self.deploy_route_map(neighbor.peer_group.route_map_in)
 
-        # Deploying routemap Out on equipment
-        if not route_map_out.equipments.filter(id=self.equipment.id):
-            log.info("Deploying routemap out on equipment. Equipment ID: '%s'" % self.equipment.id)
-            self.deploy_route_map(neighbor.peer_group.route_map_out)
+        # # Deploying routemap Out on equipment
+        # if not route_map_out.equipments.filter(id=self.equipment.id):
+        #     log.info("Deploying routemap out on equipment. Equipment ID: '%s'" % self.equipment.id)
+        #     self.deploy_route_map(neighbor.peer_group.route_map_out)
 
 
     @staticmethod
@@ -183,6 +185,7 @@ class Generic(GenericNetconf):
         """
         Make a dictionary to use in template
         """
+        log.debug(dir(route_map))
 
         log.info("Generate template dict for routemap. Routemap name: '%s'" % route_map.name)
 
@@ -257,6 +260,13 @@ class Generic(GenericNetconf):
 
         try:
             template_file = self._load_template_file(template_type=template_type)
+            # Instancia o parser para desescapar entidades HTML
+            if config.get('CONFIG'):
+                converter = HTMLParser()
+
+                # Copia o dicionário e faz o unescape apenas no campo 'CONFIG'
+                config['CONFIG'] = converter.unescape(config['CONFIG'])
+
             config_to_be_saved = template_file.render(Context(config))
             log.info(config_to_be_saved)
 
