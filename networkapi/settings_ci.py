@@ -41,7 +41,6 @@ from settings import CELERYD_PREFETCH_MULTIPLIER
 from settings import CONFIG_FILES_PATH
 from settings import CONFIG_FILES_REL_PATH
 from settings import CONFIG_TEMPLATE_PATH
-from settings import DATABASES
 from settings import DEBUG
 from settings import DEFAULT_CHARSET
 from settings import DIVISAODC_MGMT
@@ -290,3 +289,14 @@ if INTEGRATION:
         # '--cover-xml',
         # '--cover-xml-file=coverage.xml'
     ]
+
+# Use SQLite in-memory for faster tests
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+}
+
+# Disable South migrations for faster test setup
+SOUTH_TESTS_MIGRATE = False
