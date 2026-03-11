@@ -204,14 +204,14 @@ class GenericNetconf(BasePlugin):
             )
 
             if response.status_code != 200:
-                raise Exception
+                raise Exception(json.loads(response.text).get("detail", "Unknown error at netconf microservice"))
 
             result_message = "Configuration was executed successfully on {}.".format(self.equipment_access.fqdn)
             log.info(result_message)
             return result_message
 
         except Exception as e:
-            message = "Error while excute netconf command on equipment %s" % self.equipment_access.fqdn
+            message = "Error while excute netconf command on equipment %s: %s" % (self.equipment_access.fqdn, e)
             log.error(message)
             log.error(e)
 
