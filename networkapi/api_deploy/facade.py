@@ -79,7 +79,7 @@ def _applyconfig(equipment, filename, equipment_access=None, source_server=None,
         equip_output = equip_plugin.copyScriptFileToConfig(filename, use_vrf=vrf)
     except Exception as e:
         log.exception('Error applying config on equipment %s: %s', equipment.nome, str(e))
-        api_exceptions.NetworkAPIException(str(e))
+        raise api_exceptions.NetworkAPIException(str(e))
     equip_plugin.close()
 
     return equip_output
