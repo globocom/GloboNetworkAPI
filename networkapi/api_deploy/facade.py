@@ -57,6 +57,8 @@ def _applyconfig(equipment, filename, equipment_access=None, source_server=None,
     Raises:
     """
 
+    log.info("Applying configuration in equipment {} with filename {}...".format(equipment, filename))
+
     if equipment.maintenance is True:
         return 'Equipment is in maintenance mode. No action taken.'
 
@@ -71,15 +73,18 @@ def _applyconfig(equipment, filename, equipment_access=None, source_server=None,
     # if tipo_acesso is None:
     #     return 'Equipment has no Access.'
 
-    equip_plugin = PluginFactory.factory(equipment)
-    equip_plugin.connect()
-    equip_plugin.ensure_privilege_level()
-    vrf = equip_plugin.equipment_access.vrf.internal_name if equip_plugin.equipment_access.vrf else None
-    equip_output = equip_plugin.copyScriptFileToConfig(filename, use_vrf=vrf)
-    equip_plugin.close()
+    try:
+        equip_plugin = PluginFactory.factory(equipment)
+        equip_plugin.connect()
+        equip_plugin.ensure_privilege_level()
+        vrf = equip_plugin.equipment_access.vrf.internal_name if equip_plugin.equipment_access.vrf else None
+        equip_output = equip_plugin.copyScriptFileToConfig(filename, use_vrf=vrf)
+        equip_plugin.close()
 
-    return equip_output
-
+        return equip_output
+    except Exception, e:
+        log.error("Error applying configuration in equipment {}: {}".format(equipment, e))
+        raise api_exceptions.NetworkAPIException(e)
 
 def create_file_from_script(script, prefix_name=''):
     """Creates a file with script content
