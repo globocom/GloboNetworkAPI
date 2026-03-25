@@ -160,6 +160,8 @@ def undeploy_networkipv4(network_id, user, force=False):
     Returns: List with status of equipments output
     """
 
+    log.debug('undeploy_networkipv4')
+
     try:
         netv4_obj = get_networkipv4_by_id(network_id)
 
