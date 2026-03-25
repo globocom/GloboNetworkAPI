@@ -193,6 +193,8 @@ def remove_deploy_networkIPv4_configuration(user, networkipv4, equipment_list):
     Returns: List with status of equipments output
     """
 
+    log.debug("remove_deploy_networkIPv4_configuration")
+
     data = dict()
 
     # lock network id to prevent multiple requests to same id

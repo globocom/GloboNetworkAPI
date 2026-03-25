@@ -371,7 +371,7 @@ def networkIPv4_deploy(request, network_id):
 
     except Exception, exception:
         log.error(exception)
-        raise api_exceptions.NetworkAPIException()
+        raise api_exceptions.NetworkAPIException(exception)
 
 
 @api_view(['GET'])
