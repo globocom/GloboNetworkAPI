@@ -60,6 +60,7 @@ class Generic(BasePlugin):
     INVALID_REGEX = '([Ii]nvalid)|overlaps with'
     WARNING_REGEX = 'config ignored|Warning'
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|%|utility is occupied'
+    ROUTE_MAP_ENTRY_EXISTS_REGEX = '[Rr]oute-map entry already exists\\.?'
 
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
@@ -510,6 +511,11 @@ class Generic(BasePlugin):
                     raise deploy_exc.InvalidCommandException(file_name_string)
 
                 elif re.search(wait_str_failed_regex, output_line):
+                    if re.search(self.ROUTE_MAP_ENTRY_EXISTS_REGEX,
+                                 output_line):
+                        log.warning('Ignoring idempotent route-map error: %s'
+                                    % output_line)
+                        continue
                     log.error('Equipment raised FAILED error: %s' %
                               output_line)
                     raise deploy_exc.CommandErrorException(file_name_string)
