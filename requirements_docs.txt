@@ -1,4 +1,4 @@
-celery==3.1.24
+celery==5.2.2
 Django==1.5
 graypy==0.2.14
 
