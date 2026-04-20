@@ -514,7 +514,7 @@ def _load_template_file(equipment_id, template_type):
     try:
         equipment_template = (EquipamentoRoteiro.search(
             None, equipment_id, template_type)).uniqueResult()
-    except:
+    except Exception:
         log.error('Template type %s not found. Equip: %s' %
                   (template_type, equipment_id))
         raise exceptions.InterfaceTemplateException()
@@ -717,7 +717,7 @@ def verificar_vlan_range(amb, vlans):
         for i in re.split('\W+', intervalo.replace('to', '-')):
             try:
                 i = int(i)
-            except:
+            except Exception:
                 raise InvalidValueError(None, None, 'Numero da Vlan')
             if amb.min_num_vlan_1 and not (amb.min_num_vlan_1 <= i <= amb.max_num_vlan_1) and not (
                     amb.min_num_vlan_2 <= i <= amb.max_num_vlan_2):
