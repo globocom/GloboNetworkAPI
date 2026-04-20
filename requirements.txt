@@ -7,7 +7,7 @@ Django==1.5
 django-auth-ldap==1.1.2
 django-extensions==1.3.9
 djangorestframework==2.4.3
-ecdsa==0.13
+ecdsa==0.13.3
 enum==0.4.6
 graypy==0.2.14
 gunicorn==19.9.0
