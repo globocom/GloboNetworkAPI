@@ -8,7 +8,7 @@ import paramiko
 import requests, json, os
 from django.db.utils import DatabaseError
 from networkapi.system.exceptions import VariableDoesNotExistException
-
+from networkapi.extra_logging import local
 
 
 log = logging.getLogger(__name__)
@@ -194,7 +194,8 @@ class GenericNetconf(BasePlugin):
 
             response = requests.post(
                 url="http://localhost:5000/deploy",
-                headers={"Content-type": "application/json"},
+                headers={"Content-type": "application/json",
+                        "X-Request-Id": getattr(local, "request_id", None)},
                 data=json.dumps({
                     "address": self.equipment_access.fqdn,
                     "username": self.equipment_access.user,
