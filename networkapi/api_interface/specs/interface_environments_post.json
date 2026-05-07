@@ -15,12 +15,11 @@
             "type": "integer"
           },
           "environment": {
-            "type": "integer"
+            "type": ["integer", "null"]
           }
         },
         "required": [
-          "interface",
-          "environment"
+          "interface"
         ]
       }
     }
