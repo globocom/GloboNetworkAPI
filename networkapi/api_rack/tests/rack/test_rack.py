@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 def setup():
     call_command(
         'loaddata',
-        'networkapi/system/fixtures/basic_variables.json',
+        'networkapi/system/fixtures/initial_variables.json',
         'networkapi/usuario/fixtures/initial_usuario.json',
         'networkapi/grupo/fixtures/initial_ugrupo.json',
         'networkapi/usuario/fixtures/initial_usuariogrupo.json',

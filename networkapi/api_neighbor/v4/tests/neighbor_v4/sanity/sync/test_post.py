@@ -198,8 +198,8 @@ class NeighborV4PostErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            u'RemoteIp id = 8 and RemoteAsn id = 7 '
-            u'belongs to different Equipments',
+            u'O ASN remoto (id: 7) não está associado a qualquer '
+            u'equipamento do IP (id: 8). ',
             response.data['detail']
         )
 
@@ -219,8 +219,9 @@ class NeighborV4PostErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            u'LocalIp id = 9 and PeerGroup id = 4 '
-            u'belongs to different Environments',
+            u'Not allowed to configure BGP neighbor using this Peer Group. '
+            u'PeerGroup id = 4 is not mapped to the environment of '
+            u'LocalIp id = 9',
             response.data['detail']
         )
 
@@ -238,7 +239,8 @@ class NeighborV4PostErrorTestCase(NetworkApiTestCase):
 
         self.compare_status(400, response.status_code)
         self.compare_values(
-            u'It already exists Neighbor with LocalAsn id = 1, '
-            u'LocalIp id = 1, RemoteAsn id = 2 and RemoteIp id = 2',
+            u'Duplicated neighbor. A Neighbor with LocalAsn id = 1, '
+            u'LocalIp id = 1, RemoteAsn id = 2 and '
+            u'RemoteIp id = 2 already exists',
             response.data['detail']
         )

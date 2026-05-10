@@ -284,13 +284,15 @@ class NetworkIPv6UndeploySuccessTestCase(NetworkApiTestCase):
     def tearDown(self):
         pass
 
+    @patch('networkapi.api_network.facade.v3.utils.generate_config_file')
     @patch('networkapi.plugins.factory.PluginFactory.factory')
-    def test_try_undeploy_netipv6(self, test_patch):
+    def test_try_undeploy_netipv6(self, test_patch, mock_gen_config):
         """Test of success to undeploy a Network IPv6."""
 
         mock = MockPluginNetwork()
         mock.status(True)
         test_patch.return_value = mock
+        mock_gen_config.return_value = 'mock_config_file'
 
         response = self.client.delete(
             '/api/v3/networkv6/deploy/1/',

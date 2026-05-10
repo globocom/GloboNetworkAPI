@@ -1,4 +1,6 @@
 #!/bin/sh
+set -eu
+
 source /venv/bin/activate
 
 pip install --no-cache --upgrade pip
