@@ -929,7 +929,7 @@ class EnvironmentInterface(BaseModel):
     log = logging.getLogger('EnvironmentInterface')
 
     id = models.AutoField(primary_key=True, db_column='id_int_ambiente')
-    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente')
+    ambiente = models.ForeignKey(Ambiente, db_column='id_ambiente', null=True, blank=True)
     interface = models.ForeignKey(Interface, db_column='id_interface')
     vlans = models.CharField(max_length=200, blank=True, null=True)
 
@@ -968,7 +968,13 @@ class EnvironmentInterface(BaseModel):
         """Set new relationship between an interface and an environment."""
 
         self.interface = Interface.objects.get(id=int(interface_environments.get('interface')))
-        self.ambiente = Ambiente.objects.get(id=int(interface_environments.get('environment')))
+        
+        env_id = interface_environments.get('environment')
+        if env_id is not None:
+            self.ambiente = Ambiente.objects.get(id=int(env_id))
+        else:
+            self.ambiente = None
+        
         self.vlans = interface_environments.get('range_vlans')
 
         return self.save()
