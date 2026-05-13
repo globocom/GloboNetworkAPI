@@ -135,17 +135,19 @@ class PluginFactory(object):
 
             # If more than one access, check if is LB and get ssh access, otherwise get netconf access.
             if is_load_balancer:
+                # Try to get ssh
                 ssh_access = EquipamentoAcesso.search(None, equipment, 'ssh')
                 if ssh_access.count() > 0:
                     access_type = ssh_access.uniqueResult()
             else:
+                # Try to get netconf
                 netconf_access = EquipamentoAcesso.search(
                     None, equipment, 'netconf'
                 )
                 if netconf_access.count() > 0:
                     access_type = netconf_access.uniqueResult()
 
-            # If not LB or not netconf access, get the remaining access
+            # If access type is not defined yet, get the first access available
             if access_type is None:
                 access_type = access_list.uniqueResult()
         
