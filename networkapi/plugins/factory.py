@@ -115,14 +115,52 @@ class PluginFactory(object):
 
         marca = equipment.modelo.marca.nome
         modelo = equipment.modelo.nome
-        tipo_acesso = EquipamentoAcesso.search(None,
-                                        equipment,
-                                        ).uniqueResult()
 
-        if tipo_acesso is None:
+        # Check is balanceador
+        equipment_type = ''
+        if equipment.tipo_equipamento:
+            equipment_type = equipment.tipo_equipamento.tipo_equipamento or ''
+        is_load_balancer = 'BALANCEADOR' in equipment_type.upper()
+
+        # Count access number
+        access_list = EquipamentoAcesso.search(None, equipment)
+        access_count = access_list.count()
+
+        access_type = None
+        
+        # If unique access, get it
+        if access_count == 1:
+            access_type = access_list.uniqueResult()
+        elif access_count > 1:
+
+            # If more than one access, check if is LB and get ssh access, otherwise get netconf access.
+            if is_load_balancer:
+                # Try to get ssh
+                ssh_access = EquipamentoAcesso.search(None, equipment, 'ssh')
+                if ssh_access.count() > 0:
+                    access_type = ssh_access.uniqueResult()
+            else:
+                # Try to get netconf
+                netconf_access = EquipamentoAcesso.search(
+                    None, equipment, 'netconf'
+                )
+                if netconf_access.count() > 0:
+                    access_type = netconf_access.uniqueResult()
+
+            # If access type is not defined yet, get the first access available
+            if access_type is None:
+                access_type = access_list.uniqueResult()
+        
+        log.debug(
+            'Equipment %s has %s access and the selected access was %s',
+            equipment.id,
+            access_count,
+            access_type.tipo_acesso.protocolo if access_type else 'None'
+        )
+        if access_type is None:
             return 'Equipment has no Access.'
 
-        plugin_class = cls.get_plugin(modelo=modelo, marca=marca, tipo_acesso=tipo_acesso.tipo_acesso.protocolo, **kwargs)
+        plugin_class = cls.get_plugin(modelo=modelo, marca=marca, tipo_acesso=access_type.tipo_acesso.protocolo, **kwargs)
 
         if type(plugin_class) == type(ODLPlugin):
             version = 'BERYLLIUM'
