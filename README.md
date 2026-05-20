@@ -38,8 +38,50 @@ Run `make build_img && make start` and visit `http://localhost:8000/healthcheck`
 Run `make test_ci`. This command will run all the unit tests specified in the `networkapi/tests/__init__.py` file.
 
 ## Create and run migrations
-To create a new migration, just run into app container `cd dbmigrate; db-migrate --new=<MIGRATION_NAME>`. This step will create a enpty migration file, you must write the SQL statement.
-To run a migration, just run into app container `cd dbmigrate; db-migrate`. This command will execute all migrations files not executed until now.
+Go to the migration folder:
+
+```bash
+cd dbmigrate
+```
+
+Check the current migration state:
+
+```bash
+db-migrate --show-sql-only
+```
+
+Create a new migration file:
+
+```bash
+db-migrate --new=allow_null_envs_for_portchannel
+```
+
+Edit the generated migration file, for example:
+
+```bash
+vi 20260520125452_allow_null_envs_for_portchannel.migration
+# Add SQLs for upgrade and downgrade
+```
+
+Apply pending migrations:
+
+```bash
+db-migrate
+```
+
+### Downgrade
+
+Preview the downgrade to a previous version:
+
+```bash
+db-migrate --migration=20240715173246 --force-files --show-sql-only
+```
+
+Apply the downgrade:
+
+```bash
+db-migrate --migration=20240715173246 --force-files
+```
 
 ## How to contribute
 Check this out at
