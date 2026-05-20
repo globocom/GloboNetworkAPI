@@ -1,0 +1,25 @@
+#-*- coding:utf-8 -*-
+
+SQL_UP = u"""
+-- Make id_ambiente optional (NULL allowed)
+ALTER TABLE `interface_do_ambiente` 
+DROP FOREIGN KEY `interface_do_ambiente_ambiente`;
+ALTER TABLE `interface_do_ambiente` 
+CHANGE COLUMN `id_ambiente` `id_ambiente` INT UNSIGNED NULL ;
+ALTER TABLE `interface_do_ambiente` 
+ADD CONSTRAINT `interface_do_ambiente_ambiente`
+  FOREIGN KEY (`id_ambiente`)
+  REFERENCES `ambiente` (`id_ambiente`);
+"""
+
+SQL_DOWN = u"""
+-- Make id_ambiente required (NOT NULL)
+ALTER TABLE `interface_do_ambiente` 
+DROP FOREIGN KEY `interface_do_ambiente_ambiente`;
+ALTER TABLE `interface_do_ambiente` 
+CHANGE COLUMN `id_ambiente` `id_ambiente` INT UNSIGNED NOT NULL ;
+ALTER TABLE `interface_do_ambiente` 
+ADD CONSTRAINT `interface_do_ambiente_ambiente`
+  FOREIGN KEY (`id_ambiente`)
+  REFERENCES `ambiente` (`id_ambiente`);
+"""
