@@ -918,6 +918,41 @@ class NetworkIPv4(BaseModel):
         finally:
             destroy_lock(locks_list)
 
+    def patch_v3(self, networkv4, locks_used=[], force=False):
+        """Patch networkipv4."""
+
+        try:
+            if force:
+                self.active = networkv4.get('active', self.active)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        else:
+            # Create locks for network
+            locks_name = list()
+            lock_name = LOCK_NETWORK_IPV4 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            self.validate_v3()
+            self.save()
+
+        except NetworkIPv4ErrorV3, e:
+            self.log.error(e.message)
+            raise NetworkIPv4ErrorV3(e.message)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv4ErrorV3(e)
+
+        finally:
+            destroy_lock(locks_list)
+
     def delete_v3(self, locks_used=[], force=False):
         """Method V3 to remove NetworkIPv4.
 

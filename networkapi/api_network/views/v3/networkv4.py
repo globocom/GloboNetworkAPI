@@ -338,6 +338,24 @@ class NetworkIPv4ForceView(CustomAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
     @logs_method_apiview
+    @raise_json_validate('networkv4_patch')
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
+    @commit_on_success
+    def patch(self, request, *args, **kwargs):
+        """Patches list of networkv4."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv4_patch')).validate(data)
+
+        response = list()
+        for networkv4 in data['networks']:
+            vl = facade.patch_networkipv4(networkv4, request.user, force=True)
+            response.append({'id': vl.id, 'active': vl.active})
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
