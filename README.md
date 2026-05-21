@@ -60,7 +60,7 @@ Edit the generated migration file, for example:
 
 ```bash
 vi 20260520125452_allow_null_envs_for_portchannel.migration
-# Add SQLs for upgrade and downgrade
+# Add SQLs for upgrade and downgrade.
 ```
 
 Apply pending migrations:
