@@ -73,3 +73,28 @@ class InterfaceGetTestCase(NetworkApiTestCase):
 
         self.compare_status(200, response.status_code)
         self.compare_json(expected_data, response.data["interfaces"])
+
+    def test_get_interface_list_with_equipment_model_brand(self):
+        """Test list interfaces returning equipment model brand."""
+
+        search = urllib.urlencode({'extends_search': [],
+                                   'start_record': 0,
+                                   'custom_search': '',
+                                   'end_record': 10000,
+                                   'asorting_cols': ['id'],
+                                   'searchable_columns': ['id']})
+
+        url = '/api/v3/interface/?search=%s&include=equipment__basic' % search
+
+        response = self.client.get(url,
+                                   content_type='application/json',
+                                   HTTP_AUTHORIZATION=self.get_http_authorization('test'))
+
+        self.compare_status(200, response.status_code)
+
+        interface = response.data['interfaces'][0]
+        equipment = interface['equipment']
+
+        self.assertEqual(['id', 'model', 'name'], sorted(equipment.keys()))
+        self.assertEqual(['brand', 'id', 'name'], sorted(equipment['model'].keys()))
+        self.assertEqual(['id', 'name'], sorted(equipment['model']['brand'].keys()))
