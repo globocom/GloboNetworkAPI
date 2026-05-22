@@ -281,7 +281,12 @@ class InterfaceV3Serializer(DynamicFieldsModelSerializer):
                 'equipment__basic': {
                     'serializer': equipment_serializers.EquipmentV3Serializer,
                     'kwargs': {
-                        'kind': 'basic'
+                        'kind': 'details',
+                        'fields': (
+                            'id',
+                            'name',
+                            'model__details__brand',
+                        )
                     },
                     'obj': 'equipamento',
                 },
