@@ -482,6 +482,10 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_network/specs/netv6_post.json'
     ),
+    'networkv6_patch': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_network/specs/netv6_patch.json'
+    ),
     'networkv6_put': os.path.join(
         PROJECT_ROOT_PATH,
         'api_network/specs/netv6_put.json'

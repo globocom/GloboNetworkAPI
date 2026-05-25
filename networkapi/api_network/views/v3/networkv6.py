@@ -338,6 +338,24 @@ class NetworkIPv6ForceView(CustomAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
     @logs_method_apiview
+    @raise_json_validate('networkv6_patch')
+    @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
+    @commit_on_success
+    def patch(self, request, *args, **kwargs):
+        """Patches list of networkv6."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('networkv6_patch')).validate(data)
+
+        response = list()
+        for networkv6 in data['networks']:
+            vl = facade.patch_networkipv6(networkv6, request.user, force=True)
+            response.append({'id': vl.id, 'active': vl.active})
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, permissions.WriteForce))
     @commit_on_success
