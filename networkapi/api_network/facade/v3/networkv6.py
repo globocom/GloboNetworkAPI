@@ -130,6 +130,32 @@ def update_networkipv6(networkv6, user, force=False):
         return netv6_obj
 
 
+def patch_networkipv6(networkv6, user, force=False):
+    """Patches a NetworkIPv6."""
+
+    try:
+        netv6_obj = get_networkipv6_by_id(networkv6.get('id'))
+        netv6_obj.patch_v3(networkv6, force=force)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv6ErrorV3, e:
+        raise ValidationAPIException(e.message)
+
+    except exceptions.InvalidInputException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        return netv6_obj
+
+
 def delete_networkipv6(network_ids, user, force=False):
     """Deletes a list of NetworkIPv6."""
 

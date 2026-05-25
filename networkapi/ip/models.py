@@ -3298,6 +3298,41 @@ class NetworkIPv6(BaseModel):
         finally:
             destroy_lock(locks_list)
 
+    def patch_v3(self, networkv6, locks_used=[], force=False):
+        """Patch networkipv6."""
+
+        try:
+            if force:
+                self.active = networkv6.get('active', self.active)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv6ErrorV3(e)
+
+        else:
+            # Create locks for network
+            locks_name = list()
+            lock_name = LOCK_NETWORK_IPV6 % self.id
+            if lock_name not in locks_used:
+                locks_name.append(lock_name)
+
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            self.validate_v3()
+            self.save()
+
+        except NetworkIPv6ErrorV3, e:
+            self.log.error(e.message)
+            raise NetworkIPv6ErrorV3(e.message)
+
+        except Exception, e:
+            self.log.error(e)
+            raise NetworkIPv6ErrorV3(e)
+
+        finally:
+            destroy_lock(locks_list)
+
     def delete_v3(self, locks_used=[], force=False):
         """Method V3 to remove networkIPv6.
 
