@@ -173,6 +173,25 @@ class VlanAsyncView(CustomAPIView):
         return Response(response, status=status.HTTP_202_ACCEPTED)
 
     @logs_method_apiview
+    @raise_json_validate('vlan_patch')
+    @permission_classes_apiview((IsAuthenticated, permissions.Write))
+    @permission_obj_apiview([permissions.write_obj_permission])
+    @commit_on_success
+    def patch(self, request, *args, **kwargs):
+        """Patches list of vlans."""
+
+        data = request.DATA
+
+        json_validate(SPECS.get('vlan_patch')).validate(data)
+
+        response = list()
+        for vlan in data['vlans']:
+            vl = facade.patch_vlan(vlan, request.user)
+            response.append({'id': vl.id, 'active': vl.ativada})
+
+        return Response(response, status=status.HTTP_200_OK)
+        
+    @logs_method_apiview
     @raise_json_validate('')
     @permission_classes_apiview((IsAuthenticated, permissions.Write))
     @permission_obj_apiview([permissions.delete_obj_permission])

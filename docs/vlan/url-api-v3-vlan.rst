@@ -6,3 +6,4 @@
    url-api-v3-vlan/post
    url-api-v3-vlan/put
    url-api-v3-vlan/delete
+   url-api-v3-vlan/patch
