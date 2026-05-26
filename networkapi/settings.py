@@ -518,6 +518,10 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_vlan/specs/vlan_post.json'
     ),
+    'vlan_patch': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_vlan/specs/vlan_patch.json'
+    ),
     'vlan_put': os.path.join(
         PROJECT_ROOT_PATH,
         'api_vlan/specs/vlan_put.json'
