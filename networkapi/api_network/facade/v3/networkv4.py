@@ -141,7 +141,7 @@ def patch_networkipv4(networkv4, user, force=False):
         raise ObjectDoesNotExistException(e.detail)
 
     except ip_models.NetworkIPv4ErrorV3, e:
-        raise ValidationAPIException(e.message)
+        raise ValidationAPIException('NetworkIPv4 id=%s - %s' % (netv4_obj.id, str(e)))
 
     except exceptions.InvalidInputException, e:
         raise ValidationAPIException(e.detail)

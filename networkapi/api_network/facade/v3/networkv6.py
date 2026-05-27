@@ -141,7 +141,7 @@ def patch_networkipv6(networkv6, user, force=False):
         raise ObjectDoesNotExistException(e.detail)
 
     except ip_models.NetworkIPv6ErrorV3, e:
-        raise ValidationAPIException(e.message)
+        raise ValidationAPIException('NetworkIPv6 id=%s - %s' % (netv6_obj.id, str(e)))
 
     except exceptions.InvalidInputException, e:
         raise ValidationAPIException(e.detail)
