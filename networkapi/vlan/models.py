@@ -1260,6 +1260,34 @@ class Vlan(BaseModel):
 
         return self
 
+    def patch_v3(self, vlan, user):
+        """Patch vlan."""
+
+        try:
+            self.ativada = vlan.get('active', self.ativada)
+
+        except Exception, e:
+            raise VlanErrorV3(e)
+
+        else:
+            # Prepare locks for vlan
+            locks_name = [LOCK_VLAN % self.id]
+            locks_list = create_lock_with_blocking(locks_name)
+
+        try:
+            # validate name and number
+            #self.validate_v3()
+            self.save()
+
+        except Exception, e:
+            raise VlanErrorV3(e)
+
+        finally:
+            # Destroy locks
+            destroy_lock(locks_list)
+
+        return self
+
     def delete_v3(self):
         ogp_models = get_app('api_ogp', 'models')
         ipcantberemovedfromvip = get_model('ip', 'IpCantBeRemovedFromVip')

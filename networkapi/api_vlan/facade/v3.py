@@ -70,6 +70,22 @@ def update_vlan(vlan, user):
         return vlan_obj
 
 
+def patch_vlan(vlan, user):
+    """Patch vlan."""
+
+    try:
+        vlan_obj = get_vlan_by_id(vlan.get('id'))
+        vlan_obj.patch_v3(vlan, user)
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(str(e))
+    except (VlanError, VlanErrorV3, ValidationAPIException), e:
+        raise ValidationAPIException(str(e))
+    except (Exception, NetworkAPIException), e:
+        raise NetworkAPIException(str(e))
+    else:
+        return vlan_obj
+
+
 def create_vlan(vlan, user):
     """Create vlan."""
 

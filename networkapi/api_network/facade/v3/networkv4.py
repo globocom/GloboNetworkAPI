@@ -130,6 +130,32 @@ def update_networkipv4(networkv4, user, force=False):
         return netv4_obj
 
 
+def patch_networkipv4(networkv4, user, force=False):
+    """Patches a NetworkIPv4."""
+
+    try:
+        netv4_obj = get_networkipv4_by_id(networkv4.get('id'))
+        netv4_obj.patch_v3(networkv4, force=force)
+
+    except ObjectDoesNotExistException, e:
+        raise ObjectDoesNotExistException(e.detail)
+
+    except ip_models.NetworkIPv4ErrorV3, e:
+        raise ValidationAPIException('NetworkIPv4 id=%s - %s' % (netv4_obj.id, str(e)))
+
+    except exceptions.InvalidInputException, e:
+        raise ValidationAPIException(e.detail)
+
+    except ValidationAPIException, e:
+        raise ValidationAPIException(e.detail)
+
+    except Exception, e:
+        raise NetworkAPIException(str(e))
+
+    else:
+        return netv4_obj
+
+
 def delete_networkipv4(network_ids, user, force=False):
     """Deletes a list of NetworkIPv4."""
 

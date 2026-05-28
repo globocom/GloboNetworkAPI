@@ -474,9 +474,17 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_network/specs/netv4_put.json'
     ),
+    'networkv4_patch': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_network/specs/netv4_patch.json'
+    ),
     'networkv6_post': os.path.join(
         PROJECT_ROOT_PATH,
         'api_network/specs/netv6_post.json'
+    ),
+    'networkv6_patch': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_network/specs/netv6_patch.json'
     ),
     'networkv6_put': os.path.join(
         PROJECT_ROOT_PATH,
@@ -509,6 +517,10 @@ SPECS = {
     'vlan_post': os.path.join(
         PROJECT_ROOT_PATH,
         'api_vlan/specs/vlan_post.json'
+    ),
+    'vlan_patch': os.path.join(
+        PROJECT_ROOT_PATH,
+        'api_vlan/specs/vlan_patch.json'
     ),
     'vlan_put': os.path.join(
         PROJECT_ROOT_PATH,
