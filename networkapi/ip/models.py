@@ -939,7 +939,7 @@ class NetworkIPv4(BaseModel):
             locks_list = create_lock_with_blocking(locks_name)
 
         try:
-            self.validate_v3()
+            #self.validate_v3()
             self.save()
 
         except NetworkIPv4ErrorV3, e:
@@ -3319,7 +3319,7 @@ class NetworkIPv6(BaseModel):
             locks_list = create_lock_with_blocking(locks_name)
 
         try:
-            self.validate_v3()
+            #self.validate_v3()
             self.save()
 
         except NetworkIPv6ErrorV3, e:
