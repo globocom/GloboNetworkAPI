@@ -40,8 +40,13 @@ import sphinx_rtd_theme
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(1, dirname(dirname(abspath(__file__))))
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'networkapi.settings'
-import networkapi.settings
+# Skip Django configuration on ReadTheDocs to avoid SECRET_KEY errors
+if not os.environ.get('READTHEDOCS'):
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'networkapi.settings')
+    try:
+        import networkapi.settings
+    except Exception:
+        pass
 
 # -- General configuration ------------------------------------------------
 
