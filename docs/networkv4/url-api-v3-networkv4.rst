@@ -6,3 +6,4 @@
    url-api-v3-networkv4/post
    url-api-v3-networkv4/put
    url-api-v3-networkv4/delete
+   url-api-v3-networkv4/patch
