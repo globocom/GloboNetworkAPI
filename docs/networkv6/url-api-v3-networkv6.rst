@@ -6,3 +6,4 @@
    url-api-v3-networkv6/post
    url-api-v3-networkv6/put
    url-api-v3-networkv6/delete
+   url-api-v3-networkv6/patch
