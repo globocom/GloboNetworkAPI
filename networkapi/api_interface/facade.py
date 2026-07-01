@@ -351,7 +351,7 @@ def generate_delete_file(user, equip_id, interface_list, channel):
         file_handle.close()
     except IOError, e:
         log.error('Error writing to config file: %s' % filename_to_save)
-        raise e
+        raise exceptions.InterfaceTemplateException()
 
     return rel_file_to_deploy
 
@@ -495,7 +495,7 @@ def _generate_config_file(interfaces_list):
         file_handle.close()
     except IOError, e:
         log.error('Error writing to config file: %s' % filename_to_save)
-        raise e
+        raise exceptions.InterfaceTemplateException()
 
     return rel_file_to_deploy
 
@@ -517,7 +517,8 @@ def _load_template_file(equipment_id, template_type):
     except:
         log.error('Template type %s not found. Equip: %s' %
                   (template_type, equipment_id))
-        raise exceptions.InterfaceTemplateException()
+        raise exceptions.InterfaceTemplateException(
+            'Template "%s" not found for equipment %s.' % (template_type, equipment_id))
 
     filename_in = INTERFACE_CONFIG_TEMPLATE_PATH + \
         equipment_template.roteiro.roteiro
@@ -531,7 +532,8 @@ def _load_template_file(equipment_id, template_type):
     except IOError, e:
         log.error('Error opening template file for read: %s. Equip: %s' %
                   (filename_in, equipment_id))
-        raise e
+        raise exceptions.InterfaceTemplateException(
+            'Template file not found: %s.' % equipment_template.roteiro.roteiro)
     except Exception, e:
         log.error('Syntax error when parsing template: %s ' % e)
         raise e
