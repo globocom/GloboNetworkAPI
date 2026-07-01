@@ -38,6 +38,9 @@ class InterfaceTemplateException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'No template or multiple templates found for interface configuration.'
 
+    def __init__(self, detail=None):
+        self.detail = detail if detail else self.default_detail
+
 
 class InterfaceTrunkAllowedVlanException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST

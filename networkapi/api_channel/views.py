@@ -187,4 +187,4 @@ class DeployChannelConfV3View(APIView):
 
         except Exception as err:
             self.log.error(err)
-            raise err
+            raise api_exceptions.NetworkAPIException(str(err))
