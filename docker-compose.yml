@@ -75,7 +75,6 @@ services:
         command: sh /netapi/scripts/docker/docker-start-netapi.sh
         ports:
             - "8000:8000"
-            - "8001:8001"
         env_file:
             - ./scripts/docker/netapi.env
         volumes:

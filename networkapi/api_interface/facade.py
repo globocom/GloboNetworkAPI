@@ -15,6 +15,7 @@
 # limitations under the License.
 import ast
 import logging
+import os
 import re
 
 from django.core.exceptions import FieldError
@@ -351,7 +352,7 @@ def generate_delete_file(user, equip_id, interface_list, channel):
         file_handle.close()
     except IOError, e:
         log.error('Error writing to config file: %s' % filename_to_save)
-        raise e
+        raise exceptions.InterfaceTemplateException()
 
     return rel_file_to_deploy
 
@@ -495,7 +496,7 @@ def _generate_config_file(interfaces_list):
         file_handle.close()
     except IOError, e:
         log.error('Error writing to config file: %s' % filename_to_save)
-        raise e
+        raise exceptions.InterfaceTemplateException()
 
     return rel_file_to_deploy
 
@@ -506,6 +507,18 @@ def _load_template_file(equipment_id, template_type):
     try:
         INTERFACE_CONFIG_TEMPLATE_PATH = get_variable(
             'interface_config_template_path')
+        
+        # Confirm that path exists and is a directory
+        log.debug("INTERFACE_CONFIG_TEMPLATE_PATH: '%s'", INTERFACE_CONFIG_TEMPLATE_PATH)
+        if not INTERFACE_CONFIG_TEMPLATE_PATH or not os.path.isdir(INTERFACE_CONFIG_TEMPLATE_PATH):
+            raise var_exceptions.VariableDoesNotExistException(
+                'Invalid template path: the value of variable `interface_config_template_path` '
+                'in the `variables` table is empty, does not exist, or is not a valid directory.')
+
+        # Add slash at the end of path if not exists
+        if INTERFACE_CONFIG_TEMPLATE_PATH[-1] != '/':
+            INTERFACE_CONFIG_TEMPLATE_PATH += '/'
+
     except ObjectDoesNotExist:
         raise var_exceptions.VariableDoesNotExistException(
             'Erro buscando a variável INTERFACE_CONFIG'
@@ -517,11 +530,16 @@ def _load_template_file(equipment_id, template_type):
     except:
         log.error('Template type %s not found. Equip: %s' %
                   (template_type, equipment_id))
-        raise exceptions.InterfaceTemplateException()
+        raise exceptions.InterfaceTemplateException(
+            'Template "%s" not found for equipment %s.' % (template_type, equipment_id))
 
     filename_in = INTERFACE_CONFIG_TEMPLATE_PATH + \
         equipment_template.roteiro.roteiro
     log.debug("filename_in: %s", filename_in)
+
+    if not os.path.isfile(filename_in):
+        raise exceptions.InterfaceTemplateException(
+            "Template file not found: '%s'" % filename_in)
 
     # Read contents from file
     try:
@@ -531,7 +549,8 @@ def _load_template_file(equipment_id, template_type):
     except IOError, e:
         log.error('Error opening template file for read: %s. Equip: %s' %
                   (filename_in, equipment_id))
-        raise e
+        raise exceptions.InterfaceTemplateException(
+            'Unable to open template file: %s.' % filename_in)
     except Exception, e:
         log.error('Syntax error when parsing template: %s ' % e)
         raise e
@@ -548,11 +567,11 @@ def _generate_dict(interface):
         SUPPORTED_EQUIPMENT_BRANDS = ast.literal_eval(supported_string)
     except ObjectDoesNotExist:
         raise var_exceptions.VariableDoesNotExistException(
-            'Erro buscando a variável supported_equipment_brands.')
+            'Error fetching variable `supported_equipment_brands` from the `variables` table.')
     except ValueError:
         raise var_exceptions.VariableDoesNotExistException(
-            'Erro buscando a variável supported_equipment_brands. '
-            'Formato invalido. Deve ser uma string no formato de lista.')
+            'Error reading values from variable `supported_equipment_brands` in the `variables` table. '
+            "Invalid value and must be a string in list format, e.g.: `['Cisco', 'Juniper', 'Huawei']`.")
 
     # Check if it is a supported equipment interface
 

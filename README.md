@@ -1,7 +1,6 @@
 GloboNetworkAPI
 ===============
 
-[![Build Status](https://travis-ci.org/globocom/GloboNetworkAPI.svg)](https://travis-ci.org/globocom/GloboNetworkAPI)
 [![Documentation Status](https://readthedocs.org/projects/globonetworkapi/badge/?version=latest)](https://globonetworkapi.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -33,6 +32,7 @@ It was not created to be and inventory database, so it does not have CMDB functi
 
 ## Run API
 Run `make build_img && make start` and visit `http://localhost:8000/healthcheck` if running locally.
+You can use the user `testeapi` awith password `testeapi`
 
 ## Run Unit Tests
 Run `make test_ci`. This command will run all the unit tests specified in the `networkapi/tests/__init__.py` file.

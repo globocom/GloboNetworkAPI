@@ -26,7 +26,6 @@ log = logging.getLogger(__name__)
 
 
 class NeighborDBView(CustomAPIView):
-    log.info("Creates neighbors using just one call")
 
     @logs_method_apiview
     @raise_json_validate('')

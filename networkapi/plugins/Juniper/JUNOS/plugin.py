@@ -172,6 +172,7 @@ class JUNOS(BasePlugin):
 
             command_file = open(file_path, "r")
             command = command_file.read()
+            log.debug("Configuration command read from file:'{}' command:'{}'".format(file_path, command))
             self.check_configuration_has_content(command, file_path)  # Raises exception if it fails
             log.info("Load configuration from file {} successfully!".format(file_path))
             return self.exec_command(command)
@@ -200,8 +201,9 @@ class JUNOS(BasePlugin):
         log.info("Trying to execute a configuration on host {} ... ".format(self.equipment_access.fqdn))
 
         try:
-            self.__try_lock()
-            self.configuration.rollback()
+            # self.__try_lock()
+            self.configuration.lock()
+            self.configuration.rollback(0)
             self.configuration.load(command, format='set', ignore_warning=self.ignore_warning_list)
             self.configuration.commit_check()
             self.configuration.commit()
@@ -213,20 +215,24 @@ class JUNOS(BasePlugin):
 
         except LockError as e:
             self.close()
-            message = "Couldn't lock host {}.".format(self.equipment_access.fqdn)
-            log.error("{}: {}".format(message, e))
+            message = "Couldn't lock host {}. ".format(self.equipment_access.fqdn)
+            if "configuration database modified" in str(e):
+                message += "The configuration database was modified by another user. Check the equipment and try again. "
+            message += "Details from equipment: {}".format(e)
+            log.error(message)
             raise exceptions.APIException(message)
 
         except UnlockError as e:
-            message = "Couldn't unlock host {}.".format(self.equipment_access.fqdn)
+            message = "Couldn't unlock host {}. ".format(self.equipment_access.fqdn)
+            message += "Details from equipment: {}".format(e)
             log.error("{} (rollback and close will be tried for safety): {}".format(message, e))
             self.configuration.rollback()
             self.close()
             raise exceptions.APIException(message)
 
         except ConfigLoadError as e:
-            message = "Couldn't load configuration on host {}. Please check template syntax.".format(
-                self.equipment_access.fqdn)
+            message = "Couldn't load configuration on host {}. ".format(self.equipment_access.fqdn)
+            message += "Details from equipment: {}".format(e)
             log.error("{} (rollback, unlock and close will be tried for safety): {}".format(message, e))
             self.configuration.rollback()
             self.configuration.unlock()
@@ -234,7 +240,8 @@ class JUNOS(BasePlugin):
             raise exceptions.APIException(message)
 
         except CommitError as e:
-            message = "Couldn't commit configuration on host {}.".format(self.equipment_access.fqdn)
+            message = "Couldn't commit configuration on host {}. ".format(self.equipment_access.fqdn)
+            message += "Details from equipment: {}".format(e)
             log.error("{} (rollback, unlock and close will be tried for safety): {}".format(message, e))
             self.configuration.rollback()
             self.configuration.unlock()
@@ -242,7 +249,7 @@ class JUNOS(BasePlugin):
             raise exceptions.APIException(message)
 
         except RpcError as e:
-            message = "A remote procedure call exception occurred on host {} ".format(self.equipment_access.fqdn)
+            message = "A remote procedure call exception occurred on host {}: {}".format(self.equipment_access.fqdn, e)
             log.error("{} (close will be tried for safety): {}".format(message, e))
             self.close()
             raise exceptions.APIException(message)
@@ -295,40 +302,40 @@ class JUNOS(BasePlugin):
             self.close()
             raise exceptions.APIException(message)
 
-    def __try_lock(self):
+    # def __try_lock(self):
 
-        """
-        Try to lock equipment.
+    #     """
+    #     Try to lock equipment.
 
-        :returns:
-            Returns True if success, otherwise, raise an exception. That means will NOT return a false result.
-        """
+    #     :returns:
+    #         Returns True if success, otherwise, raise an exception. That means will NOT return a false result.
+    #     """
 
-        log.info("Trying to lock host {} ...".format(self.equipment_access.fqdn))
+    #     log.info("Trying to lock host {} ...".format(self.equipment_access.fqdn))
 
-        for x in range(self.quantity_of_times_to_try_lock):
-            try:
-                self.configuration.lock()
-                log.info("Host {} was locked successfully!".format(self.equipment_access.fqdn))
-                return True
-            except LockError as e:
-                count = x + 1
-                log.warning(
-                    "Host {} could not be locked. Automatic try in {} seconds ({}/{}): {}".format(
-                        self.equipment_access.fqdn,
-                        self.seconds_to_wait_to_try_lock,
-                        count,
-                        self.quantity_of_times_to_try_lock,
-                        e))
-                time.sleep(self.seconds_to_wait_to_try_lock)
+    #     for x in range(self.quantity_of_times_to_try_lock):
+    #         try:
+    #             self.configuration.lock()
+    #             log.info("Host {} was locked successfully!".format(self.equipment_access.fqdn))
+    #             return True
+    #         except LockError as e:
+    #             count = x + 1
+    #             log.warning(
+    #                 "Host {} could not be locked. Automatic try in {} seconds ({}/{}): {}".format(
+    #                     self.equipment_access.fqdn,
+    #                     self.seconds_to_wait_to_try_lock,
+    #                     count,
+    #                     self.quantity_of_times_to_try_lock,
+    #                     e))
+    #             time.sleep(self.seconds_to_wait_to_try_lock)
 
-            except Exception as e:
-                log.error("Unknown error while trying to lock c the equipment on host {}: {}".format(
-                    self.equipment_access.fqdn, e))
+    #         except Exception as e:
+    #             log.error("Unknown error while trying to lock c the equipment on host {}: {}".format(
+    #                 self.equipment_access.fqdn, e))
 
-        message = "Errors occurred in all attempts to lock {}. Anybody has locked?".format(self.equipment_access.fqdn)
-        log.error(message)
-        raise exceptions.APIException(message)
+    #     message = "Errors occurred in all attempts to lock {}. Anybody has locked?".format(self.equipment_access.fqdn)
+    #     log.error(message)
+    #     raise exceptions.APIException(message)
 
     def check_configuration_file_exists(self, file_path):
 
