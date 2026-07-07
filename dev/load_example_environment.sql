@@ -1900,8 +1900,10 @@ VALUES
 --
 -- Dumped data of the Interface types table
 --
-INSERT INTO `tipo_interface` (`tipo`)
-VALUES ("access"), ("trunk");
+-- Explicit ids: migration 20260707140100 reserves id 3 for 'undefined'
+-- before this script runs, so access/trunk must not rely on auto_increment.
+INSERT INTO `tipo_interface` (`id_tipo_interface`, `tipo`)
+VALUES (1, "access"), (2, "trunk");
 
 INSERT INTO `variables` (`name`, `value`, `description`)
 VALUES
