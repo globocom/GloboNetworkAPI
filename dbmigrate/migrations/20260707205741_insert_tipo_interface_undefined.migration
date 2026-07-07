@@ -1,0 +1,23 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+-- Inserts the 'undefined' interface type with an explicit id (3).
+-- The id is fixed on purpose: networkapi-portchannel hardcodes type_id=3
+-- to mean 'undefined' when releasing an interface from a channel, and
+-- 'access' (1) / 'trunk' (2) are already fixed ids on every environment.
+-- Idempotent: no-ops on QA/PROD where this row was already inserted manually.
+INSERT INTO `tipo_interface` (`id_tipo_interface`, `tipo`)
+SELECT 3, 'undefined' FROM DUAL
+WHERE NOT EXISTS (
+    SELECT 1 FROM `tipo_interface` WHERE `tipo` = 'undefined'
+);
+"""
+
+SQL_DOWN = u"""
+-- Only removes the row if nothing references it, to avoid breaking FK
+-- integrity on environments where interfaces already use this type.
+DELETE FROM `tipo_interface`
+WHERE `tipo` = 'undefined'
+AND NOT EXISTS (
+    SELECT 1 FROM `interfaces` WHERE `id_tipo_interface` = 3
+);
+"""
