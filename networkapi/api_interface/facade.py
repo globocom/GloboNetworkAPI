@@ -331,7 +331,8 @@ def generate_delete_file(user, equip_id, interface_list, channel):
                 Context(key_dict))
         except exceptions.InterfaceTemplateException, e:
             log.error(e)
-            raise exceptions.InterfaceTemplateException()
+            raise exceptions.InterfaceTemplateException(
+                'The interface equipment %s has no template for the delete operation: %s' % (equip_id, e))
         except KeyError, exception:
             log.error('Erro: %s ' % exception)
             raise exceptions.InvalidKeyException(exception)

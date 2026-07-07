@@ -278,11 +278,10 @@ class InterfaceChannelResource(RestResource):
 
     def handle_delete(self, request, user, *args, **kwargs):
         """
-            Delete port channel from interface id (table 'interfaces'), ex.: 
-            DELETE /channel/delete/73886/
-
-            Not tested:
-            DELETE /channel/delete/<channel_name>/<interface_id>
+            Delete port channel.
+            The channel_name is NOT the portchannel name (or id), channel_name is the interface that is part of the port channel.
+            Note the interface MUST be related to a portchannel (id_channel from table interfaces)
+            DELETE /channel/delete/<interface_id>
         """
         try:
             self.log.debug('Delete Channel request:%s', request)
