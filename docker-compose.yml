@@ -100,3 +100,5 @@ volumes:
 
 networks:
     netapi_net:
+        external: true
+        name: globonetworkapi_netapi_net
