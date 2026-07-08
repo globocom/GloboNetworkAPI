@@ -59,6 +59,7 @@ class PortChannelSerializer(DynamicFieldsModelSerializer):
             'id',
             'name',
             'lacp',
+            'status_deploy'
         )
 
         default_fields = fields
@@ -66,7 +67,8 @@ class PortChannelSerializer(DynamicFieldsModelSerializer):
         basic_fields = (
             'id',
             'name',
-            'lacp'
+            'lacp',
+            'status_deploy'
         )
 
         details_fields = fields
