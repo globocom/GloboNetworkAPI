@@ -282,6 +282,9 @@ class InterfaceChannelResource(RestResource):
             The channel_name is NOT the portchannel name (or id), channel_name is the interface that is part of the port channel.
             Note the interface MUST be related to a portchannel (id_channel from table interfaces)
             DELETE /channel/delete/<interface_id>
+            
+            :param `?keep_db=true|1`: undeploy only; do NOT remove channel/interfaces from DB.
+                                Default (omitted or false): undeploy + remove from DB.
         """
         try:
             self.log.debug('Delete Channel request:%s', request)
@@ -291,6 +294,12 @@ class InterfaceChannelResource(RestResource):
                 self.log.error(
                     u'User does not have permission to perform the operation.')
                 raise UserNotAuthorizedError(None)
+
+            # Param to decide if will keep or not keep the portchannel in the db
+            keep_db = False
+            if 'keep_db' in request.GET and request.GET['keep_db'].lower() in ('true', '1'):
+                keep_db = True
+            self.log.info('keep_db: %s', keep_db)
 
             interface_id = kwargs.get('channel_name')
             self.log.info('interface_id: %s', interface_id)
@@ -325,32 +334,34 @@ class InterfaceChannelResource(RestResource):
             tipo = TipoInterface()
             tipo = tipo.get_by_name('access')
 
-            # For each equipment (leaf), remove port channel
+            # For each equipment (leaf), undeploy port channel config
             for e in equip_dict:
-                for i in equip_dict.get(e):
-                    try:
-                        front = i.ligacao_front.id
-                    except:
-                        front = None
-                        pass
-                    try:
-                        back = i.ligacao_back.id
-                    except:
-                        back = None
-                        pass
-                    i.update(user,
-                             i.id,
-                             interface=i.interface,
-                             protegida=i.protegida,
-                             descricao=i.descricao,
-                             ligacao_front_id=front,
-                             ligacao_back_id=back,
-                             tipo=tipo,
-                             vlan_nativa='1')
+                if not keep_db:
+                    for i in equip_dict.get(e):
+                        try:
+                            front = i.ligacao_front.id
+                        except:
+                            front = None
+                            pass
+                        try:
+                            back = i.ligacao_back.id
+                        except:
+                            back = None
+                            pass
+                        i.update(user,
+                                 i.id,
+                                 interface=i.interface,
+                                 protegida=i.protegida,
+                                 descricao=i.descricao,
+                                 ligacao_front_id=front,
+                                 ligacao_back_id=back,
+                                 tipo=tipo,
+                                 vlan_nativa='1')
 
                 api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
 
-            channel.delete(user)
+            if not keep_db:
+                channel.delete(user)
 
             return self.response(dumps_networkapi({}))
 
