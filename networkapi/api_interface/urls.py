@@ -17,6 +17,7 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
+from networkapi.api_interface.views import UndeployInterfaceConfV3View
 from networkapi.api_interface.views import DeployInterfaceConfV3View
 from networkapi.api_interface.views import DisconnectView
 from networkapi.api_interface.views import InterfaceEnvironmentsV3View
@@ -32,6 +33,8 @@ urlpatterns = patterns(
         DisconnectView.as_view()),
     url(r'^interface/(?P<interface_id>\d+)/deploy_config_sync/$',
         DeployInterfaceConfV3View.as_view()),
+    url(r'^v3/interface/(?P<interface_id>\d+)/undeploy_config_sync[/]?$',
+        UndeployInterfaceConfV3View.as_view()),
 
     url(r'^v3/connections/(?P<interface_a>[;\w]+)/((?P<interface_b>[;\w]+)[/])$',
         InterfaceV3ConnectionsView.as_view()),
