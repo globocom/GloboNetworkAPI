@@ -87,6 +87,43 @@ class DeployInterfaceConfV3View(APIView):
             raise exception
 
 
+class UndeployInterfaceConfV3View(APIView):
+    """
+    View class to handle requests to undeploy interface configuration
+    on equipments.
+    """
+
+    @logs_method_apiview
+    @permission_classes((IsAuthenticated, DeployConfig))
+    def delete(self, request, *args, **kwargs):
+        """Tries to undeploy interface configuration on equipment and DO NOT remove from database"""
+
+        log.info('Start to undeploy interface configuration')
+
+        interface_id = kwargs.get('interface_id')
+        if not interface_id:
+            return Response(
+                {"error": "Interface not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            data = facade.generate_and_undeploy_interface_config_sync(interface_id)
+            return Response(data, status=status.HTTP_200_OK)
+
+        except exceptions.InvalidIdInterfaceException, exception:
+            raise exception
+        except exceptions.UnsupportedEquipmentException, exception:
+            raise exception
+        except exceptions.InterfaceTemplateException, exception:
+            raise exception
+        except InterfaceNotFoundError:
+            raise exceptions.InvalidIdInterfaceException
+        except Exception, exception:
+            log.error(exception)
+            raise exception
+
+
 class DisconnectView(APIView):
 
     @permission_classes((IsAuthenticated, Write))
