@@ -69,7 +69,7 @@ class JUNOS(BasePlugin):
         # Logger objects to be disabled. Remove or add objects to array below:
         loggers = [device_logger, ssh_logger, session_logger, rpc_logger]
         detailed_log_level_used = self.set_detailed_junos_log_level(loggers)
-        log.info("Detailed Junos log level: {}".format(detailed_log_level_used))
+        log.info("Junos log level is '{}'".format(detailed_log_level_used))
 
     def connect(self):
 
