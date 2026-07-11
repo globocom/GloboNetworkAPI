@@ -93,6 +93,14 @@ class InterfaceForEquipmentDuplicatedError(InterfaceError):
         InterfaceError.__init__(self, cause, message)
 
 
+class InterfaceChannelForEquipmentDuplicatedError(InterfaceError):
+
+    """Retorna exceção quando já existir uma interface do tipo canal com o mesmo nome para o equipamento informado."""
+
+    def __init__(self, cause, message=None):
+        InterfaceError.__init__(self, cause, message)
+
+
 class InterfaceUsedByOtherInterfaceError(InterfaceError):
 
     """Retorna exceção quando a interface a ser removida for utilizada por outra interface."""
