@@ -328,10 +328,10 @@ class Usuario(BaseModel):
                         raise Exception('No cached user found with this credentials')
 
             except exceptions.VariableDoesNotExistException:
-                self.log.error(
+                self.log.warning(
                     u'Error getting cache user variable. Trying AuthAPI authentication')
             except Exception as ERROR:
-                self.log.error(u'Error to get cached user. %s. Trying AuthAPI authentication. ' % ERROR)
+                self.log.warning(u'Error to get cached user. %s. Trying AuthAPI authentication. ' % ERROR)
 
             # AuthAPI authentication
             try:
@@ -356,10 +356,10 @@ class Usuario(BaseModel):
                         raise Exception('Error to connect with AuthAPI')
 
             except exceptions.VariableDoesNotExistException:
-                self.log.error(
+                self.log.warning(
                     u'Error getting AuthAPI variable. Trying ldap authentication')
             except Exception as ERROR:
-                self.log.error(u'Error to get user from AuthAPI. %s. Trying ldap authentication. ' % ERROR)
+                self.log.warning(u'Error to get user from AuthAPI. %s. Trying ldap authentication. ' % ERROR)
 
             try:
                 use_ldap = convert_string_or_int_to_boolean(
@@ -371,7 +371,7 @@ class Usuario(BaseModel):
                 else:
                     bypass = 1
             except exceptions.VariableDoesNotExistException, e:
-                self.log.error(
+                self.log.warning(
                     'Error getting LDAP config variables (use_ldap). Trying local authentication')
                 bypass = 1
             except UsuarioNotFoundError, e:
@@ -395,9 +395,9 @@ class Usuario(BaseModel):
                     return return_user
 
                 except ldap.INVALID_CREDENTIALS, e:
-                    self.log.error('LDAP authentication error %s' % e)
+                    self.log.warning('LDAP authentication error %s' % e)
                 except exceptions.VariableDoesNotExistException, e:
-                    self.log.error(
+                    self.log.warning(
                         'Error getting LDAP config variables (ldap_server, ldap_param).')
 
             # local auth
@@ -411,7 +411,7 @@ class Usuario(BaseModel):
                 return user
 
             except exceptions.VariableDoesNotExistException:
-                self.log.debug(u'User will not be cached because cached user is disabled')
+                self.log.warning(u'User will not be cached because cached user is disabled')
 
             except ObjectDoesNotExist:
                 raise ObjectDoesNotExist

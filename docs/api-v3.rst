@@ -7,6 +7,7 @@ Using GloboNetworkAPI V3
    environment/environment
    environment-vip/environment-vip
    equipment/equipment
+   interface/interface
    option-pool/option-pool
    option-vip/option-vip
    pool/pool

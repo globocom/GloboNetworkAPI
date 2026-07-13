@@ -1,0 +1,12 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+-- Adds status_deploy column to port_channel table.
+-- Values: 'pending' (not deployed), 'deployed', 'error'
+ALTER TABLE `port_channel`
+ADD COLUMN `status_deploy` VARCHAR(10) NOT NULL DEFAULT 'pending';
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `port_channel`
+DROP COLUMN `status_deploy`;
+"""

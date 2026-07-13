@@ -146,6 +146,13 @@ class TipoInterface(BaseModel):
             raise InterfaceError(e, u'Falha ao pesquisar o tipo de interface.')
 
 
+class StatusDeploy:
+    pending = ('pending', 'pending')
+    deployed = ('deployed', 'deployed')
+    error = ('error', 'error')
+    list_type = (pending, deployed, error)
+
+
 class PortChannel(BaseModel):
 
     log = logging.getLogger('PortChannel')
@@ -153,6 +160,11 @@ class PortChannel(BaseModel):
     id = models.AutoField(primary_key=True, db_column='id_port_channel')
     nome = models.CharField(max_length=10, unique=True)
     lacp = models.BooleanField(default=1)
+    status_deploy = models.CharField(
+        max_length=10,
+        choices=StatusDeploy.list_type,
+        default=StatusDeploy.pending[0]
+    )
 
     class Meta(BaseModel.Meta):
         db_table = u'port_channel'

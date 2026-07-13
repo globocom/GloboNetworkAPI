@@ -95,6 +95,21 @@ services:
             - odl:netapi_odl
             - queue:netapi_queue
 
+    docs:
+        container_name: netapi_docs
+        image: globocom/networkapi-docs:latest
+        build:
+            context: .
+            dockerfile: ./scripts/docker/Dockerfile.docs
+        working_dir: /netapi
+        command: sh -c "cd docs && mkdir -p _build/html && (sphinx-build -b html -d _build/doctrees . _build/html >/tmp/sphinx_build.log 2>&1 &) && cd _build/html && python -m SimpleHTTPServer 9000"
+        ports:
+            - "9000:9000"
+        volumes:
+            - ./:/netapi/
+        networks:
+            - netapi_net
+
 volumes:
     netapi_db_vol:
 

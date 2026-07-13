@@ -1,0 +1,24 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+-- Inserts the 'interface_channel_configuration' script type, matching the
+-- value already used as the 'template_type_channel' system variable
+-- (see the 'variables' table). Idempotent: no-ops on QA/PROD where this
+-- row was already inserted manually.
+INSERT INTO `tipo_roteiro` (`tipo`, `descricao`)
+SELECT 'interface_channel_configuration', 'Deploy Port Channel configuration' FROM DUAL
+WHERE NOT EXISTS (
+    SELECT 1 FROM `tipo_roteiro` WHERE `tipo` = 'interface_channel_configuration'
+);
+"""
+
+SQL_DOWN = u"""
+-- Only removes the row if no roteiro (script) already references it, to
+-- avoid breaking FK integrity on environments with configured templates.
+DELETE FROM `tipo_roteiro`
+WHERE `tipo` = 'interface_channel_configuration'
+AND NOT EXISTS (
+    SELECT 1 FROM `roteiros` r
+    INNER JOIN `tipo_roteiro` tr ON r.id_tipo_roteiro = tr.id_tipo_roteiro
+    WHERE tr.tipo = 'interface_channel_configuration'
+);
+"""

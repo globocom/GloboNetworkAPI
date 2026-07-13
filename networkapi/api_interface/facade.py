@@ -331,7 +331,8 @@ def generate_delete_file(user, equip_id, interface_list, channel):
                 Context(key_dict))
         except exceptions.InterfaceTemplateException, e:
             log.error(e)
-            raise exceptions.InterfaceTemplateException()
+            raise exceptions.InterfaceTemplateException(
+                'The interface equipment %s has no template for the delete operation: %s' % (equip_id, e))
         except KeyError, exception:
             log.error('Erro: %s ' % exception)
             raise exceptions.InvalidKeyException(exception)
@@ -392,6 +393,90 @@ def generate_and_deploy_interface_config_sync(user, id_interface):
     lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % interface.equipamento.id
     status_deploy = deploy_config_in_equipment_synchronous(
         file_to_deploy, interface.equipamento, lockvar)
+
+    return status_deploy
+
+
+def _generate_undeploy_interface_config_file(interface):
+    """Generate and save config file to undeploy one interface from equipment."""
+
+    log.info("Start to _generate_undeploy_interface_config_file for interface %s", interface.interface)
+    
+    # Loading variables from database
+    try:
+        INTERFACE_CONFIG_TOAPPLY_REL_PATH = get_variable(
+            'interface_config_toapply_rel_path')
+        INTERFACE_CONFIG_FILES_PATH = get_variable(
+            'interface_config_files_path')
+        TEMPLATE_REMOVE_INTERFACE = get_variable('template_remove_interface')
+    except ObjectDoesNotExist:
+        raise var_exceptions.VariableDoesNotExistException(
+            'Error fetching variables INTERFACE_CONFIG_TOAPPLY_REL_PATH, '
+            'INTERFACE_CONFIG_FILES_PATH or TEMPLATE_REMOVE_INTERFACE.')
+
+    key_dict = {
+        'INTERFACE_NAME': interface.interface
+    }
+
+    # Generate filename to save config file.
+    # Note: HP equipment deploy scripts must have a .py extension because the HP plugin
+    # executes them as Python scripts. Other vendors do not require an extension.
+    request_id = getattr(local, 'request_id', NO_REQUEST_ID)
+    extension = '.py' if interface.equipamento.modelo.marca.nome == 'HP' else ''
+    filename_out = 'int-r_{}_config_{}{}'.format(
+        interface.id,
+        request_id,
+        extension
+    )
+    filename_to_save = INTERFACE_CONFIG_FILES_PATH + filename_out
+    rel_file_to_deploy = INTERFACE_CONFIG_TOAPPLY_REL_PATH + filename_out
+    
+    # Load template file for the interface removal operation
+    try:
+        int_template_file = _load_template_file(
+            interface.equipamento.id,
+            TEMPLATE_REMOVE_INTERFACE
+        )
+        config_to_be_saved = int_template_file.render(Context(key_dict))
+    except KeyError, exception:
+        log.error('Error: %s ' % exception)
+        raise exceptions.InvalidKeyException(exception)
+
+    # Save new file
+    try:
+        file_handle = open(filename_to_save, 'w')
+        file_handle.write(config_to_be_saved)
+        file_handle.close()
+    except IOError:
+        log.error('Error writing to config file: %s' % filename_to_save)
+        raise exceptions.InterfaceTemplateException()
+
+    return rel_file_to_deploy
+
+
+def generate_and_undeploy_interface_config_sync(id_interface):
+    """Generate and deploy config to undeploy one interface on equipment."""
+
+    log.info("Start to generate_and_undeploy_interface_config_sync. id_interface:%s", id_interface)
+
+    # Validate id_interface
+    if not is_valid_int_greater_zero_param(id_interface):
+        raise exceptions.InvalidIdInterfaceException()
+
+    # Get interface from db
+    interface = Interface.get_by_pk(id_interface)
+    file_to_deploy = _generate_undeploy_interface_config_file(interface)
+
+    # Lock var config
+    lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % interface.equipamento.id
+    
+    # Undeploy
+    log.info("Starting to undeploy configuration in equipment %s", interface.equipamento)
+    status_deploy = deploy_config_in_equipment_synchronous(
+        file_to_deploy,
+        interface.equipamento,
+        lockvar
+    )
 
     return status_deploy
 
