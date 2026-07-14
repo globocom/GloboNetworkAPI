@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+from datetime import datetime
 
 from django.forms.models import model_to_dict
 
@@ -362,6 +363,9 @@ class InterfaceChannelResource(RestResource):
 
             if not keep_db:
                 channel.delete(user)
+            else:
+                channel.last_undeploy = datetime.now()
+                channel.save(user)
 
             return self.response(dumps_networkapi({}))
 
