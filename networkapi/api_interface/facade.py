@@ -17,6 +17,7 @@ import ast
 import logging
 import os
 import re
+from datetime import datetime
 
 from django.core.exceptions import FieldError
 from django.core.exceptions import ObjectDoesNotExist
@@ -510,6 +511,9 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
         equipamento = Equipamento.get_by_pk(equipment_id)
         status_deploy = deploy_config_in_equipment_synchronous(
             files_to_deploy[equipment_id], equipamento, lockvar)
+    
+    channel.last_deploy = datetime.now()
+    channel.save(user)
 
     return status_deploy
 
