@@ -513,7 +513,7 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
             files_to_deploy[equipment_id], equipamento, lockvar)
     
     channel.last_deploy = datetime.now()
-    channel.save()
+    channel.save(user)
 
     return status_deploy
 
