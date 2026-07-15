@@ -40,6 +40,7 @@ from networkapi.infrastructure.datatable import build_query_to_datatable_v3
 from networkapi.interface.models import EnvironmentInterface
 from networkapi.interface.models import Interface
 from networkapi.interface.models import PortChannel
+from networkapi.interface.models import StatusDeploy
 from networkapi.interface.models import TipoInterface
 from networkapi.interface import models
 from networkapi.system import exceptions as var_exceptions
@@ -506,13 +507,19 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
 
     # TODO Deploy config file
     # make separate threads
-    for equipment_id in files_to_deploy.keys():
-        lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % (equipment_id)
-        equipamento = Equipamento.get_by_pk(equipment_id)
-        status_deploy = deploy_config_in_equipment_synchronous(
-            files_to_deploy[equipment_id], equipamento, lockvar)
-    
+    try:
+        for equipment_id in files_to_deploy.keys():
+            lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % (equipment_id)
+            equipamento = Equipamento.get_by_pk(equipment_id)
+            status_deploy = deploy_config_in_equipment_synchronous(
+                files_to_deploy[equipment_id], equipamento, lockvar)
+    except Exception:
+        channel.status_deploy = StatusDeploy.error[0]
+        channel.save(user)
+        raise
+
     channel.last_deploy = datetime.now()
+    channel.status_deploy = StatusDeploy.deployed[0]
     channel.save(user)
 
     return status_deploy
