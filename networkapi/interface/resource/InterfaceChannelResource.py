@@ -32,6 +32,7 @@ from networkapi.interface.models import Interface
 from networkapi.interface.models import InterfaceError
 from networkapi.interface.models import InterfaceNotFoundError
 from networkapi.interface.models import PortChannel
+from networkapi.interface.models import StatusDeploy
 from networkapi.interface.models import TipoInterface
 from networkapi.rest import RestResource
 from networkapi.rest import UserNotAuthorizedError
@@ -336,35 +337,42 @@ class InterfaceChannelResource(RestResource):
             tipo = tipo.get_by_name('access')
 
             # For each equipment (leaf), undeploy port channel config
-            for e in equip_dict:
-                if not keep_db:
-                    for i in equip_dict.get(e):
-                        try:
-                            front = i.ligacao_front.id
-                        except:
-                            front = None
-                            pass
-                        try:
-                            back = i.ligacao_back.id
-                        except:
-                            back = None
-                            pass
-                        i.update(user,
-                                 i.id,
-                                 interface=i.interface,
-                                 protegida=i.protegida,
-                                 descricao=i.descricao,
-                                 ligacao_front_id=front,
-                                 ligacao_back_id=back,
-                                 tipo=tipo,
-                                 vlan_nativa='1')
+            try:
+                for e in equip_dict:
+                    if not keep_db:
+                        for i in equip_dict.get(e):
+                            try:
+                                front = i.ligacao_front.id
+                            except:
+                                front = None
+                                pass
+                            try:
+                                back = i.ligacao_back.id
+                            except:
+                                back = None
+                                pass
+                            i.update(user,
+                                     i.id,
+                                     interface=i.interface,
+                                     protegida=i.protegida,
+                                     descricao=i.descricao,
+                                     ligacao_front_id=front,
+                                     ligacao_back_id=back,
+                                     tipo=tipo,
+                                     vlan_nativa='1')
 
-                api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
+                    api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
+            except Exception:
+                if keep_db:
+                    channel.status_deploy = StatusDeploy.error[0]
+                    channel.save(user)
+                raise
 
             if not keep_db:
                 channel.delete(user)
             else:
                 channel.last_undeploy = datetime.now()
+                channel.status_deploy = StatusDeploy.pending[0]
                 channel.save(user)
 
             return self.response(dumps_networkapi({}))
