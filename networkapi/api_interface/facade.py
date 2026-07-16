@@ -499,15 +499,15 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
             equipment_interfaces[interface.equipamento.id] = []
         equipment_interfaces[interface.equipamento.id].append(interface)
 
-    files_to_deploy = {}
-    for equipment_id in equipment_interfaces.keys():
-        grouped_interfaces = equipment_interfaces[equipment_id]
-        file_to_deploy = _generate_config_file(grouped_interfaces)
-        files_to_deploy[equipment_id] = file_to_deploy
-
-    # TODO Deploy config file
-    # make separate threads
     try:
+        files_to_deploy = {}
+        for equipment_id in equipment_interfaces.keys():
+            grouped_interfaces = equipment_interfaces[equipment_id]
+            file_to_deploy = _generate_config_file(grouped_interfaces)
+            files_to_deploy[equipment_id] = file_to_deploy
+
+        # TODO Deploy config file
+        # make separate threads
         for equipment_id in files_to_deploy.keys():
             lockvar = LOCK_INTERFACE_DEPLOY_CONFIG % (equipment_id)
             equipamento = Equipamento.get_by_pk(equipment_id)
