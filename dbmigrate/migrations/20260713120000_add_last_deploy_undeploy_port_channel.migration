@@ -1,0 +1,14 @@
+#-*- coding:utf-8 -*-
+SQL_UP = u"""
+-- Adds last_deploy and last_undeploy columns to port_channel table
+-- These columns track the datetime of the last deploy and undeploy operations
+ALTER TABLE `port_channel`
+ADD COLUMN `last_deploy` DATETIME NULL DEFAULT NULL,
+ADD COLUMN `last_undeploy` DATETIME NULL DEFAULT NULL;
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `port_channel`
+DROP COLUMN `last_deploy`,
+DROP COLUMN `last_undeploy`;
+"""

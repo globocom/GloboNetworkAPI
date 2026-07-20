@@ -165,6 +165,8 @@ class PortChannel(BaseModel):
         choices=StatusDeploy.list_type,
         default=StatusDeploy.pending[0]
     )
+    last_deploy = models.DateTimeField(null=True, blank=True, db_column='last_deploy')
+    last_undeploy = models.DateTimeField(null=True, blank=True, db_column='last_undeploy')
 
     class Meta(BaseModel.Meta):
         db_table = u'port_channel'
