@@ -489,6 +489,8 @@ def generate_and_deploy_channel_config_sync(user, id_channel):
         raise exceptions.InvalidIdInterfaceException()
 
     channel = PortChannel.get_by_pk(id_channel)
+    channel.status_deploy = StatusDeploy.deploying[0]
+    channel.save(user)
 
     interfaces = channel.list_interfaces()
 
