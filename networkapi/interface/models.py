@@ -148,11 +148,10 @@ class TipoInterface(BaseModel):
 
 class StatusDeploy:
     pending = ('pending', 'pending')
-    deploying = ('deploying', 'deploying')
-    undeploying = ('undeploying', 'undeploying')
+    processing = ('processing', 'processing')
     deployed = ('deployed', 'deployed')
     error = ('error', 'error')
-    list_type = (pending, deploying, undeploying, deployed, error)
+    list_type = (pending, processing, deployed, error)
 
 
 class PortChannel(BaseModel):
@@ -163,7 +162,7 @@ class PortChannel(BaseModel):
     nome = models.CharField(max_length=10, unique=True)
     lacp = models.BooleanField(default=1)
     status_deploy = models.CharField(
-        max_length=15,
+        max_length=10,
         choices=StatusDeploy.list_type,
         default=StatusDeploy.pending[0]
     )
