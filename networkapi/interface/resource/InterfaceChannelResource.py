@@ -338,6 +338,10 @@ class InterfaceChannelResource(RestResource):
 
             # For each equipment (leaf), undeploy port channel config
             try:
+                if keep_db:
+                    channel.status_deploy = StatusDeploy.processing[0]
+                    channel.save(user, commit=True)
+
                 for e in equip_dict:
                     if not keep_db:
                         for i in equip_dict.get(e):
