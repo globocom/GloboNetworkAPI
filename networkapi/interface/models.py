@@ -148,9 +148,10 @@ class TipoInterface(BaseModel):
 
 class StatusDeploy:
     pending = ('pending', 'pending')
+    processing = ('processing', 'processing')
     deployed = ('deployed', 'deployed')
     error = ('error', 'error')
-    list_type = (pending, deployed, error)
+    list_type = (pending, processing, deployed, error)
 
 
 class PortChannel(BaseModel):
