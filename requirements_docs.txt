@@ -66,7 +66,7 @@ Pygments==2.3.0
 PyHamcrest==1.9.0
 pytest==2.2.4
 pytest-cov==1.6
-PyYAML==3.10
+PyYAML==5.4
 sure==1.2.7
 urllib3==1.21.1
 
