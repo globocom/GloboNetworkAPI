@@ -40,7 +40,7 @@ supervisor==3.3.4
 Jinja2==2.9
 MarkupSafe==1.1.1
 PyYAML==5.3
-certifi==2018.10.15
+certifi==2022.12.7
 chardet==3.0.4
 gtextfsm==0.2.1
 lxml==4.5.2
