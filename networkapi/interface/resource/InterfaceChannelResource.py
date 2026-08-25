@@ -56,7 +56,7 @@ def alterar_interface(var, interface, port_channel, int_type, vlan_nativa, user,
         raise InterfaceError(
             'Interface %s já está em um Channel' % var.interface)
 
-    if cont is []:
+    if cont == []:
         cont.append(int(var.equipamento.id))
     elif not var.equipamento.id in cont:
         cont.append(int(var.equipamento.id))
@@ -166,7 +166,7 @@ class InterfaceChannelResource(RestResource):
                         raise InterfaceError(
                             'Interface %s já está em um Channel' % sw_router.interface)
 
-                    if cont is []:
+                    if cont == []:
                         cont.append(int(sw_router.equipamento.id))
                     elif not sw_router.equipamento.id in cont:
                         cont.append(int(sw_router.equipamento.id))
