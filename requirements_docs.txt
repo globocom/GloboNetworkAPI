@@ -50,7 +50,7 @@ docutils==0.12
 factory-boy==2.2.1
 flake8==3.2.1
 
-flower==0.9.1
+flower==1.2.0
 HTTPretty==0.8.3
 Jinja2==2.7.3
 mock==1.0.1
