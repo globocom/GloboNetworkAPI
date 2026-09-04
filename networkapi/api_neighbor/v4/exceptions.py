@@ -135,7 +135,9 @@ class LocalIpAndPeerGroupAtDifferentEnvironmentsException(APIException):
 
     def __init__(self, neighbor):
         self.detail = u'Not allowed to configure BGP neighbor using this Peer Group. ' \
-                      u'PeerGroup id = {} is not mapped to the environment of LocalIp id = {}'.\
+                      u'PeerGroup id = {} is not mapped to the environment of LocalIp id = {}. ' \
+                      u'The LocalIp environment must be associated with this PeerGroup ' \
+                      u'in the environment_peer_group table.'.\
             format(neighbor.peer_group, neighbor.local_ip)
 
 

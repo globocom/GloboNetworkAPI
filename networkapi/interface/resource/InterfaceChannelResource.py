@@ -22,6 +22,7 @@ from networkapi.admin_permission import AdminPermission
 from networkapi.ambiente.models import Ambiente
 from networkapi.api_interface import exceptions as api_interface_exceptions
 from networkapi.api_interface import facade as api_interface_facade
+from networkapi.api_rest.exceptions import NetworkAPIException
 from networkapi.auth import has_perm
 from networkapi.exception import InvalidValueError
 from networkapi.infrastructure.xml_utils import dumps_networkapi
@@ -366,11 +367,12 @@ class InterfaceChannelResource(RestResource):
                                      vlan_nativa='1')
 
                     api_interface_facade.delete_channel(user, e, equip_dict.get(e), channel)
-            except Exception:
+            except Exception, e:
+                self.log.error(u'Error undeploying channel configuration: %s' % e)
                 if keep_db:
                     channel.status_deploy = StatusDeploy.error[0]
-                    channel.save(user)
-                raise
+                    channel.save(user, commit=True)
+                return self.response_error(410, e)
 
             if not keep_db:
                 channel.delete(user)
