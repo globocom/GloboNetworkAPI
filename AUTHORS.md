@@ -11,7 +11,7 @@
 - [Gustavo Pantuza](https://github.com/pantuza)
 - [Leopoldo Mauricio](https://github.com/leopoldomauricio)
 - [Laura Panzariello](https://github.com/laurapanzariello)
-- Lucas Borges
+- [Lucas Borges](https://github.com/barizonlucas)
 - Mauricio Leoncio dos Santos
 - Mateus Constanzo
 - [Silvano Buback](https://github.com/snbuback)
