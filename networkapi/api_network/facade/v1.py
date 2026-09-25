@@ -594,7 +594,7 @@ def _load_template_file(equipment, template_type):
     try:
         equipment_template = (EquipamentoRoteiro.search(
             None, equipment.id, template_type)).uniqueResult()
-    except:
+    except Exception:
         log.error('Template type %s not found.' % template_type)
         raise exceptions.NetworkTemplateException()
 
