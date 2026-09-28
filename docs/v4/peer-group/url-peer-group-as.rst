@@ -6,3 +6,4 @@
    url-api-v4-peer-group/post
    url-api-v4-peer-group/put
    url-api-v4-peer-group/delete
+   url-api-v4-peer-group/environment
