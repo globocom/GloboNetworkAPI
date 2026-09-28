@@ -137,3 +137,53 @@ class PeerGroupPostErrorTestCase(NetworkApiTestCase):
             u'RouteMapIn cant be equal RouteMapOut',
             response.data['detail']
         )
+
+
+class EnvironmentPeerGroupPostTestCase(NetworkApiTestCase):
+
+    peer_group_uri = '/api/v4/peer-group/'
+    environment_peer_group_uri = '/api/v4/peer-group/1/environment/'
+    fixtures_path = 'networkapi/api_peer_group/v4/fixtures/{}'
+
+    fixtures = [
+        'networkapi/config/fixtures/initial_config.json',
+        'networkapi/system/fixtures/initial_variables.json',
+        'networkapi/usuario/fixtures/initial_usuario.json',
+        'networkapi/grupo/fixtures/initial_ugrupo.json',
+        'networkapi/usuario/fixtures/initial_usuariogrupo.json',
+        'networkapi/api_ogp/fixtures/initial_objecttype.json',
+        'networkapi/api_ogp/fixtures/initial_objectgrouppermissiongeneral.json',
+        'networkapi/grupo/fixtures/initial_permissions.json',
+        'networkapi/grupo/fixtures/initial_permissoes_administrativas.json',
+
+        fixtures_path.format('initial_environment.json'),
+        fixtures_path.format('initial_peer_group.json'),
+        fixtures_path.format('initial_environment_peer_group.json'),
+    ]
+
+    json_path = 'api_peer_group/v4/tests/sanity/json/post/{}'
+
+    def setUp(self):
+        self.client = Client()
+        self.authorization = self.get_http_authorization('test')
+        self.content_type = 'application/json'
+
+    def test_post_adds_environment_without_removing_existing_associations(self):
+        payload_path = self.json_path.format('add_environment_to_peer_group.json')
+        response = self.client.post(
+            self.environment_peer_group_uri,
+            data=self.load_json(payload_path),
+            content_type=self.content_type,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(201, response.status_code)
+
+        uri = mount_url(self.peer_group_uri, [1], fields=['id', 'environments'])
+        response = self.client.get(
+            uri,
+            HTTP_AUTHORIZATION=self.authorization)
+
+        self.compare_status(200, response.status_code)
+        self.compare_values(
+            [1, 2, 3],
+            response.data['peer_groups'][0]['environments'])
