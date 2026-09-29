@@ -133,3 +133,4 @@ class PeerGroupDeleteErrorTestCase(NetworkApiTestCase):
             u'with NeighborsV4 id = [1] and NeighborsV6 id = [1]',
             response.data['detail']
         )
+        

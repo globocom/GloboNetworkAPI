@@ -46,10 +46,10 @@ class RouteMapInAndOutAreEqualException(APIException):
 class EnvironmentPeerGroupDuplicatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
-    def __init__(self, env_peer_group):
+    def __init__(self, env_peer_group, peer_group_id):
         self.detail = u'Environment id = {} is already associated ' \
                       u'with Peer Group id = {}'. \
-            format(env_peer_group.environment, env_peer_group.peer_group)
+            format(env_peer_group, peer_group_id)
 
 
 class PeerGroupDuplicatedException(APIException):
