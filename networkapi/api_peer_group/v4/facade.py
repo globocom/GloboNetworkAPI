@@ -119,12 +119,14 @@ def create_environment_peer_group(environment_id, peer_group_id):
     try:
         get_peer_group_by_id(peer_group_id)
 
-        if EnvironmentPeerGroup.objects.filter(
+        associations = EnvironmentPeerGroup.objects.filter(
                 environment_id=environment_id,
-                peer_group_id=peer_group_id).exists():
-            raise EnvironmentPeerGroupDuplicatedException(
-                environment_id, peer_group_id)
+                peer_group_id=peer_group_id)
 
+        if associations.exists():
+            for association in associations:
+                return association
+        
         obj_to_create = EnvironmentPeerGroup()
         obj_to_create.create_v4({
             'environment': environment_id,
@@ -148,7 +150,7 @@ def delete_environment_peer_group(environment_id, peer_group_id):
         
         associations = EnvironmentPeerGroup.objects.filter(
             environment_id=environment_id,
-            peer_group_id=peer_group_id)
+            peer_group_id=peer_group_id).exists()
         if not associations:
             raise ObjectDoesNotExistException(
                 'Environment id = {} is not associated with Peer Group '
