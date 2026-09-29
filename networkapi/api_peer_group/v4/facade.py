@@ -150,8 +150,9 @@ def delete_environment_peer_group(environment_id, peer_group_id):
         
         associations = EnvironmentPeerGroup.objects.filter(
             environment_id=environment_id,
-            peer_group_id=peer_group_id).exists()
-        if not associations:
+            peer_group_id=peer_group_id)
+        
+        if not associations.exists():
             raise ObjectDoesNotExistException(
                 'Environment id = {} is not associated with Peer Group '
                 'id = {}'.format(environment_id, peer_group_id))
