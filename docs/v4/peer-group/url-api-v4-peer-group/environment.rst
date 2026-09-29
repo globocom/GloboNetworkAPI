@@ -32,8 +32,7 @@ records::
         {"id": 11}
     ]
 
-An environment already associated with the Peer Group is rejected with HTTP
-400. A Peer Group that does not exist returns HTTP 404.
+A Peer Group that does not exist returns HTTP 404.
 
 DELETE
 ******
