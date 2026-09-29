@@ -114,3 +114,42 @@ class PeerGroupDBView(CustomAPIView):
         facade.delete_peer_group(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)
+
+
+class EnvironmentPeerGroupDBView(CustomAPIView):
+
+    @logs_method_apiview
+    @raise_json_validate('environment_peer_group_post_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def post(self, request, *args, **kwargs):
+        """Create environment associations for existing PeerGroups."""
+
+        objects = request.DATA
+        json_validate(SPECS.get('environment_peer_group_post_v4')).validate(objects)
+        response = list()
+        peer_group_id = kwargs.get('peer_group_id')
+        for environment_id in objects['environments_ids']:
+            created_obj = facade.create_environment_peer_group(
+                environment_id, peer_group_id)
+            response.append({'id': created_obj.id})
+
+        return Response(response, status=status.HTTP_201_CREATED)
+
+    @logs_method_apiview
+    @raise_json_validate('environment_peer_group_delete_v4')
+    @permission_classes_apiview((IsAuthenticated, Write))
+    @commit_on_success
+    def delete(self, request, *args, **kwargs):
+        """Delete environment associations from an existing PeerGroup."""
+
+        objects = request.DATA
+        json_validate(SPECS.get('environment_peer_group_delete_v4')).validate(objects)
+        peer_group_id = kwargs.get('peer_group_id')
+        for environment_id in objects['environments_ids']:
+            facade.delete_environment_peer_group(
+                environment_id, peer_group_id)
+
+        return Response({}, status=status.HTTP_200_OK)
+
+    

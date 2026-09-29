@@ -3,7 +3,9 @@ import logging
 
 from django.core.exceptions import FieldError
 
+from networkapi.api_peer_group.models import EnvironmentPeerGroup
 from networkapi.api_peer_group.models import PeerGroup
+from networkapi.api_peer_group.v4.exceptions import EnvironmentPeerGroupDuplicatedException
 from networkapi.api_peer_group.v4.exceptions import PeerGroupAssociatedWithDeployedNeighborsException
 from networkapi.api_peer_group.v4.exceptions import PeerGroupDoesNotExistException
 from networkapi.api_peer_group.v4.exceptions import \
@@ -109,6 +111,60 @@ def create_peer_group(obj, user):
         raise NetworkAPIException(str(e))
 
     return obj_to_create
+
+
+def create_environment_peer_group(environment_id, peer_group_id):
+    """Add an environment association to an existing PeerGroup."""
+
+    try:
+        get_peer_group_by_id(peer_group_id)
+
+        associations = EnvironmentPeerGroup.objects.filter(
+                environment_id=environment_id,
+                peer_group_id=peer_group_id)
+
+        if associations.exists():
+            for association in associations:
+                return association
+        
+        obj_to_create = EnvironmentPeerGroup()
+        obj_to_create.create_v4({
+            'environment': environment_id,
+            'peer_group': peer_group_id
+        })
+    except EnvironmentPeerGroupDuplicatedException as e:
+        raise ValidationAPIException(str(e))
+    except PeerGroupDoesNotExistException as e:
+        raise ObjectDoesNotExistException(str(e))
+    except Exception as e:
+        raise NetworkAPIException(str(e))
+
+    return obj_to_create
+
+
+def delete_environment_peer_group(environment_id, peer_group_id):
+    """Remove an environment association from a PeerGroup."""
+
+    try:
+        get_peer_group_by_id(peer_group_id)
+        
+        associations = EnvironmentPeerGroup.objects.filter(
+            environment_id=environment_id,
+            peer_group_id=peer_group_id)
+        
+        if not associations.exists():
+            raise ObjectDoesNotExistException(
+                'Environment id = {} is not associated with Peer Group '
+                'id = {}'.format(environment_id, peer_group_id))
+
+        for association in associations:
+            association.delete_v4()
+    except PeerGroupDoesNotExistException as e:
+        raise ObjectDoesNotExistException(str(e))
+    except ObjectDoesNotExistException:
+        raise
+    except Exception as e:
+        raise NetworkAPIException(str(e))
 
 
 def delete_peer_group(obj_ids):
