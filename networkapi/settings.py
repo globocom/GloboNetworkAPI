@@ -654,10 +654,6 @@ SPECS = {
         PROJECT_ROOT_PATH,
         'api_peer_group/v4/specs/environment_peer_group_post.json'
     ),
-    'environment_peer_group_delete_v4': os.path.join(
-        PROJECT_ROOT_PATH,
-        'api_peer_group/v4/specs/environment_peer_group_post.json'
-    ),
     'simple_env_post': os.path.join(
         PROJECT_ROOT_PATH,
         'api_environment/specs/simple_env_post.json'

@@ -3,14 +3,18 @@ Environment associations
 
 Add or remove environment associations for an existing Peer Group.
 
-URL::
+POST URL::
 
     /api/v4/peer-group/{peer_group_id}/environment
 
-The trailing slash is optional. The endpoint requires the Peer Group
+DELETE URL::
+
+    /api/v4/peer-group/{peer_group_id}/environment/{environment_id}
+
+The trailing slash is optional. Both endpoints require the Peer Group
 management write permission.
 
-Request body for both methods:
+POST request body:
 
 .. code-block:: json
 
@@ -38,9 +42,8 @@ An environment already associated with the Peer Group is rejected with HTTP
 DELETE
 ******
 
-Removes only the associations matching the listed environment IDs. Other
-environment associations are preserved. The request returns HTTP 200 with an
-empty object::
+Removes the association identified by the URL's ``environment_id``. Other environment associations are preserved. The request
+returns HTTP 200 with an empty object::
 
     {}
 
