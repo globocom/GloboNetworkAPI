@@ -55,6 +55,7 @@ services:
             - ./scripts/docker/netapi.env
         volumes:
             - ./networkapi/:/netapi/networkapi
+            - ${NETWORKAPI_CONFIG_TEMPLATE_PATH:-./networkapi/config_templates}:/templates/config:ro
         networks:
             - netapi_net
         links:
@@ -80,6 +81,7 @@ services:
         volumes:
             - ./:/netapi/
             - ./dev:/netapi/dev
+            - ${NETWORKAPI_CONFIG_TEMPLATE_PATH:-./networkapi/config_templates}:/templates/config:ro
             # # COMMENT
             # - /tftpboot:/tftpboot:rw
         networks:

@@ -36,6 +36,7 @@ urlpatterns = patterns(
     url(api_prefix, include('networkapi.api_rest.urls')),
     url(api_prefix, include('networkapi.api_route_map.urls')),
     url(api_prefix, include('networkapi.api_task.urls')),
+    url(api_prefix, include('networkapi.api_template.urls')),
     url(api_prefix, include('networkapi.api_vip_request.urls')),
     url(api_prefix, include('networkapi.api_vlan.urls')),
     url(api_prefix, include('networkapi.api_vrf.urls')),

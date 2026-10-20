@@ -340,6 +340,7 @@ PROJECT_APPS = (
     'networkapi.api_rack',
     'networkapi.api_rest',
     'networkapi.api_task',
+    'networkapi.api_template',
     'networkapi.api_usuario',
     'networkapi.api_vip_request',
     'networkapi.api_vlan',

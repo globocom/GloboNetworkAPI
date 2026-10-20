@@ -11,6 +11,7 @@ Using GloboNetworkAPI V4
    v4/neighbor/neighbor
    v4/peer-group/peer-group
    v4/sdn/sdn
+   v4/template/template
 
 
 
