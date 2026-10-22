@@ -6,14 +6,12 @@ GET
 Obtaining information of a port-channel
 ***************************************
 
-Returns the name, the member interfaces and the configuration of a
-port-channel, obtained from the committed configuration of the equipment
-itself (the equipment is accessed at each request).
+Returns a port-channel as retrieved from the running configuration of the
+equipment itself by the netconf microservice (the equipment is accessed at
+each request).
 
 Currently supported only by Juniper QFX equipments (JUNOS plugin), where
-port-channels are aggregated ethernet interfaces (``aeN``) and members are the
-interfaces configured with ``gigether-options 802.3ad aeN`` or
-``ether-options 802.3ad aeN``.
+port-channels are aggregated ethernet interfaces (``aeN``).
 
 URL::
 
@@ -25,17 +23,9 @@ where:
 * **port_channel** is the port-channel number, as registered in NetworkAPI
   (e.g. *1*), or its name in Junos (e.g. *ae1*).
 
-GET Parameters
-==============
-
-* **display** (optional) is the format of the configuration. Accepted values:
-
-  * *text* (default) - curly braces format, like ``show configuration``.
-  * *set* - set commands, like ``show configuration | display set``.
-
 Example::
 
-    /api/v4/equipment/1/port-channel/1/?display=set
+    /api/v4/equipment/1/port-channel/1/
 
 Response body:
 
@@ -43,14 +33,13 @@ Response body:
 
     {
         "port_channel": {
-            "name": "ae1",
-            "members": ["xe-0/0/1", "xe-0/0/2"],
-            "configuration": "set interfaces xe-0/0/1 gigether-options 802.3ad ae1\nset interfaces xe-0/0/2 gigether-options 802.3ad ae1\nset interfaces ae1 mtu 9216\n..."
+            "status": "success",
+            "data": "<data><configuration><interfaces><interface><name>ae1</name>...</interface></interfaces></configuration></data>"
         }
     }
 
-The **configuration** contains the configuration of the port-channel and of
-its member interfaces.
+The **port_channel** is the response of the netconf microservice as is, where
+**data** is the XML of the port-channel retrieved from the equipment.
 
 Errors
 ======
@@ -58,8 +47,8 @@ Errors
 ======  ==================================================================
 Status  Reason
 ======  ==================================================================
-400     Invalid **display**, equipment without access or equipment whose
-        plugin does not support getting port-channels.
+400     Equipment without access or equipment whose plugin does not
+        support getting port-channels.
 401     Missing or invalid credentials.
 403     User without read permission on equipment management.
 404     Equipment not found, invalid **port_channel** or port-channel not

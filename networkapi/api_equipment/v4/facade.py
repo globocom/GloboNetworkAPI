@@ -96,20 +96,13 @@ def delete_equipment(equipments):
 
 
 
-CONFIGURATION_FORMATS = ('text', 'set')
-
-
-def get_equipment_port_channel(equipment_id, channel_name, config_format='text'):
+def get_equipment_port_channel(equipment_id, channel_name):
     """Get information of a port-channel from the equipment itself.
 
     :param equipment_id: Id of equipment.
-    :param channel_name: Name of port-channel, e.g. 1 or ae1.
-    :param config_format: Format of configuration (text, set).
+    :param channel_name: Name of port-channel, e.g. 1 or ae1. Each plugin
+        converts it to the name used by the equipment.
     """
-
-    if config_format not in CONFIGURATION_FORMATS:
-        raise exceptions.InvalidConfigurationFormatException(
-            config_format, CONFIGURATION_FORMATS)
 
     equipment = get_equipment_by_id(equipment_id)
 
@@ -127,13 +120,8 @@ def get_equipment_port_channel(equipment_id, channel_name, config_format='text')
             BasePlugin.get_port_channel.im_func:
         raise exceptions.PortChannelNotSupportedException(equipment.nome)
 
-    # Port-channels are aggregated ethernet interfaces (aeN) in Junos
-    if not channel_name.startswith('ae'):
-        channel_name = 'ae%s' % channel_name
-
     plugin.connect()
-    port_channel = plugin.get_port_channel(
-        channel_name, config_format=config_format)
+    port_channel = plugin.get_port_channel(channel_name)
     plugin.close()
 
     return port_channel

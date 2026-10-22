@@ -1,7 +1,10 @@
+import json
+
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.base import BasePlugin
 from networkapi.plugins import exceptions
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
+from networkapi.settings import NETWORKAPI_NETCONF_URL
 from mock import patch, MagicMock
 from lxml import etree
 from jnpr.junos.exception import RPCError, RpcError, LockError, ConfigLoadError, CommitError
@@ -292,63 +295,43 @@ class JunosPluginTest(NetworkApiTestCase):
 
         self.assertEqual(result, 'ERROR')
 
-    port_channel_interfaces_xml = """
-        <configuration>
-            <interfaces>
-                <interface>
-                    <name>xe-0/0/1</name>
-                    <gigether-options><ieee-802.3ad><bundle>ae1</bundle></ieee-802.3ad></gigether-options>
-                </interface>
-                <interface>
-                    <name>xe-0/0/2</name>
-                    <ether-options><ieee-802.3ad><bundle>ae1</bundle></ieee-802.3ad></ether-options>
-                </interface>
-                <interface>
-                    <name>xe-0/0/3</name>
-                    <gigether-options><ieee-802.3ad><bundle>ae10</bundle></ieee-802.3ad></gigether-options>
-                </interface>
-                <interface><name>ae1</name></interface>
-                <interface><name>ae10</name></interface>
-            </interfaces>
-        </configuration>
-    """
-
+    @patch('networkapi.plugins.base.requests.post')
     @patch('jnpr.junos.Device')
-    def test_get_port_channel_success(self, mock_device):
+    def test_get_port_channel_success(self, mock_device, mock_post):
 
         """
-        test_get_port_channel_success - Test if port-channel name, members and configuration are returned
+        test_get_port_channel_success - Test if the response of netconf microservice is returned as is
         """
 
         # Mocking
-        configuration = MagicMock(text='set interfaces ae1 mtu 9216')
-        mock_device.rpc.get_config.side_effect = [etree.XML(self.port_channel_interfaces_xml), configuration]
+        retrieved = {'status': 'success', 'data': '<data><configuration><interfaces><interface>'
+                     '<name>ae1</name></interface></interfaces></configuration></data>'}
+        mock_post.return_value = MagicMock(status_code=200, text=json.dumps(retrieved))
         plugin = JUNOS(equipment_access=self.mock_equipment_access)
         plugin.remote_conn = mock_device
 
         # Close to a real test:
-        port_channel = plugin.get_port_channel('ae1', config_format='set')
+        port_channel = plugin.get_port_channel('1')
 
         # Asserts
-        self.assertEqual(port_channel, {
-            'name': 'ae1',
-            'members': ['xe-0/0/1', 'xe-0/0/2'],
-            'configuration': 'set interfaces ae1 mtu 9216'
-        })
-        filter_xml = mock_device.rpc.get_config.call_args[1]['filter_xml']
-        self.assertEqual(filter_xml.xpath('interfaces/interface/name/text()'), ['ae1', 'xe-0/0/1', 'xe-0/0/2'])
-        self.assertEqual(mock_device.rpc.get_config.call_args[1]['options'],
-                         {'database': 'committed', 'format': 'set'})
+        self.assertEqual(port_channel, retrieved)
+        payload = json.loads(mock_post.call_args[1]['data'])
+        self.assertEqual(mock_post.call_args[1]['url'], NETWORKAPI_NETCONF_URL + '/retrieve')
+        self.assertEqual(payload['address'], 'any fqdn')
+        self.assertEqual(payload['source'], 'running')
+        self.assertEqual(etree.XML(payload['filter']).xpath('interfaces/interface/name/text()'), ['ae1'])
+        self.assertFalse(mock_device.rpc.get_config.called)
 
+    @patch('networkapi.plugins.base.requests.post')
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
     @patch('jnpr.junos.Device')
-    def test_get_port_channel_not_found(self, mock_device, mock_close):
+    def test_get_port_channel_not_found(self, mock_device, mock_close, mock_post):
 
         """
         test_get_port_channel_not_found - Test if an inexistent port-channel raises exception and closes connection
         """
 
-        mock_device.rpc.get_config.return_value = etree.XML(self.port_channel_interfaces_xml)
+        mock_post.return_value = MagicMock(status_code=404)
         plugin = JUNOS(equipment_access=self.mock_equipment_access)
         plugin.remote_conn = mock_device
 
@@ -357,34 +340,23 @@ class JunosPluginTest(NetworkApiTestCase):
 
         mock_close.assert_called_once_with()
 
-    @patch('jnpr.junos.Device')
-    def test_get_port_channel_invalid_format(self, mock_device):
-
-        """
-        test_get_port_channel_invalid_format - Test if an invalid format raises exception without rpc call
-        """
-
-        plugin = JUNOS(equipment_access=self.mock_equipment_access)
-        plugin.remote_conn = mock_device
-
-        with self.assertRaises(exceptions.APIException):
-            plugin.get_port_channel('ae1', config_format='xml')
-
-        self.assertFalse(mock_device.rpc.get_config.called)
-
+    @patch('networkapi.plugins.base.requests.post')
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
     @patch('jnpr.junos.Device')
-    def test_get_port_channel_rpc_error(self, mock_device, mock_close):
+    def test_get_port_channel_microservice_error(self, mock_device, mock_close, mock_post):
 
         """
-        test_get_port_channel_rpc_error - Test if a rpc error closes the connection and raises exception
+        test_get_port_channel_microservice_error - Test if an error at netconf microservice raises exception
+        with its detail and closes connection
         """
 
-        mock_device.rpc.get_config.side_effect = RpcError()
+        mock_post.return_value = MagicMock(status_code=500, text='{"detail": "NETCONF error"}')
         plugin = JUNOS(equipment_access=self.mock_equipment_access)
         plugin.remote_conn = mock_device
 
-        with self.assertRaises(exceptions.APIException):
+        with self.assertRaises(exceptions.APIException) as context:
             plugin.get_port_channel('ae1')
 
+        self.assertNotIsInstance(context.exception, exceptions.PortChannelNotFoundException)
+        self.assertIn('NETCONF error', str(context.exception.detail))
         mock_close.assert_called_once_with()

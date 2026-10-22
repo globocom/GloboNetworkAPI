@@ -3,16 +3,6 @@ from rest_framework import status
 from rest_framework.exceptions import APIException
 
 
-class InvalidConfigurationFormatException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = 'Invalid configuration format.'
-
-    def __init__(self, config_format=None, formats=None):
-        self.detail = u'Invalid configuration format: %s. Valid formats ' \
-            u'are: %s.' % (config_format, ', '.join(formats or ())) \
-            if config_format else self.default_detail
-
-
 class EquipmentWithoutAccessException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Equipment has no access.'

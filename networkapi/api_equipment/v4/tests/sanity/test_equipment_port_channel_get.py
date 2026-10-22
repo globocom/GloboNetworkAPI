@@ -54,7 +54,7 @@ class EquipmentPortChannelGetTestCase(NetworkApiTestCase):
         )
 
     def test_get_port_channel(self):
-        """Test GET port-channel by number in default format (text)."""
+        """Test GET port-channel by number."""
 
         response = self._get(self.port_channel_uri % (1, 1))
 
@@ -62,21 +62,17 @@ class EquipmentPortChannelGetTestCase(NetworkApiTestCase):
         self.compare_values({'port_channel': self.port_channel},
                             response.data)
         self.plugin.connect.assert_called_once_with()
-        self.plugin.get_port_channel.assert_called_once_with(
-            'ae1', config_format='text')
+        self.plugin.get_port_channel.assert_called_once_with('1')
         self.plugin.close.assert_called_once_with()
 
-    def test_get_port_channel_by_junos_name_display_set(self):
-        """Test GET port-channel by aeN name in set format without
-        trailing slash.
-        """
+    def test_get_port_channel_by_junos_name(self):
+        """Test GET port-channel by aeN name without trailing slash."""
 
         response = self._get((self.port_channel_uri % (1, 'ae1'))
-                             .rstrip('/') + '?display=set')
+                             .rstrip('/'))
 
         self.compare_status(200, response.status_code)
-        self.plugin.get_port_channel.assert_called_once_with(
-            'ae1', config_format='set')
+        self.plugin.get_port_channel.assert_called_once_with('ae1')
 
     def test_get_port_channel_invalid_name(self):
         """Test GET port-channel with invalid name."""
@@ -84,14 +80,6 @@ class EquipmentPortChannelGetTestCase(NetworkApiTestCase):
         response = self._get(self.port_channel_uri % (1, 'xe-0/0/1'))
 
         self.compare_status(404, response.status_code)
-        self.assertFalse(self.mock_factory.called)
-
-    def test_get_port_channel_invalid_display(self):
-        """Test GET port-channel with invalid format."""
-
-        response = self._get(self.port_channel_uri % (1, 1) + '?display=xml')
-
-        self.compare_status(400, response.status_code)
         self.assertFalse(self.mock_factory.called)
 
     def test_get_port_channel_inexistent_equipment(self):
