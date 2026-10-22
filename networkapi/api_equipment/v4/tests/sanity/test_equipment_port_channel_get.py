@@ -4,6 +4,7 @@ from mock import MagicMock
 from mock import patch
 
 from networkapi.plugins.base import BasePlugin
+from networkapi.plugins.exceptions import NetconfMicroserviceException
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from networkapi.test.test_case import NetworkApiTestCase
 
@@ -31,11 +32,8 @@ class EquipmentPortChannelGetTestCase(NetworkApiTestCase):
         self.plugin = JUNOS()
         self.plugin.connect = MagicMock(return_value=True)
         self.plugin.close = MagicMock(return_value=True)
-        self.port_channel = {
-            'name': 'ae1',
-            'members': ['xe-0/0/1', 'xe-0/0/2'],
-            'configuration': 'set interfaces ae1 mtu 9216'
-        }
+        self.port_channel = '<data><configuration><interfaces><interface>' \
+            '<name>ae1</name></interface></interfaces></configuration></data>'
         self.plugin.get_port_channel = MagicMock(
             return_value=self.port_channel)
 
@@ -59,20 +57,42 @@ class EquipmentPortChannelGetTestCase(NetworkApiTestCase):
         response = self._get(self.port_channel_uri % (1, 1))
 
         self.compare_status(200, response.status_code)
-        self.compare_values({'port_channel': self.port_channel},
-                            response.data)
+        self.assertEqual(self.port_channel, response.content)
+        self.assertEqual('text/plain; charset=utf-8', response['Content-Type'])
         self.plugin.connect.assert_called_once_with()
         self.plugin.get_port_channel.assert_called_once_with('1')
         self.plugin.close.assert_called_once_with()
 
-    def test_get_port_channel_by_junos_name(self):
-        """Test GET port-channel by aeN name without trailing slash."""
+    def test_get_port_channel_netconf_error(self):
+        """Test GET port-channel passes through the error response of
+        netconf microservice as is.
+        """
 
-        response = self._get((self.port_channel_uri % (1, 'ae1'))
-                             .rstrip('/'))
+        error = '<error><status>404</status><detail>Not found</detail></error>'
+        self.plugin.get_port_channel.side_effect = \
+            NetconfMicroserviceException(404, error, 'application/xml')
+
+        response = self._get(self.port_channel_uri % (1, 1))
+
+        self.compare_status(404, response.status_code)
+        self.assertEqual(error, response.content)
+        self.assertEqual('application/xml', response['Content-Type'])
+
+    def test_get_port_channel_without_trailing_slash(self):
+        """Test GET port-channel without trailing slash."""
+
+        response = self._get((self.port_channel_uri % (1, 1)).rstrip('/'))
 
         self.compare_status(200, response.status_code)
-        self.plugin.get_port_channel.assert_called_once_with('ae1')
+        self.plugin.get_port_channel.assert_called_once_with('1')
+
+    def test_get_port_channel_by_name(self):
+        """Test GET port-channel by name instead of number."""
+
+        response = self._get(self.port_channel_uri % (1, 'ae1'))
+
+        self.compare_status(404, response.status_code)
+        self.assertFalse(self.mock_factory.called)
 
     def test_get_port_channel_invalid_name(self):
         """Test GET port-channel with invalid name."""

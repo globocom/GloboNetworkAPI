@@ -256,30 +256,26 @@ class JUNOS(BasePlugin):
         # Caution to use generic exception here, may cause overlaps in specific exceptions in try_lock()
         # except Exception, e:
 
-    def get_port_channel(self, channel_name):
+    def get_port_channel(self, channel_number):
 
         """
         Check if a port-channel (aggregated ethernet interface) exists in the running
         configuration of the equipment using the netconf microservice (POST /retrieve).
 
-        :param str channel_name: port-channel number or name in Junos, example: '1' or 'ae1'
+        :param str channel_number: port-channel number, example: '1' (ae1 in Junos)
 
         :returns:
-            Returns the response of netconf microservice as is (status and data), otherwise,
+            Returns the response of netconf microservice as is (XML of the port-channel), otherwise,
             raise an exception.
             That means will NOT return a false result.
         """
 
-        try:
-            # Port-channels are aggregated ethernet interfaces (aeN) in Junos
-            if not channel_name.startswith('ae'):
-                channel_name = 'ae{}'.format(channel_name)
-    
-            filter = "<configuration><interfaces><interface><name>{}</name></interface></interfaces></configuration>".format(channel_name)
-            return self.get_resource_by_netconf(filter)
-        except exceptions.ResourceNotFoundException:
-            raise exceptions.PortChannelNotFoundException(
-                "Port-channel {} not found on host {}.".format(channel_name, self.equipment_access.fqdn))
+        # Port-channels are aggregated ethernet interfaces (aeN) in Junos
+        channel_name = 'ae{}'.format(channel_number)
+
+        filter = "<configuration><interfaces><interface><name>{}</name></interface></interfaces></configuration>".format(channel_name)
+
+        return self.get_resource_by_netconf(filter)
 
     def ensure_privilege_level(self, privilege_level=None):
 

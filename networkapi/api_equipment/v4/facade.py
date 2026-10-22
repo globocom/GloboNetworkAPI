@@ -96,12 +96,12 @@ def delete_equipment(equipments):
 
 
 
-def get_equipment_port_channel(equipment_id, channel_name):
+def get_equipment_port_channel(equipment_id, channel_number):
     """Get information of a port-channel from the equipment itself.
 
     :param equipment_id: Id of equipment.
-    :param channel_name: Name of port-channel, e.g. 1 or ae1. Each plugin
-        converts it to the name used by the equipment.
+    :param channel_number: Number of port-channel, e.g. 1. Each plugin
+        converts it to the name used by the equipment (e.g. ae1).
     """
 
     equipment = get_equipment_by_id(equipment_id)
@@ -121,7 +121,7 @@ def get_equipment_port_channel(equipment_id, channel_name):
         raise exceptions.PortChannelNotSupportedException(equipment.nome)
 
     plugin.connect()
-    port_channel = plugin.get_port_channel(channel_name)
+    port_channel = plugin.get_port_channel(channel_number)
     plugin.close()
 
     return port_channel

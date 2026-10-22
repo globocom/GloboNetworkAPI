@@ -142,7 +142,7 @@ class BasePlugin(object):
 
         raise NotImplementedError()
 
-    def get_port_channel(self, channel_name):
+    def get_port_channel(self, channel_number):
         """Return information of a port-channel from equipment.
 
         By default, considers the port-channel as not found. Plugins should
@@ -150,7 +150,7 @@ class BasePlugin(object):
         """
 
         raise exceptions.PortChannelNotFoundException(
-            'Port-channel %s not found on equipment.' % channel_name)
+            'Port-channel %s not found on equipment.' % channel_number)
 
     def get_resource_by_netconf(self, filter, source='running'):
 
@@ -163,8 +163,9 @@ class BasePlugin(object):
             When None, operational state is also returned
 
         :returns:
-            Returns the response of netconf microservice as is (status and data), otherwise,
-            raise an exception (ResourceNotFoundException when the filter matches nothing).
+            Returns the response of netconf microservice as is (XML of the resource), otherwise,
+            raise an exception (NetconfMicroserviceException with the error response of
+            netconf microservice as is, e.g. 404 when the filter matches nothing).
             That means will NOT return a false result.
         """
 
@@ -184,28 +185,20 @@ class BasePlugin(object):
                 })
             )
 
-            # Netconf microservice returns 404 when the filter matches nothing
-            if response.status_code == 404:
-                message = "Resource not found on host {}.".format(self.equipment_access.fqdn)
-                log.error("{} Filter: {}".format(message, filter))
-                raise exceptions.ResourceNotFoundException(message)
-
+            # Error responses (e.g. 404 when the filter matches nothing) are passed through as is
             if response.status_code != 200:
-                try:
-                    detail = json.loads(response.text).get("detail")
-                except ValueError:
-                    detail = None
-                message = "Error while getting resource from host {} at netconf microservice: {}".format(
-                    self.equipment_access.fqdn, detail or "Unknown error")
-                log.error(message)
-                raise exceptions.APIException(message)
+                log.error("Error response from netconf microservice for host {} (status {}): {}. Filter: {}".format(
+                    self.equipment_access.fqdn, response.status_code, response.text, filter))
+                raise exceptions.NetconfMicroserviceException(
+                    response.status_code, response.content,
+                    response.headers.get('Content-Type', 'application/xml'))
 
             log.info("Resource was got successfully from host {}!".format(self.equipment_access.fqdn))
 
-            # Returns the response of netconf microservice as is
-            return json.loads(response.text)
+            # Returns the response of netconf microservice as is (XML)
+            return response.text
 
-        # Includes ResourceNotFoundException
+        # Includes NetconfMicroserviceException
         except exceptions.APIException:
             self.close()
             raise

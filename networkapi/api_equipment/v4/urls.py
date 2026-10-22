@@ -12,7 +12,7 @@ urlpatterns = patterns(
     '',
     url(r'^equipment/((?P<obj_id>[;\w]+)/)?$', EquipmentV4View.as_view()),
     url(r'^equipment/(?P<obj_id>\d+)/port-channel/'
-        r'(?P<channel_name>(?:ae)?\d+)/?$',
+        r'(?P<channel_number>\d+)/?$',
         EquipmentPortChannelV4View.as_view()),
 
 )

@@ -18,6 +18,14 @@ class GenericNetconf(BasePlugin):
     alternative_variable_base_path_list = ['path_to_tftpboot']
     alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
 
+    # Subtree filters to get port-channels (Eth-Trunk) by equipment model
+    port_channel_filters = {
+        'CE8850': '<ifmtrunk xmlns="http://www.huawei.com/netconf/vrp/huawei-ifmtrunk">'
+                  '<TrunkIfs><TrunkIf><ifName>{}</ifName></TrunkIf></TrunkIfs></ifmtrunk>',
+        'CE8875': '<ifm xmlns="urn:huawei:yang:huawei-ifm">'
+                  '<interfaces><interface><name>{}</name></interface></interfaces></ifm>',
+    }
+
 
     def __try_lock(self):
         """
@@ -80,6 +88,39 @@ class GenericNetconf(BasePlugin):
 
         except Exception, e:
             log.error('Error on apply config to equipment')
+
+    def get_port_channel(self, channel_number):
+        """
+        Check if a port-channel (Eth-Trunk) exists in the running configuration of the
+        equipment using the netconf microservice (POST /retrieve). The filter depends
+        on the equipment model (see port_channel_filters).
+
+        :param str channel_number: port-channel number, example: '127' (Eth-Trunk127 in Huawei)
+
+        :returns:
+            Returns the response of netconf microservice as is (XML of the port-channel), otherwise,
+            raise an exception.
+        """
+
+        log.info("Netconf Plugin - Trying to get port-channel {} from host {}...".format(channel_number, self.equipment_access.fqdn))
+
+        # Port-channels are Eth-Trunk interfaces in Huawei
+        channel_name = 'Eth-Trunk{}'.format(channel_number)
+
+        model = self.equipment.modelo.nome
+        filter = None
+        for model_prefix, model_filter in self.port_channel_filters.items():
+            if model_prefix in model.upper():
+                filter = model_filter.format(channel_name)
+                break
+
+        if filter is None:
+            message = "Getting port-channel is not supported for model {} of equipment {}.".format(
+                model, self.equipment.nome)
+            log.error(message)
+            raise exceptions.UnsupportedEquipmentException(message)
+
+        return self.get_resource_by_netconf(filter)
 
     def ensure_privilege_level(self, privilege_level=None):
         """

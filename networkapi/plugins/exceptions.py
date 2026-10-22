@@ -32,9 +32,17 @@ class ConnectionException(APIException):
     default_detail = 'Failed trying to connect to equipment.'
 
 
-class ResourceNotFoundException(APIException):
-    status_code = status.HTTP_404_NOT_FOUND
-    default_detail = 'Resource not found on equipment.'
+class NetconfMicroserviceException(APIException):
+    """Error response of netconf microservice, passed through as is."""
+
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = 'Error at netconf microservice.'
+
+    def __init__(self, status_code, content, content_type):
+        self.status_code = status_code
+        self.content = content
+        self.content_type = content_type
+        self.detail = content
 
 
 class PortChannelNotFoundException(APIException):
