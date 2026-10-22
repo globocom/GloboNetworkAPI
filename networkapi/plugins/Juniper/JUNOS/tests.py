@@ -3,6 +3,7 @@ from networkapi.plugins.base import BasePlugin
 from networkapi.plugins import exceptions
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from mock import patch, MagicMock
+from lxml import etree
 from jnpr.junos.exception import RPCError, RpcError, LockError, ConfigLoadError, CommitError
 
 from jnpr.junos.device import logger as device_logger
@@ -290,3 +291,100 @@ class JunosPluginTest(NetworkApiTestCase):
         result = plugin.set_detailed_junos_log_level(loggers)
 
         self.assertEqual(result, 'ERROR')
+
+    port_channel_interfaces_xml = """
+        <configuration>
+            <interfaces>
+                <interface>
+                    <name>xe-0/0/1</name>
+                    <gigether-options><ieee-802.3ad><bundle>ae1</bundle></ieee-802.3ad></gigether-options>
+                </interface>
+                <interface>
+                    <name>xe-0/0/2</name>
+                    <ether-options><ieee-802.3ad><bundle>ae1</bundle></ieee-802.3ad></ether-options>
+                </interface>
+                <interface>
+                    <name>xe-0/0/3</name>
+                    <gigether-options><ieee-802.3ad><bundle>ae10</bundle></ieee-802.3ad></gigether-options>
+                </interface>
+                <interface><name>ae1</name></interface>
+                <interface><name>ae10</name></interface>
+            </interfaces>
+        </configuration>
+    """
+
+    @patch('jnpr.junos.Device')
+    def test_get_port_channel_success(self, mock_device):
+
+        """
+        test_get_port_channel_success - Test if port-channel name, members and configuration are returned
+        """
+
+        # Mocking
+        configuration = MagicMock(text='set interfaces ae1 mtu 9216')
+        mock_device.rpc.get_config.side_effect = [etree.XML(self.port_channel_interfaces_xml), configuration]
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        # Close to a real test:
+        port_channel = plugin.get_port_channel('ae1', config_format='set')
+
+        # Asserts
+        self.assertEqual(port_channel, {
+            'name': 'ae1',
+            'members': ['xe-0/0/1', 'xe-0/0/2'],
+            'configuration': 'set interfaces ae1 mtu 9216'
+        })
+        filter_xml = mock_device.rpc.get_config.call_args[1]['filter_xml']
+        self.assertEqual(filter_xml.xpath('interfaces/interface/name/text()'), ['ae1', 'xe-0/0/1', 'xe-0/0/2'])
+        self.assertEqual(mock_device.rpc.get_config.call_args[1]['options'],
+                         {'database': 'committed', 'format': 'set'})
+
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
+    @patch('jnpr.junos.Device')
+    def test_get_port_channel_not_found(self, mock_device, mock_close):
+
+        """
+        test_get_port_channel_not_found - Test if an inexistent port-channel raises exception and closes connection
+        """
+
+        mock_device.rpc.get_config.return_value = etree.XML(self.port_channel_interfaces_xml)
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        with self.assertRaises(exceptions.PortChannelNotFoundException):
+            plugin.get_port_channel('ae2')
+
+        mock_close.assert_called_once_with()
+
+    @patch('jnpr.junos.Device')
+    def test_get_port_channel_invalid_format(self, mock_device):
+
+        """
+        test_get_port_channel_invalid_format - Test if an invalid format raises exception without rpc call
+        """
+
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        with self.assertRaises(exceptions.APIException):
+            plugin.get_port_channel('ae1', config_format='xml')
+
+        self.assertFalse(mock_device.rpc.get_config.called)
+
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
+    @patch('jnpr.junos.Device')
+    def test_get_port_channel_rpc_error(self, mock_device, mock_close):
+
+        """
+        test_get_port_channel_rpc_error - Test if a rpc error closes the connection and raises exception
+        """
+
+        mock_device.rpc.get_config.side_effect = RpcError()
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        with self.assertRaises(exceptions.APIException):
+            plugin.get_port_channel('ae1')
+
+        mock_close.assert_called_once_with()

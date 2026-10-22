@@ -24,6 +24,7 @@ from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.system.facade import get_value
 from networkapi.system.exceptions import VariableDoesNotExistException
 from django.db.utils import DatabaseError
+from lxml import etree
 from jnpr.junos import Device
 from jnpr.junos.utils.config import Config
 from jnpr.junos.utils.start_shell import StartShell
@@ -57,6 +58,7 @@ class JUNOS(BasePlugin):
 
     alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
     ignore_warning_list = ['statement not found']
+    configuration_formats = ('text', 'set')
 
     def __init__(self, **kwargs):
         super(JUNOS, self).__init__(connect_port=830, **kwargs)
@@ -255,6 +257,81 @@ class JUNOS(BasePlugin):
             raise exceptions.APIException(message)
         # Caution to use generic exception here, may cause overlaps in specific exceptions in try_lock()
         # except Exception, e:
+
+    def get_port_channel(self, channel_name, config_format='text'):
+
+        """
+        Get information of a port-channel (aggregated ethernet interface) from the
+        committed configuration of the equipment using PyEz.
+
+        :param str channel_name: port-channel name in Junos, example: 'ae1'
+        :param str config_format: 'text' (curly braces format, like 'show configuration')
+            or 'set' (like 'show configuration | display set')
+
+        :returns:
+            Returns a dict with name, members and configuration (of port-channel and
+            its members), otherwise, raise an exception. That means will NOT return a false result.
+        """
+
+        log.info("Trying to get port-channel {} in format '{}' from host {} ... ".format(
+            channel_name, config_format, self.equipment_access.fqdn))
+
+        if config_format not in self.configuration_formats:
+            message = "Invalid configuration format '{}'. Valid formats are: {}.".format(
+                config_format, ', '.join(self.configuration_formats))
+            log.error(message)
+            raise exceptions.APIException(message)
+
+        try:
+            # Members are found by bundle option (gigether-options or ether-options 802.3ad)
+            interfaces = self.remote_conn.rpc.get_config(
+                filter_xml=etree.XML('<configuration><interfaces/></configuration>'),
+                options={'database': 'committed'})
+
+            if not interfaces.xpath("interfaces/interface[name='{}']".format(channel_name)):
+                message = "Port-channel {} not found on host {}.".format(channel_name, self.equipment_access.fqdn)
+                log.error(message)
+                raise exceptions.PortChannelNotFoundException(message)
+
+            members = interfaces.xpath(
+                "interfaces/interface[*/ieee-802.3ad/bundle='{}']/name/text()".format(channel_name))
+            members = [str(member) for member in members]
+
+            # Returns <configuration-text> or <configuration-set> element
+            interface_filter = etree.XML('<configuration><interfaces/></configuration>')
+            for name in [channel_name] + members:
+                interface = etree.SubElement(interface_filter.find('interfaces'), 'interface')
+                etree.SubElement(interface, 'name').text = name
+
+            configuration = self.remote_conn.rpc.get_config(
+                filter_xml=interface_filter,
+                options={'database': 'committed', 'format': config_format})
+
+            log.info("Port-channel {} was got successfully from host {}!".format(
+                channel_name, self.equipment_access.fqdn))
+
+            return {
+                'name': channel_name,
+                'members': members,
+                'configuration': configuration.text or ''
+            }
+
+        except exceptions.PortChannelNotFoundException:
+            self.close()
+            raise
+
+        except RpcError as e:
+            message = "A remote procedure call exception occurred on host {}: {}".format(self.equipment_access.fqdn, e)
+            log.error("{} (close will be tried for safety)".format(message))
+            self.close()
+            raise exceptions.APIException(message)
+
+        except Exception as e:
+            message = "Unknown error while getting port-channel {} from host {}.".format(
+                channel_name, self.equipment_access.fqdn)
+            log.error("{} (close will be tried for safety): {}".format(message, e))
+            self.close()
+            raise exceptions.APIException(message)
 
     def ensure_privilege_level(self, privilege_level=None):
 

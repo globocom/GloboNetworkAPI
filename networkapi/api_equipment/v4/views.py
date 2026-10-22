@@ -146,3 +146,26 @@ class EquipmentV4View(CustomAPIView):
         facade_v4.delete_equipment(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)
+
+
+class EquipmentPortChannelV4View(CustomAPIView):
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Read))
+    def get(self, request, *args, **kwargs):
+        """
+        Returns information of a port-channel (name, members and
+        configuration), obtained from the committed configuration of the
+        equipment itself.
+
+        :param display(optional): Format of configuration (text|set).
+                                  Default is text.
+        """
+
+        config_format = request.GET.get('display', 'text')
+
+        port_channel = facade_v4.get_equipment_port_channel(
+            kwargs.get('obj_id'), kwargs.get('channel_name'), config_format)
+
+        return Response({'port_channel': port_channel},
+                        status=status.HTTP_200_OK)

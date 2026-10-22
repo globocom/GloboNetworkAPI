@@ -32,6 +32,11 @@ class ConnectionException(APIException):
     default_detail = 'Failed trying to connect to equipment.'
 
 
+class PortChannelNotFoundException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Port-channel not found on equipment.'
+
+
 class CurrentlyBusyErrorException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = 'Equipment is currenlty busy. ' \
