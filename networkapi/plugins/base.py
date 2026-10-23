@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import logging
 import random
 import re
@@ -22,13 +21,10 @@ import unicodedata
 from time import sleep
 
 import paramiko
-import requests
 
 from . import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
-from networkapi.extra_logging import local
-from networkapi.settings import NETWORKAPI_NETCONF_URL
 from networkapi.settings import TFTP_SERVER_ADDR
 from networkapi.util.decorators import mock_return
 
@@ -57,7 +53,6 @@ class BasePlugin(object):
     remote_conn = None
     tftpserver = TFTP_SERVER_ADDR
     management_vrf = ''
-    netconf_retrieve_url = NETWORKAPI_NETCONF_URL + '/retrieve'
 
     def __init__(self, **kwargs):
 
@@ -151,64 +146,6 @@ class BasePlugin(object):
 
         raise exceptions.PortChannelNotFoundException(
             'Port-channel %s not found on equipment.' % channel_number)
-
-    def get_resource_by_netconf(self, filter, source='running'):
-
-        """
-        Get a resource (configuration or state) from the equipment using the netconf
-        microservice (POST /retrieve).
-
-        :param str filter: subtree filter (XML) that matches the resource
-        :param str source: datastore, example: 'running', 'candidate' or 'startup'.
-            When None, operational state is also returned
-
-        :returns:
-            Returns the response of netconf microservice as is (XML of the resource), otherwise,
-            raise an exception (NetconfMicroserviceException with the error response of
-            netconf microservice as is, e.g. 404 when the filter matches nothing).
-            That means will NOT return a false result.
-        """
-
-        log.info("Trying to get resource by netconf from host {} ... ".format(self.equipment_access.fqdn))
-
-        try:
-            response = requests.post(
-                url=self.netconf_retrieve_url,
-                headers={"Content-type": "application/json",
-                         "X-Request-Id": getattr(local, "request_id", None)},
-                data=json.dumps({
-                    "address": self.equipment_access.fqdn,
-                    "username": self.equipment_access.user,
-                    "password": self.equipment_access.password,
-                    "source": source,
-                    "filter": filter
-                })
-            )
-
-            # Error responses (e.g. 404 when the filter matches nothing) are passed through as is
-            if response.status_code != 200:
-                log.error("Error response from netconf microservice for host {} (status {}): {}. Filter: {}".format(
-                    self.equipment_access.fqdn, response.status_code, response.text, filter))
-                raise exceptions.NetconfMicroserviceException(
-                    response.status_code, response.content,
-                    response.headers.get('Content-Type', 'application/xml'))
-
-            log.info("Resource was got successfully from host {}!".format(self.equipment_access.fqdn))
-
-            # Returns the response of netconf microservice as is (XML)
-            return response.text
-
-        # Includes NetconfMicroserviceException
-        except exceptions.APIException:
-            self.close()
-            raise
-
-        except Exception as e:
-            message = "Unknown error while getting resource by netconf from host {}.".format(
-                self.equipment_access.fqdn)
-            log.error("{} (close will be tried for safety): {}".format(message, e))
-            self.close()
-            raise exceptions.APIException(message)
 
     @mock_return('')
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):

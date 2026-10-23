@@ -129,6 +129,9 @@ start: docker-compose-sdn.yml docker-compose.yml
 	docker-compose up  -d
 	docker-compose --file $< up  -d
 
+start_minimum: docker-compose.yml
+	docker-compose up  -d
+	docker-compose --file $< up  -d
 
 stop: docker-compose-sdn.yml docker-compose.yml
 	@docker-compose down --remove-orphans

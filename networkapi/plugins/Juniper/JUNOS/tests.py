@@ -295,7 +295,7 @@ class JunosPluginTest(NetworkApiTestCase):
 
         self.assertEqual(result, 'ERROR')
 
-    @patch('networkapi.plugins.base.requests.post')
+    @patch('networkapi.plugins.Netconf.services.requests.post')
     @patch('jnpr.junos.Device')
     def test_get_port_channel_success(self, mock_device, mock_post):
 
@@ -322,7 +322,7 @@ class JunosPluginTest(NetworkApiTestCase):
         self.assertEqual(etree.XML(payload['filter']).xpath('interfaces/interface/name/text()'), ['ae1'])
         self.assertFalse(mock_device.rpc.get_config.called)
 
-    @patch('networkapi.plugins.base.requests.post')
+    @patch('networkapi.plugins.Netconf.services.requests.post')
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
     @patch('jnpr.junos.Device')
     def test_get_port_channel_not_found(self, mock_device, mock_close, mock_post):
@@ -346,7 +346,7 @@ class JunosPluginTest(NetworkApiTestCase):
         self.assertEqual(context.exception.content_type, 'application/xml')
         mock_close.assert_called_once_with()
 
-    @patch('networkapi.plugins.base.requests.post')
+    @patch('networkapi.plugins.Netconf.services.requests.post')
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
     @patch('jnpr.junos.Device')
     def test_get_port_channel_microservice_error(self, mock_device, mock_close, mock_post):

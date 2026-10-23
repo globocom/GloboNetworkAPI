@@ -19,6 +19,7 @@ import time
 import os.path
 from exceptions import IOError
 from networkapi.plugins.base import BasePlugin
+from networkapi.plugins.Netconf.services import NetconfServices
 from networkapi.plugins import exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.system.facade import get_value
@@ -270,12 +271,13 @@ class JUNOS(BasePlugin):
             That means will NOT return a false result.
         """
 
-        # Port-channels are aggregated ethernet interfaces (aeN) in Junos
-        channel_name = 'ae{}'.format(channel_number)
+        filter = "<configuration><interfaces><interface><name>ae{}</name></interface></interfaces></configuration>".format(channel_number)
 
-        filter = "<configuration><interfaces><interface><name>{}</name></interface></interfaces></configuration>".format(channel_name)
-
-        return self.get_resource_by_netconf(filter)
+        try:
+            return NetconfServices(self.equipment_access).get_resource(filter)
+        except exceptions.APIException:
+            self.close()
+            raise
 
     def ensure_privilege_level(self, privilege_level=None):
 
