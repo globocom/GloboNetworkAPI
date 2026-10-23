@@ -21,9 +21,9 @@ class GenericNetconf(BasePlugin):
     # Subtree filters to get port-channels (Eth-Trunk) by equipment model
     port_channel_filters = {
         'CE8850': '<ifmtrunk xmlns="http://www.huawei.com/netconf/vrp/huawei-ifmtrunk">'
-                  '<TrunkIfs><TrunkIf><ifName>{}</ifName></TrunkIf></TrunkIfs></ifmtrunk>',
+                  '<TrunkIfs><TrunkIf><ifName>Eth-Trunk{}</ifName></TrunkIf></TrunkIfs></ifmtrunk>',
         'CE8875': '<ifm xmlns="urn:huawei:yang:huawei-ifm">'
-                  '<interfaces><interface><name>{}</name></interface></interfaces></ifm>',
+                  '<interfaces><interface><name>Eth-Trunk{}</name></interface></interfaces></ifm>',
     }
 
 
@@ -104,14 +104,11 @@ class GenericNetconf(BasePlugin):
 
         log.info("Netconf Plugin - Trying to get port-channel {} from host {}...".format(channel_number, self.equipment_access.fqdn))
 
-        # Port-channels are Eth-Trunk interfaces in Huawei
-        channel_name = 'Eth-Trunk{}'.format(channel_number)
-
         model = self.equipment.modelo.nome
         filter = None
         for model_prefix, model_filter in self.port_channel_filters.items():
             if model_prefix in model.upper():
-                filter = model_filter.format(channel_name)
+                filter = model_filter.format(channel_number)
                 break
 
         if filter is None:
