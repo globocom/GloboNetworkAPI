@@ -19,6 +19,7 @@ import time
 import os.path
 from exceptions import IOError
 from networkapi.plugins.base import BasePlugin
+from networkapi.plugins.Netconf.services import NetconfServices
 from networkapi.plugins import exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.system.facade import get_value
@@ -255,6 +256,28 @@ class JUNOS(BasePlugin):
             raise exceptions.APIException(message)
         # Caution to use generic exception here, may cause overlaps in specific exceptions in try_lock()
         # except Exception, e:
+
+    def get_port_channel(self, channel_number):
+
+        """
+        Check if a port-channel (aggregated ethernet interface) exists in the running
+        configuration of the equipment using the netconf microservice (POST /retrieve).
+
+        :param str channel_number: port-channel number, example: '1' (ae1 in Junos)
+
+        :returns:
+            Returns the response of netconf microservice as is (XML of the port-channel), otherwise,
+            raise an exception.
+            That means will NOT return a false result.
+        """
+
+        filter = "<configuration><interfaces><interface><name>ae{}</name></interface></interfaces></configuration>".format(channel_number)
+
+        try:
+            return NetconfServices(self.equipment_access).get_resource(filter)
+        except exceptions.APIException:
+            self.close()
+            raise
 
     def ensure_privilege_level(self, privilege_level=None):
 

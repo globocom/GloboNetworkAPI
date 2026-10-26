@@ -120,6 +120,10 @@ API_VERSION = '15.96'
 ASSOCIATE_PERMISSION_AUTOMATICALLY = True
 ID_AUTHENTICATE_PERMISSION = 5
 
+# Netconf microservice (netconf-plugin)
+NETWORKAPI_NETCONF_URL = os.getenv(
+    'NETWORKAPI_NETCONF_URL', 'http://localhost:5000')
+
 NETWORKAPI_SUPPORT_TIME = os.getenv(
     'NETWORKAPI_SUPPORT_TIME', 'Suporte Telecom')
 NETWORKAPI_SUPPORT_EMAIL = os.getenv(

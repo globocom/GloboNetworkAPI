@@ -1,8 +1,11 @@
+import json
+
 from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.base import BasePlugin
 from networkapi.plugins import exceptions
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
 from mock import patch, MagicMock
+from lxml import etree
 from jnpr.junos.exception import RPCError, RpcError, LockError, ConfigLoadError, CommitError
 
 from jnpr.junos.device import logger as device_logger
@@ -290,3 +293,50 @@ class JunosPluginTest(NetworkApiTestCase):
         result = plugin.set_detailed_junos_log_level(loggers)
 
         self.assertEqual(result, 'ERROR')
+
+    @patch('networkapi.plugins.Netconf.services.requests.post')
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
+    @patch('jnpr.junos.Device')
+    def test_get_port_channel_not_found(self, mock_device, mock_close, mock_post):
+
+        """
+        test_get_port_channel_not_found - Test if the 404 response of netconf microservice is raised as is
+        and closes connection
+        """
+
+        error = '<?xml version="1.0" encoding="UTF-8"?><error><status>404</status><detail>Not found</detail></error>'
+        mock_post.return_value = MagicMock(status_code=404, text=error, content=error,
+                                           headers={'Content-Type': 'application/xml'})
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        with self.assertRaises(exceptions.NetconfMicroserviceException) as context:
+            plugin.get_port_channel('2')
+
+        self.assertEqual(context.exception.status_code, 404)
+        self.assertEqual(context.exception.content, error)
+        self.assertEqual(context.exception.content_type, 'application/xml')
+        mock_close.assert_called_once_with()
+
+    @patch('networkapi.plugins.Netconf.services.requests.post')
+    @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')
+    @patch('jnpr.junos.Device')
+    def test_get_port_channel_microservice_error(self, mock_device, mock_close, mock_post):
+
+        """
+        test_get_port_channel_microservice_error - Test if an error response of netconf microservice is raised
+        as is and closes connection
+        """
+
+        error = '<?xml version="1.0" encoding="UTF-8"?><error><status>500</status><detail>NETCONF error</detail></error>'
+        mock_post.return_value = MagicMock(status_code=500, text=error, content=error,
+                                           headers={'Content-Type': 'application/xml'})
+        plugin = JUNOS(equipment_access=self.mock_equipment_access)
+        plugin.remote_conn = mock_device
+
+        with self.assertRaises(exceptions.NetconfMicroserviceException) as context:
+            plugin.get_port_channel('1')
+
+        self.assertEqual(context.exception.status_code, 500)
+        self.assertEqual(context.exception.content, error)
+        mock_close.assert_called_once_with()

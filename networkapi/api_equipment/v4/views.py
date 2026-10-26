@@ -16,6 +16,7 @@
 import logging
 
 from django.db.transaction import commit_on_success
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -24,6 +25,7 @@ from networkapi.api_equipment.v4 import facade as facade_v4
 from networkapi.api_equipment import facade as facade_v3
 from networkapi.api_equipment.permissions import Read
 from networkapi.api_equipment.permissions import Write
+from networkapi.plugins.exceptions import NetconfMicroserviceException
 from networkapi.settings import SPECS
 from networkapi.util.classes import CustomAPIView
 from networkapi.util.decorators import logs_method_apiview
@@ -146,3 +148,25 @@ class EquipmentV4View(CustomAPIView):
         facade_v4.delete_equipment(obj_ids)
 
         return Response({}, status=status.HTTP_200_OK)
+
+
+class EquipmentPortChannelV4View(CustomAPIView):
+
+    @logs_method_apiview
+    @permission_classes_apiview((IsAuthenticated, Read))
+    def get(self, request, *args, **kwargs):
+        """
+        Returns a port-channel, as retrieved from the running configuration
+        of the equipment itself. The content is returned as is (text).
+        """
+
+        try:
+            port_channel = facade_v4.get_equipment_port_channel(
+                kwargs.get('obj_id'), kwargs.get('channel_number'))
+
+        # Error responses of netconf microservice are passed through as is
+        except NetconfMicroserviceException as e:
+            return HttpResponse(e.content, status=e.status_code,
+                                content_type=e.content_type)
+
+        return HttpResponse(port_channel, content_type='text/plain; charset=utf-8')
