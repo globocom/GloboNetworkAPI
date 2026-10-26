@@ -7,6 +7,7 @@ import logging
 from networkapi.system.facade import get_value
 import paramiko
 import requests, json, os
+from django.conf import settings
 from django.db.utils import DatabaseError
 from networkapi.system.exceptions import VariableDoesNotExistException
 from networkapi.extra_logging import local
@@ -108,6 +109,7 @@ class GenericNetconf(BasePlugin):
         model = self.equipment.modelo.nome
         filter = None
         for model_prefix, model_filter in port_channel_filters.items():
+            log.debug("Checking if model {} matches prefix {}... test: {}".format(model, model_prefix, model_prefix in model.upper()))
             if model_prefix in model.upper():
                 filter = model_filter.format(channel_number)
                 break
@@ -236,9 +238,8 @@ class GenericNetconf(BasePlugin):
 
             ultimate_template = '<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">{}</config>'.format(command)
 
-            # TODO change the URL to a config file
             response = requests.post(
-                url="http://localhost:5000/deploy",
+                url="{}/deploy".format(settings.NETWORKAPI_NETCONF_URL),
                 headers={"Content-type": "application/json",
                         "X-Request-Id": getattr(local, "request_id", None)},
                 data=json.dumps({

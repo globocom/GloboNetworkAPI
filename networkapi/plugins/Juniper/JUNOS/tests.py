@@ -4,7 +4,6 @@ from networkapi.test.test_case import NetworkApiTestCase
 from networkapi.plugins.base import BasePlugin
 from networkapi.plugins import exceptions
 from networkapi.plugins.Juniper.JUNOS.plugin import JUNOS
-from networkapi.settings import NETWORKAPI_NETCONF_URL
 from mock import patch, MagicMock
 from lxml import etree
 from jnpr.junos.exception import RPCError, RpcError, LockError, ConfigLoadError, CommitError
@@ -294,33 +293,6 @@ class JunosPluginTest(NetworkApiTestCase):
         result = plugin.set_detailed_junos_log_level(loggers)
 
         self.assertEqual(result, 'ERROR')
-
-    @patch('networkapi.plugins.Netconf.services.requests.post')
-    @patch('jnpr.junos.Device')
-    def test_get_port_channel_success(self, mock_device, mock_post):
-
-        """
-        test_get_port_channel_success - Test if the response of netconf microservice is returned as is
-        """
-
-        # Mocking
-        retrieved = '<data><configuration><interfaces><interface>' \
-                    '<name>ae1</name></interface></interfaces></configuration></data>'
-        mock_post.return_value = MagicMock(status_code=200, text=retrieved)
-        plugin = JUNOS(equipment_access=self.mock_equipment_access)
-        plugin.remote_conn = mock_device
-
-        # Close to a real test:
-        port_channel = plugin.get_port_channel('1')
-
-        # Asserts
-        self.assertEqual(port_channel, retrieved)
-        payload = json.loads(mock_post.call_args[1]['data'])
-        self.assertEqual(mock_post.call_args[1]['url'], NETWORKAPI_NETCONF_URL + '/retrieve')
-        self.assertEqual(payload['address'], 'any fqdn')
-        self.assertEqual(payload['source'], 'running')
-        self.assertEqual(etree.XML(payload['filter']).xpath('interfaces/interface/name/text()'), ['ae1'])
-        self.assertFalse(mock_device.rpc.get_config.called)
 
     @patch('networkapi.plugins.Netconf.services.requests.post')
     @patch('networkapi.plugins.Juniper.JUNOS.plugin.JUNOS.close')

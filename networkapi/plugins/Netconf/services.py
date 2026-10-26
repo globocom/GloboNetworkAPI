@@ -2,10 +2,10 @@ import json
 import logging
 
 import requests
+from django.conf import settings
 
 from networkapi.extra_logging import local
 from networkapi.plugins import exceptions
-from networkapi.settings import NETWORKAPI_NETCONF_URL
 
 
 log = logging.getLogger(__name__)
@@ -15,10 +15,9 @@ class NetconfServices:
 
     """Client of the netconf microservice."""
 
-    retrieve_url = NETWORKAPI_NETCONF_URL + '/retrieve'
-
     def __init__(self, equipment_access):
         self.equipment_access = equipment_access
+        self.retrieve_url = '{}/retrieve'.format(settings.NETWORKAPI_NETCONF_URL)
 
     def get_resource(self, filter, source=''):
 
