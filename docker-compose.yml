@@ -53,6 +53,9 @@ services:
         command: sh scripts/docker/docker-start-celery.sh
         env_file:
             - ./scripts/docker/netapi.env
+        # Allows reaching services running on the host (e.g. netconf microservice) on Linux
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         volumes:
             - ./networkapi/:/netapi/networkapi
             - ${NETWORKAPI_CONFIG_TEMPLATE_PATH:-./networkapi/config_templates}:/templates/config:ro
@@ -78,6 +81,9 @@ services:
             - "8000:8000"
         env_file:
             - ./scripts/docker/netapi.env
+        # Allows reaching services running on the host (e.g. netconf microservice) on Linux
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         volumes:
             - ./:/netapi/
             - ./dev:/netapi/dev
