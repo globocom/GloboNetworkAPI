@@ -115,10 +115,11 @@ def get_equipment_port_channel(equipment_id, channel_number):
     if not isinstance(plugin, BasePlugin):
         raise exceptions.EquipmentWithoutAccessException(equipment.nome)
 
-    # Avoid connecting to equipments whose plugin does not implement it
-    if type(plugin).get_port_channel.im_func is \
-            BasePlugin.get_port_channel.im_func:
-        raise exceptions.PortChannelNotSupportedException(equipment.nome)
+    # Temporarily allow connecting to equipments even if the plugin does not explicitly implement get_port_channel
+    # # Avoid connecting to equipments whose plugin does not implement it
+    # if type(plugin).get_port_channel.im_func is \
+    #         BasePlugin.get_port_channel.im_func:
+    #     raise exceptions.PortChannelNotSupportedException(equipment.nome)
 
     plugin.connect()
     port_channel = plugin.get_port_channel(channel_number)
