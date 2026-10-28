@@ -37,6 +37,10 @@ class FTOS(BasePlugin):
     WARNING_REGEX = 'config ignored|Warning|Dynamic member cannot be statically removed'
     ERROR_REGEX = '[Ee][Rr][Rr][Oo][Rr]|[Ff]ail|\%|utility is occupied'
 
+    PROMPT_REGEX = '\S+#\s*$'
+    PORT_CHANNEL_REGEX = '^interface Port-channel %s\s*$'
+    MAX_CLI_WAIT_TIME = 30
+
     admin_privileges = 15
     VALID_TFTP_PUT_MESSAGE = 'bytes successfully copied'
     VALID_TFTP_PUT_MESSAGE_OS10 = 'Copy succeeded'
@@ -142,6 +146,69 @@ class FTOS(BasePlugin):
             recv = self.waitString('Password:')
             self.channel.send('%s\n' % self.equipment_access.enable_pass)
             recv = self.waitString('#')
+
+    def get_port_channel(self, channel_number):
+        """
+        Get the running configuration of a port-channel from equipment by CLI.
+
+        :param str channel_number: port-channel number, example: '1' (Port-channel 1 in FTOS)
+
+        :returns:
+            Returns the output of 'show running-config interface port-channel <number>',
+            otherwise, raise an exception.
+        """
+
+        log.info('FTOS Plugin - Trying to get port-channel %s from equipment %s...' %
+                 (channel_number, self.equipment.nome))
+
+        self.ensure_privilege_level()
+        self.send_show_command('terminal length 0')
+        output = self.send_show_command(
+            'show running-config interface port-channel %s' % channel_number)
+
+        if re.search(self.INVALID_REGEX, output):
+            log.error('Equipment raised INVALID error: %s' % output)
+            raise exceptions.InvalidCommandException(output)
+
+        # FTOS returns only the prompt (no error message) when the port-channel does not exist
+        if not re.search(self.PORT_CHANNEL_REGEX % re.escape(channel_number), output,
+                         re.MULTILINE | re.IGNORECASE):
+            message = 'Port-channel %s not found on equipment %s.' % (
+                channel_number, self.equipment.nome)
+            log.error(message)
+            raise exceptions.PortChannelNotFoundException(message)
+
+        # Remove the echoed command (first line) and the prompt (last line)
+        return '\n'.join(output.splitlines()[1:-1]).strip()
+
+    def send_show_command(self, command):
+        """
+        Send a show command to equipment and wait for the whole output,
+        that is, until the prompt is returned after the echoed command.
+        """
+
+        # Discard any pending output of previous commands
+        while self.channel.recv_ready():
+            self.channel.recv(9999)
+
+        self.channel.send('%s\n' % command)
+
+        recv_string = ''
+        waited = 0
+        while True:
+            if self.channel.recv_ready():
+                recv_string += self.channel.recv(9999)
+                lines = recv_string.strip().splitlines()
+                # The first line is the echo of command, which also contains the prompt
+                if len(lines) > 1 and re.search(self.PROMPT_REGEX, lines[-1]):
+                    return recv_string
+            elif waited >= self.MAX_CLI_WAIT_TIME:
+                log.error('Timeout waiting output of command %s: %s' %
+                          (command, recv_string))
+                raise exceptions.UnableToVerifyResponse()
+            else:
+                sleep(self.WAIT_FOR_CLI_RETURN)
+                waited += self.WAIT_FOR_CLI_RETURN
 
     @mock_return('')
     def remove_svi(self, svi_number):
