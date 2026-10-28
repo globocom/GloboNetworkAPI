@@ -137,6 +137,16 @@ class BasePlugin(object):
 
         raise NotImplementedError()
 
+    def get_port_channel(self, channel_number):
+        """Return information of a port-channel from equipment.
+
+        By default, considers the port-channel as not found. Plugins should
+        override it to query the equipment.
+        """
+
+        raise exceptions.PortChannelNotFoundException(
+            'Port-channel %s not found on equipment.' % channel_number)
+
     @mock_return('')
     def exec_command(self, command, success_regex='', invalid_regex=None, error_regex=None):
         """Send single command to equipment and than closes connection channel.

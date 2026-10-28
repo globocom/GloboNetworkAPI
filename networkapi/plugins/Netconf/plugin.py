@@ -2,10 +2,12 @@ from ncclient import manager
 from networkapi.plugins import exceptions
 from networkapi.equipamento.models import EquipamentoAcesso
 from networkapi.plugins.base import BasePlugin
+from networkapi.plugins.Netconf.services import NetconfServices
 import logging
 from networkapi.system.facade import get_value
 import paramiko
 import requests, json, os
+from django.conf import settings
 from django.db.utils import DatabaseError
 from networkapi.system.exceptions import VariableDoesNotExistException
 from networkapi.extra_logging import local
@@ -17,7 +19,6 @@ class GenericNetconf(BasePlugin):
     session_manager = None
     alternative_variable_base_path_list = ['path_to_tftpboot']
     alternative_static_base_path_list = ['/mnt/scripts/tftpboot/']
-
 
     def __try_lock(self):
         """
@@ -80,6 +81,51 @@ class GenericNetconf(BasePlugin):
 
         except Exception, e:
             log.error('Error on apply config to equipment')
+
+    def get_port_channel(self, channel_number):
+        """
+        Check if a port-channel (Eth-Trunk) exists in the running configuration of the
+        equipment using the netconf microservice (POST /retrieve). The filter depends
+        on the equipment model (see port_channel_filters).
+
+        :param str channel_number: port-channel number, example: '127' (Eth-Trunk127 in Huawei)
+
+        :returns:
+            Returns the response of netconf microservice as is (XML of the port-channel), otherwise,
+            raise an exception.
+        """
+
+        log.info("Netconf Plugin - Trying to get port-channel {} from host {}...".format(channel_number, self.equipment_access.fqdn))
+
+        # Subtree filters to get port-channels (Eth-Trunk) by equipment model
+        port_channel_filters = {
+            'CE8850': '<ifmtrunk xmlns="http://www.huawei.com/netconf/vrp/huawei-ifmtrunk">'
+                        '<TrunkIfs><TrunkIf><ifName>Eth-Trunk{}</ifName></TrunkIf></TrunkIfs></ifmtrunk>',
+            'CE8875': '<ifm xmlns="urn:huawei:yang:huawei-ifm">'
+                        '<interfaces><interface><name>Eth-Trunk{}</name></interface></interfaces></ifm>',
+        }
+
+        # Check if the equipment model is supported to get port-channel
+        model = self.equipment.modelo.nome
+        filter = None
+        for model_prefix, model_filter in port_channel_filters.items():
+            log.debug("Checking if model {} matches prefix {}... test: {}".format(model, model_prefix, model_prefix in model.upper()))
+            if model_prefix in model.upper():
+                filter = model_filter.format(channel_number)
+                break
+
+        # If the filter is None, it means that the equipment model is not supported to get port-channel
+        if filter is None:
+            message = "Getting port-channel is not supported for model {} of equipment {}.".format(
+                model, self.equipment.nome)
+            log.error(message)
+            raise exceptions.UnsupportedEquipmentException(message)
+
+        try:
+            return NetconfServices(self.equipment_access).get_resource(filter)
+        except exceptions.APIException:
+            self.close()
+            raise
 
     def ensure_privilege_level(self, privilege_level=None):
         """
@@ -193,7 +239,7 @@ class GenericNetconf(BasePlugin):
             ultimate_template = '<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">{}</config>'.format(command)
 
             response = requests.post(
-                url="http://localhost:5000/deploy",
+                url="{}/deploy".format(settings.NETWORKAPI_NETCONF_URL),
                 headers={"Content-type": "application/json",
                         "X-Request-Id": getattr(local, "request_id", None)},
                 data=json.dumps({
