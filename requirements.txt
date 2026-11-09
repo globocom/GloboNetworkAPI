@@ -37,7 +37,7 @@ stompest==2.1.6
 suds==0.4
 schema==0.6.6
 supervisor==3.3.4
-Jinja2==2.9
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 PyYAML==5.3
 certifi==2018.10.15
