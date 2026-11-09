@@ -76,7 +76,7 @@ class EnvironmentGetByEquipResource(RestResource):
                     if env.min_num_vlan_1 != env.min_num_vlan_2:
                         env_map['range'] = env_map[
                             'range'] + '; ' + str(env.min_num_vlan_2) + ' - ' + str(env.max_num_vlan_2)
-                except:
+                except Exception:
                     env_map['range'] = 'Nao definido'
         
                 if env.filter is not None:
