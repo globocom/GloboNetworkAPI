@@ -39,6 +39,12 @@ NETWORKAPI_GELF_HOST = os.getenv('NETWORKAPI_GELF_HOST',
 
 LOG_QUEUE = os.getenv('NETWORKAPI_LOG_QUEUE', '0') == '1'
 
+# Outbox to the BGP microservice (ADR-0003). Publishing stays off until rollout.
+OUTBOX_PUBLISH_ENABLED = os.getenv('NETWORKAPI_OUTBOX_PUBLISH_ENABLED', '0') == '1'
+PUBSUB_PROJECT_ID = os.getenv('NETWORKAPI_PUBSUB_PROJECT_ID', '')
+PUBSUB_TOPIC = os.getenv('NETWORKAPI_PUBSUB_TOPIC', 'networkapi-legacy-bgp-events')
+PUBSUB_SA_KEY_FILE = os.getenv('NETWORKAPI_PUBSUB_SA_KEY_FILE', '')
+
 # Aplicação rodando em modo Debug
 DEBUG = os.getenv('NETWORKAPI_DEBUG', '0') == '1'
 
@@ -350,6 +356,7 @@ PROJECT_APPS = (
     'networkapi.api_vlan',
     'networkapi.api_vrf',
     'networkapi.api_peer_group',
+    'networkapi.api_outbox',
     'networkapi.api_route_map',
     'networkapi.api_list_config_bgp',
     'networkapi.api_neighbor',

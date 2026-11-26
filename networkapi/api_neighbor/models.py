@@ -141,6 +141,7 @@ class NeighborV4(BaseModel):
 
     log = logging.getLogger('NeighborV4')
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'neighbor_v4'
         managed = True

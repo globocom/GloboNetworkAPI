@@ -72,6 +72,7 @@ class PeerGroup(BaseModel):
 
     log = logging.getLogger('PeerGroup')
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'peer_group'
         managed = True
@@ -240,6 +241,7 @@ class EnvironmentPeerGroup(BaseModel):
 
     log = logging.getLogger('EnvironmentPeerGroup')
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'environment_peer_group'
         managed = True

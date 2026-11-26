@@ -35,6 +35,7 @@ class Asn(BaseModel):
 
     log = logging.getLogger('Asn')
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'asn'
         managed = True
@@ -155,6 +156,7 @@ class AsnEquipment(BaseModel):
 
     log = logging.getLogger('AsnEquipment')
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'asn_equipment'
         managed = True

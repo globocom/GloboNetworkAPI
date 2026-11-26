@@ -1,0 +1,46 @@
+#-*- coding:utf-8 -*-
+
+SQL_UP = u"""
+-- Outbox of BGP table changes (ADR-0003, PCEC-850)
+CREATE TABLE `outbox_event` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `event_id` VARCHAR(36) NOT NULL,
+  `aggregate` VARCHAR(40) NOT NULL,
+  `aggregate_id` INT NOT NULL,
+  `op` VARCHAR(10) NOT NULL,
+  `version` INT NOT NULL,
+  `origin` VARCHAR(10) NOT NULL,
+  `occurred_at` DATETIME NOT NULL,
+  `payload` LONGTEXT NOT NULL,
+  `status` VARCHAR(12) NOT NULL,
+  `attempts` INT NOT NULL DEFAULT 0,
+  `last_error` TEXT NULL,
+  `published_at` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_outbox_event_event_id` (`event_id`),
+  KEY `ix_outbox_event_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Row version used for ordering and idempotency of replicated events
+ALTER TABLE `asn` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+ALTER TABLE `asn_equipment` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+ALTER TABLE `route_map` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+ALTER TABLE `route_map_entry` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+ALTER TABLE `equipment_route_map` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+ALTER TABLE `peer_group` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+ALTER TABLE `environment_peer_group` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+ALTER TABLE `neighbor_v4` ADD COLUMN `version` INT NOT NULL DEFAULT 0;
+"""
+
+SQL_DOWN = u"""
+ALTER TABLE `neighbor_v4` DROP COLUMN `version`;
+ALTER TABLE `environment_peer_group` DROP COLUMN `version`;
+ALTER TABLE `peer_group` DROP COLUMN `version`;
+ALTER TABLE `equipment_route_map` DROP COLUMN `version`;
+ALTER TABLE `route_map_entry` DROP COLUMN `version`;
+ALTER TABLE `route_map` DROP COLUMN `version`;
+ALTER TABLE `asn_equipment` DROP COLUMN `version`;
+ALTER TABLE `asn` DROP COLUMN `version`;
+
+DROP TABLE IF EXISTS `outbox_event`;
+"""

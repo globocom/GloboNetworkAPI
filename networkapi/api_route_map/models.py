@@ -49,6 +49,7 @@ class RouteMap(BaseModel):
 
     log = logging.getLogger('RouteMap')
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'route_map'
         managed = True
@@ -164,6 +165,7 @@ class EquipmentRouteMap(BaseModel):
         db_column='id_route_map'
     )
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'equipment_route_map'
         managed = True
@@ -210,6 +212,7 @@ class RouteMapEntry(BaseModel):
 
     log = logging.getLogger('RouteMapEntry')
 
+    version = models.IntegerField(default=0, db_column='version')
     class Meta(BaseModel.Meta):
         db_table = u'route_map_entry'
         managed = True
